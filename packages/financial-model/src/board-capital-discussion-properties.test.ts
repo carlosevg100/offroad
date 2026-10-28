@@ -3,9 +3,9 @@ import {createHash} from "node:crypto";
 import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardDeferralReadings, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
 import {boardConditionSlots} from "./board-capital-discussion";
 
@@ -233,11 +233,23 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     }
     const scaled = x.scale === "reais" ? new D(x.value).div(1000000) : x.scale === "ratio" ? new D(x.value).times(100) : new D(x.value);
     const n = scaled.toFixed(Number(x.presentation)).replace(".", ",");
-    const per = x.period === "annual" ? (x.unit === "rate" ? " ao ano" : " por ano") : "";
+    const words = ["", "um mês", "dois meses", "três meses", "quatro meses", "cinco meses", "seis meses", "sete meses", "oito meses", "nove meses", "dez meses", "onze meses"];
+    const months = /^months_(\d+)$/.exec(x.period)?.[1];
+    const per = x.period === "annual" ? (x.unit === "rate" ? " ao ano" : " por ano") : months ? (months === "12" ? " por ano" : ` em ${Number(months) < 12 ? words[Number(months)] : `${months} meses`}`) : "";
     return x.unit === "money" ? `R$ ${n} ${scaled.abs().toDecimalPlaces(Number(x.presentation)).lt(2) ? "milhão" : "milhões"}${per}` : x.unit === "rate" ? `${n}%${per}`
       : x.unit === "multiple" ? `${n}x` : x.unit === "years" ? `${n} ${n === "1" ? "ano" : "anos"}` : x.unit === "months" ? `${n} ${n === "1" ? "mês" : "meses"}` : x.unit === "bps" ? `${n} pontos` : n;
   };
   const bad: string[] = d.identity.filter((x) => reformat(x) !== x.display).map((x) => `format:${x.figureId}`);
+  // Period against the source's own operands: a lever's benefit is nominal over its action's exposure, so its period is
+  // the sum of that exposure's registered year fractions, in months; a figure claimed per year must cover twelve.
+  for (const x of d.identity.filter((i) => i.methodId === "analyze-relative-debt-cost" && /netOfKnownCosts$/.test(i.path))) {
+    const rc = sources.find((y) => y.packet.fingerprint === x.packetFingerprint)?.packet as {levers?: {role: string; scenario: string; actionId: string}[]; result?: {actions?: {actionId: string; result: {operands: {exposure: {yearFraction: string}[]}}}[]}} | undefined;
+    const sel = /levers\[([^\]]+)\]/.exec(x.path)?.[1] ?? "";
+    const lever = rc?.levers?.find((l) => sel.split("&").every((c) => String((l as Record<string, unknown>)[c.split("=")[0]!]) === c.slice(c.indexOf("=") + 1)));
+    const exposure = rc?.result?.actions?.find((a) => a.actionId === lever?.actionId)?.result.operands.exposure ?? [];
+    const months = exposure.reduce((sum, e) => sum.plus(new D(e.yearFraction).times(12)), new D(0));
+    if (!exposure.length || x.period !== `months_${months.toFixed(0)}` || !months.eq(months.toDecimalPlaces(0))) bad.push(`period:${x.figureId}`);
+  }
   const texts = [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]), ...v.deliberations.flatMap((x) => [x.title, x.text, ...x.deadlines.map((t) => t.action)]),
     ...v.questions.flatMap((x) => [x.question, x.answer]), ...v.appendix.map((x) => x.label)];
   const counts = ["zero", "uma", "duas", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"];
@@ -1391,6 +1403,26 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       x.presentation = "1";
       expect(oracle(forged, [{packet: covenant}, ...auroraBoardSources()]).bad.some((y) => y.startsWith("presentation_conflict:result.headroom.measurements["))).toBe(true);
     }
+  });
+  it("regression r32: a period the method does not fix is the horizon its source registers for the row; a range of different horizons is refused (full path, oracle not vacuous)", () => {
+    const answer = (p: Packet) => p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "rating")!.answer;
+    for (const [months, words] of [[3, "em três meses"], [6, "em seis meses"], [12, "por ano"]] as const) {
+      const packet = auroraRelativeCostPacket({ratingHorizonMonths: [months, months]});
+      for (const turn of [2, 3] as const) {
+        const p = withBoardSource("custo-relativo", packet, () => full(turn, boardRatingReadings(packet)));
+        expect([...answer(p).matchAll(new RegExp(`milhão ${words}`, "g"))].length, `${months}`).toBe(2);
+        expect(oracle(p, [{packet}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+        if (months !== 12) {
+          // Not vacuous: the three- or six-month benefit written per year, and its period claimed as twelve months.
+          const forged = structuredClone(p), x = forged.result.discussion!.identity.find((i) => i.figureId === "rating-low")!;
+          x.period = "months_12"; x.display = x.display.replace(words, "por ano");
+          const bad = oracle(forged, [{packet}, ...auroraBoardSources()]).bad;
+          expect(bad).toContain("period:rating-low");
+        }
+      }
+    }
+    const mixed = auroraRelativeCostPacket({ratingHorizonMonths: [3, 12]});
+    for (const turn of [2, 3] as const) expect(() => withBoardSource("custo-relativo", mixed, () => full(turn, boardRatingReadings(mixed)))).toThrow("board_capital_template_condition_failed:a.rating:0");
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};

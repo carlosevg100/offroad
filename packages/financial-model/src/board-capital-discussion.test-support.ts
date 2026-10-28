@@ -37,6 +37,21 @@ function rebind<T>(value: T, from: string, to: string): T {
   return JSON.parse(JSON.stringify(value).split(`"${from}"`).join(`"${to}"`)) as T;
 }
 
+/** The C03 relative cost rebound to the shared company; regressions only: the rating actions' exposure set to other
+ * horizons (months), the method recomputing the nominal benefits over them. */
+export function auroraRelativeCostPacket(variant: {ratingHorizonMonths?: readonly [number, number]} = {}) {
+  const relative = c03PacketInput();
+  if (variant.ratingHorizonMonths) {
+    const [low, high] = variant.ratingHorizonMonths;
+    for (const [actionId, months] of [[relative.ids.ratingLow, low], [relative.ids.ratingHigh, high]] as const) for (const e of relative.entries) {
+      if (e.fieldPath.endsWith(`action.${actionId}.ends`)) {const end = new Date(Date.UTC(2026, 4 + months, 1)).toISOString().slice(0, 10); e.value = {type: "list", value: [end]};}
+      if (e.fieldPath.endsWith(`action.${actionId}.yearFractions`)) e.value = {type: "list", value: [new Decimal(months).div(12).toFixed()]};
+    }
+  }
+  for (const e of relative.entries) if (e.dimensions.entityId === c03Id(1)) e.dimensions.entityId = company;
+  return prepareRelativeDebtCostPacket(rebind(relative.seal(), c03Id(1), company)) as unknown as Record<string, unknown>;
+}
+
 function buildSources() {
   const debtTable = prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: auroraDebtTableBasis().seal()});
   const covenant = auroraCovenantPacket();

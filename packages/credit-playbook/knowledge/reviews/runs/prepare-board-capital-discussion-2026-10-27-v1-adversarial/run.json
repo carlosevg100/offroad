@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T02:13:17.029Z",
-    "finishedAt": "2026-10-28T02:15:55.555Z"
+    "startedAt": "2026-10-28T02:44:22.687Z",
+    "finishedAt": "2026-10-28T02:47:02.791Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,22 @@
       "passed": true
     },
     {
+      "id": "rating-range-of-three-and-twelve-months-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b26e7907adb2dfa9f1a7e88508d539b241101c4a2169dedb285f5bd79fe36ea7",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "rating-range-of-three-and-twelve-months-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d8383cb0b608479ee72c765bd593c84698eadfec2e0c4f2823bd1cd0257a107c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "adverse-leverage-2-4602-shown-twice-by-equivalent-selectors-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1311,6 +1327,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "6628ac49661442ddaffd373abdae5e8102b6d4c8839897b3ddcb23879e875235",
+  "evidenceFingerprint": "55959f26849d77cfd8f00e031d51b87ac46ce420b964897e11554813c83fb3de",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

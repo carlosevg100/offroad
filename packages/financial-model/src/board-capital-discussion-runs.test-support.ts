@@ -4,7 +4,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -84,6 +84,12 @@ export const boardEquivalentSelectors = (places: string, stated: string) => (c: 
   c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];
   c.extraReadings["lev-adv27-alt"] = ["covenant", "result.headroom.measurements[id=dez27-adverso&scenario=adverse].ratio", places, stated];
   const q = c.questions.find((x) => x.id === "trigo")!; q.answer = q.answer.replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-alt");
+};
+/** The rating readings restated from a relative-cost packet (test side only). */
+export const boardRatingReadings = (packet: Record<string, unknown>) => (c: CaseData) => {
+  const lever = (scenario: string) => (packet.levers as {role: string; scenario: string; netOfKnownCosts: string}[]).find((l) => l.role === "rating" && l.scenario === scenario)!.netOfKnownCosts;
+  for (const [id, scenario] of [["rating-low", "low"], ["rating-high", "high"]] as const)
+    c.extraReadings[id] = ["custo-relativo", `levers[role=rating&scenario=${scenario}].netOfKnownCosts`, "2", new Decimal(lever(scenario)).div(1000000).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2)];
 };
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
@@ -332,6 +338,12 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r32: the period of a lever's benefit is the horizon its source registers.
+    ...([3, 6, 12] as const).map((months) => observe(`rating-benefit-over-${months}-months`, (() => {
+      const packet = auroraRelativeCostPacket({ratingHorizonMonths: [months, months]});
+      return withBoardSource("custo-relativo", packet, () => boardPacketInput(2, boardRatingReadings(packet)));
+    })(), {period: months === 12 ? "por ano" : months === 3 ? "em três meses" : "em seis meses"},
+      (p) => ({period: /milhão (por ano|em três meses|em seis meses);/.exec(current(p).questions.find((q) => q.id === "rating")!.answer)?.[1]}))),
     // Review r31: the same presentation through equivalent selectors is one reading of one field.
     observe("equivalent-selectors-with-one-presentation", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124.0361"}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, boardEquivalentSelectors("2", "2.46"))),
@@ -577,6 +589,11 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r32: a range whose ends cover different horizons is refused.
+    ...([2, 3] as const).map((turn) => [`rating-range-of-three-and-twelve-months-turn-${turn}`, () => {
+      const packet = auroraRelativeCostPacket({ratingHorizonMonths: [3, 12]});
+      return withBoardSource("custo-relativo", packet, () => build(turn, boardRatingReadings(packet)));
+    }, "board_capital_template_condition_failed:a.rating:0"] as [string, () => unknown, string]),
     // Review r31: equivalent selectors are one field; two presentations of it are refused.
     ...([2, 3] as const).map((turn) => [`adverse-leverage-2-4602-shown-twice-by-equivalent-selectors-turn-${turn}`, () => withBoardSource("covenant",
       auroraCovenantPacket({adverseDebt: "124.0361"}) as unknown as Record<string, unknown>, () => build(turn, boardEquivalentSelectors("1", "2.5"))),

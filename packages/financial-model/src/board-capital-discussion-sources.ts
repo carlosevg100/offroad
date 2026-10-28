@@ -67,11 +67,34 @@ export function verifyBoardSource(named: {id: string; methodId: string; packetFi
  * reading and how many decimals, never the unit, the scale, the periodicity or the date format. */
 export type BoardFieldKind = "money" | "rate" | "multiple" | "years" | "months" | "bps" | "count" | "calendar" | "date" | "label" | "flag";
 export type BoardDateFormat = "day_month" | "day_long" | "month_year" | "month_long" | "year";
-export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none"; formats: readonly BoardDateFormat[];
+export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" | "ratio" | "native"; period: "annual" | "none" | "derived"; formats: readonly BoardDateFormat[];
+  /** For a period that the method does not fix: the horizon of the same row in months, read from registered fields of
+   * the source (never recalculated); null when it cannot be read. */
+  horizonMonths?: (packet: unknown, path: string) => string | null;
   /** The economic concept of the field where a method holds several of the same kind that must never stand for one another. */
   concept?: string;
   /** For money: a balance (a position at a date), a flow (a change or an amount over a period) or a value (a present value or an amount to issue). */
   nature?: "balance" | "flow" | "value"};
+/** A lever's benefit is the nominal benefit over its action's exposure: the horizon is the sum of the registered year
+ * fractions of that action's exposure, in months (an integer number of months, or nothing). */
+function leverHorizonMonths(packet: unknown, path: string): string | null {
+  const lever = path.replace(/\.netOfKnownCosts$/, "").split(/\.(?![^[]*\])/).reduce<unknown>((node, seg) => {
+    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(seg); if (!m) return undefined;
+    let n = (node as Record<string, unknown> | undefined)?.[m[1]!];
+    for (const sel of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
+      const conds = sel.slice(1, -1).split("&").map((x) => [x.slice(0, x.indexOf("=")), x.slice(x.indexOf("=") + 1)] as const);
+      const hits = Array.isArray(n) ? n.filter((x) => conds.every(([k, v]) => String((x as Record<string, unknown>)?.[k]) === v)) : [];
+      n = hits.length === 1 ? hits[0] : undefined;
+    }
+    return n;
+  }, packet) as {actionId?: unknown} | undefined;
+  const actions = ((packet as {result?: {actions?: {actionId?: unknown; result?: {operands?: {exposure?: {yearFraction?: unknown}[]}}}[]}})?.result?.actions ?? []);
+  const action = actions.find((a) => a.actionId === lever?.actionId);
+  const fractions = action?.result?.operands?.exposure?.map((x) => x.yearFraction);
+  if (!fractions?.length || fractions.some((x) => typeof x !== "string")) return null;
+  const months = (fractions as string[]).reduce((sum: number, x) => sum + Number(x) * 12, 0), whole = Math.round(months);
+  return Math.abs(months - whole) < 1e-9 && whole > 0 ? String(whole) : null;
+}
 const money = (scale: "reais" | "millions", period: "annual" | "none" = "none"): BoardFieldSpec => ({kind: "money", scale, period, formats: []});
 const rate = (period: "annual" | "none"): BoardFieldSpec => ({kind: "rate", scale: "ratio", period, formats: []});
 const plain = (kind: BoardFieldKind): BoardFieldSpec => ({kind, scale: "native", period: "none", formats: []});
@@ -119,7 +142,7 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.funding.need.peak": {...money("millions"), concept: "pico_da_necessidade_de_caixa", nature: "balance"},
     "readings.options[*].spreadOverDi": {...rate("annual"), concept: "spread_sobre_cdi_do_programa"}},
   "analyze-relative-debt-cost": {"decomposition.grossBps": plain("bps"), "result.bridge.steps[*].bps": plain("bps"), "result.bridge.knownAdjustmentsBps": plain("bps"),
-    "result.bridge.unexplainedAfterKnownAdjustmentsBps": plain("bps"), "levers[*].netOfKnownCosts": {...money("reais", "annual"), nature: "flow"}},
+    "result.bridge.unexplainedAfterKnownAdjustmentsBps": plain("bps"), "levers[*].netOfKnownCosts": {...money("reais"), period: "derived", nature: "flow", horizonMonths: leverHorizonMonths}},
   "evaluate-financing-paths": {
     "result.evaluation.paths[*].closingAvailableByPeriod[*].closingAvailable": {...money("millions"), nature: "balance"},
     "result.evaluation.paths[*].debtServiceByYear[*].service": {...money("millions"), nature: "flow"}, "result.evaluation.paths[*].debtServiceByYear[*].availableForService": {...money("millions"), nature: "flow"},

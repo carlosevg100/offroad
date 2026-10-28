@@ -33,7 +33,7 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
     questions: z.array(z.strictObject({code: z.enum(["template", "agenda_minutes", "board_has_seen"]), topicId: key.nullable(), label: text.nullable()})).max(16)}),
   /** Identity check: every number on the material against the reviewed result it is read from. */
   identity: z.array(z.strictObject({figureId: key, sourceId: key, methodId: key, methodVersion: key, packetFingerprint: hash, path: text, unit: z.enum(boardFigureUnits),
-    scale: z.enum(["reais", "millions", "ratio", "native"]), period: z.enum(["annual", "none"]), presentation: key, value: text, rounded: text, stated: text.nullable(), display: text, matches: z.literal(true)})).max(160),
+    scale: z.enum(["reais", "millions", "ratio", "native"]), period: z.union([z.enum(["annual", "none"]), z.string().regex(/^months_[1-9]\d{0,2}$/)]), presentation: key, value: text, rounded: text, stated: text.nullable(), display: text, matches: z.literal(true)})).max(160),
   omissions: z.array(z.strictObject({id: key, target: z.enum(boardOmissionTargets), targetId: key, requestedBy: text, outcome: z.enum(["applied", "refused"]), reason: text, keptFigureIds: ids})).max(12),
   /** The first version as composed and, after an omission request, the second: the earlier version is kept. */
   versions: z.array(boardMaterialSchema).max(2),

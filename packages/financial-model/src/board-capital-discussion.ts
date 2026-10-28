@@ -136,7 +136,8 @@ const isNumeric = (raw: unknown) => (typeof raw === "number" && Number.isFinite(
  * against the number the author states. Valid conversions only: reais to millions (divided by 10^6), a
  * ratio to percent (times 100). The text it returns is the whole marker: number, sign, currency, scale
  * word, percent and periodicity. */
-export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentation: string, stated: string | null, currency = "BRL") {
+const monthWords = ["", "um mês", "dois meses", "três meses", "quatro meses", "cinco meses", "seis meses", "sete meses", "oito meses", "nove meses", "dez meses", "onze meses"];
+export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentation: string, stated: string | null, currency = "BRL", months: string | null = null) {
   // The only domain is reais: a money reading of a result in another currency is never shown.
   if (spec.kind === "money" && currency !== "BRL") throw new Error(`board_capital_currency_not_supported:${currency}`);
   const out = (value: string, rounded: string, display: string, number: string | null, matches: boolean) => ({value, rounded, display, number, matches});
@@ -162,7 +163,11 @@ export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentat
   const places = Number(presentation);
   const scaled = spec.scale === "reais" ? new Exact(raw as Decimal.Value).div(1e6) : spec.scale === "ratio" ? new Exact(raw as Decimal.Value).times(100) : new Exact(raw as Decimal.Value);
   const rounded = scaled.toDecimalPlaces(places, Decimal.ROUND_HALF_UP), text = rounded.toFixed(places), number = text.replace(".", ",");
-  const per = spec.period === "annual" ? (spec.kind === "rate" ? " ao ano" : " por ano") : "";
+  // A period the method fixes is written as such; a derived one by the horizon the source registers for the row: "por
+  // ano" only for exactly twelve months, otherwise the months it covers.
+  if (spec.period === "derived" && (months === null || !/^[1-9]\d*$/.test(months))) return null;
+  const per = spec.period === "annual" ? (spec.kind === "rate" ? " ao ano" : " por ano")
+    : spec.period === "derived" ? (months === "12" ? " por ano" : ` em ${Number(months) < 12 ? monthWords[Number(months)] : `${months} meses`}`) : "";
   const display = spec.kind === "money" ? `R$ ${number} ${rounded.abs().lt(2) ? "milhão" : "milhões"}${per}`
     : spec.kind === "rate" ? `${number}%${per}` : spec.kind === "multiple" ? `${number}x`
     : spec.kind === "years" ? `${number} ${number === "1" ? "ano" : "anos"}` : spec.kind === "months" ? `${number} ${number === "1" ? "mês" : "meses"}`
@@ -238,7 +243,7 @@ export function boardConditionSlots(c: unknown): string[] {
   walk(c);
   return out;
 }
-export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string; canonical?: string; fingerprint?: string}; unnamed?: true} | {pending: true; methodId?: string; path?: string};
+export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string; canonical?: string; fingerprint?: string; periodMonths?: string}; unnamed?: true} | {pending: true; methodId?: string; path?: string};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[];
   /** The canonical names of the debtors this text names, by the reading bound to the debtor slot. */
   debtors?: Map<string, string>;
@@ -665,6 +670,10 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         if (!x || !y || JSON.stringify(x) !== JSON.stringify(y)) return false;
       }
       return true;
+    }
+    if ("samePeriod" in c) {
+      const period = (slot: string) => {const f = context.figures.get(bindings[slot]!); if (!f || "pending" in f || !f.origin) throw indefinite(`slot_${slot}`); return f.origin.periodMonths ?? "fixed";};
+      return period(c.samePeriod[0]) === period(c.samePeriod[1]);
     }
     if ("testsLimit" in c) {
       const fill = (x: string) => x.replace(/\$([a-z]+)/g, (_m: string, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
@@ -1191,7 +1200,7 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
 export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceReading[]) {
   const byId = new Map(sources.map((s) => [s.id, s]));
   const checks: {figureId: string; sourceId: string; methodId: string; methodVersion: string; packetFingerprint: string; path: string; unit: BoardFigureUnit;
-    scale: BoardFieldSpec["scale"]; period: BoardFieldSpec["period"]; presentation: string; value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
+    scale: BoardFieldSpec["scale"]; period: "annual" | "none" | `months_${string}`; presentation: string; value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
   const figures = new Map<string, BoardFigureDisplay>();
   for (const f of d.figures) {
     if (f.kind === "pending") {figures.set(f.id, {pending: true, methodId: f.requiredMethodId, path: f.requiredPath}); continue;}
@@ -1207,15 +1216,17 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     // name dictionary; any other string is never shown (the slot's generic words and a gap of name instead).
     const unnamed = spec.kind === "label" && !dictionary.has(raw as string);
     const currency = (s.packet as {currency?: unknown}).currency;
-    const check = formatBoardReading(raw, spec, f.presentation, f.stated, typeof currency === "string" ? currency : "");
+    const months = spec.period === "derived" ? spec.horizonMonths?.(s.packet, f.path) ?? null : null;
+    if (spec.period === "derived" && months === null) throw new Error(`board_capital_period_unregistered:${f.id}`);
+    const check = formatBoardReading(raw, spec, f.presentation, f.stated, typeof currency === "string" ? currency : "", months);
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
     const display = unnamed ? boardUnnamedLabel : check.display;
     // The reading's identity is the field it resolves to in that package (selectors canonicalized to indices), never its text.
     figures.set(f.id, {display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: boardCanonicalPath(s.packet, f.path, "text") ?? f.path, value: check.value,
-      canonical: boardCanonicalPath(s.packet, f.path) ?? f.path, fingerprint: s.packetFingerprint}, ...unnamed ? {unnamed: true as const} : {}});
+      canonical: boardCanonicalPath(s.packet, f.path) ?? f.path, fingerprint: s.packetFingerprint, ...months ? {periodMonths: months} : {}}, ...unnamed ? {unnamed: true as const} : {}});
     checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: spec.kind,
-      scale: spec.scale, period: spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display, matches: true as const});
+      scale: spec.scale, period: spec.period === "derived" ? `months_${months}` : spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display, matches: true as const});
   }
   // One presentation per reading in the whole material: the same field of the same result is never shown at two precisions.
   const presentations = new Map<string, {ids: string[]; presentation: string}>();
