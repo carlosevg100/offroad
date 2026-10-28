@@ -6,7 +6,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, debtTableWithPrincipal, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, debtTableWithPrincipal, debtTableAtReferenceDate, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -778,6 +778,15 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r37: a boundary shown at a precision that moves it to a value the source rejects is refused, naming the reading.
+    ...([["0", "74"], ["1", "74.4"]] as const).map(([places, stated]) => [`demand-floor-shown-with-${places === "0" ? "no-decimals" : "one-decimal"}`, () => {
+      const packet = auroraPlanPacket() as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {c.extraReadings["issue-floor"] = ["plano-2027", "readings.recommendation.longInstrument.issueFloorInsideGates", places, stated];}));
+    }, "board_capital_boundary_display_unsafe:what_changes.title:issue-floor"] as [string, () => unknown, string]),
+    ["twelve-month-horizon-mid-month-shown-as-the-month", () => {
+      const packet = debtTableAtReferenceDate("2026-06-15");
+      return withBoardSource("tabela-divida", packet, () => build(2, boardRestateSource("tabela-divida", "build-company-debt-table", packet)));
+    }, "board_capital_boundary_display_unsafe:situation.debt_maturity:horizon-12m"],
     // Review r36: one quantum below the floor the plan has no recommendation; nothing about the demand is written.
     ["demand-one-quantum-below-the-floor", () => boardDemandAt("74.43", build), "board_capital_figure_without_origin:debenture-amount"],
     // Review r14: the debt kept as it is takes no new loan; a deferral starts operating later; a path's moves are its complete set.

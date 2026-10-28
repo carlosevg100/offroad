@@ -707,7 +707,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "a.cost": t("answer", "Custo efetivo entre CDI mais {baixo} e CDI mais {alto}; custo financeiro de cerca de {custo} {ate:ano}, com dívida líquida de {divida} {fim:ano_fim}.",
     {baixo: s("rate", FP, L + "equivalentSpread"), alto: s("rate", FP, L + "equivalentSpreadAtCondition"), custo: s("money", FP, "readings.recommendation.horizonFinancingCost", "flow"),
       ano: yr("$y"), divida: s("money", FP, "readings.recommendation.netDebtAtHorizon", "balance"), ano_fim: yr("$y")},
-    {answers: "q.cost", when: [...claim("a faixa vai do menor ao maior custo", cmp("baixo", "le", "alto")), horizonYear]}),
+    {answers: "q.cost", when: [...claim("a faixa vai do menor ao maior custo", cmp("baixo", "le", "alto")), horizonYear,
+      ...claim("o horizonte termina no último dia do ano mostrado: até o ano inclui exatamente o horizonte", cmp(at(FP, "readings.horizon.lastPeriodEnd"), "eq", {value: "$y-12-31"}))]}),
   "q.peer": t("question", "Por que pagamos mais que a concorrente?"),
   // A decomposition without causal attribution is reported as such: the known adjustments, the one of the pricing date,
   // and what the source leaves unexplained; no sentence turns the remainder into an explanation.
@@ -981,22 +982,27 @@ export const boardQualifiers: readonly {words: readonly string[]; phrase: RegExp
  * menos de, no máximo, antes, depois, passa) states whether the limit value itself is in or out ("<", "<=", ">", ">=",
  * or an order of actions with no value), and the template carries the proof of that inclusion: a strict or weak
  * comparison, or the inclusion the source registers for the limit field (boundary). Questions assert nothing. */
-export const boardBoundaries: readonly {phrase: RegExp; relation: "<" | "<=" | ">" | ">=" | "ordem" | "campo"; field: string; rule: string; proof: RegExp | "no_value"}[] = [
-  {phrase: /demanda a partir de \{piso\}/, relation: ">=", field: "issueFloorInsideGates", rule: "piso inclusivo: menor montante, no quantum adotado, que passa em todos os critérios", proof: /"boundary":\["piso","minimum",true\].*demand\.quantum"\]\},"gt"/},
-  {phrase: /abaixo de \{piso\}/, relation: "<", field: "issueFloorInsideGates", rule: "abaixo do piso inclusivo falha nos critérios", proof: /"boundary":\["piso","minimum",true\].*demand\.quantum"\]\},"gt"/},
-  {phrase: /de até \{valor\}/, relation: "<=", field: "issueTarget", rule: "alvo de emissão: montante inteiro avaliado, máximo inclusivo", proof: /"boundary":\["valor","maximum",true\]/},
-  {phrase: /vence \{ate:horizonte\}/, relation: "<=", field: "twelveMonthHorizon", rule: "vencimentos com data até o horizonte, inclusive", proof: /"boundary":\["horizonte","maximum",true\]/},
-  {phrase: /caixa fica abaixo do mínimo/, relation: "<", field: "belowMinimum | shortfallVsPolicyMinimum", rule: "saldo menor que o mínimo (belowMinimum é estrito na fonte) ou falta maior que zero", proof: /belowMinimum"\]\},"eq",\{"value":"true"\}|\{"slot":"falta"\},"gt",\{"value":"0"\}/},
-  {phrase: /\{[a-z_]+\}[^;.]*abaixo d[aoe]s? (?:política de |covenant de )?\{[a-z_]+\}|abaixo de \{politica\} nos cenários avaliados/, relation: "<", field: "os dois valores mostrados (máximo inclusivo registrado no limite)", rule: "comparação estrita, mais forte que o cumprimento do máximo inclusivo", proof: /,"lt",\{"slot"|"op":"lt","than":\{"slot"/},
-  {phrase: /acima do custo de capital|fica \{giro\} acima/, relation: ">", field: "os dois valores mostrados", rule: "comparação estrita (gt)", proof: /,"gt",\{"slot"|\{"slot":"giro"\},"gt",\{"value":"0"\}/},
-  {phrase: /custo financeiro de cerca de \{custo\} \{ate:ano\}/, relation: "<=", field: "horizonFinancingCost, readings.horizon.lastPeriodEnd", rule: "custo acumulado até o fim do horizonte, inclusive; o ano é o do fim do horizonte", proof: /readings\.horizon\.lastPeriodEnd/},
-  {phrase: /até \{prazo\}/, relation: "<=", field: "prazo da ação da deliberação", rule: "prazo de ação: até a data, inclusive", proof: /"type":"deadline"/},
-  {phrase: /antes do vencimento dessa dívida/, relation: "<", field: "prazo e finalPayment", rule: "prazo estritamente anterior ao vencimento (lt)", proof: /\{"slot":"prazo"\},"lt",\{"slot":"vencimento"\}/},
-  {phrase: /começando depois dos do plano de referência/, relation: ">", field: "componentes da variante", rule: "cada componente começa estritamente depois (startsLater)", proof: /"startsLater"|"planDeferred"/},
-  {phrase: /passa o caixa disponível/, relation: ">", field: "scheduledAmortization, availableAfterInterest", rule: "amortização estritamente maior que o caixa disponível (gt)", proof: /\{"slot":"amortizacao"\},"gt",\{"slot":"disponivel"\}/},
-  {phrase: /passa a capacidade da fábrica/, relation: ">", field: "readings.capacity.aboveWithoutInvestment", rule: "volume acima da capacidade registrado", proof: /aboveWithoutInvestment"\]\},"eq",\{"value":"true"\}/},
-  {phrase: /disponível depois dos juros/, relation: "campo", field: "availableAfterInterest", rule: "nome do campo (caixa disponível depois dos juros), não fronteira", proof: /availableAfterInterest/},
-  {phrase: /antes das cotações|antes do pedido de compra|antes de decidir|até a confirmação do banco/, relation: "ordem", field: "nenhum", rule: "ordem de ações ou condição até um evento, sem valor de fronteira", proof: "no_value"},
+/** How a boundary's shown value keeps the admitted set: a limit slot shown on the safe side of the exact value ("not_below":
+ * the shown lower end is at least the exact value, for "a partir de"; "not_above": the shown upper end is at most the exact
+ * value, for "até", "de até", "abaixo de"), two shown values whose order the display check keeps, a deadline shown by day,
+ * a year that is the whole calendar year of the source's end date, or no value at all. */
+export type BoardBoundaryDisplay = {slot: string; shown: "not_below" | "not_above"} | "two_shown" | "exact_day" | "year_end" | "no_value";
+export const boardBoundaries: readonly {phrase: RegExp; relation: "<" | "<=" | ">" | ">=" | "ordem" | "campo"; field: string; rule: string; proof: RegExp | "no_value"; display: BoardBoundaryDisplay}[] = [
+  {phrase: /demanda a partir de \{piso\}/, relation: ">=", field: "issueFloorInsideGates", rule: "piso inclusivo: menor montante, no quantum adotado, que passa em todos os critérios", proof: /"boundary":\["piso","minimum",true\].*demand\.quantum"\]\},"gt"/, display: {slot: "piso", shown: "not_below"}},
+  {phrase: /abaixo de \{piso\}/, relation: "<", field: "issueFloorInsideGates", rule: "abaixo do piso inclusivo falha nos critérios", proof: /"boundary":\["piso","minimum",true\].*demand\.quantum"\]\},"gt"/, display: {slot: "piso", shown: "not_above"}},
+  {phrase: /de até \{valor\}/, relation: "<=", field: "issueTarget", rule: "alvo de emissão: montante inteiro avaliado, máximo inclusivo", proof: /"boundary":\["valor","maximum",true\]/, display: {slot: "valor", shown: "not_above"}},
+  {phrase: /vence \{ate:horizonte\}/, relation: "<=", field: "twelveMonthHorizon", rule: "vencimentos com data até o horizonte, inclusive", proof: /"boundary":\["horizonte","maximum",true\]/, display: {slot: "horizonte", shown: "not_above"}},
+  {phrase: /caixa fica abaixo do mínimo/, relation: "<", field: "belowMinimum | shortfallVsPolicyMinimum", rule: "saldo menor que o mínimo (belowMinimum é estrito na fonte) ou falta maior que zero", proof: /belowMinimum"\]\},"eq",\{"value":"true"\}|\{"slot":"falta"\},"gt",\{"value":"0"\}/, display: "no_value"},
+  {phrase: /\{[a-z_]+\}[^;.]*abaixo d[aoe]s? (?:política de |covenant de )?\{[a-z_]+\}|abaixo de \{politica\} nos cenários avaliados/, relation: "<", field: "os dois valores mostrados (máximo inclusivo registrado no limite)", rule: "comparação estrita, mais forte que o cumprimento do máximo inclusivo", proof: /,"lt",\{"slot"|"op":"lt","than":\{"slot"/, display: "two_shown"},
+  {phrase: /acima do custo de capital|fica \{giro\} acima/, relation: ">", field: "os dois valores mostrados", rule: "comparação estrita (gt)", proof: /,"gt",\{"slot"|\{"slot":"giro"\},"gt",\{"value":"0"\}/, display: "two_shown"},
+  {phrase: /custo financeiro de cerca de \{custo\} \{ate:ano\}/, relation: "<=", field: "horizonFinancingCost, readings.horizon.lastPeriodEnd", rule: "custo acumulado até o fim do horizonte, inclusive; o ano é o do fim do horizonte", proof: /lastPeriodEnd"\]\},"eq",\{"value":"\$y-12-31"\}/, display: "year_end"},
+  {phrase: /até \{prazo\}/, relation: "<=", field: "prazo da ação da deliberação", rule: "prazo de ação: até a data, inclusive", proof: /"type":"deadline"/, display: "exact_day"},
+  {phrase: /antes do vencimento dessa dívida/, relation: "<", field: "prazo e finalPayment", rule: "prazo estritamente anterior ao vencimento (lt)", proof: /\{"slot":"prazo"\},"lt",\{"slot":"vencimento"\}/, display: "two_shown"},
+  {phrase: /começando depois dos do plano de referência/, relation: ">", field: "componentes da variante", rule: "cada componente começa estritamente depois (startsLater)", proof: /"startsLater"|"planDeferred"/, display: "no_value"},
+  {phrase: /passa o caixa disponível/, relation: ">", field: "scheduledAmortization, availableAfterInterest", rule: "amortização estritamente maior que o caixa disponível (gt)", proof: /\{"slot":"amortizacao"\},"gt",\{"slot":"disponivel"\}/, display: "two_shown"},
+  {phrase: /passa a capacidade da fábrica/, relation: ">", field: "readings.capacity.aboveWithoutInvestment", rule: "volume acima da capacidade registrado", proof: /aboveWithoutInvestment"\]\},"eq",\{"value":"true"\}/, display: "no_value"},
+  {phrase: /disponível depois dos juros/, relation: "campo", field: "availableAfterInterest", rule: "nome do campo (caixa disponível depois dos juros), não fronteira", proof: /availableAfterInterest/, display: "no_value"},
+  {phrase: /antes das cotações|antes do pedido de compra|antes de decidir|até a confirmação do banco/, relation: "ordem", field: "nenhum", rule: "ordem de ações ou condição até um evento, sem valor de fronteira", proof: "no_value", display: "no_value"},
 ];
 /** Words that qualify an object and therefore need a registered phrase and proof wherever they appear. */
 export const boardQualifierWatch = [...new Set([...boardQualifiers.flatMap((q) => q.words),
@@ -1080,6 +1086,11 @@ export function checkBoardTemplateLibrary() {
           && (q.proof === "question" ? x.use.includes("question") && kind === "text" : q.proof === "nearly_equal" ? kind === "nearly_equal" : q.proof === "gap" ? kind === "gap" : q.proof.test(facts)));
         if (!proven) problems.push(`${id}:qualifier_unproved:${word}`);
       }
+    }
+    // Boundaries shown on a limit slot: the phrase holds that slot, and the template proves the field's registered inclusion.
+    for (const b of boardBoundaries) if (typeof b.display === "object" && b.phrase.test(x.text)) {
+      const slot = (b.display as {slot: string}).slot;
+      if (!new RegExp(`\\{(?:ate:)?${slot}\\}`).test(b.phrase.exec(x.text)![0])) problems.push(`${id}:boundary_display_slot:${slot}`);
     }
     // Boundaries: every relation to a limit sits in a registered phrase whose inclusion the template proves.
     if (!x.use.includes("question")) for (const raw of [x.text, x.nearlyEqual ?? ""]) {

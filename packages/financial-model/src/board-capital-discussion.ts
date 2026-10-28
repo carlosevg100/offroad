@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardBoundaries, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -851,6 +851,27 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       throw new Error(`board_capital_display_order_lost:${templateId}:${i}:${[...new Set(lost.figures)].join(",")}`);
     }
   });
+  // A boundary shown on a limit slot keeps the admitted set: the shown value, at the precision it is shown, lies on the
+  // safe side of the exact one ("not_below": the lowest value the shown text covers is at least the exact limit, for a
+  // floor said "a partir de"; "not_above": the highest value it covers is at most the exact limit, for "até", "de até" or
+  // "abaixo de"). A date covers its whole shown period (day, month or year). Otherwise refused, naming the reading; the
+  // precision is never raised here.
+  for (const b of boardBoundaries) {
+    if (typeof b.display !== "object" || !b.phrase.test(template.text)) continue;
+    const {slot, shown: side} = b.display, id = bindings[slot], f = id === undefined ? undefined : context.figures.get(id);
+    if (!f || "pending" in f || !f.origin) continue;
+    let low: string, high: string;
+    if (f.unit === "date") {
+      const exact = f.origin.value, y = exact.slice(0, 4), m = exact.slice(5, 7);
+      const last = new Date(Date.UTC(Number(y), Number(m), 0)).getUTCDate();
+      const byDay = /\d{1,2}(?:\/| de )/.test(f.display), byMonth = !byDay && /[\p{L}]/u.test(f.display);
+      [low, high] = byDay ? [exact, exact] : byMonth ? [`${y}-${m}-01`, `${y}-${m}-${String(last).padStart(2, "0")}`] : [`${y}-01-01`, `${y}-12-31`];
+      if (side === "not_below" ? low < exact : high > exact) throw new Error(`board_capital_boundary_display_unsafe:${templateId}:${id}`);
+      continue;
+    }
+    low = high = shownFigure(f);
+    if (side === "not_below" ? new Exact(low).lt(f.origin.value) : new Exact(high).gt(f.origin.value)) throw new Error(`board_capital_boundary_display_unsafe:${templateId}:${id}`);
+  }
   const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [], unknownSpecies: string[] = [];
   // An instrument's species is named only by its registered label, equal to a species or a declared label of one;
   // otherwise the generic words of a capital-markets instrument and a gap of species. The instrument is the

@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T05:41:24.075Z",
-    "finishedAt": "2026-10-28T05:44:48.704Z"
+    "startedAt": "2026-10-28T06:11:26.184Z",
+    "finishedAt": "2026-10-28T06:15:03.281Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -1318,6 +1318,30 @@
       "passed": true
     },
     {
+      "id": "demand-floor-shown-with-no-decimals",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "54e7a5cac4928e2976afd5ff8244ab1fc04d96fed8cf4f896bd41266c4fb1359",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "demand-floor-shown-with-one-decimal",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "ee3bb626fdfc4fcfffa42be1a113493e8a0dfb963a54651bc00b87a01dc363e1",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "twelve-month-horizon-mid-month-shown-as-the-month",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "5e3c02516cc51fd486148bb9f87b77289e26ca6168257670493beeff96bfce23",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "demand-one-quantum-below-the-floor",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1471,6 +1495,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "423f3a8365e7b5cef4d258995d0500d545aba98ed4632630d4d83515024834dd",
+  "evidenceFingerprint": "51e8457cb039f654705d6d27cb6f3166dfa037db44cf4c6347bb5e8bc8531308",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

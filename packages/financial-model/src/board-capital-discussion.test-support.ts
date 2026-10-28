@@ -413,6 +413,14 @@ export function debtTableWithCreditor(name: string, registered = "Debenturistas"
 }
 
 /** The debt table with one instrument's principal changed (regressions only; the method recomputes everything else). */
+/** The debt table executed by its own method at another reference date (its twelve-month horizon moves with it). */
+export function debtTableAtReferenceDate(date: string) {
+  const b = auroraDebtTableBasis();
+  // The basis opens at the reference date: the context and every adopted entry's period start move together.
+  b.context.openingDate = date; (b.input as {openingDate: string}).openingDate = date;
+  for (const e of b.entries) e.dimensions = {...e.dimensions, periodStart: date};
+  return prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: b.seal()}) as unknown as Record<string, unknown>;
+}
 export function debtTableWithPrincipal(instrumentId: string, principal: string) {
   const b = auroraDebtTableBasis();
   for (const e of b.entries) if (e.fieldPath.endsWith(`instrument.${instrumentId}.principal`)) e.value = {type: "number", value: principal};

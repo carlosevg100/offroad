@@ -5,7 +5,7 @@ import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
 import {boardShownTexts, boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardRestateSource, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, debtTableWithPrincipal, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, debtTableWithPrincipal, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, debtTableAtReferenceDate, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
 import {boardCanonicalJson, boardConditionSlots, boardVersionFingerprint} from "./board-capital-discussion";
 
@@ -513,6 +513,16 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       if (!floor || !demand?.quantum || !new D(demand.quantum).gt(0) || demand.issueFloorInsideGates !== floor || !new D(floor).toDecimalPlaces(places, D.ROUND_HALF_UP).eq(shownFloor))
         bad.push(`boundary_demand_value:${t.slice(0, 60)}`);
       if (["acima de", "mais de", "até"].includes(demandBoundary[1]!)) bad.push(`boundary_demand:${demandBoundary[1]}`);
+      // The set the shown sentence admits must lie inside the set the source admits: "a partir de S" admits [S, inf), inside
+      // [floor, inf) only if S >= floor; "abaixo de S" says (-inf, S) fails, inside (-inf, floor) only if S <= floor.
+      if (floor && (demandBoundary[1] === "a partir de" || demandBoundary[1] === "de pelo menos" ? shownFloor.lt(floor) : demandBoundary[1] === "abaixo de" ? shownFloor.gt(floor) : false))
+        bad.push(`boundary_demand_set:${demandBoundary[1]}:${demandBoundary[2]}`);
+    }
+    // "De até" the issue target: the admitted amounts (-inf, S] must lie inside (-inf, target].
+    const upTo = /de até R\$ ([\d.]+(?:,\d+)?) milh/u.exec(t);
+    if (upTo) {
+      const target = (sourceOf("evaluate-financing-paths") as {readings?: {recommendation?: {longInstrument?: {issueTarget?: string}}}} | undefined)?.readings?.recommendation?.longInstrument?.issueTarget;
+      if (!target || new D(upTo[1]!.replace(/\./g, "").replace(",", ".")).gt(target)) bad.push(`boundary_up_to_set:${upTo[1]}`);
     }
     // "De curto prazo" for bank credit, the oracle's own reading: the path the sentence names; each of its new bank
     // instruments without a scheduled amortization after the horizon runs, from the start of its first draw period to
@@ -1738,6 +1748,43 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       // Not vacuous: one changed value changes the fingerprint.
       const changed = structuredClone(versions[0]!) as {summary: string}; changed.summary += " ";
       expect(boardVersionFingerprint(changed)).not.toBe(versions[0]!.fingerprint);
+    }
+  });
+  it("regression r37: a boundary is shown only at a precision that keeps the admitted set (full path, turns 2 and 3, oracle not vacuous)", () => {
+    const floorPath = "readings.recommendation.longInstrument.issueFloorInsideGates", amountPath = "readings.recommendation.longInstrument.issueTarget";
+    for (const turn of [2, 3] as const) for (const amount of ["74.43", "74.44", "74.45"] as const) {
+      const p = auroraPlanPacket({longIssueAmount: amount}) as unknown as Record<string, unknown>;
+      for (const [places, stated] of [["0", "74"], ["1", "74.4"], ["2", "74.44"]] as const) {
+        const run = () => withBoardSource("plano-2027", p, () => full(turn, (c) => {
+          boardRestateSource("plano-2027", "evaluate-financing-paths", p)(c);
+          c.extraReadings["debenture-amount"] = ["plano-2027", amountPath, "2", amount];
+          c.extraReadings["issue-floor"] = ["plano-2027", floorPath, places, stated];
+        }));
+        const label = `${turn}:${amount}:${places}`;
+        // Below the floor the source has no recommendation; at or above it, 74 or 74,4 would admit amounts the source rejects.
+        if (amount === "74.43") {expect(run, label).toThrow(refusal); continue;}
+        if (places !== "2") {expect(run, label).toThrow("board_capital_boundary_display_unsafe:what_changes.title:issue-floor"); continue;}
+        const out = run(), texts = boardShownTexts(out);
+        expect(texts, label).toContain("A recomendação depende de demanda a partir de R$ 74,44 milhões");
+        expect(oracle(out, [{packet: p}, ...auroraBoardSources().filter((x) => x.id !== "plano-2027")]), label).toEqual({bad: [], missing: []});
+      }
+    }
+    // A date limit: with the reference date on the 15th, the horizon is 15/jun/2027 and "até junho de 2027" would admit 16 to 30/jun.
+    const mid = debtTableAtReferenceDate("2026-06-15");
+    expect((mid as {result: {table: {profile: {twelveMonthHorizon: string}}}}).result.table.profile.twelveMonthHorizon).toBe("2027-06-15");
+    for (const turn of [2, 3] as const)
+      expect(() => withBoardSource("tabela-divida", mid, () => full(turn, boardRestateSource("tabela-divida", "build-company-debt-table", mid)))).toThrow("board_capital_boundary_display_unsafe:situation.debt_maturity:horizon-12m");
+    // Not vacuous: the shown sets checked by the oracle on forged texts of the calibration.
+    for (const turn of [2, 3] as const) {
+      const calibrated = packet(turn, () => undefined);
+      const forge = (find: (t: string) => boolean, from: string, to: string) => {
+        const f = structuredClone(calibrated), v = f.result.discussion!.versions.at(-1)!;
+        for (const page of v.pages) {if (find(page.title)) page.title = page.title.replace(from, to); page.lines = page.lines.map((l) => find(l) ? l.replace(from, to) : l);}
+        return oracle(f).bad;
+      };
+      expect(forge((t) => t.startsWith("A recomendação depende de demanda"), "74,44", "74"), `${turn}`).toEqual(expect.arrayContaining(["boundary_demand_set:a partir de:74"]));
+      expect(forge((t) => t.startsWith("Recomendamos sondar"), "de até R$ 80", "de até R$ 81").some((x) => x.startsWith("boundary_up_to_set:")), `${turn}`).toBe(true);
+      expect(oracle(calibrated).bad.filter((x) => x.startsWith("boundary_")), `${turn}`).toEqual([]);
     }
   });
 });
