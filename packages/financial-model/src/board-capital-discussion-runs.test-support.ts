@@ -69,6 +69,16 @@ export const boardStrictDeferral = (c: CaseData) => {
   if (page.recommendation) page.recommendation = page.recommendation.replace("topic.project_wait_quotes_registered|", "topic.project_wait_quotes|");
   page.options = page.options.map((o) => o.replace("option.wait_quotes_registered|", "option.wait_quotes|"));
 };
+/** The wheat answer against a covenant of the given maximum, with the adverse leverage of the contractual test or of the
+ * managerial measurement (test side only). */
+export const boardCovenantAnswer = (cov: string, managerial: boolean) => (c: CaseData) => {
+  c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "1", cov];
+  if (!managerial) return;
+  c.extraReadings["lev-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].ratio", "2", "2.22"];
+  c.extraReadings["ebitda-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].reportedEbitda", "1", "48.1"];
+  const q = c.questions.find((x) => x.id === "trigo")!;
+  q.answer = q.answer.replace("ebitda_adverso=ebitda-adv27", "ebitda_adverso=ebitda-adv27-ger").replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-ger");
+};
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
   return new Decimal(v).div(1000000).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1);
@@ -165,7 +175,7 @@ function goldCases(): Case[] {
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
     reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas dos clientes antecipam R$ 23,5 milhões contra o pico sazonal de R$ 25 milhões, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Os 7 caminhos combinam estes movimentos da dívida e do projeto"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
-    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos", "A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões"],
+    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos", "A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
     reuse("every-page-carries-a-number", p2, t2, true, (p) => current(p).pages.every((x) => x.figureIds.length + x.pendingFigureIds.length + x.deadlineIds.length > 0)),
     reuse("numbers-checked-against-the-analyses-debt-covenant-and-cash", p2, t2, {
@@ -316,6 +326,10 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r30: the contractual adverse test against the covenant of 3,0x, beside the managerial one.
+    observe("contractual-adverse-below-the-covenant-of-3-0-beside-a-managerial-measurement", withBoardSource("covenant", auroraCovenantPacket({adverseManagerial: true}) as unknown as Record<string, unknown>,
+      () => boardPacketInput(2, boardCovenantAnswer("3.0", false))),
+      {below: true}, (p) => ({below: current(p).questions.find((q) => q.id === "trigo")!.answer.includes("a alavancagem fica em 2,37x, abaixo do covenant de 3,0x.")})),
     // Review r29: the readings bound to the registered contractual test are named for what it is.
     observe("contractual-reading-by-the-registered-test-beside-a-managerial-contrast", withBoardSource("covenant", auroraCovenantPacket({baseAsManagerialContrast: true}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["lev-dez26"] = ["covenant", "result.headroom.measurements[id=dez26-contratual].ratio", "1", "2.2"];
@@ -324,7 +338,7 @@ function goldCases(): Case[] {
     // Review r28: the policy of 2,44x shown with two decimals keeps every member below it, the unshown 2,426x included.
     observe("policy-shown-with-two-decimals-above-every-measurement", withBoardSource("covenant", auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", "2", "2.44"];})),
-      {title: "A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027"}, (p) => ({title: pageOf(p, "alavancagem").title})),
+      {title: "A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,44x pela definição da escritura"}, (p) => ({title: pageOf(p, "alavancagem").title})),
     // Review r27: the adverse leverage with two decimals, shown only in the wheat answer, keeps the summary's order.
     observe("summary-below-the-policy-with-the-adverse-shown-with-two-decimals", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];
@@ -333,7 +347,7 @@ function goldCases(): Case[] {
     // Review r26: the same figures stated with two decimals keep the order and the sign as shown.
     observe("adverse-leverage-stated-with-two-decimals-keeps-the-order", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];})),
-      {title: "A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027"}, (p) => ({title: pageOf(p, "alavancagem").title})),
+      {title: "A alavancagem chega a 2,46x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura"}, (p) => ({title: pageOf(p, "alavancagem").title})),
     observe("sensitivity-npv-stated-with-two-decimals-keeps-the-sign", withBoardSource("linha-embalagem", auroraInvestmentPacket({economyCaseFactor: "0.965"}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "2", "-0.01"];})),
       {negative: true}, (p) => ({negative: pageOf(p, "linha").lines.some((l) => l.includes("com economia menor, R$ -0,01 milhão"))})),
@@ -553,6 +567,13 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r30: compliance with a limit only by a registered, unbreached test of that very limit.
+    ...([2, 3] as const).flatMap((turn) => [
+      [`managerial-adverse-read-below-a-breached-covenant-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({covenantMaximum: "2.3", adverseManagerial: true}) as unknown as Record<string, unknown>,
+        () => build(turn, boardCovenantAnswer("2.3", true))), "board_capital_template_condition_failed:a.wheat:7"],
+      [`contractual-adverse-against-a-covenant-of-2-3-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({covenantMaximum: "2.3", adverseManagerial: true}) as unknown as Record<string, unknown>,
+        () => build(turn, boardCovenantAnswer("2.3", false))), "board_capital_template_condition_failed:a.wheat:3"],
+    ] as [string, () => unknown, string][]),
     // Review r29: a managerial contrast under the id dez26-base is never the base path nor the contractual reading.
     ...([2, 3] as const).map((turn) => [`managerial-contrast-under-the-base-id-read-as-the-contract-turn-${turn}`, () => withBoardSource("covenant",
       auroraCovenantPacket({baseAsManagerialContrast: true}) as unknown as Record<string, unknown>,
@@ -562,7 +583,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ...([2, 3] as const).map((turn) => [`unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-${turn}`, () => withBoardSource("covenant",
       auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>,
       () => build(turn, (c) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", "1", "2.4"];})),
-      "board_capital_display_order_lost:risk.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit"] as [string, () => unknown, string]),
+      "board_capital_display_order_lost:summary.closing.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit"] as [string, () => unknown, string]),
     // Review r27: one presentation per reading across the material; a shorter profile by its last effective payment.
     ...([2, 3] as const).flatMap((turn) => [
       [`summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
@@ -577,7 +598,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     // Review r26: an order or a sign that the shown figures do not keep.
     ...([2, 3] as const).flatMap((turn) => [
       [`adverse-leverage-2-459-shown-as-the-policy-2-5-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
-        () => build(turn, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "1", "2.5"];})), "board_capital_display_order_lost:risk.leverage:0:lev-adv27"],
+        () => build(turn, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "1", "2.5"];})), "board_capital_display_order_lost:risk.leverage:0:lev-adv27,policy-limit"],
       [`negative-npv-shown-as-zero-turn-${turn}`, () => withBoardSource("linha-embalagem", auroraInvestmentPacket({economyCaseFactor: "0.965"}) as unknown as Record<string, unknown>,
         () => build(turn, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", "0.0"];})), "board_capital_display_order_lost:topic.project_sensitivities:0:npv-economy"],
     ] as [string, () => unknown, string][]),

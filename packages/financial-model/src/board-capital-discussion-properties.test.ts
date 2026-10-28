@@ -6,7 +6,7 @@ import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-pa
 import {boardConceptAttempts, boardDeferralReadings, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
-import {boardTemplates, parseBoardTextRef} from "./board-capital-discussion-templates";
+import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
 import {boardConditionSlots} from "./board-capital-discussion";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
@@ -605,12 +605,27 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       if ((b.templateId === "risk.leverage_path" || b.templateId === "summary.closing.leverage") && m.scenario !== "base") bad.push(`role_base:${b.field}:${b.slot}`);
       if (["risk.leverage", "risk.leverage_adverse", "a.wheat"].includes(b.templateId) && ["adverso", "alavancagem", "ebitda_adverso"].includes(b.slot) && m.scenario !== "adverse") bad.push(`role_adverse:${b.field}:${b.slot}`);
     }
+    // Compliance with a limit: the measurement shown against a limit is a registered test of that very limit, not breached,
+    // and no test of that limit at the same date and scenario is registered as breached.
+    type T = {limitId: string; breached: boolean};
+    const all = (cv?.result?.headroom?.measurements ?? []) as unknown as {id: string; role: string; date: string; scenario: string; tests: T[]}[];
+    for (const [templateId, slot, limitSlot] of [["a.wheat", "alavancagem", "covenant"], ["risk.leverage", "adverso", "politica"], ["risk.leverage_adverse", "adverso", "politica"], ["summary.closing.leverage", "alavancagem", "politica"]] as const) {
+      for (const b of v.bindings.filter((x) => x.templateId === templateId && x.slot === slot)) {
+        const limitBinding = v.bindings.find((x) => x.field === b.field && x.templateId === templateId && x.slot === limitSlot);
+        const limitId = /limits\[id=([^\]]+)\]/.exec(d.identity.find((i) => i.figureId === limitBinding?.figureId)?.path ?? "")?.[1];
+        const m = all.find((x) => x.id === /measurements\[id=([^\]]+)\]/.exec(d.identity.find((i) => i.figureId === b.figureId)?.path ?? "")?.[1]);
+        const own = m?.tests.find((x) => x.limitId === limitId);
+        if (!m || !own || own.breached || all.some((x) => x.role === "test" && x.date === m.date && x.scenario === m.scenario && x.tests.some((y) => y.limitId === limitId && y.breached)))
+          bad.push(`compliance:${b.field}:${slot}`);
+      }
+    }
+    if (texts.some((t) => /nos cenários avaliados/.test(t)) && all.some((x) => x.role === "test" && x.tests.some((y) => y.limitId === "politica" && y.breached))) bad.push("compliance:global");
   }
   // Orders as shown: a text that says one shown figure is above or below another says so of the numbers as shown.
   for (const t of texts) {
     const num = (x: string) => new D(x.replace(/\./g, "").replace(",", "."));
-    const policy = /abaixo da política de (-?[\d.,]+)x nos cenários avaliados, com (-?[\d.,]+)x no adverso/.exec(t);
-    if (policy && !num(policy[2]!).lt(num(policy[1]!))) bad.push(`order_as_shown:${t.slice(0, 60)}`);
+    const policy = /chega a (-?[\d.,]+)x no adverso de \d{4}, abaixo da política de (-?[\d.,]+)x/.exec(t);
+    if (policy && !num(policy[1]!).lt(num(policy[2]!))) bad.push(`order_as_shown:${t.slice(0, 60)}`);
     const negative = /^O VPL fica negativo em cada sensibilidade: (.*)$/.exec(t);
     if (negative && [...negative[1]!.matchAll(/R\$ (-?[\d.,]+) milh/g)].some((m) => !num(m[1]!).lt(0))) bad.push(`sign_as_shown:${t.slice(0, 60)}`);
     const covenantBelow = /alavancagem fica em (-?[\d.,]+)x, abaixo do covenant de (-?[\d.,]+)x/.exec(t);
@@ -1200,9 +1215,9 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const covenant = auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>;
     const lev = (places: string, stated: string) => (c: CaseData) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", places, stated];};
     for (const turn of [2, 3] as const) {
-      expect(() => withBoardSource("covenant", covenant, () => full(turn, lev("1", "2.5")))).toThrow("board_capital_display_order_lost:risk.leverage:0:lev-adv27");
+      expect(() => withBoardSource("covenant", covenant, () => full(turn, lev("1", "2.5")))).toThrow("board_capital_display_order_lost:risk.leverage:0:lev-adv27,policy-limit");
       const p = withBoardSource("covenant", covenant, () => full(turn, lev("2", "2.46")));
-      expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027");
+      expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem chega a 2,46x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura");
       expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
       const forged = structuredClone(p), page = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!;
       page.title = page.title.replace("2,46x", "2,5x");
@@ -1256,9 +1271,9 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const limit = (places: string, stated: string) => (c: CaseData) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", places, stated];};
     for (const turn of [2, 3] as const) {
       expect(() => withBoardSource("covenant", covenant, () => full(turn, limit("1", "2.4"))))
-        .toThrow("board_capital_display_order_lost:risk.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit");
+        .toThrow("board_capital_display_order_lost:summary.closing.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit");
       const p = withBoardSource("covenant", covenant, () => full(turn, limit("2", "2.44")));
-      expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027");
+      expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,44x pela definição da escritura");
       expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
       // Not vacuous: the limit shown as 2,4x leaves the unshown 2,426x above it.
       const forged = structuredClone(p);
@@ -1286,6 +1301,50 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       expect(bad.some((y) => y.startsWith("role_contrast_shown:"))).toBe(true);
       expect(bad.some((y) => y.startsWith("role_contractual:"))).toBe(true);
     }
+  });
+  it("regression r30: compliance with a limit only by a registered, unbreached test of that very limit at the date and scenario (full path, oracle not vacuous)", () => {
+    const edit = (cov: string, managerial: boolean) => (c: CaseData) => {
+      c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "1", cov];
+      if (managerial) {
+        c.extraReadings["lev-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].ratio", "2", "2.22"];
+        c.extraReadings["ebitda-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].reportedEbitda", "1", "48.1"];
+        const q = c.questions.find((x) => x.id === "trigo")!;
+        q.answer = q.answer.replace("ebitda_adverso=ebitda-adv27", "ebitda_adverso=ebitda-adv27-ger").replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-ger");
+      }
+    };
+    const at23 = auroraCovenantPacket({covenantMaximum: "2.3", adverseManagerial: true}) as unknown as Record<string, unknown>;
+    const at30 = auroraCovenantPacket({adverseManagerial: true}) as unknown as Record<string, unknown>;
+    for (const turn of [2, 3] as const) {
+      // The managerial 2,2229x (tests only the policy) beside the breached contractual 2,3707x, against 2,3x: refused.
+      expect(() => withBoardSource("covenant", at23, () => full(turn, edit("2.3", true)))).toThrow("board_capital_template_condition_failed:a.wheat:7");
+      // Controls: the contractual test against 2,3x is refused; against 3,0x it is accepted.
+      expect(() => withBoardSource("covenant", at23, () => full(turn, edit("2.3", false)))).toThrow("board_capital_template_condition_failed:a.wheat:3");
+      const p = withBoardSource("covenant", at30, () => full(turn, edit("3.0", false)));
+      expect(p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "trigo")!.answer).toContain("a alavancagem fica em 2,37x, abaixo do covenant de 3,0x.");
+      expect(oracle(p, [{packet: at30}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      // Not vacuous: the accepted answer read with the managerial measurement bound to it.
+      const forged = structuredClone(p), x = forged.result.discussion!.identity.find((i) => i.figureId === "lev-adv27")!;
+      x.path = "result.headroom.measurements[id=dez27-adverso-gerencial].ratio";
+      expect(oracle(forged, [{packet: at30}, ...auroraBoardSources()]).bad.some((y) => y.startsWith("compliance:"))).toBe(true);
+    }
+  });
+  it("decision after r30: a compliance sentence against a limit without registered definition names the definition of the registered test; without it, refused", () => {
+    // The calibration names it: the policy has no registered definition; the covenant has one, so its answer may omit it.
+    const p = full(2, () => undefined), v = p.result.discussion!.versions.at(-1)!;
+    expect(v.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura");
+    expect(v.pages.find((x) => x.id === "alavancagem")!.lines).toContain("No adverso de 2027, chega a 2,37x, contra a política de 2,5x pela definição da escritura.");
+    expect(v.summary).toContain("abaixo de 2,5x nos cenários avaliados pela definição da escritura e pelo EBITDA gerencial.");
+    expect(v.questions.find((q) => q.id === "trigo")!.answer).toContain("abaixo do covenant de 3,0x.");
+    // The same sentence without the definition named: refused at render and flagged by the library.
+    const original = boardTemplates["risk.leverage_adverse"]!;
+    boardTemplates["risk.leverage_adverse"] = {...original, text: original.text.replace("{definition:politica:$ma}", "")};
+    try {
+      expect(() => full(2, () => undefined)).toThrow("board_capital_limit_definition_not_named:risk.leverage_adverse:politica");
+      expect(checkBoardTemplateLibrary()).toContain("risk.leverage_adverse:definition_token:politica");
+    } finally {boardTemplates["risk.leverage_adverse"] = original;}
+    // With a registered definition the definition may be omitted; with the policy definition registered the sentence omits it.
+    const defined = auroraCovenantPacket({policyDefinition: "Mesma definição da escritura"}) as unknown as Record<string, unknown>;
+    expect(() => withBoardSource("covenant", defined, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:delib.policy.definition");
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};

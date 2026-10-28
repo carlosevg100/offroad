@@ -64,7 +64,7 @@ function buildSources() {
   ] as const;
 }
 /** C12 with the December managerial reading that C54 adds; the variant writes the policy's EBITDA definition (regressions only). */
-export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true; baseAsManagerialContrast?: true} = {}) {
+export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true; baseAsManagerialContrast?: true; covenantMaximum?: string; adverseManagerial?: true} = {}) {
   const c = auroraCovenantBasis(variant.policyDefinition ? {policyDefinition: variant.policyDefinition} : {}), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
   // Regressions only: the adverse measurement of December 2027 with another debt.
   if (variant.adverseDebt) c.entries.find((e) => e.fieldPath.endsWith("measurement.dez27-adverso.debt"))!.value = {type: "number", value: variant.adverseDebt};
@@ -84,6 +84,15 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string; advers
       date: c.contribute(q + "date", "date", {type: "date", value: "2026-12-31"}, sc), debt: n3("debt", "128.66666667"), cash: n3("cash", "15.45720186"), reportedEbitda: n3("reportedEbitda", "54.5"),
       adjustments: [{id: "arrendamentos", label: c.contribute(q + "adjustment.arrendamentos.label", "text", {type: "text", value: "Pagamentos de arrendamento"}, sc), amount: n3("adjustment.arrendamentos.amount", "-3")}],
       unrealizedEbitda: null});
+  }
+  // Regressions only: the contractual covenant at another maximum, and a managerial adverse measurement of December 2027
+  // (reported EBITDA, no adjustment, 2,2229x) that tests only the board policy, beside the contractual test (2,3707x).
+  if (variant.covenantMaximum) for (const e of c.entries) if (/limit\.aditamento\.maximumRatio$/.test(e.fieldPath)) e.value = {type: "number", value: variant.covenantMaximum};
+  if (variant.adverseManagerial) {
+    const q = "measurement.dez27-adverso-gerencial.", sc = "adverse", n4 = (path: string, value: string) => c.contribute(q + path, "currency", {type: "number", value}, sc);
+    measurements.push({id: "dez27-adverso-gerencial", label: "dez27-adverso-gerencial", role: "test", limitIds: ["politica"], scenario: sc,
+      date: c.contribute(q + "date", "date", {type: "date", value: "2027-12-31"}, sc), debt: n4("debt", "120"), cash: n4("cash", "13.05649438"), reportedEbitda: n4("reportedEbitda", "48.11"),
+      adjustments: [], unrealizedEbitda: null});
   }
   if (variant.unshownMeasurement) {
     const q = "measurement.dez27-estresse.", s2 = "estresse_dez", n2 = (path: string, value: string) => c.contribute(q + path, "currency", {type: "number", value}, s2);

@@ -626,6 +626,21 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       }
       return true;
     }
+    if ("testsLimit" in c) {
+      const fill = (x: string) => x.replace(/\$([a-z]+)/g, (_m: string, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
+      const [method, rawMeasurement, rawLimit] = c.testsLimit, limit = fill(rawLimit);
+      const all = read(method, "result.headroom.measurements");
+      if (!Array.isArray(all) || !all.length) throw indefinite("measurements_absent");
+      type M = {id?: unknown; role?: unknown; date?: unknown; scenario?: unknown; tests?: {limitId?: unknown; breached?: unknown}[]};
+      const test = (m: M) => (Array.isArray(m.tests) ? m.tests : []).find((x) => x.limitId === limit);
+      const breached = (m: M) => m.role === "test" && test(m)?.breached === true;
+      if (rawMeasurement === null) return !(all as M[]).some(breached);
+      const m = (all as M[]).find((x) => x.id === fill(rawMeasurement));
+      if (!m) throw indefinite("measurement_absent");
+      const own = test(m);
+      if (m.role !== "test" || !own || own.breached !== false) return false;
+      return !(all as M[]).some((x) => x.date === m.date && x.scenario === m.scenario && breached(x));
+    }
     if ("planDeferred" in c) {
       // The plan's variants: every contribution recorded under each variant, keyed by field without the variant id.
       const [method, rawA, rawB] = c.planDeferred;
@@ -743,6 +758,32 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   // An instrument's species is named only by its registered label, equal to a species or a declared label of one;
   // otherwise the generic words of a capital-markets instrument and a gap of species. The instrument is the
   // recommended long one, the existing capital-markets one, or the new capital-markets one of a path.
+  // A compliance sentence against a limit without a registered definition names the definition the source applied in
+  // its registered test of that limit, read from the measurement's record (a test of the contractual limit in force
+  // with a registered definition: the indenture's; no adjustment to reported EBITDA and no contractual test: managerial).
+  // With a registered definition the sentence may omit it. A limit without definition and no definition named: refused.
+  const cvPacket = () => sourceOf("measure-covenant-headroom").packet as {result?: {headroom?: {limits?: {id: string; kind: string; status: string}[];
+    measurements?: {id: string; role: string; adjustments?: unknown[]; tests?: {limitId: string; kind: string}[]}[]}; definitions?: {limitId: string; definition: string | null}[]}};
+  const limitDefinition = (limit: string) => cvPacket().result?.definitions?.find((x) => x.limitId === limit)?.definition ?? null;
+  for (const c of template.when) if ("testsLimit" in c) {
+    const limit = c.testsLimit[2].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
+    if (limitDefinition(limit) === null && !new RegExp(`\\{definition:${limit}:`).test(shownText)) throw new Error(`board_capital_limit_definition_not_named:${templateId}:${limit}`);
+  }
+  shownText = shownText.replace(/\{definition:([a-z0-9-]+):([$a-z0-9-]+)\}/g, (_m: string, limit: string, scope: string) => {
+    if (limitDefinition(limit) !== null) return "";
+    const head = cvPacket().result?.headroom, measurements = head?.measurements ?? [];
+    const definitionOf = (m: (typeof measurements)[number]) => {
+      const contractual = (m.tests ?? []).some((t) => t.kind === "contractual" && head?.limits?.find((l) => l.id === t.limitId)?.status === "in_force" && limitDefinition(t.limitId) !== null);
+      if (contractual) return "escritura";
+      if (!(m.tests ?? []).some((t) => t.kind === "contractual") && Array.isArray(m.adjustments) && m.adjustments.length === 0) return "gerencial";
+      return null;
+    };
+    const chosen = scope === "all" ? measurements.filter((m) => m.role === "test" && (m.tests ?? []).some((t) => t.limitId === limit))
+      : measurements.filter((m) => m.id === scope.replace(/^\$([a-z]+)$/, (_x: string, k: string) => vars[k] ?? ""));
+    const kinds = [...new Set(chosen.map(definitionOf))];
+    if (!chosen.length || kinds.includes(null)) throw new Error(`board_capital_limit_definition_unregistered:${templateId}:${limit}`);
+    return ` ${kinds.sort().map((k) => k === "escritura" ? "pela definição da escritura" : "pelo EBITDA gerencial").join(" e ")}`;
+  });
   const speciesText = shownText.replace(/\{species:([a-z_]+):([^}]+)\}/g, (_m: string, form: string, selector: string) => {
     const plan = sourceOf("evaluate-financing-paths").packet as {readings?: {recommendation?: {longInstrument?: {id?: unknown}}}; result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
     const contributions = plan.result?.contributions ?? [];

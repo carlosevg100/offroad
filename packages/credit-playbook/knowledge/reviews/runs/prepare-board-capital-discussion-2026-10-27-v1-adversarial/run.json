@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T00:45:51.907Z",
-    "finishedAt": "2026-10-28T00:48:30.918Z"
+    "startedAt": "2026-10-28T01:36:38.356Z",
+    "finishedAt": "2026-10-28T01:39:16.690Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,38 @@
       "passed": true
     },
     {
+      "id": "managerial-adverse-read-below-a-breached-covenant-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "2ffe5e10000f1b1ca94d268130d5e849a3d54642dcaf85069a563095fb3723b0",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "contractual-adverse-against-a-covenant-of-2-3-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "902b4512277b83045292e2e29b121ce9129fe6c71318c1a0eaec2e875b19b2cd",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "managerial-adverse-read-below-a-breached-covenant-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "f188c275d643a61a8e1efcddf5a2c77e43b4840d7bf1ee69cdb170939b49f265",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "contractual-adverse-against-a-covenant-of-2-3-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e5c18b27445fc5b5c479ffebdc32b14c96454926c4f70778c3c8556e22eed42b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "managerial-contrast-under-the-base-id-read-as-the-contract-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1263,6 +1295,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "a975c35097b66eb07749a21e568430f410dde706f647b3a5c873eb1bd896ebc7",
+  "evidenceFingerprint": "4349f2127b9de34a52dc44f39aaa4838508459adc8ddb0b9d0042870b8a1ae37",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

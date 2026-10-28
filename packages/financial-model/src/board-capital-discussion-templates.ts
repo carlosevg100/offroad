@@ -266,6 +266,10 @@ type BoardConditionBody =
   | {changedOnly: readonly [string, string, string]; fields: readonly string[]}
   /** The case is the reference moved uniformly by k periods (boardDeferralRules), k at least one. */
   | {deferredBy: readonly [string, string, string]}
+  /** Compliance with a limit, by the source's registered tests: the measurement (or, with null, every test measurement) is
+   * registered as a test of that very limit, not breached; and no test of that limit at the same date and scenario is
+   * registered as breached. */
+  | {testsLimit: readonly [string, string | null, string]}
   /** A plan variant is the reference variant moved uniformly by k periods within the plan's fixed horizon. */
   | {planDeferred: readonly [string, string, string]}
   /** A projection scenario changes exactly the named drivers against the scenario it derives from (its overrides, its
@@ -410,6 +414,10 @@ const policy = s("multiple", CV, "result.headroom.limits[id=politica].maximumRat
 const schedule = (profile: string) => `result.evaluation.paths[id=$p].amortizationTests[profileId=${profile}].years`;
 const metric = (type: BoardSlotType, caseId: string, field: string, nature?: "balance" | "flow" | "value") => s(type, IP, `comparison.metrics[caseId=${caseId}].${field}`, nature);
 /** The base path: a measurement of the registered base scenario. */
+/** Every compliance sentence: the measurement shown is a registered test of the very limit shown, not breached, and no
+ * registered test of that limit at its date and scenario is breached (null: no test of the limit is breached). */
+const complies = (measurementId: string | null, limitId: string) => claim(measurementId === null ? "nenhum teste registrado do limite mostrado está violado"
+  : "a medição mostrada é teste registrado do limite mostrado, sem violação registrada nesse limite, data e cenário", {testsLimit: [CV, measurementId, limitId]});
 const baseScenarioOf = (id: string) => claim("a medição é do cenário base registrado", cmp(at(CV, `result.headroom.measurements[id=${id}].scenario`), "eq", {value: "base"}));
 /** "Pela definição da escritura": the measurement tests the contractual limit in force, whose definition is registered. */
 const contractualTest = (id: string) => claim("a medição testa o limite contratual vigente, com definição registrada",
@@ -595,13 +603,14 @@ export const boardTemplates: Record<string, BoardTemplate> = {
         cmp("inicio", "eq", {firstPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}), cmp("fim", "eq", {lastPaid: [FP, schedule("adopted"), "year", "scheduledAmortization"]}))]}),
   "recommendation.alternative": t("page.line", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver {species:de:existing}; decisão até {prazo}.",
     {projeto: project("o"), credor: creditorOf("$i"), prazo: dl("delib.action.decide_route")}, {when: [...bankFallback, ...sameProject]}),
-  "risk.leverage": t("page.title", "A alavancagem fica abaixo da política de {politica} nos cenários avaliados, com {adverso} no adverso {de:ano}",
-    {politica: policy, adverso: measurement("multiple", "$ma", "ratio"), ano: yr("$y")}, {when: [allBelowPolicy, adverseYear, adverseScenario, ...policyIsBoard]}),
+  "risk.leverage": t("page.title", "A alavancagem chega a {adverso} no adverso {de:ano}, abaixo da política de {politica}{definition:politica:$ma}",
+    {politica: policy, adverso: measurement("multiple", "$ma", "ratio"), ano: yr("$y")},
+    {when: [...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica")), adverseYear, adverseScenario, ...policyIsBoard, ...complies("$ma", "politica")]}),
   "risk.leverage_path": t("page.line", "A alavancagem fica em {inicio} {em:data_inicio} e em {fim} {em:data_fim}.",
     {inicio: measurement("multiple", "$mi", "ratio"), data_inicio: measurement("date", "$mi", "date"), fim: measurement("multiple", "$mf", "ratio"),
       data_fim: measurement("date", "$mf", "date")}, {when: [...claim("a alavancagem do fim é menor que a do início", cmp("fim", "lt", "inicio")), ...baseScenarioOf("$mi"), ...baseScenarioOf("$mf")]}),
-  "risk.leverage_adverse": t("page.line", "No adverso {de:ano}, chega a {adverso}, contra a política de {politica}.",
-    {ano: yr("$y"), adverso: measurement("multiple", "$ma", "ratio"), politica: policy}, {when: [adverseYear, adverseScenario, ...policyIsBoard, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica"))]}),
+  "risk.leverage_adverse": t("page.line", "No adverso {de:ano}, chega a {adverso}, contra a política de {politica}{definition:politica:$ma}.",
+    {ano: yr("$y"), adverso: measurement("multiple", "$ma", "ratio"), politica: policy}, {when: [adverseYear, adverseScenario, ...policyIsBoard, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica")), ...complies("$ma", "politica")]}),
   "risk.policy_definition": t("page.title", "A política de {politica} precisa de uma definição de EBITDA", {politica: policy}, {when: [...policyIsBoard, ...policyUndefined]}),
   "risk.policy_readings": t("page.line", "Pelo EBITDA gerencial, {gerencial}; pela definição da escritura, {escritura} {em:data}.",
     {gerencial: measurement("multiple", "$mg", "ratio"), escritura: measurement("multiple", "$me", "ratio"), data: measurement("date", "$me", "date")},
@@ -628,8 +637,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   // Summary for prior reading.
   "summary.opening.debt_and_cash": t("summary.opening", "A companhia tem {principal} de dívida vencendo {em:ano} e um aperto de caixa já {em:semana}.",
     {principal: s("money", DT, "result.table.profile.scheduleByYear[year=$y].principal", "flow"), ano: yr("$y"), semana: tightWeek}, {when: [tightBelowMinimum]}),
-  "summary.closing.leverage": t("summary.closing", "A alavancagem fica em {alavancagem} {em:data} e abaixo de {politica} nos cenários avaliados.",
-    {alavancagem: measurement("multiple", "$ms", "ratio"), data: measurement("date", "$ms", "date"), politica: policy}, {when: [allBelowPolicy, ...policyIsBoard, ...baseScenarioOf("$ms")]}),
+  "summary.closing.leverage": t("summary.closing", "A alavancagem fica em {alavancagem} {em:data} e abaixo de {politica} nos cenários avaliados{definition:politica:all}.",
+    {alavancagem: measurement("multiple", "$ms", "ratio"), data: measurement("date", "$ms", "date"), politica: policy}, {when: [allBelowPolicy, ...policyIsBoard, ...baseScenarioOf("$ms"), ...complies(null, "politica"), ...complies("$ms", "politica")]}),
   // Appendix.
   "appendix.debt_table": t("appendix", "Tabela de dívida"),
   "appendix.projection": t("appendix", "Projeção por drivers e premissas"),
@@ -684,7 +693,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       ...claim("o VPL é negativo nas três sensibilidades", ...["economy-4", "capex-120", "slower-start"].map((x) => cmp(at(IP, `comparison.metrics[caseId=${x}].netPresentValue`), "lt", "0"))),
       ...smallerEconomy, ...largerCapex, ...slowerStart]}),
   "q.wheat": t("question", "E se o custo {insumo} subir?", {insumo: input("de")}),
-  "a.wheat": t("answer", "No cenário {insumo} {choque} mais caro com repasse em {defasagem}, o EBITDA {de:ano} fica em cerca de {ebitda}; no adverso, com EBITDA de {ebitda_adverso}, a alavancagem fica em {alavancagem}, abaixo do covenant de {covenant}.",
+  "a.wheat": t("answer", "No cenário {insumo} {choque} mais caro com repasse em {defasagem}, o EBITDA {de:ano} fica em cerca de {ebitda}; no adverso, com EBITDA de {ebitda_adverso}, a alavancagem fica em {alavancagem}, abaixo do covenant de {covenant}{definition:aditamento:$ma}.",
     {insumo: input("de"), choque: s("rate", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate"),
       defasagem: s("months", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths"), ano: yr("$y"),
       ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda", "flow"),
@@ -692,7 +701,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {answers: "q.wheat", when: [...wheatScenario("informado-trigo-4m"),
       ...claim("a alavancagem adversa fica abaixo do covenant", cmp("alavancagem", "lt", "covenant")), adverseScenario,
       ...claim("o covenant é contratual e está em vigor", cmp(at(CV, "result.headroom.limits[id=aditamento].kind"), "eq", {value: "contractual"}),
-        cmp(at(CV, "result.headroom.limits[id=aditamento].status"), "eq", {value: "in_force"}))]}),
+        cmp(at(CV, "result.headroom.limits[id=aditamento].status"), "eq", {value: "in_force"})), ...complies("$ma", "aditamento")]}),
   // A debtor is named by the debtor key of its item; its balance, contract and program follow the same item, and the
   // program is the anchor program the source links to that item.
   "q.anchor": t("question", "Dependemos demais de {rede}?", {rede: {type: "debtor", from: [[RF, "result.funding.portfolio.items[itemId=$d].label"]], generic: "um único cliente"}}),
@@ -755,6 +764,7 @@ export function boardTemplateClaims() {
     : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
     : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}; ignorados: ${boardInputIgnored.join(", ")}`
+    : "testsLimit" in c ? (c.testsLimit[1] === null ? `nenhum teste registrado do limite ${c.testsLimit[2]} em ${c.testsLimit[0]} está violado` : `a medição ${c.testsLimit[1]} de ${c.testsLimit[0]} é teste registrado do limite ${c.testsLimit[2]}, não violado, e nenhum teste desse limite na mesma data e cenário está violado`)
     : "planDeferred" in c ? `variante ${c.planDeferred[1]} de ${c.planDeferred[0]} é a variante ${c.planDeferred[2]} deslocada uniformemente em k períodos dentro do horizonte do plano (k ao menos um), série a série pelas regras declaradas, sem mudança de magnitude; o resto igual, rótulo à parte`
     : "deferredBy" in c ? `objeto de entrada inteiro ${c.deferredBy[0]} ${c.deferredBy[1]} é ${c.deferredBy[2]} deslocado uniformemente em k períodos (k ao menos um), série a série pelas regras declaradas; ignorados: ${boardInputIgnored.join(", ")}`
     : "scenarioDefines" in c ? `objeto de entrada inteiro do cenário ${c.scenarioDefines[1]} de ${c.scenarioDefines[0]} define exatamente ${c.drivers.join(", ")} contra o cenário de que deriva (origem do valor ignorada)`
@@ -867,11 +877,11 @@ export function checkBoardTemplateLibrary() {
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
     const operands: BoardOperand[] = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
-      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
+      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "testsLimit" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
       : "atKey" in c ? [c.key] : [c.equals]);
     const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
       : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
-      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]]
+      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]] : "testsLimit" in c ? ["result.headroom.measurements"]
       : "atKey" in c ? c.atKey.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
       : "startsLater" in c ? c.startsLater.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);
@@ -886,6 +896,8 @@ export function checkBoardTemplateLibrary() {
       const slotsOf = (text: string) => [...text.matchAll(/\{(?:[a-z]+:)?([a-z_]+)\}/g)].map((m) => m[1]).sort().join(",");
       if (slotsOf(x.nearlyEqual) !== slotsOf(x.text) || !/praticamente igual/.test(x.nearlyEqual) || /(?<![\p{L}])(acima|abaixo|supera|superior|inferior)(?![\p{L}])/u.test(x.nearlyEqual)) problems.push(`${id}:nearly_equal`);
     }
+    // Compliance: every limit a template tests is named with its definition token (omitted at render when registered).
+    for (const w of x.when) if ("testsLimit" in w && !new RegExp(`\\{definition:${w.testsLimit[2]}:`).test(x.text)) problems.push(`${id}:definition_token:${w.testsLimit[2]}`);
     // Species tokens: {species:form:selector}, with a form every species and the generic words declare.
     for (const m of x.text.matchAll(/\{species:([a-z_]+):([^}]+)\}/g)) {
       const form = m[1] as BoardObjectForm;

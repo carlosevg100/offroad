@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T00:45:51.907Z",
-    "finishedAt": "2026-10-28T00:48:30.917Z"
+    "startedAt": "2026-10-28T01:36:38.356Z",
+    "finishedAt": "2026-10-28T01:39:16.688Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -42,7 +42,7 @@
       "expectation": "[[\"linha\",[\"2026-10-02\"]],[\"safra\",[\"2026-10-16\"]],[\"vencimentos\",[\"2026-10-31\",\"2026-11-15\"]],[\"politica\",[]]]",
       "observed": "[[\"linha\",[\"2026-10-02\"]],[\"safra\",[\"2026-10-16\"]],[\"vencimentos\",[\"2026-10-31\",\"2026-11-15\"]],[\"politica\",[]]]",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -58,7 +58,7 @@
       "expectation": "{\"authority\":[\"board\",\"board\",\"board\",\"board\"],\"pending\":[\"linha\",\"vencimentos\",\"politica\",\"safra\"]}",
       "observed": "{\"authority\":[\"board\",\"board\",\"board\",\"board\"],\"pending\":[\"linha\",\"vencimentos\",\"politica\",\"safra\"]}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -66,7 +66,7 @@
       "expectation": "[\"Pedimos quatro decisões; três têm prazo\",\"A dívida é de R$ 130 milhões, concentrada em 2027\",\"O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027\",\"O contrato da dívida com Debenturistas tem só R$ 3 milhões livres na exceção para garantias de nova dívida\"]",
       "observed": "[\"Pedimos quatro decisões; três têm prazo\",\"A dívida é de R$ 130 milhões, concentrada em 2027\",\"O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027\",\"O contrato da dívida com Debenturistas tem só R$ 3 milhões livres na exceção para garantias de nova dívida\"]",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -74,15 +74,15 @@
       "expectation": "[\"A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano\",\"Os programas dos clientes antecipam R$ 23,5 milhões contra o pico sazonal de R$ 25 milhões, sem dívida bancária nova\",\"Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios\",\"Os 7 caminhos combinam estes movimentos da dívida e do projeto\"]",
       "observed": "[\"A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano\",\"Os programas dos clientes antecipam R$ 23,5 milhões contra o pico sazonal de R$ 25 milhões, sem dívida bancária nova\",\"Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios\",\"Os 7 caminhos combinam estes movimentos da dívida e do projeto\"]",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
       "id": "titles-pages-9-to-12-conclusion-and-number",
-      "expectation": "[\"Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos\",\"A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027\",\"A política de 2,5x precisa de uma definição de EBITDA\",\"A recomendação depende de demanda acima de R$ 74,44 milhões\"]",
-      "observed": "[\"Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos\",\"A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,37x no adverso de 2027\",\"A política de 2,5x precisa de uma definição de EBITDA\",\"A recomendação depende de demanda acima de R$ 74,44 milhões\"]",
+      "expectation": "[\"Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos\",\"A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura\",\"A política de 2,5x precisa de uma definição de EBITDA\",\"A recomendação depende de demanda acima de R$ 74,44 milhões\"]",
+      "observed": "[\"Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos\",\"A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura\",\"A política de 2,5x precisa de uma definição de EBITDA\",\"A recomendação depende de demanda acima de R$ 74,44 milhões\"]",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -90,7 +90,7 @@
       "expectation": "true",
       "observed": "true",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -98,7 +98,7 @@
       "expectation": "{\"divida-total\":\"130\",\"principal-2027\":\"77\",\"share-12m\":\"28\",\"wal\":\"1,5\",\"largest-share\":\"46\",\"basket\":\"15\",\"basket-used\":\"12\",\"cov-limit\":\"3,0\",\"policy-limit\":\"2,5\",\"sem-linha-min\":\"-9,5\",\"min-cash\":\"15\",\"tight-week\":\"21 de dezembro\",\"lev-dez26\":\"2,2\",\"lev-dez27\":\"1,85\",\"lev-adv27\":\"2,37\",\"lev-ger-dez26\":\"2,0\"}",
       "observed": "{\"divida-total\":\"130\",\"principal-2027\":\"77\",\"share-12m\":\"28\",\"wal\":\"1,5\",\"largest-share\":\"46\",\"basket\":\"15\",\"basket-used\":\"12\",\"cov-limit\":\"3,0\",\"policy-limit\":\"2,5\",\"sem-linha-min\":\"-9,5\",\"min-cash\":\"15\",\"tight-week\":\"21 de dezembro\",\"lev-dez26\":\"2,2\",\"lev-dez27\":\"1,85\",\"lev-adv27\":\"2,37\",\"lev-ger-dez26\":\"2,0\"}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -106,7 +106,7 @@
       "expectation": "{\"irr\":\"16\",\"wacc\":\"15\",\"npv\":\"0,7\",\"payback\":\"6\",\"peak-need\":\"-21,7\",\"programs\":\"23,5\",\"spread-b\":\"1,2\",\"spread-a\":\"1,5\",\"ebitda-wheat\":\"52,6\",\"wc-60\":\"12\",\"fpa-2028\":\"86\",\"ref-2028\":\"59\",\"gap-bps\":\"125\",\"date-bps\":\"60\",\"rede-a\":\"19,8\",\"carteira\":\"62\"}",
       "observed": "{\"irr\":\"16\",\"wacc\":\"15\",\"npv\":\"0,7\",\"payback\":\"6\",\"peak-need\":\"-21,7\",\"programs\":\"23,5\",\"spread-b\":\"1,2\",\"spread-a\":\"1,5\",\"ebitda-wheat\":\"52,6\",\"wc-60\":\"12\",\"fpa-2028\":\"86\",\"ref-2028\":\"59\",\"gap-bps\":\"125\",\"date-bps\":\"60\",\"rede-a\":\"19,8\",\"carteira\":\"62\"}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -114,7 +114,7 @@
       "expectation": "{\"checked\":124,\"pinned\":true,\"all\":true}",
       "observed": "{\"checked\":124,\"pinned\":true,\"all\":true}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -122,7 +122,7 @@
       "expectation": "{\"cash-end-2027\":\"-79\",\"service-2027\":\"90\",\"available-2027\":\"36\",\"n-paths\":\"7\",\"debenture-amount\":\"80\",\"debenture-term\":\"7\",\"deb-cost-low\":\"3,46\",\"deb-cost-high\":\"3,56\",\"amort-first\":\"2029\",\"amort-last\":\"2033\",\"bradesco-gap\":\"18\",\"five-year-amort\":\"33\",\"five-year-available\":\"24\",\"alt-amount\":\"70\",\"cost-2028\":\"49\",\"net-debt-2028\":\"79\"}",
       "observed": "{\"cash-end-2027\":\"-79\",\"service-2027\":\"90\",\"available-2027\":\"36\",\"n-paths\":\"7\",\"debenture-amount\":\"80\",\"debenture-term\":\"7\",\"deb-cost-low\":\"3,46\",\"deb-cost-high\":\"3,56\",\"amort-first\":\"2029\",\"amort-last\":\"2033\",\"bradesco-gap\":\"18\",\"five-year-amort\":\"33\",\"five-year-available\":\"24\",\"alt-amount\":\"70\",\"cost-2028\":\"49\",\"net-debt-2028\":\"79\"}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -130,7 +130,7 @@
       "expectation": "{\"status\":\"partial\",\"gaps\":[\"page.safra.figure.cl-terms\"]}",
       "observed": "{\"status\":\"partial\",\"gaps\":[\"page.safra.figure.cl-terms\"]}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -138,7 +138,7 @@
       "expectation": "{\"status\":\"partial\",\"pending\":[\"page.linha.figure.stages-npv\",\"page.safra.figure.cl-terms\"],\"reasons\":[\"figure_pending_reviewed_result\"]}",
       "observed": "{\"status\":\"partial\",\"pending\":[\"page.linha.figure.stages-npv\",\"page.safra.figure.cl-terms\"],\"reasons\":[\"figure_pending_reviewed_result\"]}",
       "inputFingerprint": "e3576cdd8f744649288c8f3facc2e78ae119d7999b234727f00860d5ef242e1d",
-      "outputFingerprint": "98980dc92c57b72a1f598c92a7683e159c1e4bfd5b7b97eb9cf48b3e0ee12975",
+      "outputFingerprint": "363b325a3a8335057f9a46c237e5ae3453663ca69715a509090a2ddb2139ac7b",
       "passed": true
     },
     {
@@ -146,7 +146,7 @@
       "expectation": "{\"decisions\":[true,true,true,true],\"dates\":[true,true,true,true]}",
       "observed": "{\"decisions\":[true,true,true,true],\"dates\":[true,true,true,true]}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -154,7 +154,7 @@
       "expectation": "[[\"Tabela de dívida\",[\"tabela-divida\"]],[\"Projeção por drivers e premissas\",[\"projecao\"]],[\"Plano da área financeira contra a base\",[\"plano-fpa\"]],[\"Fontes e datas das análises\",9]]",
       "observed": "[[\"Tabela de dívida\",[\"tabela-divida\"]],[\"Projeção por drivers e premissas\",[\"projecao\"]],[\"Plano da área financeira contra a base\",[\"plano-fpa\"]],[\"Fontes e datas das análises\",9]]",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -162,7 +162,7 @@
       "expectation": "{\"count\":10,\"everyAnswerHasNumber\":true,\"sample\":\"Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação.\"}",
       "observed": "{\"count\":10,\"everyAnswerHasNumber\":true,\"sample\":\"Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação.\"}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -170,7 +170,7 @@
       "expectation": "{\"indicative\":[\"programs\",\"spread-a\"],\"sources\":[\"covenant\",\"recebiveis\"],\"template\":\"supplied_not_applied\",\"safraSaysIndicative\":true}",
       "observed": "{\"indicative\":[\"programs\",\"spread-a\"],\"sources\":[\"covenant\",\"recebiveis\"],\"template\":\"supplied_not_applied\",\"safraSaysIndicative\":true}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -178,7 +178,7 @@
       "expectation": "{\"line\":5,\"recommendation\":9,\"placement\":\"main\",\"sideBySide\":true}",
       "observed": "{\"line\":5,\"recommendation\":9,\"placement\":\"main\",\"sideBySide\":true}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -186,7 +186,7 @@
       "expectation": "{\"placement\":\"appendix\",\"mainPages\":12}",
       "observed": "{\"placement\":\"appendix\",\"mainPages\":12}",
       "inputFingerprint": "75fb376453f5284a233958dcf1cd3759728d4bff95398aedb8420ab62c120668",
-      "outputFingerprint": "99e8d5cd9409f5c1f78b638a09f01754f4cde9bd22084f4502c651cd9539243a",
+      "outputFingerprint": "b953f34e2908ca044a974f73c1043f1e61decb208253caede6ae4432c8a30925",
       "passed": true
     },
     {
@@ -194,7 +194,7 @@
       "expectation": "{\"mainPages\":13,\"capacity\":15,\"fits\":true}",
       "observed": "{\"mainPages\":13,\"capacity\":15,\"fits\":true}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -202,7 +202,7 @@
       "expectation": "{\"fits\":false,\"gap\":true}",
       "observed": "{\"fits\":false,\"gap\":true}",
       "inputFingerprint": "9b442952fe6d3be267f05d5c2f45068d7a2943a69e9a0dcd9391c479b88a1468",
-      "outputFingerprint": "32257215e20883044606d4c3cadd4c19e7097dca9d7767025dbd0855264e86dc",
+      "outputFingerprint": "68694421e20b5a9dde15952410d750ec467d499cdd8440a331c1e3f776b923c5",
       "passed": true
     },
     {
@@ -210,7 +210,7 @@
       "expectation": "{\"outcome\":\"applied\",\"recommendation\":null,\"kept\":[\"irr\",\"wacc\",\"npv\",\"payback\",\"peak-need\",\"npv-economy\",\"npv-capex\",\"npv-slow\",\"npv-defer\",\"irr-defer\"],\"firstLine\":\"Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão.\"}",
       "observed": "{\"outcome\":\"applied\",\"recommendation\":null,\"kept\":[\"irr\",\"wacc\",\"npv\",\"payback\",\"peak-need\",\"npv-economy\",\"npv-capex\",\"npv-slow\",\"npv-defer\",\"irr-defer\"],\"firstLine\":\"Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão.\"}",
       "inputFingerprint": "e3576cdd8f744649288c8f3facc2e78ae119d7999b234727f00860d5ef242e1d",
-      "outputFingerprint": "98980dc92c57b72a1f598c92a7683e159c1e4bfd5b7b97eb9cf48b3e0ee12975",
+      "outputFingerprint": "363b325a3a8335057f9a46c237e5ae3453663ca69715a509090a2ddb2139ac7b",
       "passed": true
     },
     {
@@ -218,7 +218,7 @@
       "expectation": "[\"Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.\",\"Seguir em etapas: VPL de [pendente].\",\"Esperar as cotações, no caso que a análise registra como adiamento: VPL de R$ 1,4 milhão e retorno de 17% ao ano.\"]",
       "observed": "[\"Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.\",\"Seguir em etapas: VPL de [pendente].\",\"Esperar as cotações, no caso que a análise registra como adiamento: VPL de R$ 1,4 milhão e retorno de 17% ao ano.\"]",
       "inputFingerprint": "e3576cdd8f744649288c8f3facc2e78ae119d7999b234727f00860d5ef242e1d",
-      "outputFingerprint": "98980dc92c57b72a1f598c92a7683e159c1e4bfd5b7b97eb9cf48b3e0ee12975",
+      "outputFingerprint": "363b325a3a8335057f9a46c237e5ae3453663ca69715a509090a2ddb2139ac7b",
       "passed": true
     },
     {
@@ -226,7 +226,7 @@
       "expectation": "\"decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out\"",
       "observed": "\"decidir o caminho da linha de embalagem, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out\"",
       "inputFingerprint": "e3576cdd8f744649288c8f3facc2e78ae119d7999b234727f00860d5ef242e1d",
-      "outputFingerprint": "98980dc92c57b72a1f598c92a7683e159c1e4bfd5b7b97eb9cf48b3e0ee12975",
+      "outputFingerprint": "363b325a3a8335057f9a46c237e5ae3453663ca69715a509090a2ddb2139ac7b",
       "passed": true
     },
     {
@@ -234,7 +234,7 @@
       "expectation": "{\"versions\":[1,2],\"priorRecommendation\":true,\"priorFingerprint\":true}",
       "observed": "{\"versions\":[1,2],\"priorRecommendation\":true,\"priorFingerprint\":true}",
       "inputFingerprint": "e3576cdd8f744649288c8f3facc2e78ae119d7999b234727f00860d5ef242e1d",
-      "outputFingerprint": "98980dc92c57b72a1f598c92a7683e159c1e4bfd5b7b97eb9cf48b3e0ee12975",
+      "outputFingerprint": "363b325a3a8335057f9a46c237e5ae3453663ca69715a509090a2ddb2139ac7b",
       "passed": true
     },
     {
@@ -242,7 +242,7 @@
       "expectation": "{\"outcome\":\"refused\",\"stillShown\":true,\"versions\":1}",
       "observed": "{\"outcome\":\"refused\",\"stillShown\":true,\"versions\":1}",
       "inputFingerprint": "fb846e869c131618d3ce304804570fd8acf1d597734f596c6260b4d63b1e1b30",
-      "outputFingerprint": "d7f28f90633f8958611517c00f1ded027d3fb2770cba4c5b68dd4e6830921fdd",
+      "outputFingerprint": "f7ffed8ade8674e76b52415244fec4d3b075a239108326865d4dea91c6027577",
       "passed": true
     },
     {
@@ -250,7 +250,7 @@
       "expectation": "{\"outcome\":\"refused\",\"reason\":\"Só a recomendação pode sair a pedido; páginas, linhas e fatos ficam no material como foram compostos.\",\"pageKept\":true}",
       "observed": "{\"outcome\":\"refused\",\"reason\":\"Só a recomendação pode sair a pedido; páginas, linhas e fatos ficam no material como foram compostos.\",\"pageKept\":true}",
       "inputFingerprint": "6273ba092bb7b6ab05d865b84677cafda34c40fda19add0ab6a478198a4f464c",
-      "outputFingerprint": "dfc04c4ca939de30f2192d4369fe4d23a92e0fedb8d0e75585c90b68e89b30ec",
+      "outputFingerprint": "4e2669f44d2672fe1ac35ac6906f5ca2d88d0505dc812ea0dbab7ae784e4f8a0",
       "passed": true
     },
     {
@@ -258,7 +258,7 @@
       "expectation": "{\"outcome\":\"refused\",\"pageKept\":true}",
       "observed": "{\"outcome\":\"refused\",\"pageKept\":true}",
       "inputFingerprint": "a47b54a85ef06ec69d71e7912155e9ee18040430743060832baa6c6cf3ca0a61",
-      "outputFingerprint": "efddaeb5da8c228ad6ef54851de3a3747b909d8baa9572283a0727fe662c4994",
+      "outputFingerprint": "168f150b9db3e46b107172e5f3568a8ab9a9d2eb3d91b892e3f33836912574d2",
       "passed": true
     },
     {
@@ -266,7 +266,7 @@
       "expectation": "{\"outcome\":\"refused\",\"reason\":\"O prazo fica, porque vale para qualquer caminho que o conselho escolher.\",\"stillDated\":true}",
       "observed": "{\"outcome\":\"refused\",\"reason\":\"O prazo fica, porque vale para qualquer caminho que o conselho escolher.\",\"stillDated\":true}",
       "inputFingerprint": "39b77c151eb8c508473eb6b9d267dbf5a1c1c4a09084442d6b53bce2de7b40fc",
-      "outputFingerprint": "b223fbc83108e08dd346520f2915fa23667bad2250acae6fa842d978b536e0de",
+      "outputFingerprint": "437c17587a93a283241c6b37ac27e99760041ee1bf00f6507cf25910b3f5abf3",
       "passed": true
     },
     {
@@ -282,7 +282,7 @@
       "expectation": "{\"stage\":\"material_prepared\",\"questions\":0,\"template\":\"not_supplied\"}",
       "observed": "{\"stage\":\"material_prepared\",\"questions\":0,\"template\":\"not_supplied\"}",
       "inputFingerprint": "0e81a1ea1967f8fbab354fd964b86e19c84d784a54855e27880b387213ff6332",
-      "outputFingerprint": "13043cdff8512774190330112b10d6f223b6ad7bc753c998c277e3a01a1a5855",
+      "outputFingerprint": "70631f01fec66837404d54483ed53d9d82be9c5fda06a694dec589a325e8254d",
       "passed": true
     },
     {
@@ -290,7 +290,7 @@
       "expectation": "[[\"wal\",\"1,5\"],[\"sem-linha-min\",\"-9,5\"],[\"peak-need\",\"-21,7\"],[\"payback\",\"6\"],[\"programs\",\"23,5\"],[\"deb-cost-low\",\"3,46\"],[\"issue-floor\",\"74,44\"],[\"rede-a\",\"19,8\"],[\"rating-low\",\"-0,17\"]]",
       "observed": "[[\"wal\",\"1,5\"],[\"sem-linha-min\",\"-9,5\"],[\"peak-need\",\"-21,7\"],[\"payback\",\"6\"],[\"programs\",\"23,5\"],[\"deb-cost-low\",\"3,46\"],[\"issue-floor\",\"74,44\"],[\"rede-a\",\"19,8\"],[\"rating-low\",\"-0,17\"]]",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -298,7 +298,7 @@
       "expectation": "[\"Caminho A: caixa mínimo de R$ 15 milhões; alavancagem de 2,20x; custo de R$ 49 milhões; dívida líquida em 2028 de R$ 79 milhões; nos critérios: sim; anuência: não.\",\"Caminho D: caixa mínimo de R$ -79 milhões; alavancagem de 2,38x; custo de R$ 25 milhões; dívida líquida em 2028 de R$ 81 milhões; nos critérios: não; anuência: não.\"]",
       "observed": "[\"Caminho A: caixa mínimo de R$ 15 milhões; alavancagem de 2,20x; custo de R$ 49 milhões; dívida líquida em 2028 de R$ 79 milhões; nos critérios: sim; anuência: não.\",\"Caminho D: caixa mínimo de R$ -79 milhões; alavancagem de 2,38x; custo de R$ 25 milhões; dívida líquida em 2028 de R$ 81 milhões; nos critérios: não; anuência: não.\"]",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -306,7 +306,7 @@
       "expectation": "{\"lines\":7,\"measures\":true}",
       "observed": "{\"lines\":7,\"measures\":true}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -314,7 +314,7 @@
       "expectation": "{\"shown\":true,\"deadlines\":4}",
       "observed": "{\"shown\":true,\"deadlines\":4}",
       "inputFingerprint": "e3576cdd8f744649288c8f3facc2e78ae119d7999b234727f00860d5ef242e1d",
-      "outputFingerprint": "98980dc92c57b72a1f598c92a7683e159c1e4bfd5b7b97eb9cf48b3e0ee12975",
+      "outputFingerprint": "363b325a3a8335057f9a46c237e5ae3453663ca69715a509090a2ddb2139ac7b",
       "passed": true
     },
     {
@@ -322,7 +322,7 @@
       "expectation": "{\"outcome\":\"refused\",\"kept\":[]}",
       "observed": "{\"outcome\":\"refused\",\"kept\":[]}",
       "inputFingerprint": "8546e7f5ed9d2728c11619aba8765a92c5930eeeba45422ec1b77b4d0403aef2",
-      "outputFingerprint": "91ae49c16325397239727b8cb4765abfde65eb768be15feedad4bb8520f724ce",
+      "outputFingerprint": "12397fb32201015bc1c3bb5fd1be9f29a41429fc767887cd9b88ce9b5eca85b6",
       "passed": true
     },
     {
@@ -330,7 +330,7 @@
       "expectation": "{\"outcome\":\"refused\",\"kept\":[]}",
       "observed": "{\"outcome\":\"refused\",\"kept\":[]}",
       "inputFingerprint": "6a5a0a6ffff82f29b99e761219299c593657abfcf8af1240f46af3da4bfcdd1f",
-      "outputFingerprint": "ae451b3ead53d3db7c6613055666dac325e575b50c28de0c9c8c455644fdc095",
+      "outputFingerprint": "8cf8e498498b7f95fe57f4886d46811cab8af3afd05e5f24648b80ad72cad6ac",
       "passed": true
     },
     {
@@ -338,7 +338,7 @@
       "expectation": "{\"outcome\":\"refused\",\"kept\":[\"npv-defer\",\"irr-defer\"],\"recommendationKept\":true}",
       "observed": "{\"outcome\":\"refused\",\"kept\":[\"npv-defer\",\"irr-defer\"],\"recommendationKept\":true}",
       "inputFingerprint": "6cf53e6f3baf42e961f477708833d7a40911d71ccf60fdde59fd6360e66c4f73",
-      "outputFingerprint": "027e6e393767324de4741bb5fee379d917b45bb609caf13fc229c666c91bc00a",
+      "outputFingerprint": "934660dd9b192ffc32fd982e23129bf9a03e4acc03ca51a34887eba9ae3b7ec6",
       "passed": true
     },
     {
@@ -346,7 +346,7 @@
       "expectation": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "observed": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "inputFingerprint": "a6efd75003803accfc91e44f55c95432d3e527c3991b25a8721c0dc267c534d6",
-      "outputFingerprint": "8944cb93903006a6ad7d79313a18027096788491ff5c263398da5bd9484a95de",
+      "outputFingerprint": "7e25e9a80de15fbf3e6362e983a4b3cf7f73f71052fad0e558391f33123898e9",
       "passed": true
     },
     {
@@ -354,7 +354,7 @@
       "expectation": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "observed": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "inputFingerprint": "e0e58f921d1bd2780a34b3968dec1e899416b8352363b4be62ec2cd43bc988ed",
-      "outputFingerprint": "7a7ecc094ee2dc371a81a041241147a872bfe30404f70ac72e9c46f522fd5245",
+      "outputFingerprint": "f8e5f8d1be45ac7cdccdba4008fccba7f37f3eff1b07d0e0c314d1860b0872e7",
       "passed": true
     },
     {
@@ -362,7 +362,7 @@
       "expectation": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "observed": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "inputFingerprint": "98f2e3975b42c2bbc3eb34ed2cfbb14a540f9f8106190b3650c3b72c2be4a4c8",
-      "outputFingerprint": "a50c4582f0789b2768170c5fb4f5c19c98d354ef972a504409b2720b1c274a43",
+      "outputFingerprint": "32db402b067d879d8d79218e5b3360a2ec9a48499e7bfcb21f8497670c28ac5a",
       "passed": true
     },
     {
@@ -370,7 +370,7 @@
       "expectation": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "observed": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "inputFingerprint": "b488c32896705227a3be38679049984e801c68b434dd9a9bf2c9aad9608e901e",
-      "outputFingerprint": "33b293fe685b6459374459a5b57fef09036f5d222aa07408f1f58e39aa352fa3",
+      "outputFingerprint": "9216c11913ab4ec2a43c9a6ded702467faabd0e3da9319bf2f2629519e779cff",
       "passed": true
     },
     {
@@ -378,7 +378,7 @@
       "expectation": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "observed": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "inputFingerprint": "f1448aa62c09f00bc21c52735b3fa3199bd4167e70be8036046145a4e953631f",
-      "outputFingerprint": "61dffb341644f150928072c6da677af2a1eae40d06d43b24059f9b1d391faab5",
+      "outputFingerprint": "e611fa830b3eca46af081c71bca195406b6899d36338edec40451b05de983b03",
       "passed": true
     },
     {
@@ -386,7 +386,7 @@
       "expectation": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "observed": "{\"status\":\"partial\",\"gap\":\"page.divida.line.1.label.largest-creditor\",\"line\":\"Prazo médio de 1,5 anos; maior credor: sem nome confirmado, com 46% da dívida.\",\"shown\":false}",
       "inputFingerprint": "1d4c9603f82bd9b307b77c9220f6ff3f246021824c07846a3f556e2f9b350cfd",
-      "outputFingerprint": "65452c80b45161a6d0e08932cee980a16c8c3388faf2f3cd18791f9fd6e0a639",
+      "outputFingerprint": "6670b57a42362393370a53048188bf5d4e44b2bfeada005e9e61c6cb7c94c845",
       "passed": true
     },
     {
@@ -394,7 +394,7 @@
       "expectation": "{\"basket\":\"Exceção de R$ 15 milhões para garantias, com R$ 12 milhões ocupados pelas garantias da dívida com Itaú.\",\"question\":\"Por que não rolar a dívida com Itaú no vencimento?\",\"named\":10,\"bradesco\":false,\"status\":\"partial\"}",
       "observed": "{\"basket\":\"Exceção de R$ 15 milhões para garantias, com R$ 12 milhões ocupados pelas garantias da dívida com Itaú.\",\"question\":\"Por que não rolar a dívida com Itaú no vencimento?\",\"named\":10,\"bradesco\":false,\"status\":\"partial\"}",
       "inputFingerprint": "acdf87b0ffa7f6572be903559035ec4b9692e28d077341a04fc068ed7cb8b391",
-      "outputFingerprint": "9b135043ec6ee87fc42ebfa8403058a7f76225cad9f6c0c49082dd1f5827b65b",
+      "outputFingerprint": "80cf5995dc2d05065fd7ae02aaf9a2c694f2ade3a21db5f0fda92562425203c1",
       "passed": true
     },
     {
@@ -402,7 +402,7 @@
       "expectation": "\"A carteira tem R$ 19,8 milhões de rede A, de um total de R$ 62 milhões; o contrato com esse cliente veda a cessão sem consentimento, mas o programa próprio dele antecipa R$ 10,0 milhões sem regresso, a CDI mais 1,5% ao ano.\"",
       "observed": "\"A carteira tem R$ 19,8 milhões de rede A, de um total de R$ 62 milhões; o contrato com esse cliente veda a cessão sem consentimento, mas o programa próprio dele antecipa R$ 10,0 milhões sem regresso, a CDI mais 1,5% ao ano.\"",
       "inputFingerprint": "fa2c2088c502771caf654308ff9f457f4a02689b44dff5605447f378dfb0c4f3",
-      "outputFingerprint": "8fcb4dc5f237b84a173059f4110f975996026f4e52a30a32502f726680fa1905",
+      "outputFingerprint": "90e1e43cfe8ee92cf12e7e479abcbf6d2ea7f8158e4e7452c089c6930aacfa40",
       "passed": true
     },
     {
@@ -410,7 +410,7 @@
       "expectation": "{\"line\":\"Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.\",\"informed\":[{\"id\":\"motivo-estrategico\",\"origin\":\"informed\",\"author\":\"chair\",\"code\":\"reduce_single_supplier_dependence\"}],\"figures\":[]}",
       "observed": "{\"line\":\"Motivo estratégico apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.\",\"informed\":[{\"id\":\"motivo-estrategico\",\"origin\":\"informed\",\"author\":\"chair\",\"code\":\"reduce_single_supplier_dependence\"}],\"figures\":[]}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -418,7 +418,7 @@
       "expectation": "{\"alternative\":true,\"withoutTheLine\":false,\"status\":\"partial\"}",
       "observed": "{\"alternative\":true,\"withoutTheLine\":false,\"status\":\"partial\"}",
       "inputFingerprint": "1d7bad863aa9ad02b24b8ae54f868d2ee4a5c3ea3207a2971ca9c5c35d486ed8",
-      "outputFingerprint": "87509666b637429d47dbea37b1752755adb6e9beddb4fe87d226248a2c5e3be6",
+      "outputFingerprint": "a8fd52a78b202f19aff41bcbf9059f20bd463449272cf0a06938cb54b3e53f3b",
       "passed": true
     },
     {
@@ -426,7 +426,7 @@
       "expectation": "\"No cenário de prazo maior de recebimento das redes, a variação do capital de giro em 2027 fica R$ 1 milhão acima da do cenário de referência.\"",
       "observed": "\"No cenário de prazo maior de recebimento das redes, a variação do capital de giro em 2027 fica R$ 1 milhão acima da do cenário de referência.\"",
       "inputFingerprint": "c98e9bbaa3818fb37fd7ebdf471b01b3cfcd3be67732e8aafa9b6a3910746ffe",
-      "outputFingerprint": "b59b7ccbd37826fe61b806f0ad1e8dd824763aa38b11df23bedba092d6e3d8f2",
+      "outputFingerprint": "1ed19e38852531b3472435cc789b4e6569e9d14ac915d44fa76e056c31fbc1cb",
       "passed": true
     },
     {
@@ -434,7 +434,7 @@
       "expectation": "{\"outcomes\":[\"refused\",\"refused\"],\"versions\":1,\"movesShown\":true,\"amortizationShown\":true}",
       "observed": "{\"outcomes\":[\"refused\",\"refused\"],\"versions\":1,\"movesShown\":true,\"amortizationShown\":true}",
       "inputFingerprint": "46e15c7c67500e64d95d686cc3f6d08df87ef8edaa6d923fd8d9f7fae848101b",
-      "outputFingerprint": "824abc3cd6aaa2cca40f02a890754e8fa97674434ab157a32aa723c0bb3d5371",
+      "outputFingerprint": "6fad20f99f13ec440f2ca441fcb90b5e349019a9407b66ef3cf2034916fd427f",
       "passed": true
     },
     {
@@ -442,7 +442,7 @@
       "expectation": "{\"line\":\"Motivo estratégico apresentado pelo presidente do conselho: a confirmar.\",\"gap\":\"page.linha.line.3.informed.motivo-estrategico\",\"status\":\"partial\",\"shown\":false}",
       "observed": "{\"line\":\"Motivo estratégico apresentado pelo presidente do conselho: a confirmar.\",\"gap\":\"page.linha.line.3.informed.motivo-estrategico\",\"status\":\"partial\",\"shown\":false}",
       "inputFingerprint": "eba520771f9a327e3b8f1d67205faf771e72312f91e5b69eaa5bda23a6c7e08a",
-      "outputFingerprint": "6664fd137ed43928e2e8b0ab900f3b294128d203bff4a4e8ed251e3c13019ce2",
+      "outputFingerprint": "7eba6ca63a6a67dff15d4468e6494c8c77858ab27d1158ecc6da76c51733eb77",
       "passed": true
     },
     {
@@ -450,7 +450,7 @@
       "expectation": "\"Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação.\"",
       "observed": "\"Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação.\"",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -458,7 +458,7 @@
       "expectation": "{\"line\":\"Linha de crédito registrada com Itaú, com limite livre de R$ 10 milhões; modalidade e finalidade: [pendente].\",\"claimsOverdraft\":false}",
       "observed": "{\"line\":\"Linha de crédito registrada com Itaú, com limite livre de R$ 10 milhões; modalidade e finalidade: [pendente].\",\"claimsOverdraft\":false}",
       "inputFingerprint": "833665ad4478acf8bc6742f833cc1a5c8e0c61027b0c532afd56f5ff0e8a4c65",
-      "outputFingerprint": "b4d01478ac4658b18e358d5e20f003fc40630ff495fc3bfdce33eee32fb55029",
+      "outputFingerprint": "a4d931192d4fb674f322f74746f072c2e79eb0c1bdb5776531abd5b16a1b95bd",
       "passed": true
     },
     {
@@ -466,7 +466,7 @@
       "expectation": "{\"question\":\"Dependemos demais de um único cliente?\",\"calledReda\":false,\"gap\":true}",
       "observed": "{\"question\":\"Dependemos demais de um único cliente?\",\"calledReda\":false,\"gap\":true}",
       "inputFingerprint": "d9fc040fe1e2410e2c0ce26a1961a749ca82717a57ef6f91a5744c6c90778184",
-      "outputFingerprint": "bc5efb07d6fddec1a20b6f0f1936a643d211dbe0af2393a7b876cf88cce0454b",
+      "outputFingerprint": "e1357c1475dfe1e4ad196011e12f42268c3c11768d2f62d4436c2f027f2fe3b6",
       "passed": true
     },
     {
@@ -474,7 +474,7 @@
       "expectation": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "observed": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "inputFingerprint": "e767502381806aea4576620e4ed9daa13552e59582e04116d7148bf8a334aca3",
-      "outputFingerprint": "f275b9a4b8d319e0b15fa67ce043108dc3e91b713ea6b7f7d61c62acd2df2197",
+      "outputFingerprint": "30a8527201a88d4ec7bd153f38489bd5fde243b6b6e027310c7c3c4fdcd7ba55",
       "passed": true
     },
     {
@@ -482,7 +482,7 @@
       "expectation": "{\"title\":true,\"firstPath\":true,\"namesPackaging\":false}",
       "observed": "{\"title\":true,\"firstPath\":true,\"namesPackaging\":false}",
       "inputFingerprint": "78f440adb8c752d9a29a3ec86fb5100a88bd37af856d7a4efa679e12cf44deb1",
-      "outputFingerprint": "483acfd0475b765b0e093c52abf7d21e4b3998b24d72d1a95672a01ccbb6338f",
+      "outputFingerprint": "c425ff1321850765bafd5b009c5d2d2d3fa13f37285d67993c10cf0dc8b6174d",
       "passed": true
     },
     {
@@ -490,7 +490,7 @@
       "expectation": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "observed": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "inputFingerprint": "2571685e437df1fe851de466793068a68070e2c0360ebe853b9b67535c0c98a0",
-      "outputFingerprint": "5855fd78bb61706c0f152d8e3e8d1c4f0aa90ae3875a07ede29e448144d76c8f",
+      "outputFingerprint": "d174d596a3f1cee194eb7f99fb34c56ede3c627703ccc95ad3e0601c6be179ba",
       "passed": true
     },
     {
@@ -498,7 +498,7 @@
       "expectation": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "observed": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "inputFingerprint": "ae4c8d7b4cb3c31bbc4ec3f12f2347a3d24e22adb7c61dd8b87fb5d2f231ae12",
-      "outputFingerprint": "6397941e20c9fa8bc608fd5cf49bc8fac784d3b6ceb19ce44fce8d10e1f86e01",
+      "outputFingerprint": "40d386d477338e47baa9a84a74909068dfc2900c42e855ccd96b7ffe36d36efd",
       "passed": true
     },
     {
@@ -506,7 +506,7 @@
       "expectation": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "observed": "{\"generic\":true,\"namesInput\":false,\"gap\":true}",
       "inputFingerprint": "e9738b93e9dd8029df9668b1af289315ac8315ff5f52b5af749088b786d1306e",
-      "outputFingerprint": "85f7e5a4f5541bfb5cf19a8d8490cfa4624ba81a375491806b6830d19d278da3",
+      "outputFingerprint": "581ff55ef9c3423e3d95b493814ffeaec6ad74028a6038aa59773c319b952425",
       "passed": true
     },
     {
@@ -514,7 +514,15 @@
       "expectation": "{\"volume\":true,\"own\":false}",
       "observed": "{\"volume\":true,\"own\":false}",
       "inputFingerprint": "f2fd58baa7b2b27ba59b1f04cad4e9351fbbafd8839270cfd792aab6a2811952",
-      "outputFingerprint": "39e0198813bc8664d7ebf32a2020334737bc6a0a1489f06914802241f9efcc0b",
+      "outputFingerprint": "29c21ae2a579d573558f337259a7485d745abf7c3660743e1f941f88525045a4",
+      "passed": true
+    },
+    {
+      "id": "contractual-adverse-below-the-covenant-of-3-0-beside-a-managerial-measurement",
+      "expectation": "{\"below\":true}",
+      "observed": "{\"below\":true}",
+      "inputFingerprint": "d83558cef7566093abb6e15af51255e5680fa3b0ba2b4e7d443c0e74b18bd678",
+      "outputFingerprint": "2e950c4d84a1f4acfa08c15ba49cd94b55a5fbf28756f56eee47d65007890240",
       "passed": true
     },
     {
@@ -522,15 +530,15 @@
       "expectation": "{\"line\":\"Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026.\"}",
       "observed": "{\"line\":\"Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026.\"}",
       "inputFingerprint": "b6bdd79f19008606d16a247f93cd7b9f49750e4e16f84490a7f396ea1589d6cf",
-      "outputFingerprint": "bcbfee11ac83c7d41e03aa1447d5a893bc83ba9ae6f60d7f0c49fbf56ba05f25",
+      "outputFingerprint": "9548caf83b42e5041dab974a4273774197a2ed2d6058556f8af74545705a184e",
       "passed": true
     },
     {
       "id": "policy-shown-with-two-decimals-above-every-measurement",
-      "expectation": "{\"title\":\"A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027\"}",
-      "observed": "{\"title\":\"A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027\"}",
+      "expectation": "{\"title\":\"A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,44x pela definição da escritura\"}",
+      "observed": "{\"title\":\"A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,44x pela definição da escritura\"}",
       "inputFingerprint": "0a4e3fb2ed46d06de8f4c7435177f57c5f2155bf6b6bcf60256b37a67961fcd7",
-      "outputFingerprint": "58da7c745bcca361efbfc84b8f6a78f177eb3565a4802de6ffa730aab28cb9d3",
+      "outputFingerprint": "452c3aa0c4c1975a2a5c0ea45439639f1ed31ea1d4d020daa53fd153f7047b38",
       "passed": true
     },
     {
@@ -538,15 +546,15 @@
       "expectation": "{\"wheat\":true}",
       "observed": "{\"wheat\":true}",
       "inputFingerprint": "16fe054a2fe86c1760048f371bc1e1cc795d6ae8be3a89accd55e77e214d3ff1",
-      "outputFingerprint": "accf85cba438d8391e228b2badea856c01d1f067685c9e04414b86f3eb19fedd",
+      "outputFingerprint": "dbab0eb4cc7fb49746f6378354c6d581f63093a35e16a0fb38b34c85deb0225a",
       "passed": true
     },
     {
       "id": "adverse-leverage-stated-with-two-decimals-keeps-the-order",
-      "expectation": "{\"title\":\"A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027\"}",
-      "observed": "{\"title\":\"A alavancagem fica abaixo da política de 2,5x nos cenários avaliados, com 2,46x no adverso de 2027\"}",
+      "expectation": "{\"title\":\"A alavancagem chega a 2,46x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura\"}",
+      "observed": "{\"title\":\"A alavancagem chega a 2,46x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura\"}",
       "inputFingerprint": "a4739e7b745e97e6fec0e745311a58cc6d9b0365c26dd68306258b491de1e84e",
-      "outputFingerprint": "66d08bb7dbf81609d762c3614a3aa26d134d5b8451a24dee2ffe74348679c0c5",
+      "outputFingerprint": "457f69866cdb54a9e6463cabf40bfc1b01d2257bc3eb3853ecb3102ec1c43d67",
       "passed": true
     },
     {
@@ -554,7 +562,7 @@
       "expectation": "{\"negative\":true}",
       "observed": "{\"negative\":true}",
       "inputFingerprint": "6d37e9a823b69cee64b9e3cea2e153b94f39227ba9a606c7b523d227b4ff6c63",
-      "outputFingerprint": "8b8bf2d8e99db62992400137b7b6278cbc86a5ec9f65f29e684c232c3aa990e3",
+      "outputFingerprint": "f7b43fee930cfa2387af61f39d34d7241ecb0291a73881a96d1d8f53c791594a",
       "passed": true
     },
     {
@@ -562,7 +570,7 @@
       "expectation": "{\"line\":\"Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.\"}",
       "observed": "{\"line\":\"Caminho B: outra variante da linha de embalagem, com capex, EBITDA, depreciação, manutenção e capital de giro de partida começando depois dos do plano de referência; crédito bancário de curto prazo.\"}",
       "inputFingerprint": "f74b67933fd02241ca05b979ebd95ea01e855da75636dcd20ae75ffe50b43ea1",
-      "outputFingerprint": "b4da1cd74e99031ac419ce714a392113a574dfe083f2937ed53fe56097a83d94",
+      "outputFingerprint": "ea0bec481d3d06a3f0d1fb96273b92b5c2b2a3157dd5b985ee18149778a94eca",
       "passed": true
     },
     {
@@ -570,7 +578,7 @@
       "expectation": "{\"title\":true,\"debenture\":false}",
       "observed": "{\"title\":true,\"debenture\":false}",
       "inputFingerprint": "d43c703038a8d4a70a7527096d25c52244b036e6ebe65444449c5563a789d60e",
-      "outputFingerprint": "e3e8b942ce7f269bf9edf051ecc23e87ca20e21d8d6f59bb465e63c3eb2d384e",
+      "outputFingerprint": "872368e434d216986005e71e4cac26d0055b2f01b578fde4cd81e63acc468cc0",
       "passed": true
     },
     {
@@ -578,7 +586,7 @@
       "expectation": "{\"title\":true,\"gap\":true}",
       "observed": "{\"title\":true,\"gap\":true}",
       "inputFingerprint": "7d53af9faf2e6f4ddbc0e7cbf7861ced1fd76072caf8caaef9852903bfe5401b",
-      "outputFingerprint": "9be214fe3620dce30a28f11a44f4b140a153625998478fb4360026669b836f04",
+      "outputFingerprint": "24044a36b273771161a76473c319145fe9b38793b8d1f0be2c6aaf792ae9e157",
       "passed": true
     },
     {
@@ -586,7 +594,7 @@
       "expectation": "{\"title\":\"A linha de embalagem rende 16% ao ano, praticamente igual ao custo de capital de 16% ao ano\"}",
       "observed": "{\"title\":\"A linha de embalagem rende 16% ao ano, praticamente igual ao custo de capital de 16% ao ano\"}",
       "inputFingerprint": "408f2e429b44519a593eecfa340aaca203f42e7be467984940a22387347dbe5d",
-      "outputFingerprint": "a3718a40f0297193f0b0661bd061c8ccc7a229c38cbc3e990c0dae2ee861c0b9",
+      "outputFingerprint": "eab4cf397dce7cd71867dee831d00cb0bd5db5d1dc92fd0a8bf94a09ac52c2af",
       "passed": true
     },
     {
@@ -594,7 +602,7 @@
       "expectation": "{\"verified\":true,\"match\":true}",
       "observed": "{\"verified\":true,\"match\":true}",
       "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
-      "outputFingerprint": "29f466397e21ae9eae01aded49c0ae08b09ab99cdd8615365c8287e2af34c0d2",
+      "outputFingerprint": "0ee0da6a7d7f7d9ca7fd046207728d96d2301872c8907274a501b3be2cc512d0",
       "passed": true
     },
     {
@@ -602,11 +610,11 @@
       "expectation": "{\"presented\":false,\"sent\":false,\"grants\":false}",
       "observed": "{\"presented\":false,\"sent\":false,\"grants\":false}",
       "inputFingerprint": "e3576cdd8f744649288c8f3facc2e78ae119d7999b234727f00860d5ef242e1d",
-      "outputFingerprint": "98980dc92c57b72a1f598c92a7683e159c1e4bfd5b7b97eb9cf48b3e0ee12975",
+      "outputFingerprint": "363b325a3a8335057f9a46c237e5ae3453663ca69715a509090a2ddb2139ac7b",
       "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "f861b90c92880f0075fe2afd325f9260108e676ed9ef77e18a92408685652388",
+  "evidenceFingerprint": "0c08ca129790d9aa9277933c78e9072eb07c3d167443b07264d4dd3aa4332f7f",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
