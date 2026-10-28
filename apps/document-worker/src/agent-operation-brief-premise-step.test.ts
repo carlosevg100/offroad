@@ -113,3 +113,24 @@ describe("what withdraws the folder request after the wait", () => {
   });
 });
 
+// Independent review, round 9: speech reported from a third party (with "que", a colon, quotes or a dash) never
+// withdraws; a first person introducer still does; an act with modifiers or an infinitive complement withdraws, and one
+// on something else, with modifiers, does not.
+describe("withdrawal reported, modified or complemented", () => {
+  const acts = ["pode cancelar", "cancele", "não preciso mais dos documentos", "esqueça isso", "desista", "não quero mais este inventário"];
+  const speakers = ["O auditor", "O diretor", "A diretoria", "O banco", "Ela", "O gerente"];
+  const wrap = [(s: string, a: string) => `${s} disse: ${a}.`, (s: string, a: string) => `${s} escreveu: "${a}"`, (s: string, a: string) => `${s} pediu \u201c${a}\u201d`,
+    (s: string, a: string) => `${s} respondeu \u2014 ${a}.`, (s: string, a: string) => `${s} falou - ${a}.`, (s: string, a: string) => `${s} disse que ${a}.`,
+    (s: string, a: string) => `Segundo ${s.toLowerCase()}, ${a}.`];
+  const reported = [...speakers.flatMap((who) => acts.flatMap((a) => wrap.map((w) => w(who, a))))];
+  const own = ["Eu disse: pode cancelar.", "Falei: pode cancelar.", "Eu escrevi \u2014 cancele isso.", "Nós dissemos: não precisamos mais da pasta."];
+  const modified = ["Pode cancelar só isso.", "Cancele apenas o pedido.", "Pode parar com a organização.", "Não precisa continuar.", "Cancele também a leitura.",
+    "Pode cancelar por enquanto.", "Esqueça de vez.", "Não precisa mais seguir com isso.", "Pare de organizar.", "Pode cancelar a organização mesmo.", "Desista de terminar."];
+  const elsewhere = ["Cancele só a reunião.", "Pode cancelar apenas o envio para o banco.", "Esqueça também a proposta do Itaú.", "Não precisa continuar a apresentação."];
+  it.each([["O auditor escreveu: não preciso mais dos documentos.", false], ["O diretor disse: pode cancelar.", false], ...reported.map((m) => [m, false] as [string, boolean]),
+    ...own.map((m) => [m, true] as [string, boolean]), ...modified.map((m) => [m, true] as [string, boolean]), ...elsewhere.map((m) => [m, false] as [string, boolean])] as [string, boolean][])(
+    "%s withdraws: %s", (message, withdraws) => {
+      expect(withdrawsDocumentFolderRequest(message)).toBe(withdraws);
+    });
+});
+

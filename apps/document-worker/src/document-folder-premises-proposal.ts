@@ -4,7 +4,7 @@ import {composeBoundDocumentFolderInventory, documentFolderInventoryFactsSchema,
   inventoryInformedRecordSchema, inventoryModes, prepareDocumentFolderInventoryPacket, proposeDocumentFolderInventoryHypotheses, proposeDocumentFolderUpdateHypotheses, registryName,
   type DocumentFolderInventoryFacts, type DocumentFolderUpdateFacts, type DocumentReading, type ProposedHypothesis} from "@offroad/financial-model";
 import {documentLayerSchema, type DocumentLayer} from "@offroad/document-intelligence";
-import {compileObjectiveToPlan} from "@offroad/work-plan";
+import {compileObjectiveToPlan, isReportedAt} from "@offroad/work-plan";
 import {uuidV5} from "./investment-premises-proposal";
 import {extractedOrigin, factsOrGaps, itemSource, sourced, stableKey, stated, type Lote2Origin, type Lote2SummaryItem} from "./lote2-premises";
 import {asksOrExplains, foldCue, premiseCueKind, turnIntentInstruction, turnIntents} from "./premise-cue";
@@ -270,10 +270,29 @@ const withdrawalVerb = String.raw`(?:cancel(?:e|a|ar|em|o|amos|ei)|desist(?:a|e|
 const withdrawalAct = new RegExp(String.raw`${withdrawalLead}${withdrawalModal}${withdrawalVerb}\b(.*)$`);
 const notWanting = new RegExp(String.raw`${withdrawalLead}nao (?:quero|queremos|preciso|precisamos|precisa)(?: mais)?(?: de| do| da| disso| nisso)?\b(.*)$`);
 /** What may remain after the act: nothing, adverbs, pronouns, the pending request, or the folder and its action. */
-const withdrawnObject = /^(?:(?:mais|ja|agora|por favor|por enquanto|por ora|enquanto|entao|ainda|mesmo|de vez|tudo|isso|disso|nisso|isto|aquilo|ai|aqui|la|com isso|por aqui|o|a|os|as|de|da|do|das|dos|esse|essa|este|esta|esses|essas|nessa|nesse|pedido|pedidos|solicitacao|request|pastas?|arquivos?|documentos?|materia(?:l|is)|inventarios?|organizacao|arrumacao|leitura|organiz\w*|arrum\w*|inventari\w*|ler|ver|obrigad[oa])\s*)*$/;
+const withdrawnObject = new RegExp(String.raw`^(?:(?:${[
+  // Adverbs and focus particles.
+  "mais", "so", "apenas", "somente", "tambem", "ja", "agora", "por favor", "por enquanto", "por ora", "enquanto", "entao", "ainda", "mesmo", "de vez", "obrigad[oa]",
+  // Prepositions and determiners.
+  "com", "de", "por", "pelo", "pela", "o", "a", "os", "as", "da", "do", "das", "dos", "no", "na", "esse", "essa", "este", "esta", "esses", "essas", "nessa", "nesse",
+  // Pronouns and the pending request.
+  "tudo", "isso", "disso", "nisso", "isto", "aquilo", "ai", "aqui", "la", "pedido", "pedidos", "solicitacao",
+  // The folder, its files, its inventory, its organization and reading.
+  "pastas?", "arquivos?", "documentos?", "materia(?:l|is)", "inventarios?", "organizacao", "arrumacao", "leitura", "organiz\\w*", "arrum\\w*", "inventari\\w*", "ler", "ver",
+  // An infinitive that continues the request.
+  "continuar", "seguir", "fazer", "terminar", "prosseguir", "montar",
+].join("|")})\s*)*$`);
 /** Whether one reply withdraws the pending folder request. */
 export function withdrawsDocumentFolderRequest(message: string): boolean {
-  return foldCue(message).split(/[.!?;,:]|\b(?:e|mas|porem)\b/).map((c) => c.trim().replace(/\s+/g, " ")).filter(Boolean).some((clause) => {
+  const text = foldCue(message);
+  // Clauses with their offsets: an act inside speech reported from a third party (reported-speech.ts) never counts.
+  const clauses: {at: number; clause: string}[] = [];
+  let at = 0;
+  for (const m of [...text.matchAll(/[.!?;,:"\u201c\u201d\u2018\u2019\u00ab\u00bb\u2014\u2013]|\s-\s|\b(?:e|mas|porem)\b/g), {index: text.length, 0: ""}]) {
+    clauses.push({at, clause: text.slice(at, m.index).trim().replace(/\s+/g, " ")});
+    at = m.index! + m[0].length;
+  }
+  return clauses.filter((c) => c.clause && !isReportedAt(text, c.at + 1)).some(({clause}) => {
     const act = withdrawalAct.exec(clause) ?? notWanting.exec(clause);
     return act !== null && withdrawnObject.test(act[1]!.trim());
   });

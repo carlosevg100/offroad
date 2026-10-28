@@ -98,6 +98,18 @@ const reportedForms: readonly ((p: string, who: [string, string]) => string)[] =
   (p, [, s]) => `De acordo com ${s}, ${p[0]!.toLowerCase()}${p.slice(1)}`,
   (p, [, s]) => `Conforme ${s} sugeriu, ${p[0]!.toLowerCase()}${p.slice(1)}`,
 ];
+/** Round 9: the same requests reported with a colon, in quotes or after a dash, by several speech verbs. */
+const reportedQuoted: readonly ((p: string, who: [string, string]) => string)[] = [
+  (p, [S]) => `${S} disse: ${p[0]!.toLowerCase()}${p.slice(1)}`,
+  (p, [S]) => `${S} pediu: "${p}"`,
+  (p, [S]) => `${S} escreveu \u201c${p}\u201d`,
+  (p, [S]) => `${S} respondeu \u2014 ${p[0]!.toLowerCase()}${p.slice(1)}`,
+  (p, [S]) => `${S} falou - ${p[0]!.toLowerCase()}${p.slice(1)}`,
+  (p, [S]) => `${S} sugeriu: '${p}'`,
+];
+/** First person introducers keep the request the person's own (they promote). */
+export const lote4OwnIntroducedRequests: readonly string[] = ["Eu disse: prepare a discussão da dívida para o conselho.", "Falei: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "Nós pedimos: \u201cAvalie essa proposta de crédito do banco que o Itaú mandou.\u201d", "Eu escrevi \u2014 prepare a discussão da dívida para o conselho."];
 /** Round 6: the action of someone else, reported or asked about, never a request to the advisor. */
 const others: readonly ((v: {inf: string; subj: string}, o: string) => string)[] = [
   (v, o) => `O banco vai ${v.inf} ${o}.`,
@@ -131,5 +143,6 @@ export function lote4VetoFamily(): string[] {
     for (const who of thirdParties) for (const r of triggersOfOthers) out.push(r(v, o, who));
   }
   for (const p of lote4AddressedRequests) for (const who of thirdParties) for (const r of reportedForms) out.push(r(p, who));
+  for (const p of lote4AddressedRequests) for (const who of thirdParties) for (const r of reportedQuoted) out.push(r(p, who));
   return out;
 }

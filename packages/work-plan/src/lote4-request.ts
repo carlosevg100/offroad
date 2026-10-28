@@ -7,9 +7,9 @@
  * only when, in its own clause, nothing precedes it but courtesy ("por favor"), an interjection or adverb ("ok",
  * "então", "agora"), a first person subject ("eu", "nós", "a gente") or, before a modal, "você"/"vocês"; and the
  * evaluative question also its own object ("essa proposta é boa?") and only asked ("?"). Any other noun or pronoun
- * before it makes it someone else's action ("o banco gostaria de avaliar", "a diretoria pode preparar"). A reporting
- * construction anywhere before the trigger (a third party who "disse", "acha", "pediu", "sugeriu", "informou"... "que",
- * or "segundo", "de acordo com", "conforme") makes it reported speech, never a request, even with "você" inside it.
+ * before it makes it someone else's action ("o banco gostaria de avaliar", "a diretoria pode preparar"). A trigger
+ * inside speech reported from a third party (reported-speech.ts: "X disse que", "X pediu:", a quote or a dash, "segundo",
+ * "de acordo com", "conforme") is never a request, even with "você" inside it.
  *
  * Then the method is chosen only when its object is named in the message and the message holds, at no point, a
  * negation or a refusal ("não", "nunca", "sem", "nem", "cancele", "recuso", "desista", "deixe de"...) or a request for
@@ -18,6 +18,8 @@
  *
  * The text is folded (NFKD, combining marks removed, lower case) before it reaches these patterns.
  */
+
+import {isReportedAt} from "./reported-speech";
 
 export type Lote4RequestKind = "board_capital_discussion" | "received_proposal" | "document_folder";
 
@@ -57,15 +59,12 @@ const courtesy = String.raw`por favor|ok|okay|bom|olha|ei|oi|ola|entao|agora|so|
 const before = (modal: boolean, evaluative: boolean) => new RegExp(String.raw`^(?:(?:${courtesy}${modal ? "|voce|voces|vc" : ""}${evaluative
   ? String.raw`|(?:e |mas )?(?:a|essa|esta|nessa|essa nova|a nova)? ?(?:proposta|oferta|term ?sheet|termsheet|operacao|ccb|linha)(?: (?:d[oa]s?|de) [a-z0-9$ ]{1,40})?|ela|isso|voce|vc|voce acha que`
   : ""})\s*)*$`);
-/** Clauses end at punctuation and at a coordinating conjunction. */
-const clauseEnd = /[.!?;,:]|\b(?:e|mas|porem|entao|depois)\b/g;
-/** A reporting construction: a third party who said, thinks or asked "que", or "segundo", "de acordo com", "conforme". */
-const reporting = /\b(?!(?:eu|nos|gente|voce|voces|vc)\b)[a-z]+\s+(?:(?:me|nos|lhe|ja|tambem)\s+)?(?:disse|disseram|diz|dizem|falou|falaram|fala|falam|acha|acham|achou|acharam|afirmou|afirmaram|afirma|pediu|pediram|pede|sugeriu|sugeriram|sugere|comentou|comentaram|informou|informaram|mencionou|mencionaram|garantiu|garantiram|garante|explicou|explicaram|contou|avaliou|considera|consideram)\s+que\b|\b(?:segundo|conforme)\b|\bde acordo com\b/g;
-
-/** Whether the trigger at `index` is a request to the advisor: allowed words only before it in its clause, and no
- * reporting construction anywhere before it. */
+/** Clauses end at punctuation, quotes, dashes and a coordinating conjunction. */
+const clauseEnd = /[.!?;,:"'\u201c\u201d\u2018\u2019\u00ab\u00bb\u2014\u2013]|\s-\s|\b(?:e|mas|porem|entao|depois)\b/g;
+/** Whether the trigger at `index` is a request to the advisor: allowed words only before it in its clause, and not
+ * inside speech reported from a third party (reported-speech.ts: "que", a colon, quotes or a dash). */
 function addressedAt(text: string, index: number, modal: boolean, evaluativeTrigger: boolean): boolean {
-  if ([...text.matchAll(reporting)].some((r) => r.index! < index)) return false;
+  if (isReportedAt(text, index)) return false;
   let start = 0;
   for (const m of text.matchAll(clauseEnd)) {const end = m.index! + m[0].length; if (end <= index) start = end;}
   return before(modal, evaluativeTrigger).test(text.slice(start, index).trim());

@@ -160,6 +160,26 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "O banco disse: pode avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco disse: pode avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
   "message": "Não prepare a discussão da dívida para o conselho.",
   "hasAttachments": false,
   "kind": "board_decision"
@@ -46656,6 +46676,5046 @@
  },
  {
   "message": "Conforme o gerente sugeriu, eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Monte a discussão de estrutura de capital para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Monte a discussão de estrutura de capital para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - monte a discussão de estrutura de capital para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Monte a discussão de estrutura de capital para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Quero que você prepare a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Quero que você prepare a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - quero que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Quero que você prepare a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Você consegue preparar a discussão da dívida para o conselho?\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Você consegue preparar a discussão da dívida para o conselho?”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - você consegue preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Você consegue preparar a discussão da dívida para o conselho?'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eles sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ela sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente disse: preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente pediu: \"Preciso preparar a discussão da dívida para o conselho.\"",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente escreveu “Preciso preparar a discussão da dívida para o conselho.”",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente respondeu — preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente falou - preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O gerente sugeriu: 'Preciso preparar a discussão da dívida para o conselho.'",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente disse: avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente pediu: \"Avalie essa proposta de crédito do banco que o Itaú mandou.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente escreveu “Avalie essa proposta de crédito do banco que o Itaú mandou.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente respondeu — avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente falou - avalie essa proposta de crédito do banco que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente sugeriu: 'Avalie essa proposta de crédito do banco que o Itaú mandou.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente disse: pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente pediu: \"Pode avaliar a proposta de crédito que o Bradesco mandou?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente escreveu “Pode avaliar a proposta de crédito que o Bradesco mandou?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente respondeu — pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente falou - pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente sugeriu: 'Pode avaliar a proposta de crédito que o Bradesco mandou?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente disse: por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente pediu: \"Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente escreveu “Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente respondeu — por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente falou - por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente sugeriu: 'Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente disse: o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente pediu: \"O Itaú mandou essa proposta de CCB, é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente escreveu “O Itaú mandou essa proposta de CCB, é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente respondeu — o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente falou - o Itaú mandou essa proposta de CCB, é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente sugeriu: 'O Itaú mandou essa proposta de CCB, é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente disse: recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente pediu: \"Recebi uma proposta de CCB do Bradesco. Vale a pena?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente escreveu “Recebi uma proposta de CCB do Bradesco. Vale a pena?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente respondeu — recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente falou - recebi uma proposta de CCB do Bradesco. Vale a pena?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente sugeriu: 'Recebi uma proposta de CCB do Bradesco. Vale a pena?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O banco sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O CFO sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eles sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Ela sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente disse: essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente pediu: \"Essa proposta de crédito do Itaú é boa?\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente escreveu “Essa proposta de crédito do Itaú é boa?”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente respondeu — essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente falou - essa proposta de crédito do Itaú é boa?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "O gerente sugeriu: 'Essa proposta de crédito do Itaú é boa?'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O banco sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eles sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Eles sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O assessor deles sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ela sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ela sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente disse: eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente pediu: \"Eu gostaria de avaliar essa proposta de crédito que recebemos.\"",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente escreveu “Eu gostaria de avaliar essa proposta de crédito que recebemos.”",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente respondeu — eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente falou - eu gostaria de avaliar essa proposta de crédito que recebemos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O gerente sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O gerente sugeriu: 'Eu gostaria de avaliar essa proposta de crédito que recebemos.'",
   "hasAttachments": true,
   "kind": "documents_to_case"
  }

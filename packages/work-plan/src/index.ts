@@ -9,6 +9,7 @@ export * from "./received-proposal-route";
 export * from "./document-folder-route";
 export * from "./financing-paths-route";
 export * from "./board-material-route";
+export {isReportedAt, reportedSegments} from "./reported-speech";
 export {
   terminalWorkProductSchema,
   terminalDeliveryFormatSchema,
