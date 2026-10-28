@@ -821,7 +821,7 @@ for (const template of Object.values(boardTemplates)) {
   const yearSlots = Object.entries(template.slots).filter(([, x]) => x.year !== undefined).map(([k]) => k);
   for (const [slot, spec] of Object.entries(template.slots)) {
     const [method, path] = spec.from?.[0] ?? [];
-    if (method && path && boardFieldOf(method, path.replace(/\[[^\]]+\]/g, "[*]"))?.interval && yearSlots.length === 1)
+    if (method && path && boardFieldOf(method, path.replace(/\[[^[\]]+\]/g, "[*]"))?.interval && yearSlots.length === 1)
       added.push(...claim("o intervalo registrado do fluxo é exatamente o ano anunciado", {coversYear: [slot, yearSlots[0]!]}));
   }
   if (added.length) template.when = [...template.when, ...added];
@@ -945,9 +945,9 @@ export function boardRefReadingIds(ref: string): string[] {
 /** Splits a path into its keys and selectors, the same way the reader does. */
 export function boardPathSegments(path: string) {
   return path.split(/\.(?![^[]*\])/).map((raw) => {
-    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
+    const m = /^([A-Za-z0-9_]+)((?:\[[^[\]]+\])*)$/.exec(raw);
     if (!m) return null;
-    return {key: m[1]!, selectors: (m[2]!.match(/\[[^\]]+\]/g) ?? []).map((x) => x.slice(1, -1))};
+    return {key: m[1]!, selectors: (m[2]!.match(/\[[^[\]]+\]/g) ?? []).map((x) => x.slice(1, -1))};
   });
 }
 const escape = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -1153,7 +1153,7 @@ export function checkBoardTemplateLibrary(library: Readonly<Record<string, Board
       ...Object.values(x.slots).flatMap((spec) => spec.generic ? [[spec.generic, "gap"] as [string, "gap"]] : [])];
     for (const [raw, kind] of texts) {
       // Words are read with every token masked; phrases are matched on the text with its tokens.
-      const text = raw, masked = raw.replace(/\{[^}]*\}/g, (t) => "_".repeat(t.length));
+      const text = raw, masked = raw.replace(/\{[^{}]*\}/g, (t) => "_".repeat(t.length));
       for (const m of masked.matchAll(/\p{L}+/gu)) {
         const word = m[0].toLowerCase();
         if (!boardQualifierWatch.includes(word)) continue;
@@ -1173,7 +1173,7 @@ export function checkBoardTemplateLibrary(library: Readonly<Record<string, Board
       for (const [slot, spec] of Object.entries(x.slots)) for (const [, path] of spec.from ?? []) {
         const m = /measurements\[id=(\$[a-z]+)\]\.(?!date$)/.exec(path);
         if (m) {
-          const v = m[1]!.replace("$", "\\$");
+          const v = m[1]!.replaceAll("$", "\\$");
           const tied = new RegExp(`\\{"slot":"[a-z_]+"\\},"eq",\\{"at":\\["measure-covenant-headroom","result\\.headroom\\.measurements\\[id=${v}\\]\\.date"\\](?:,"year":true)?\\}|measurements\\[id=${v}\\]\\.date"\\]\\},"eq",\\{"slot":"[a-z_]+"\\}`).test(facts);
           if (!shownMeasurementDates.has(m[1]!) && !tied) problems.push(`${id}:period:${slot}:${m[1]}`);
         }
@@ -1189,7 +1189,7 @@ export function checkBoardTemplateLibrary(library: Readonly<Record<string, Board
     }
     // Boundaries: every relation to a limit sits in a registered phrase whose inclusion the template proves.
     if (!x.use.includes("question")) for (const raw of [x.text, x.nearlyEqual ?? ""]) {
-      const masked = raw.replace(/\{(?!ate:|desde:)[^}]*\}/g, (t) => "_".repeat(t.length));
+      const masked = raw.replace(/\{(?!ate:|desde:)[^{}]*\}/g, (t) => "_".repeat(t.length));
       for (const m of masked.matchAll(/(?<![\p{L}])(?:acima d|abaixo d|até|a partir d|pelo menos|mais de|menos de|mais que|menos que|no máximo|no mínimo|antes d|depois d|passa [oa] )|\{(?:ate|desde):[a-z_]+\}/giu)) {
         const proven = boardBoundaries.some((b) => [...raw.matchAll(new RegExp(b.phrase.source, "g"))].some((p) => p.index! <= m.index! && m.index! < p.index! + p[0].length)
           && (b.proof === "no_value" ? ![...raw.matchAll(b.phrase.global ? b.phrase : new RegExp(b.phrase.source, "g"))].some((p) => /\{/.test(p[0])) : b.proof.test(JSON.stringify({slots: x.slots, when: x.when}))));

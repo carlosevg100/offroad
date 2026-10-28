@@ -90,7 +90,7 @@ export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentat
   const out = (value: string, rounded: string, display: string, number: string | null, matches: boolean) => ({value, rounded, display, number, matches});
   if (spec.kind === "flag") return typeof raw === "boolean" && presentation === "-" ? out(String(raw), String(raw), raw ? "sim" : "não", null, stated === null) : null;
   if (spec.kind === "label") {
-    if (typeof raw !== "string" || !raw.trim() || presentation !== "-" || /^\s*[-−]?\d+(?:[.,]\d+)*\s*%?\s*$/.test(raw)) return null;
+    if (typeof raw !== "string" || !raw.trim() || presentation !== "-" || /^\s*[-−]?\d+(?:[.,]\d+)*\s*(?:%\s*)?$/.test(raw)) return null;
     return out(raw, raw, raw, null, stated === null);
   }
   if (spec.kind === "date" || spec.kind === "calendar") {
@@ -172,7 +172,7 @@ export function boardPlaceholderIds(ref: string): string[] {
 }
 /** Kept for the template check: the digits a template writes outside its placeholders. */
 export function boardLiteralNumbers(template: string): string[] {
-  return template.replace(/\{[^}]*\}/g, " ").normalize("NFKC").match(/\p{N}+/gu) ?? [];
+  return template.replace(/\{[^{}]*\}/g, " ").normalize("NFKC").match(/\p{N}+/gu) ?? [];
 }
 
 /** A text as rendered, with the span of every marker it carries: a reading (with its unit words), a source
@@ -223,7 +223,7 @@ const resolved = (r: BoardRich): Resolved => ({...r, figureIds: ids(r, ["figure"
 
 /** Checks a text that carries no placeholder: any literal number is refused. */
 export function checkBoardText(text: string): string {
-  if (/\{[^}]*\}/.test(text)) throw new Error(`board_capital_number_without_origin:placeholder:${text.slice(0, 80)}`);
+  if (/\{[^{}]*\}/.test(text)) throw new Error(`board_capital_number_without_origin:placeholder:${text.slice(0, 80)}`);
   return checkBoardFreeText(text);
 }
 
@@ -231,11 +231,11 @@ export function checkBoardText(text: string): string {
  * `{count:due-before-next-meeting}` and `{deadline:<deliberation>.<deadline>}`. A literal number or an unknown
  * token refuses the material by name. The figure's text comes whole from the formatter. */
 export function renderBoardTemplate(template: string, context: Context): Resolved {
-  checkBoardFreeText(template.replace(/\{[^}]*\}/g, " "));
+  checkBoardFreeText(template.replace(/\{[^{}]*\}/g, " "));
   const parts: (string | BoardRich)[] = [];
   let last = 0;
   const marker = (display: string, kind: BoardSpan["kind"], id: string, unit: BoardFigureUnit | null): BoardRich => ({display, spans: [{start: 0, end: display.length, kind, id, unit}]});
-  for (const m of template.matchAll(/\{([^}]*)\}/g)) {
+  for (const m of template.matchAll(/\{([^{}]*)\}/g)) {
     parts.push(template.slice(last, m.index)); last = m.index! + m[0].length;
     const token = m[1]!;
     const count = (n: number) => marker(feminine[n] ?? String(n), "count", token, null);

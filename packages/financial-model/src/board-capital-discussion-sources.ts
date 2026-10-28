@@ -25,11 +25,11 @@ export function boardCanonicalPath(root: unknown, path: string, form: "index" | 
   let node: unknown = root;
   const out: string[] = [];
   for (const raw of segments) {
-    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
+    const m = /^([A-Za-z0-9_]+)((?:\[[^[\]]+\])*)$/.exec(raw);
     if (!m) return null;
     node = isRecord(node) && Object.hasOwn(node, m[1]!) ? node[m[1]!] : undefined;
     let part = m[1]!;
-    for (const selector of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
+    for (const selector of m[2]!.match(/\[[^[\]]+\]/g) ?? []) {
       const body = selector.slice(1, -1);
       if (!Array.isArray(node)) return null;
       let index: number;
@@ -92,10 +92,10 @@ export function readBoardSourcePath(root: unknown, path: string): unknown {
   const segments = path.split(/\.(?![^[]*\])/);
   let node: unknown = root;
   for (const raw of segments) {
-    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
+    const m = /^([A-Za-z0-9_]+)((?:\[[^[\]]+\])*)$/.exec(raw);
     if (!m) throw new Error("board_capital_path_invalid");
     node = isRecord(node) && Object.hasOwn(node, m[1]!) ? node[m[1]!] : undefined;
-    for (const selector of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
+    for (const selector of m[2]!.match(/\[[^[\]]+\]/g) ?? []) {
       const body = selector.slice(1, -1);
       if (!Array.isArray(node)) return undefined;
       if (/^\d+$/.test(body)) {node = node[Number(body)]; continue;}
@@ -273,7 +273,7 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
 };
 /** The field a reading path names, or null when the method's registry does not list it. */
 export function boardFieldOf(methodId: string, path: string): BoardFieldSpec | null {
-  const pattern = path.replace(/\[[^\]]*\]/g, "[*]");
+  const pattern = path.replace(/\[[^[\]]*\]/g, "[*]");
   return boardFieldRegistry[methodId as BoardSourceMethodId]?.[pattern] ?? null;
 }
 

@@ -39,7 +39,7 @@ function rebind<T>(value: T, from: string, to: string): T {
 
 /** The C03 relative cost rebound to the shared company; regressions only: the rating actions' exposure set to other
  * horizons (months), the method recomputing the nominal benefits over them. */
-export function auroraRelativeCostPacket(variant: {ratingHorizonMonths?: readonly [number, number]; ratingCostCoverage?: "incomplete"} = {}) {
+function buildAuroraRelativeCostPacket(variant: {ratingHorizonMonths?: readonly [number, number]; ratingCostCoverage?: "incomplete"} = {}) {
   const relative = c03PacketInput();
   if (variant.ratingCostCoverage) for (const actionId of [relative.ids.ratingLow, relative.ids.ratingHigh]) for (const e of relative.entries)
     if (e.fieldPath.endsWith(`action.${actionId}.costCoverage`)) e.value = {type: "text", value: variant.ratingCostCoverage};
@@ -81,7 +81,7 @@ function buildSources() {
   ] as const;
 }
 /** C12 with the December managerial reading that C54 adds; the variant writes the policy's EBITDA definition (regressions only). */
-export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true; baseAsManagerialContrast?: true; covenantMaximum?: string; adverseManagerial?: true;
+function buildAuroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true; baseAsManagerialContrast?: true; covenantMaximum?: string; adverseManagerial?: true;
   managerialDebt?: string; endWithoutAdjustment?: true} = {}) {
   const c = auroraCovenantBasis(variant.policyDefinition ? {policyDefinition: variant.policyDefinition} : {}), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
   // Regressions only: the adverse measurement of December 2027 with another debt.
@@ -123,7 +123,7 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string; advers
 }
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
-export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
+function buildAuroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
   economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number; deferralLastPeriodEnd?: string;
   exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"; discountRate?: string; economyCaseFactor?: string; economyLaterLarger?: true} = {}) {
   const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex()
@@ -264,7 +264,7 @@ function c32WithMislabelledEconomy() {
 }
 /** C24 with the CFO's informed scenario. The variant (regressions only) makes the scenario prazo-60 lengthen inventory
  * days instead of the chains' receivable days, which stay as in the base. */
-export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true; shockFrom2028?: true; receivablesOnlyIn2027?: true; shockLabel?: string;
+function buildAuroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true; shockFrom2028?: true; receivablesOnlyIn2027?: true; shockLabel?: string;
   periodEnds?: readonly string[]} = {}) {
   const b = operatingProjectionBasis({informed: true});
   // Regressions only: the second and third periods end mid-2027 and at the end of 2027 (a half-year or a quarter row).
@@ -296,7 +296,7 @@ export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?:
     question: "Não temos projeção pronta. Ajuda a construir uma para discutir o financiamento.", analysis: b.seal()});
 }
 /** C18. The variant (regressions only) keeps the line in the case without the line and takes the customer receipts out of it instead. */
-export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {}) {
+function buildAuroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {}) {
   const b = auroraWeeklyCashBasis();
   if (variant.lineKeptReceiptsMissing) {
     const c = (b.input as unknown as {cases: {id: string; streamIds: string[]}[]}).cases.find((x) => x.id === "sem-linha")!;
@@ -306,7 +306,7 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
 }
 /** C32's financing plan. The variant (regressions only) gives the deferred project variant the schedule of the one that goes on
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
-export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
+function buildAuroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
   amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string;
   deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true; giroPaidInPeriod?: number; longIssueAmount?: string; shorterProfile?: true; eighthPath?: "other" | "recommended"} = {}) {
   const k = auroraCapitalPathsKernel();
@@ -383,7 +383,7 @@ export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; 
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */
-export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"; debtorRenamed?: true; jointProgram?: true;
+function buildAuroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"; debtorRenamed?: true; jointProgram?: true;
   needPeak?: string; cheapBankDiscount?: true; thirdProgram?: true} = {}) {
   const k = auroraReceivablesFunding(), anchor = k.options[0]!;
   // Regressions only: a larger seasonal peak, and a bank discount cheap enough that the plan uses it after the programs.
@@ -725,3 +725,20 @@ export function auroraBoardFacts(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     informed: c.informed.map((x) => fact({id: x.id, author: x.author, code: x.code}, x.origin as "informed", "presidente do conselho na conversa sobre a linha de embalagem")),
   } as unknown as BoardCapitalDiscussionFacts;
 }
+
+/** Each source packet built once per variant and handed out as a copy; the plan alone takes seconds to solve. */
+function memoPacket<V, R>(build: (variant?: V) => R): (variant?: V) => R {
+  const memo = new Map<string, R>();
+  return (variant) => {
+    const key = JSON.stringify(variant ?? {});
+    if (!memo.has(key)) memo.set(key, build(variant));
+    return structuredClone(memo.get(key)!);
+  };
+}
+export const auroraRelativeCostPacket = memoPacket(buildAuroraRelativeCostPacket);
+export const auroraCovenantPacket = memoPacket(buildAuroraCovenantPacket);
+export const auroraInvestmentPacket = memoPacket(buildAuroraInvestmentPacket);
+export const auroraProjectionPacket = memoPacket(buildAuroraProjectionPacket);
+export const auroraWeeklyPacket = memoPacket(buildAuroraWeeklyPacket);
+export const auroraPlanPacket = memoPacket(buildAuroraPlanPacket);
+export const auroraReceivablesPacket = memoPacket(buildAuroraReceivablesPacket);
