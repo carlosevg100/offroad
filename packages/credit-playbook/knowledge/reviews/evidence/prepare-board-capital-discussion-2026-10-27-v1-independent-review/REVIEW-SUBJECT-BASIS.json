@@ -5,15 +5,15 @@
   "id": "prepare-board-capital-discussion",
   "version": "2026.10.27-v1"
  },
- "commit": "c70e7c67260c722807f11dbf24be292134640c79",
+ "commit": "cbe06f5007333f377435b62921304a6fabcc2be0",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/prepare-board-capital-discussion.md",
-   "sha256": "952620163e1999f277756bf24da899dcaeed7c4a51aa49dbcae54f2ad916f210"
+   "sha256": "f27abc3ec18c574420d2f6ffc54a6897e4c1eafc39e4b72e0215454d1ea041ab"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion.ts",
-   "sha256": "e50645aa3495a7cc380df35eab8235d1c83c773424faf347ad86f6db4a224a35"
+   "sha256": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -21,11 +21,11 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-   "sha256": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+   "sha256": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
   },
   {
    "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-   "sha256": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+   "sha256": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-packet.ts",
@@ -33,11 +33,11 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-   "sha256": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+   "sha256": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-   "sha256": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+   "sha256": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -45,11 +45,11 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-   "sha256": "862d5bb447fd0787ac3784987c31461b6c5951b5a15e4fd7dec39bbf539963a6"
+   "sha256": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-   "sha256": "1bd99b9c54b115f15bb34ef6c5173cd833909c7dfbeff23bd1ff412a8cfab5ec"
+   "sha256": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -57,7 +57,7 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-   "sha256": "d04efb436a666aa933efb3a2ca860b1d368501588361885e468a2db0f469ba69"
+   "sha256": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-scale.test.ts",
@@ -65,7 +65,7 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-roles.test.ts",
-   "sha256": "bd6f4be294def8c774da1ac589e1a1591544625e12efabf06782ee2149f10be9"
+   "sha256": "aff0e0741b4a7ff4a9fa192efac4cd483446d82683be8312e100d80ac5a0d658"
   }
  ],
  "externalOracle": [
