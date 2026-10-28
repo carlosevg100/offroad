@@ -1,5 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {documentFolderResumeWithdrawn, premiseStepForTurn} from "./agent-operation-brief";
+import {withdrawsDocumentFolderRequest} from "./document-folder-premises-proposal";
 
 describe("one premise step per turn", () => {
   it.each([
@@ -79,6 +80,36 @@ describe("the folder wait after it opened", () => {
     const before = turn([]);
     before.recent_messages.unshift({id: id(0), role: "user", content: "Cancele a organização da pasta antiga.", created_at: "2026-10-28T09:00:00Z"});
     expect(documentFolderResumeWithdrawn(before, id(1))).toBe(false);
+  });
+});
+
+// Independent review, round 8: withdrawal is an act on the request (a cancellation or desistance verb as the clause's
+// main verb, or a first person "não quero/preciso mais"), with no object, a pronoun or the folder as its object; a
+// negation of a fact about the documents never withdraws, and cancelling something else leaves the folder.
+describe("what withdraws the folder request after the wait", () => {
+  const reviewed: [string, boolean][] = [["Os documentos não foram auditados.", false], ["A pasta não contém as notas explicativas.", false],
+    ["Os documentos são da empresa, não da holding.", false], ["Pode cancelar.", true], ["Cancele. Não quero mais.", true]];
+  const facts = ["O balancete não está assinado.", "Nenhum arquivo tem a escritura completa.", "A minuta não foi para nenhum banco.", "Os contratos não estão na pasta.",
+    "Não temos o balanço de 2024 ainda.", "Não há notas explicativas nos arquivos.", "O extrato não é desta conta.", "Esses documentos não são da controlada.",
+    "A planilha não fecha com o balancete.", "Não recebemos o laudo de avaliação.", "Os arquivos não têm data, mas são de março.", "A pasta não tem o contrato social."];
+  const short = ["Pode cancelar.", "Cancele.", "Cancela isso.", "Desisti.", "Esqueça.", "Deixa pra lá.", "Pare.", "Para por aqui.", "Não precisa mais.",
+    "Não quero mais isso.", "Pode cancelar o pedido.", "Esqueça tudo.", "Abandone isso, por favor.", "Não preciso disso.", "Cancele a organização da pasta.",
+    "Não quero mais este inventário.", "Ok, pode cancelar."];
+  const elsewhere = ["Cancele a reunião de amanhã.", "Pode cancelar o envio para o banco.", "Esqueça a proposta do Itaú.", "Desista da reunião com o Bradesco.",
+    "Não quero a reunião na quinta."];
+  const answers = ["Segue a página 7 legível e o balancete de março.", "O contrato da debênture está na subpasta jurídico.", "Pode considerar a versão assinada.",
+    "O balancete é de março."];
+  it.each([...reviewed, ...facts.map((m) => [m, false] as [string, boolean]), ...short.map((m) => [m, true] as [string, boolean]),
+    ...elsewhere.map((m) => [m, false] as [string, boolean]), ...answers.map((m) => [m, false] as [string, boolean])])("%s withdraws: %s", (message, withdraws) => {
+    expect(withdrawsDocumentFolderRequest(message)).toBe(withdraws);
+  });
+  it("reads the reply after the wait in the turn: facts and plain answers resume, short cancellations withdraw", () => {
+    const at = (content: string) => ({message_id: "00000000-0000-4000-8000-000000000099", recent_messages: [
+      {id: "00000000-0000-4000-8000-000000000001", role: "user", content: "Joguei aqui a pasta do último ano. Organiza e me diz o que tem.", created_at: "2026-10-28T10:00:00Z"},
+      {id: "00000000-0000-4000-8000-000000000010", role: "user", content, created_at: "2026-10-28T10:01:00Z"},
+      {id: "00000000-0000-4000-8000-000000000099", role: "user", content: "Leitura da pasta concluída.", created_at: "2026-10-28T10:09:00Z"}]});
+    for (const m of [...facts, ...answers]) expect(documentFolderResumeWithdrawn(at(m), "00000000-0000-4000-8000-000000000001"), m).toBe(false);
+    for (const m of short) expect(documentFolderResumeWithdrawn(at(m), "00000000-0000-4000-8000-000000000001"), m).toBe(true);
   });
 });
 

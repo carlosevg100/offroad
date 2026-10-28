@@ -60,7 +60,8 @@ const interleaved: readonly ((v: {inf: string; subj: string}, o: string) => stri
   (v, o) => `${cap(v.subj)}, sem pressa e sem análise, ${o}.`,
 ];
 /** Round 7: the subjects of someone else's action, and that action with a modal or as reported speech. */
-const thirdParties: readonly [string, string][] = [["O banco", "o banco"], ["A diretoria", "a diretoria"], ["O CFO", "o CFO"], ["Eles", "eles"], ["O assessor deles", "o assessor deles"]];
+const thirdParties: readonly [string, string][] = [["O banco", "o banco"], ["A diretoria", "a diretoria"], ["O CFO", "o CFO"], ["Eles", "eles"], ["O assessor deles", "o assessor deles"],
+  ["Ela", "ela"], ["O gerente", "o gerente"]];
 const othersByModal: readonly ((v: {inf: string; subj: string}, o: string, who: [string, string]) => string)[] = [
   (v, o, [S]) => `${S} pode ${v.inf} ${o}.`,
   (v, o, [, s]) => `Quando ${s} pode ${v.inf} ${o}?`,
@@ -70,6 +71,32 @@ const othersByModal: readonly ((v: {inf: string; subj: string}, o: string, who: 
   (v, o, [S]) => `${S} acha que vale a pena ${v.inf} ${o}?`,
   (v, o, [, s]) => `Segundo ${s}, ${o} é boa?`,
   (v, o, [, s]) => `De acordo com ${s}, ${v.inf} ${o} faz sentido?`,
+];
+/** Round 8: every trigger (wanting verb, modal, "quer que") after a third-party subject. */
+const triggersOfOthers: readonly ((v: {inf: string; subj: string}, o: string, who: [string, string]) => string)[] = [
+  (v, o, [S]) => `${S} gostaria de ${v.inf} ${o}.`,
+  (v, o, [S]) => `${S} queria ${v.inf} ${o}.`,
+  (v, o, [S]) => `${S} quer ${v.inf} ${o}.`,
+  (v, o, [S]) => `${S} precisa ${v.inf} ${o}.`,
+  (v, o, [S]) => `${S} poderia ${v.inf} ${o}?`,
+  (v, o, [S]) => `${S} quer que você ${v.subj} ${o}.`,
+  (v, o, [S]) => `${S} disse que você pode ${v.inf} ${o}.`,
+];
+/** The requests addressed to the advisor that promote (the positives), and the same requests reported from a third party,
+ * which never do: "X disse que", "X pediu que", "segundo X", "de acordo com X", "conforme X sugeriu". */
+export const lote4AddressedRequests: readonly string[] = [
+  "Prepare a discussão da dívida para o conselho.", "Monte a discussão de estrutura de capital para o conselho.", "Quero que você prepare a discussão da dívida para o conselho.",
+  "Você consegue preparar a discussão da dívida para o conselho?", "Preciso preparar a discussão da dívida para o conselho.",
+  "Avalie essa proposta de crédito do banco que o Itaú mandou.", "Pode avaliar a proposta de crédito que o Bradesco mandou?",
+  "Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?", "O Itaú mandou essa proposta de CCB, é boa?",
+  "Recebi uma proposta de CCB do Bradesco. Vale a pena?", "Essa proposta de crédito do Itaú é boa?", "Eu gostaria de avaliar essa proposta de crédito que recebemos.",
+];
+const reportedForms: readonly ((p: string, who: [string, string]) => string)[] = [
+  (p, [S]) => `${S} disse que ${p[0]!.toLowerCase()}${p.slice(1)}`,
+  (p, [S]) => `${S} pediu que ${p[0]!.toLowerCase()}${p.slice(1)}`,
+  (p, [, s]) => `Segundo ${s}, ${p[0]!.toLowerCase()}${p.slice(1)}`,
+  (p, [, s]) => `De acordo com ${s}, ${p[0]!.toLowerCase()}${p.slice(1)}`,
+  (p, [, s]) => `Conforme ${s} sugeriu, ${p[0]!.toLowerCase()}${p.slice(1)}`,
 ];
 /** Round 6: the action of someone else, reported or asked about, never a request to the advisor. */
 const others: readonly ((v: {inf: string; subj: string}, o: string) => string)[] = [
@@ -101,6 +128,8 @@ export function lote4VetoFamily(): string[] {
     for (const r of interleaved) out.push(r(v, o));
     for (const r of others) out.push(r(v, o));
     for (const who of thirdParties) for (const r of othersByModal) out.push(r(v, o, who));
+    for (const who of thirdParties) for (const r of triggersOfOthers) out.push(r(v, o, who));
   }
+  for (const p of lote4AddressedRequests) for (const who of thirdParties) for (const r of reportedForms) out.push(r(p, who));
   return out;
 }

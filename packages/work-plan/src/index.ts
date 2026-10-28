@@ -9,7 +9,6 @@ export * from "./received-proposal-route";
 export * from "./document-folder-route";
 export * from "./financing-paths-route";
 export * from "./board-material-route";
-export {holdsLote4Refusal} from "./lote4-request";
 export {
   terminalWorkProductSchema,
   terminalDeliveryFormatSchema,

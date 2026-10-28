@@ -4,7 +4,7 @@ import {composeBoundDocumentFolderInventory, documentFolderInventoryFactsSchema,
   inventoryInformedRecordSchema, inventoryModes, prepareDocumentFolderInventoryPacket, proposeDocumentFolderInventoryHypotheses, proposeDocumentFolderUpdateHypotheses, registryName,
   type DocumentFolderInventoryFacts, type DocumentFolderUpdateFacts, type DocumentReading, type ProposedHypothesis} from "@offroad/financial-model";
 import {documentLayerSchema, type DocumentLayer} from "@offroad/document-intelligence";
-import {compileObjectiveToPlan, holdsLote4Refusal} from "@offroad/work-plan";
+import {compileObjectiveToPlan} from "@offroad/work-plan";
 import {uuidV5} from "./investment-premises-proposal";
 import {extractedOrigin, factsOrGaps, itemSource, sourced, stableKey, stated, type Lote2Origin, type Lote2SummaryItem} from "./lote2-premises";
 import {asksOrExplains, foldCue, premiseCueKind, turnIntentInstruction, turnIntents} from "./premise-cue";
@@ -257,13 +257,31 @@ export function documentFolderResumeOf(resume: unknown): {framing: DocumentFolde
   const m = z.object({wait_id: z.uuid(), source_message_id: z.uuid(), framing: documentFolderFramingSchema}).safeParse(resume);
   return m.success ? {framing: m.data.framing, sourceMessageId: m.data.source_message_id} : null;
 }
-/** The folder named as the object of a withdrawal: the folder, its files, its inventory or its organization. */
-const withdrawnFolder = /\b(?:pastas?|arquivos|documentos|materia(?:l|is)|inventario|organiz\w*|arrum\w*|leitura)\b/;
-/** Whether the person withdrew the folder request after the wait opened: a later message of theirs that refuses, cancels
- * or gives up the folder (the conservative veto's vocabulary, about the folder), or that asks for something else
- * (`changed`, the route of that message). A plain answer ("A minuta não foi para nenhum banco.") keeps the wait. */
+/** Withdrawal is an act on the request, never a negation by itself ("Os documentos não foram auditados." withdraws
+ * nothing). In a reply after the wait, a clause withdraws it when its main verb is a cancellation or desistance verb
+ * ("cancele", "pode cancelar", "desista", "esqueça", "deixa pra lá", "pare", "abandone", "descarte"), after courtesy,
+ * a first person subject or a modal addressed to the advisor at most; or when it is a first person "não quero/preciso
+ * (mais)", or "não precisa (mais)". Either withdraws only with no object, a pronoun ("isso", "tudo", "o pedido") or
+ * the folder itself (the folder, its files, its inventory, its organization or reading) as its object: "cancele a
+ * reunião" leaves the folder as it was. */
+const withdrawalLead = String.raw`^(?:(?:por favor|ok|okay|bom|olha|entao|agora|so|tudo bem|eu|nos|a gente|voce|vc|ja|melhor)\s+)*`;
+const withdrawalModal = String.raw`(?:(?:pode|podem|poderia|consegue)\s+(?:ja\s+)?)?`;
+const withdrawalVerb = String.raw`(?:cancel(?:e|a|ar|em|o|amos|ei)|desist(?:a|e|o|ir|imos|i)(?: de)?|esquec(?:a|e|er|o|i)|desconsider(?:e|a|ar|o)|abandon(?:e|a|ar|o|ei)|descart(?:e|a|ar|o|ei)|suspend(?:a|e|er|o|i)|interromp(?:a|e|er|o|i)|par(?:e|ar|o|amos)|para(?= *$| com| por| tudo)|deix(?:a|e|o|ar) (?:pra|para) la)`;
+const withdrawalAct = new RegExp(String.raw`${withdrawalLead}${withdrawalModal}${withdrawalVerb}\b(.*)$`);
+const notWanting = new RegExp(String.raw`${withdrawalLead}nao (?:quero|queremos|preciso|precisamos|precisa)(?: mais)?(?: de| do| da| disso| nisso)?\b(.*)$`);
+/** What may remain after the act: nothing, adverbs, pronouns, the pending request, or the folder and its action. */
+const withdrawnObject = /^(?:(?:mais|ja|agora|por favor|por enquanto|por ora|enquanto|entao|ainda|mesmo|de vez|tudo|isso|disso|nisso|isto|aquilo|ai|aqui|la|com isso|por aqui|o|a|os|as|de|da|do|das|dos|esse|essa|este|esta|esses|essas|nessa|nesse|pedido|pedidos|solicitacao|request|pastas?|arquivos?|documentos?|materia(?:l|is)|inventarios?|organizacao|arrumacao|leitura|organiz\w*|arrum\w*|inventari\w*|ler|ver|obrigad[oa])\s*)*$/;
+/** Whether one reply withdraws the pending folder request. */
+export function withdrawsDocumentFolderRequest(message: string): boolean {
+  return foldCue(message).split(/[.!?;,:]|\b(?:e|mas|porem)\b/).map((c) => c.trim().replace(/\s+/g, " ")).filter(Boolean).some((clause) => {
+    const act = withdrawalAct.exec(clause) ?? notWanting.exec(clause);
+    return act !== null && withdrawnObject.test(act[1]!.trim());
+  });
+}
+/** Whether the person withdrew the folder request after the wait opened: a later reply that withdraws it, or that asks
+ * for something else (`changed`, the route of that message). A plain answer or a fact about the documents keeps it. */
 export function documentFolderWaitWithdrawn(laterMessages: readonly string[], changed: (message: string) => boolean): boolean {
-  return laterMessages.some((m) => {const t = foldCue(m); return (holdsLote4Refusal(t) && withdrawnFolder.test(t)) || changed(m);});
+  return laterMessages.some((m) => withdrawsDocumentFolderRequest(m) || changed(m));
 }
 /** The texts of the system's continuation message (private.document_folder_reading_advance_v1 writes them, origin system):
  * never the person's words, so they are left out of what the person said. */
