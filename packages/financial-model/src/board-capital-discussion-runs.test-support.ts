@@ -357,6 +357,13 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r39: a seen crop never sends the unseen packaging line to the appendix; the withdrawal reaches every occurrence of its theme only.
+    observe("unseen-packaging-line-stays-before-the-recommendation-when-the-crop-is-seen", boardPacketInput(2, (c) => {c.topics = c.topics.map((t) => ({...t, seen: t.id === "safra"}));}),
+      {linha: "main", safra: "appendix"}, (p) => ({linha: pageOf(p, "linha").placement, safra: pageOf(p, "safra").placement})),
+    observe("withdrawal-of-the-packaging-line-recommendation-reaches-every-occurrence-and-only-it", boardPacketInput(3),
+      {linha: false, safra: true, vencimentos: true, anywhere: false}, (p) => {const v = current(p); const all = [v.summary, ...v.deliberations.map((x) => x.text), ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options])].join(" | ");
+        return {linha: v.deliberations.find((x) => x.id === "linha")!.recommendationShown, safra: v.deliberations.find((x) => x.id === "safra")!.recommendationShown,
+          vencimentos: v.deliberations.find((x) => x.id === "vencimentos")!.recommendationShown, anywhere: /não emitir o pedido de compra|Recomendamos pedir cotações/.test(all)};}),
     // Review r36: the demand floor is inclusive; at the floor and one quantum above, the floor is said "a partir de".
     ...(["74.44", "74.45"] as const).map((amount) => observe(`demand-${amount === "74.44" ? "exactly-at" : "one-quantum-above"}-the-floor-said-from-the-floor`, boardDemandAt(amount) as BoardCapitalDiscussionPacketInput,
       {title: "A recomendação depende de demanda a partir de R$ 74,44 milhões"}, (p) => ({title: boardShownTexts(p).find((t) => t.startsWith("A recomendação depende de demanda"))}))),
@@ -778,6 +785,10 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r39: the theme is derived from the templates; a topic in the facts that is not it, or none, is refused.
+    ["page-topic-swapped-to-the-crop", () => boardPacketViaPremises(3, (c) => {c.pages.find((x) => x.id === "linha")!.topicId = "safra";}), "Topic safra of page linha is not the theme of its texts (linha-embalagem)"],
+    ["page-topic-missing", () => boardPacketViaPremises(3, (c) => {c.pages.find((x) => x.id === "linha")!.topicId = null;}), "Topic of page linha missing"],
+    ["deliberation-topic-swapped-to-the-crop", () => boardPacketViaPremises(3, (c) => {c.deliberations.find((x) => x.id === "linha")!.topicId = "safra";}), "Topic safra of deliberation linha is not the theme of its texts (linha-embalagem)"],
     // Review r38: "economia menor" is the net operating economy in every period; smaller first and larger later is refused.
     ["economy-smaller-first-and-larger-later", () => {
       const packet = auroraInvestmentPacket({economyLaterLarger: true}) as unknown as Record<string, unknown>;

@@ -5,7 +5,7 @@ import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
 import {boardAuthorities, boardOmissionTargets, boardPageRoles, prepareBoardCapitalDiscussion,
   type BoardDiscussion, type BoardFigure, type BoardSourceReading, boardCanonicalJson} from "./board-capital-discussion";
-import {boardTextRefPattern} from "./board-capital-discussion-templates";
+import {boardTextRefPattern, boardThemeOfRefs} from "./board-capital-discussion-templates";
 import {boardSourceMethodIds, boardSourcePacketSchema, parseBoardSourceText, verifyBoardSource} from "./board-capital-discussion-sources";
 import {boardCapitalDiscussionExclusions} from "./board-capital-discussion-results";
 
@@ -24,14 +24,14 @@ export const adoptedBoardCapitalDiscussionInputSchema = adoptedAnalysisContextSc
   /** Each reviewed result by [method, packet fingerprint]. */
   sources: z.array(z.strictObject({id: key, reading: selection})).min(1).max(16),
   topics: z.array(z.strictObject({id: key, label: selection, seen: selection.nullable()})).max(12),
-  deliberations: z.array(z.strictObject({id: key, topicId: key.nullable(), title: selection, subject: selection, recommendation: selection.nullable(),
+  deliberations: z.array(z.strictObject({id: key, title: selection, subject: selection, recommendation: selection.nullable(),
     /** [authority, basis?] */
     authority: selection, deadlines: z.array(z.strictObject({id: key, reading: selection})).max(4)})).min(1).max(12),
   /** A reading is [source, path, unit, scale, places, stated?]; a pending figure is [required method, required field path, reason]. */
   figures: z.array(z.strictObject({id: key, kind: z.enum(["reading", "pending"]), reading: selection})).max(160),
   materialFigureIds: selection,
   indicative: z.array(z.strictObject({figureId: key, reason: selection})).max(24),
-  pages: z.array(z.strictObject({id: key, topicId: key.nullable(), role: selection, title: selection, lines: selection, recommendation: selection.nullable(), options: selection.nullable()})).min(1).max(40),
+  pages: z.array(z.strictObject({id: key, role: selection, title: selection, lines: selection, recommendation: selection.nullable(), options: selection.nullable()})).min(1).max(40),
   summary: z.strictObject({opening: selection, closing: selection}),
   /** [label, source...] */
   appendix: z.array(z.strictObject({id: key, reading: selection})).max(16),
@@ -83,12 +83,15 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
   });
   const topics = input.topics.map((t) => ({id: t.id, label: need(read(t.label, `topic.${t.id}.label`, "text", "text", textRef)),
     seen: t.seen === null ? null : need(read(t.seen, `topic.${t.id}.seen`, "convention", "boolean", z.boolean()))}));
+  const themeOf = (refs: (string | null | undefined)[]) => {const xs = refs.filter((r): r is string => typeof r === "string"); return xs.length ? boardThemeOfRefs(xs) : null;};
   const deliberations = input.deliberations.map((d) => {
     const p = `deliberation.${d.id}.`, authority = list(d.authority, p + "authority", z.tuple([z.enum(boardAuthorities)]).rest(textRef));
-    return {id: d.id, topicId: d.topicId, title: need(read(d.title, p + "title", "text", "text", textRef)), subject: need(read(d.subject, p + "subject", "text", "text", textRef)),
+    const x = {id: d.id, title: need(read(d.title, p + "title", "text", "text", textRef)), subject: need(read(d.subject, p + "subject", "text", "text", textRef)),
       recommendation: d.recommendation === null ? null : need(read(d.recommendation, p + "recommendation", "text", "text", textRef)),
       authority: authority?.[0] as (typeof boardAuthorities)[number], authorityBasis: authority?.[1] ?? null,
       deadlines: d.deadlines.map((x) => {const r = list(x.reading, `${p}deadline.${x.id}`, z.tuple([z.iso.date(), textRef])); return {id: x.id, date: r?.[0] as string, action: r?.[1] as string};})};
+    // The theme is derived from the templates, never adopted.
+    return {...x, topicId: themeOf([x.title, x.subject, x.recommendation, ...x.deadlines.map((t) => t.action)])};
   });
   const figures: BoardFigure[] = input.figures.map((f) => {
     if (f.kind === "pending") {
@@ -104,10 +107,11 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
   const indicative = input.indicative.map((x) => ({figureId: x.figureId, reason: need(read(x.reason, `figure.${x.figureId}.indicative`, "text", "text", textRef))}));
   const pages = input.pages.map((pg) => {
     const p = `page.${pg.id}.`;
-    return {id: pg.id, topicId: pg.topicId, role: need(read(pg.role, p + "role", "convention", "text", z.enum(boardPageRoles))), title: need(read(pg.title, p + "title", "text", "text", textRef)),
+    const x = {id: pg.id, role: need(read(pg.role, p + "role", "convention", "text", z.enum(boardPageRoles))), title: need(read(pg.title, p + "title", "text", "text", textRef)),
       lines: need(read(pg.lines, p + "lines", "text", "list", z.array(textRef).max(12))),
       recommendation: pg.recommendation === null ? null : need(read(pg.recommendation, p + "recommendation", "text", "text", textRef)),
       options: pg.options === null ? [] : need(read(pg.options, p + "options", "text", "list", z.array(textRef).max(6)))};
+    return {...x, topicId: themeOf([x.title, ...(x.lines ?? []), x.recommendation, ...(x.options ?? [])])};
   });
   const summary = {opening: need(read(input.summary.opening, "summary.opening", "text", "text", textRef)), closing: need(read(input.summary.closing, "summary.closing", "text", "text", textRef))};
   const appendix = input.appendix.map((a) => {const r = list(a.reading, `appendix.${a.id}`, z.tuple([textRef]).rest(key)); return {id: a.id, label: r?.[0] as string, sourceIds: r?.slice(1) ?? []};});

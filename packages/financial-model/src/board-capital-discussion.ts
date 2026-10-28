@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
-import {type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardBoundaries, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardThemeOfRefs, boardThemes, type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardBoundaries, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTemplate, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -259,6 +259,8 @@ export function boardConditionSlots(c: unknown): string[] {
 }
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string; canonical?: string; fingerprint?: string; periodMonths?: string}; unnamed?: true} | {pending: true; methodId?: string; path?: string};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[];
+  /** A library given to this one render (tests of a changed template); the material always renders with the frozen one. */
+  library?: Readonly<Record<string, BoardTemplate>>;
   /** The canonical names of the debtors this text names, by the reading bound to the debtor slot. */
   debtors?: Map<string, string>;
   /** The reviewed forms of the objects this text names, by the reading bound to the object slot. */
@@ -363,7 +365,7 @@ function compareBoard(a: string, how: BoardComparison, b: string) {
  * the fixed text asserts is checked against the bound readings and their sources. A pending reading fits a slot of
  * its method and leaves the conditions on it unchecked (it is a named gap). Anything else is refused by name. */
 export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]; unmatched: string[]; unknownSpecies: string[]} {
-  const {templateId, bindings, template} = parseBoardTextRef(ref);
+  const {templateId, bindings, template} = parseBoardTextRef(ref, context.library);
   const concept = (slot: string, why: string) => new Error(`board_capital_slot_concept_mismatch:${templateId}:${slot}:${why}`);
   const vars: Record<string, string> = {};
   const share = (slot: string, got: Record<string, string>) => {
@@ -379,7 +381,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const deadline = context.deliberations.find((d) => d.id === deliberationId)?.deadlines.find((x) => x.id === deadlineId);
       if (!deadline) throw new Error(`board_capital_unknown_token:${bound}`);
       // The deadline shown is the deadline of the action the template announces, never another one.
-      if (parseBoardTextRef(deadline.action).templateId !== spec.action) throw new Error(`board_capital_deadline_action_mismatch:${templateId}:${slot}:${bound.slice(9)}`);
+      if (parseBoardTextRef(deadline.action, context.library).templateId !== spec.action) throw new Error(`board_capital_deadline_action_mismatch:${templateId}:${slot}:${bound.slice(9)}`);
       values[slot] = {value: deadline.date, methodId: "", sourceId: ""};
       out.push({templateId, slot, figureId: null, deadlineId: bound.slice(9), informedId: null});
       continue;
@@ -1034,7 +1036,8 @@ export function orderBoardDeliberations(deliberations: BoardDeliberation[]) {
 export function orderBoardPages(pages: BoardPage[], topics: BoardDiscussion["topics"]) {
   const seen = new Map(topics.map((t) => [t.id, t.seen]));
   const rank = new Map(boardPageRoles.map((r, i) => [r, i]));
-  const main = pages.map((p, index) => ({p, index})).filter(({p}) => !(p.role === "topic" && p.topicId !== null && seen.get(p.topicId) === true))
+  // The theme is the page's derived one, never the adopted id.
+  const main = pages.map((p, index) => ({p, index})).filter(({p}) => {const t = boardPageTheme(p); return !(p.role === "topic" && t !== null && seen.get(t) === true);})
     .sort((a, b) => rank.get(a.p.role)! - rank.get(b.p.role)! || a.index - b.index).map((x) => x.p);
   const appendix = pages.filter((p) => !main.includes(p));
   return {main, appendix};
@@ -1046,10 +1049,11 @@ const sentences = {
   deadlineKept: "O prazo fica, porque vale para qualquer caminho que o conselho escolher.",
   onlyRecommendation: "Só a recomendação pode sair a pedido; páginas, linhas e fatos ficam no material como foram compostos.",
   unknownTarget: "O pedido não corresponde a nenhuma parte do material.",
+  removalUnverified: "A recomendação não sai porque a conferência final não mostrou a retirada completa do assunto sem tocar nos demais.",
 } as const;
 export type BoardOmissionDecision = {id: string; target: BoardOmissionTarget; targetId: string; requestedBy: string; outcome: "applied" | "refused"; reason: string; keptFigureIds: string[]};
-type Removed = {recommendations: Set<string>; pages: Set<string>; figures: Set<string>};
-const noRemoval = (): Removed => ({recommendations: new Set(), pages: new Set(), figures: new Set()});
+type Removed = {recommendations: Set<string>; themes: Set<string>; pages: Set<string>; figures: Set<string>};
+const noRemoval = (): Removed => ({recommendations: new Set(), themes: new Set(), pages: new Set(), figures: new Set()});
 
 /** One deliberation in one sentence: what is asked and, after it, every action with its deadline. */
 function deliberationText(ask: BoardRich, deadlines: {action: BoardRich; display: BoardRich}[]): BoardRich {
@@ -1085,9 +1089,11 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
   };
   // A figure the author removed renders nowhere: a line that carries it is dropped with it.
   const drops = (t: string) => boardPlaceholderIds(t).some((id) => removed.figures.has(id));
-  const neutralTopics = new Set(d.pages.filter((p) => removed.recommendations.has(p.id) && p.topicId !== null).map((p) => p.topicId!));
+  // A recommendation withdrawn by theme: every page and deliberation of that derived theme loses its recommendation.
+  const neutralTopics = removed.themes;
   const deliberations = orderBoardDeliberations(d.deliberations).map((x, i) => {
-    const ask = x.recommendation !== null && !(x.topicId !== null && neutralTopics.has(x.topicId)) ? render(x.recommendation, `deliberation.${x.id}.text`) : render(x.subject, `deliberation.${x.id}.text`);
+    const theme = boardDeliberationTheme(x);
+    const ask = x.recommendation !== null && !(theme !== null && neutralTopics.has(theme)) ? render(x.recommendation, `deliberation.${x.id}.text`) : render(x.subject, `deliberation.${x.id}.text`);
     const title = shown(`deliberation.${x.id}.title`, render(x.title, `deliberation.${x.id}.title`));
     const deadlines = x.deadlines.map((t) => {
       const action = shown(`deliberation.${x.id}.deadline.${t.id}`, render(t.action, `deliberation.${x.id}.deadline.${t.id}`));
@@ -1104,7 +1110,7 @@ function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDispl
     const title = shown(`page.${p.id}.title`, render(p.title, `page.${p.id}.title`));
     const lines: BoardRich[] = p.lines.filter((l) => !drops(l)).map((l, j) => shown(`page.${p.id}.line.${j}`, render(l, `page.${p.id}.line.${j}`)));
     if (p.role === "decisions") for (const x of deliberations) lines.push(shown(`page.${p.id}.decision.${x.id}`, x.line));
-    const withoutRecommendation = removed.recommendations.has(p.id);
+    const theme = boardPageTheme(p), withoutRecommendation = p.recommendation !== null && theme !== null && removed.themes.has(theme);
     const recommendation = p.recommendation !== null && !withoutRecommendation ? shown(`page.${p.id}.recommendation`, render(p.recommendation, `page.${p.id}.recommendation`)) : null;
     const options = withoutRecommendation ? p.options.filter((o) => !drops(o)).map((o, j) => shown(`page.${p.id}.option.${j}`, render(o, `page.${p.id}.option.${j}`))) : [];
     if (withoutRecommendation && !options.length) gaps.push({item: `page.${p.id}`, reason: "recommendation_removed_without_options"});
@@ -1177,19 +1183,27 @@ export function decideBoardOmissions(d: BoardDiscussion, figures: Map<string, Bo
   const economic = new Set(boardMaterialFacts(d, figures).figures);
   const decisions: BoardOmissionDecision[] = d.omissions.map((o) => {
     const done = (outcome: "applied" | "refused", reason: string, keptFigureIds: string[] = []) => ({...o, outcome, reason, keptFigureIds});
-    const attempt = (apply: (r: Removed) => void, applied: string): BoardOmissionDecision => {
-      const next = {recommendations: new Set(removed.recommendations), pages: new Set(removed.pages), figures: new Set(removed.figures)};
+    const attempt = (apply: (r: Removed) => void, applied: string, verify?: (m: Version["material"], r: Removed) => boolean): BoardOmissionDecision => {
+      const next = {recommendations: new Set(removed.recommendations), themes: new Set(removed.themes), pages: new Set(removed.pages), figures: new Set(removed.figures)};
       apply(next);
-      const lost = boardMissingFacts(d, figures, renderVersion(d, figures, next, 2, sources).material);
+      const material = renderVersion(d, figures, next, 2, sources).material;
+      const lost = boardMissingFacts(d, figures, material);
       if (lost.figures.length || lost.deadlines.length) return done("refused", sentences.materialKept, lost.figures);
+      if (verify && !verify(material, next)) return done("refused", sentences.removalUnverified);
       apply(removed);
       return done("applied", applied);
     };
     if (o.target === "recommendation") {
       const p = d.pages.find((x) => x.id === o.targetId);
       if (!p || p.recommendation === null) return done("refused", sentences.unknownTarget);
+      const theme = boardPageTheme(p);
+      if (theme === null || theme === "geral") return done("refused", sentences.unknownTarget);
       const kept = [...new Set([p.title, ...p.lines, p.recommendation, ...p.options].flatMap(boardPlaceholderIds))].filter((id) => economic.has(id));
-      const decision = attempt((r) => r.recommendations.add(p.id), sentences.recommendationRemoved);
+      // The confirmation is issued only if the final text shows no recommendation of this theme and every recommendation
+      // of the other themes still shown before the request.
+      const before = renderVersion(d, figures, removed, 2, sources).material;
+      const decision = attempt((r) => {r.recommendations.add(p.id); r.themes.add(theme);}, sentences.recommendationRemoved,
+        (m) => boardWithdrawalVerified(boardRecommendationSentences(d, figures, sources), before, m, theme));
       return decision.outcome === "applied" ? {...decision, keptFigureIds: kept} : decision;
     }
     // A request removes only a sentence of recommendation; no page, line, fact or deadline is ever taken out.
@@ -1239,8 +1253,8 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   unique(d.pages.map((x) => x.id), "board_capital_duplicate_page");
   unique(d.figures.map((x) => x.id), "board_capital_duplicate_figure");
   unique(d.questions.map((x) => x.id), "board_capital_duplicate_question");
-  const topics = new Set(d.topics.map((t) => t.id));
-  for (const x of [...d.pages, ...d.deliberations]) if (x.topicId !== null && !topics.has(x.topicId)) throw new Error("board_capital_unknown_topic");
+  // Topics the board may have seen are themes of the closed library.
+  for (const t of d.topics) if (!(boardThemes as readonly string[]).includes(t.id)) throw new Error("board_capital_unknown_topic");
   for (const id of [...d.materialFigureIds, ...d.indicative.map((x) => x.figureId)]) if (!d.figures.some((f) => f.id === id)) throw new Error("board_capital_unknown_figure");
   // Every text is a reference to the closed library, checked up front even when it renders only later (options).
   for (const t of [...d.pages.flatMap((p) => [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : [], ...p.options]),
@@ -1307,7 +1321,44 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
     const wrong = (x: string, family: string) => {const id = idOf(x); return id !== "" && !id.startsWith(family);};
     if (texts.some((x) => wrong(x, prefix)) || p.options.some((x) => wrong(x, "option."))) throw new Error(`board_capital_page_role_mismatch:${p.id}:${p.role}`);
   }
+  // The theme is derived, never adopted: the theme of a page, a deliberation or a summary item is the theme of its
+  // templates (one decision theme, or "geral"); two decision themes mixed are refused; an adopted topicId must equal the
+  // derived theme, and a missing one is refused.
+  const derived = (refs: string[], where: string) => {const t = boardThemeOfRefs(refs); if (t === null) throw new Error(`board_capital_theme_mixed:${where}`); return t;};
+  for (const p of d.pages) {
+    const t = derived(boardPageRefs(p), `page.${p.id}`);
+    if (p.topicId === null) throw new Error(`board_capital_topic_missing:page.${p.id}`);
+    if (p.topicId !== t) throw new Error(`board_capital_topic_mismatch:page.${p.id}:${p.topicId}:${t}`);
+  }
+  for (const x of d.deliberations) {
+    const t = derived(boardDeliberationRefs(x), `deliberation.${x.id}`);
+    if (x.topicId === null) throw new Error(`board_capital_topic_missing:deliberation.${x.id}`);
+    if (x.topicId !== t) throw new Error(`board_capital_topic_mismatch:deliberation.${x.id}:${x.topicId}:${t}`);
+  }
+  derived([d.summary.opening], "summary.opening"); derived([d.summary.closing], "summary.closing");
 }
+/** Every recommendation sentence of the discussion, as rendered, with the derived theme of its page or deliberation. */
+export function boardRecommendationSentences(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, sources: BoardSourceReading[]) {
+  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed};
+  return [...d.pages.flatMap((p) => p.recommendation !== null ? [{ref: p.recommendation, theme: boardPageTheme(p)}] : []),
+    ...d.deliberations.flatMap((x) => x.recommendation !== null ? [{ref: x.recommendation, theme: boardDeliberationTheme(x)}] : [])]
+    .flatMap((r) => r.theme === null ? [] : [{theme: r.theme as string, text: renderBoardRef(r.ref, context).display}]);
+}
+/** The final check of a withdrawal of a theme's recommendation, on the rendered versions: the new version shows no
+ * recommendation sentence of that theme anywhere (deliberations, pages, decisions page, options, summary), and every
+ * recommendation sentence of another theme that the version before showed is still shown. */
+export function boardWithdrawalVerified(recommendations: readonly {theme: string; text: string}[], before: BoardVersionTexts, after: BoardVersionTexts, theme: string) {
+  const texts = (m: BoardVersionTexts) => [m.summary, ...m.deliberations.map((x) => x.text), ...m.pages.flatMap((p) => [p.title, ...p.lines, p.recommendation ?? "", ...p.options])];
+  const shown = (m: BoardVersionTexts, text: string) => texts(m).some((t) => t.includes(text));
+  return !recommendations.some((r) => r.theme === theme && shown(after, r.text))
+    && recommendations.filter((r) => r.theme !== theme && shown(before, r.text)).every((r) => shown(after, r.text));
+}
+export type BoardVersionTexts = {summary: string; deliberations: {text: string}[]; pages: {title: string; lines: string[]; recommendation: string | null; options: string[]}[]};
+/** The texts that make a page or a deliberation, whose templates give its theme. */
+export const boardPageRefs = (p: BoardPage) => [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : [], ...p.options];
+export const boardDeliberationRefs = (x: BoardDeliberation) => [x.title, x.subject, ...x.recommendation ? [x.recommendation] : [], ...x.deadlines.map((t) => t.action)];
+export const boardPageTheme = (p: BoardPage) => boardThemeOfRefs(boardPageRefs(p));
+export const boardDeliberationTheme = (x: BoardDeliberation) => boardThemeOfRefs(boardDeliberationRefs(x));
 
 /** Resolves every figure against the reviewed results: a reading that does not resolve is refused as a
  * number without origin; one that resolves to a different number than the author states is refused as
@@ -1408,3 +1459,6 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
     pendingFigures: d.figures.flatMap((f) => f.kind === "pending" ? [{figureId: f.id, methodId: f.requiredMethodId, path: f.requiredPath, reason: shownText(f.reason)}] : []),
     materialFacts: boardMaterialFacts(d, figures), informed: d.informed.map((x) => ({...x})), priorVersionsKept: true as const, sentToThirdParties: false as const, presented: false as const};
 }
+
+// The vocabularies of the core are frozen as well.
+for (const x of [boardFigureUnits, boardEconomicUnits, boardPageRoles, boardAuthorities, boardOmissionTargets, boardForbiddenWords, months, feminine, monthWords, sentences, LIMITS]) Object.freeze(x);

@@ -59,7 +59,6 @@ export function composeBoundBoardCapitalDiscussion(raw: unknown): BoardCapitalDi
     if (found.length > 1) throw new Error(`${code}_ambiguous`);
     return found.length ? found[0]!.value.value as string | string[] : null;
   }
-  const topicOf = (p: string) => {const v = meta(p, "text", "board_capital_topic"); return v === null ? null : keyOf.parse(v);};
   // Every id the adopted order lists or a field path names is composed; none disappears silently.
   const keys = (pattern: RegExp, orderPath: string) => {
     const order = z.array(keyOf).parse(meta(orderPath, "list", "board_capital_order") ?? []);
@@ -72,7 +71,7 @@ export function composeBoundBoardCapitalDiscussion(raw: unknown): BoardCapitalDi
   const deliberations = keys(new RegExp(`^deliberation\\.(${k})\\.`), "order.deliberations").map((id) => {
     const p = `deliberation.${id}.`;
     const deadlineIds = keys(new RegExp(`^deliberation\\.${id}\\.deadline\\.(${k})$`), p + "order.deadlines");
-    return {id, topicId: topicOf(p + "topic"), title: select(p + "title", "text", "text"), subject: select(p + "subject", "text", "text"),
+    return {id, title: select(p + "title", "text", "text"), subject: select(p + "subject", "text", "text"),
       recommendation: optional(p + "recommendation", "text", "text"), authority: select(p + "authority", "identity", "list"),
       deadlines: deadlineIds.map((x) => ({id: x, reading: select(`${p}deadline.${x}`, "identity", "list")}))};
   });
@@ -85,7 +84,7 @@ export function composeBoundBoardCapitalDiscussion(raw: unknown): BoardCapitalDi
   const indicative = keys(new RegExp(`^figure\\.(${k})\\.indicative$`), "order.indicative").map((figureId) => ({figureId, reason: select(`figure.${figureId}.indicative`, "text", "text")}));
   const pages = keys(new RegExp(`^page\\.(${k})\\.`), "order.pages").map((id) => {
     const p = `page.${id}.`;
-    return {id, topicId: topicOf(p + "topic"), role: select(p + "role", "convention", "text"), title: select(p + "title", "text", "text"), lines: select(p + "lines", "text", "list"),
+    return {id, role: select(p + "role", "convention", "text"), title: select(p + "title", "text", "text"), lines: select(p + "lines", "text", "list"),
       recommendation: optional(p + "recommendation", "text", "text"), options: optional(p + "options", "text", "list")};
   });
   const appendix = keys(new RegExp(`^appendix\\.(${k})$`), "order.appendix").map((id) => ({id, reading: select(`appendix.${id}`, "identity", "list")}));

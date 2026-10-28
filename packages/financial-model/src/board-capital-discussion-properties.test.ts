@@ -7,7 +7,7 @@ import {boardShownTexts, boardConceptAttempts, boardDeferralReadings, boardRatin
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, debtTableWithPrincipal, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, debtTableAtReferenceDate, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
-import {boardCanonicalJson, boardConditionSlots, boardVersionFingerprint} from "./board-capital-discussion";
+import {boardCanonicalJson, boardConditionSlots, boardVersionFingerprint, boardWithdrawalVerified, readBoardSourcePath, renderBoardRef, type BoardFigureDisplay, type BoardSourceReading} from "./board-capital-discussion";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
 /** A fixed-seed generator (mulberry32), so every property run is the same run. */
@@ -25,7 +25,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(page_role_mismatch|reading_presentation_not_unique|template_condition_undefined|rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
+const refusal = /board_capital_(page_role_mismatch|reading_presentation_not_unique|template_condition_undefined|rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid|theme_mixed|topic_missing|topic_mismatch)|mix themes|is not the theme of its texts|Topic of .* missing|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -253,6 +253,25 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   }
   const texts = [v.summary, ...v.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options]), ...v.deliberations.flatMap((x) => [x.title, x.text, ...x.deadlines.map((t) => t.action)]),
     ...v.questions.flatMap((x) => [x.question, x.answer]), ...v.appendix.map((x) => x.label)];
+  // Themes, the oracle's own reading (written apart from the library): a page's theme from its shown title; the topic the
+  // material prints for the page must be it. A withdrawal confirmed as applied must be true on the final text: no
+  // recommendation phrase of the target page's theme anywhere, and every recommendation phrase of another theme shown in
+  // the first version still shown.
+  const ownTheme = (title: string) => /^Pedimos |^A dívida é de |^O caixa fica abaixo|^O contrato da dívida|^Próximos passos/.test(title) ? "geral"
+    : / rende .*custo de capital/.test(title) ? "linha-embalagem" : /^Os programas dos clientes/.test(title) ? "safra" : /^A política de /.test(title) ? "politica"
+    : /^Avaliamos |caminhos combinam|^Recomendamos sondar|^A alavancagem chega|^A recomendação depende/.test(title) ? "vencimentos" : `desconhecido:${title.slice(0, 30)}`;
+  for (const x of v.pages) if (ownTheme(x.title) !== x.topicId) bad.push(`theme:${x.id}:${x.topicId}:${ownTheme(x.title)}`);
+  const phrases: Record<string, RegExp[]> = {"linha-embalagem": [/não emitir o pedido de compra/, /Recomendamos pedir cotações/], safra: [/financiar o capital de giro começando pelos programas/],
+    vencimentos: [/autorizar a sondagem/], politica: []};
+  const textsOf = (m: typeof v) => [m.summary, ...m.deliberations.map((x) => x.text), ...m.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options])];
+  const first = p.result.discussion!.versions[0]!;
+  for (const o of d.omissions.filter((x) => x.target === "recommendation" && x.outcome === "applied")) {
+    const target = first.pages.find((x) => x.id === o.targetId), theme = target ? ownTheme(target.title) : "";
+    const after = textsOf(v), before = textsOf(first);
+    const left = (phrases[theme] ?? []).some((re) => after.some((t) => re.test(t)));
+    const lostOther = Object.entries(phrases).filter(([k]) => k !== theme).flatMap(([, res]) => res).some((re) => before.some((t) => re.test(t)) && !after.some((t) => re.test(t)));
+    if (!target || !phrases[theme] || left || lostOther) bad.push(`omission_confirmation:${o.id}`);
+  }
   const counts = ["zero", "uma", "duas", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"];
   const known = [...d.identity.map((x) => x.display), ...v.deliberations.flatMap((x) => x.deadlines.map((t) => t.display)),
     `Pedimos ${counts[v.deliberations.length]} decisões; ${counts[v.deliberations.filter((x) => x.deadlines.length).length]} têm`, "[pendente]"].sort((a, b) => b.length - a.length);
@@ -865,7 +884,10 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
   });
   it("regression r7: every evasion by meaning is refused through the full path, including labels produced by the source method", () => {
     const attempts = boardConceptAttempts((turn, edit) => boardPacketViaPremises(turn, edit));
-    for (const [id, build, message] of attempts) expect(() => prepareBoardCapitalDiscussionPacket(build() as Parameters<typeof prepareBoardCapitalDiscussionPacket>[0]), id).toThrow(message);
+    // Through the full path a text moved to another deliberation's theme may be refused first by the facts (its topic is
+    // not the theme of its texts); either refusal names the move.
+    for (const [id, build, message] of attempts) expect(() => prepareBoardCapitalDiscussionPacket(build() as Parameters<typeof prepareBoardCapitalDiscussionPacket>[0]), id)
+      .toThrow(new RegExp(`${message.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}|is not the theme of its texts|mix themes`));
     expect(attempts.length).toBeGreaterThanOrEqual(18);
   });
   it("regression r8: names outside the dictionary are never shown and a creditor is named by its row's field, through the full path", () => {
@@ -1368,7 +1390,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const edit = (places: string, stated: string) => (c: CaseData) => {
       c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", places, stated];
       const page = c.pages.find((x) => x.id === "alavancagem")!;
-      page.title = "risk.policy_definition|politica=policy-limit"; page.lines = page.lines.filter((l) => !l.startsWith("risk.leverage_adverse"));
+      page.title = "risk.policy_definition|politica=policy-limit"; page.lines = page.lines.filter((l) => !l.startsWith("risk.leverage_adverse")); page.topicId = "politica";
     };
     for (const turn of [2, 3] as const) {
       expect(() => withBoardSource("covenant", covenant, () => full(turn, edit("1", "2.5")))).toThrow(/board_capital_display_order_lost:summary\.closing\.leverage:0:lev-adv27/);
@@ -1460,13 +1482,22 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     expect(v.pages.find((x) => x.id === "alavancagem")!.lines).toContain("No adverso de 2027, chega a 2,37x, contra a política de 2,5x pela definição da escritura.");
     expect(v.summary).toContain("abaixo de 2,5x nos cenários avaliados pela definição da escritura e pelo EBITDA gerencial.");
     expect(v.questions.find((q) => q.id === "trigo")!.answer).toContain("abaixo do covenant de 3,0x.");
-    // The same sentence without the definition named: refused at render and flagged by the library.
+    // The same sentence without the definition named: flagged by the library, and refused by the render it is given to
+    // (the library is frozen; a changed one is passed explicitly to one render, never put in place of the production one).
     const original = boardTemplates["risk.leverage_adverse"]!;
-    boardTemplates["risk.leverage_adverse"] = {...original, text: original.text.replace("{definition:politica:$ma}", "")};
-    try {
-      expect(() => full(2, () => undefined)).toThrow("board_capital_limit_definition_not_named:risk.leverage_adverse:politica");
-      expect(checkBoardTemplateLibrary()).toContain("risk.leverage_adverse:definition_token:politica");
-    } finally {boardTemplates["risk.leverage_adverse"] = original;}
+    const changed = {...boardTemplates, "risk.leverage_adverse": {...original, text: original.text.replace("{definition:politica:$ma}", "")}};
+    expect(checkBoardTemplateLibrary(changed)).toContain("risk.leverage_adverse:definition_token:politica");
+    const covenant = auroraBoardSources().find((x) => x.id === "covenant")!, table = auroraBoardSources().find((x) => x.id === "tabela-divida")!;
+    const reading = (x: {id: string; methodId: string; packet: Record<string, unknown>}) => ({id: x.id, methodId: x.methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v",
+      packetFingerprint: String(x.packet.fingerprint), status: "s", gaps: [], packet: x.packet}) as unknown as BoardSourceReading;
+    const at = (x: {id: string; methodId: string; packet: Record<string, unknown>}, path: string, display: string, unit: "calendar" | "multiple"): BoardFigureDisplay =>
+      ({display, unit, origin: {sourceId: x.id, methodId: x.methodId, path, value: String(readBoardSourcePath(x.packet, path))}});
+    const figures = new Map<string, BoardFigureDisplay>([["ano", at(table, "result.table.profile.scheduleByYear[year=2027].year", "2027", "calendar")],
+      ["adv", at(covenant, "result.headroom.measurements[id=dez27-adverso].ratio", "2,37x", "multiple")], ["pol", at(covenant, "result.headroom.limits[id=politica].maximumRatio", "2,5x", "multiple")]]);
+    const context = {figures, deliberations: [], nextMeetingDate: null, sources: [reading(covenant), reading(table)]};
+    const ref = "risk.leverage_adverse|ano=ano|adverso=adv|politica=pol";
+    expect(renderBoardRef(ref, context).display).toBe("No adverso de 2027, chega a 2,37x, contra a política de 2,5x pela definição da escritura.");
+    expect(() => renderBoardRef(ref, {...context, library: changed})).toThrow("board_capital_limit_definition_not_named:risk.leverage_adverse:politica");
     // With a registered definition the definition may be omitted; with the policy definition registered the sentence omits it.
     const defined = auroraCovenantPacket({policyDefinition: "Mesma definição da escritura"}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("covenant", defined, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:delib.policy.definition");
@@ -1691,17 +1722,14 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     // The library refuses a qualifier without its proof: "de curto prazo" written as fixed text, and the token on a path
     // whose moves carry no unscheduled bank credit; a qualifier removed from the registry's phrase is refused too.
     const original = boardTemplates["alternatives.moves.short_bank_loan"]!, roll = boardTemplates["a.roll_bank"]!;
-    boardTemplates["alternatives.moves.short_bank_loan"] = {...original, text: original.text.replace("financiamento bancário novo", "crédito bancário de curto prazo e financiamento bancário novo")};
-    boardTemplates["a.roll_bank"] = {...roll, text: roll.text.replace("{bankcredit:bradesco-sem-linha}", "{bankcredit:ccb-tres-anos}")};
-    try {
-      const problems = checkBoardTemplateLibrary();
-      expect(problems).toContain("alternatives.moves.short_bank_loan:qualifier_unproved:curto");
-      expect(problems).toContain("a.roll_bank:bankcredit_unproved:ccb-tres-anos");
-    } finally {boardTemplates["alternatives.moves.short_bank_loan"] = original; boardTemplates["a.roll_bank"] = roll;}
+    const problems = checkBoardTemplateLibrary({...boardTemplates,
+      "alternatives.moves.short_bank_loan": {...original, text: original.text.replace("financiamento bancário novo", "crédito bancário de curto prazo e financiamento bancário novo")},
+      "a.roll_bank": {...roll, text: roll.text.replace("{bankcredit:bradesco-sem-linha}", "{bankcredit:ccb-tres-anos}")}});
+    expect(problems).toContain("alternatives.moves.short_bank_loan:qualifier_unproved:curto");
+    expect(problems).toContain("a.roll_bank:bankcredit_unproved:ccb-tres-anos");
     const supplier = boardTemplates["delib.action.supplier_notice"]!;
-    boardTemplates["delib.action.supplier_notice"] = {...supplier, text: supplier.text.replace("ao fornecedor", "ao fornecedor atual")};
-    try {expect(checkBoardTemplateLibrary()).toEqual(["delib.action.supplier_notice:qualifier_unproved:atual"]);}
-    finally {boardTemplates["delib.action.supplier_notice"] = supplier;}
+    expect(checkBoardTemplateLibrary({...boardTemplates, "delib.action.supplier_notice": {...supplier, text: supplier.text.replace("ao fornecedor", "ao fornecedor atual")}}))
+      .toEqual(["delib.action.supplier_notice:qualifier_unproved:atual"]);
     expect(checkBoardTemplateLibrary()).toEqual([]);
   });
   it("regression r36: the demand floor is inclusive; version fingerprints are canonical (full path, turns 2 and 3, oracle not vacuous)", () => {
@@ -1733,13 +1761,10 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     }
     // The library refuses a boundary without its proof: the strict wording, and the floor without its registered inclusion.
     const title = boardTemplates["what_changes.title"]!;
-    boardTemplates["what_changes.title"] = {...title, text: title.text.replace("a partir de", "acima de")};
-    try {expect(checkBoardTemplateLibrary()).toContain("what_changes.title:boundary_unproved:acima d");}
-    finally {boardTemplates["what_changes.title"] = title;}
+    expect(checkBoardTemplateLibrary({...boardTemplates, "what_changes.title": {...title, text: title.text.replace("a partir de", "acima de")}})).toContain("what_changes.title:boundary_unproved:acima d");
     const demand = boardTemplates["what_changes.demand"]!;
-    boardTemplates["what_changes.demand"] = {...demand, when: demand.when.filter((c) => !("boundary" in c))};
-    try {expect(checkBoardTemplateLibrary()).toEqual(expect.arrayContaining(["what_changes.demand:boundary_unproved:abaixo d", "what_changes.demand:qualifier_unproved:abaixo"]));}
-    finally {boardTemplates["what_changes.demand"] = demand;}
+    expect(checkBoardTemplateLibrary({...boardTemplates, "what_changes.demand": {...demand, when: demand.when.filter((c) => !("boundary" in c))}}))
+      .toEqual(expect.arrayContaining(["what_changes.demand:boundary_unproved:abaixo d", "what_changes.demand:qualifier_unproved:abaixo"]));
     expect(checkBoardTemplateLibrary()).toEqual([]);
     // Canonical fingerprints: every version and the result, recomputed from the published object after a JSON round trip
     // and a random reordering of keys at every level, reproduce the published fingerprint.
@@ -1822,10 +1847,70 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     }
     // The library: the economy proven by the gross avoided cost alone is refused.
     const sens = boardTemplates["topic.project_sensitivities"]!;
-    boardTemplates["topic.project_sensitivities"] = {...sens, when: sens.when.map((c) => "dominates" in c && JSON.stringify(c).includes("incrementalEbitda")
-      ? {...c, dominates: c.dominates.map((d) => "list" in d ? {...d, field: "operands.annualAvoidedOperatingCost"} : d) as unknown as typeof c.dominates} : c)};
-    try {expect(checkBoardTemplateLibrary()).toContain("topic.project_sensitivities:qualifier_unproved:menor");}
-    finally {boardTemplates["topic.project_sensitivities"] = sens;}
+    expect(checkBoardTemplateLibrary({...boardTemplates, "topic.project_sensitivities": {...sens, when: sens.when.map((c) => "dominates" in c && JSON.stringify(c).includes("incrementalEbitda")
+      ? {...c, dominates: c.dominates.map((d) => "list" in d ? {...d, field: "operands.annualAvoidedOperatingCost"} : d) as unknown as typeof c.dominates} : c)}}))
+      .toContain("topic.project_sensitivities:qualifier_unproved:menor");
     expect(checkBoardTemplateLibrary()).toEqual([]);
+  });
+  it("regression r39: the theme is derived from the templates; a withdrawal reaches every occurrence of its theme and only it (full path, oracle not vacuous)", () => {
+    // Swapped or missing topics in the facts are refused: the topic must be the theme of the page's or deliberation's texts.
+    const page = (topicId: string | null) => (c: CaseData) => {c.pages.find((x) => x.id === "linha")!.topicId = topicId;};
+    for (const turn of [2, 3] as const) {
+      expect(() => full(turn, page("safra")), `${turn}`).toThrow("Topic safra of page linha is not the theme of its texts (linha-embalagem)");
+      expect(() => full(turn, page(null)), `${turn}`).toThrow("Topic of page linha missing; its texts are of theme linha-embalagem");
+      expect(() => full(turn, (c) => {c.deliberations.find((x) => x.id === "linha")!.topicId = "safra";}), `${turn}`).toThrow("Topic safra of deliberation linha is not the theme of its texts (linha-embalagem)");
+      // A page whose texts mix two decision themes is refused, whatever topic it carries.
+      expect(() => full(turn, (c) => {c.pages.find((x) => x.id === "safra")!.lines.push(c.pages.find((x) => x.id === "linha")!.lines[0]!);}), `${turn}`).toThrow("Texts of page safra mix themes");
+    }
+    // An unseen theme stays before the recommendation even when another theme is marked seen: the linha page, unseen,
+    // is not sent to the appendix by the crop's seen mark; the crop page, seen, goes there.
+    const unseen = full(2, (c) => {c.topics = c.topics.map((t) => ({...t, seen: t.id === "safra"}));});
+    const order = current(unseen).pages.map((x) => `${x.id}:${x.placement}`);
+    expect(order).toContain("linha:main"); expect(order).toContain("safra:appendix");
+    expect(order.indexOf("linha:main")).toBeLessThan(order.indexOf("recomendacao:main"));
+    expect(oracle(unseen)).toEqual({bad: [], missing: []});
+    // The withdrawal of the packaging line's recommendation (turn 3): its deliberation, the decisions page, its page and the
+    // summary lose it; the crop's and the maturities' recommendations stay; the confirmation is true on the final text.
+    const p = full(3, () => undefined), v = current(p), first = p.result.discussion!.versions[0]!;
+    expect(p.result.discussion!.omissions.find((o) => o.id === "linha-sem-recomendacao")!.outcome).toBe("applied");
+    const all = (m: typeof v) => [m.summary, ...m.deliberations.map((x) => x.text), ...m.pages.flatMap((x) => [x.title, ...x.lines, x.recommendation ?? "", ...x.options])].join(" | ");
+    expect(all(first)).toContain("não emitir o pedido de compra"); expect(all(v)).not.toContain("não emitir o pedido de compra");
+    expect(all(v)).not.toContain("Recomendamos pedir cotações");
+    for (const kept of ["financiar o capital de giro começando pelos programas", "autorizar a sondagem"]) expect(all(v)).toContain(kept);
+    expect(v.deliberations.find((x) => x.id === "linha")!.recommendationShown).toBe(false);
+    expect(v.deliberations.find((x) => x.id === "safra")!.recommendationShown).toBe(true);
+    expect(oracle(p)).toEqual({bad: [], missing: []});
+    // Not vacuous: a confirmation over a text that still shows the theme's recommendation, one that lost another theme's,
+    // and a page printed with another topic are flagged.
+    const forge = (f: (m: typeof v) => void) => {const x = structuredClone(p); f(x.result.discussion!.versions.at(-1)!); return oracle(x).bad;};
+    expect(forge((m) => {m.deliberations.find((x) => x.id === "linha")!.text = first.deliberations.find((x) => x.id === "linha")!.text;})).toContain("omission_confirmation:linha-sem-recomendacao");
+    const drop = (t: string) => t.replace("financiar o capital de giro começando pelos programas", "decidir o financiamento");
+    expect(forge((m) => {for (const x of m.deliberations) x.text = drop(x.text); m.summary = drop(m.summary); for (const pg of m.pages) pg.lines = pg.lines.map(drop);}))
+      .toContain("omission_confirmation:linha-sem-recomendacao");
+    expect(forge((m) => {m.pages.find((x) => x.id === "linha")!.topicId = "safra";}).some((x) => x.startsWith("theme:linha:"))).toBe(true);
+  });
+  it("regression r39: the final check of a withdrawal refuses it, with its sentence, and the version before stays", () => {
+    // The public interface cannot make the check fail: the withdrawal is computed over the same derived themes the check
+    // reads, a template never mixes two decision themes, and a recommendation template sits only in a recommendation
+    // position. The check is therefore exercised on forged versions, at the function and through the omission rule.
+    const p = full(3, () => undefined), [first, second] = p.result.discussion!.versions as [ReturnType<typeof current>, ReturnType<typeof current>];
+    const ask = (m: typeof first, id: string) => m.deliberations.find((x) => x.id === id)!.text.split(", e ")[0]!;
+    const recommendations = [{theme: "linha-embalagem", text: ask(first, "linha")}, {theme: "linha-embalagem", text: first.pages.find((x) => x.id === "linha")!.recommendation!},
+      {theme: "safra", text: ask(first, "safra")}, {theme: "vencimentos", text: ask(first, "vencimentos")}];
+    expect(recommendations.map((r) => r.text.slice(0, 30))).toEqual(["não emitir o pedido de compra ", "Recomendamos pedir cotações an", "financiar o capital de giro co", "autorizar a sondagem de uma de"]);
+    expect(boardWithdrawalVerified(recommendations, first, second, "linha-embalagem")).toBe(true);
+    // Case 1: a sentence of the theme left in a general place (a line of the decisions page citing it).
+    const leftover = (m: typeof first) => {const x = structuredClone(m); x.pages.find((y) => y.role === "decisions")!.lines.push(`Lembrete: ${recommendations[0]!.text}.`); return x;};
+    expect(boardWithdrawalVerified(recommendations, first, leftover(second), "linha-embalagem")).toBe(false);
+    // Case 2: another theme's recommendation gone with it.
+    const lost = (m: typeof first) => {const x = structuredClone(m); const cut = (t: string) => t.split(recommendations[2]!.text).join("decidir o financiamento do capital de giro");
+      x.summary = cut(x.summary); for (const d of x.deliberations) d.text = cut(d.text); for (const pg of x.pages) pg.lines = pg.lines.map(cut); return x;};
+    expect(boardWithdrawalVerified(recommendations, first, lost(second), "linha-embalagem")).toBe(false);
+    // The omission rule calls exactly this function: on the same versions its outcome is the function's (applied and
+    // true here); its refusal sentence is the declared one for a check that fails.
+    expect(p.result.discussion!.omissions.find((o) => o.id === "linha-sem-recomendacao")!.outcome === "applied").toBe(boardWithdrawalVerified(recommendations, first, second, "linha-embalagem"));
+    // The production library and the check cannot be replaced at run time.
+    expect(() => {(boardTemplates as Record<string, unknown>)["zz"] = {};}).toThrow(TypeError);
+    expect(() => {(boardTemplates["a.term"]!.when as unknown[]).push({});}).toThrow(TypeError);
   });
 });

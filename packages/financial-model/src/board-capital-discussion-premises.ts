@@ -3,7 +3,7 @@ import {capacityUuid} from "./debt-capacity-premises";
 import type {ProposedHypothesis} from "./investment-premises";
 import {boardAuthorities, boardOmissionTargets, boardPageRoles} from "./board-capital-discussion";
 import {boardSourceMethodIds} from "./board-capital-discussion-sources";
-import {boardInformedAuthors} from "./board-capital-discussion-templates";
+import {boardInformedAuthors, boardThemeOfRefs, boardThemes} from "./board-capital-discussion-templates";
 
 const text = z.string().trim().min(1).max(2000);
 const key = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/);
@@ -55,7 +55,18 @@ export const boardCapitalDiscussionFactsSchema = z.strictObject({
   for (const {value: x} of f.figures) if (x.kind === "reading" && !sources.has(x.reading[0])) fail(`Figure ${x.id} reads a result the discussion does not name`);
   for (const id of [...f.materialFigureIds.value, ...f.indicative.map((x) => x.value.figureId)]) if (!figures.has(id)) fail(`Unknown figure ${id}`);
   for (const {value: a} of f.appendix) if (!a.sourceIds.every((s) => sources.has(s))) fail(`Appendix item ${a.id} cites a result the discussion does not name`);
-  for (const {value: x} of [...f.pages, ...f.deliberations]) if (x.topicId !== null && !topics.has(x.topicId)) fail(`Unknown topic ${x.topicId}`);
+  // Themes are the library's closed set; the theme each text derives is checked against its templates downstream.
+  // The theme is derived from the templates and never adopted: a fact's topic must be the theme of its own texts.
+  for (const {value: t} of f.topics) if (!(boardThemes as readonly string[]).includes(t.id)) fail(`Unknown topic ${t.id}`);
+  void topics;
+  const check = (id: string, topicId: string | null, refs: string[]) => {
+    const theme = boardThemeOfRefs(refs);
+    if (theme === null) fail(`Texts of ${id} mix themes`);
+    else if (topicId === null) fail(`Topic of ${id} missing; its texts are of theme ${theme}`);
+    else if (topicId !== theme) fail(`Topic ${topicId} of ${id} is not the theme of its texts (${theme})`);
+  };
+  for (const {value: x} of f.pages) check(`page ${x.id}`, x.topicId, [x.title, ...x.lines, ...x.recommendation ? [x.recommendation] : [], ...x.options]);
+  for (const {value: x} of f.deliberations) check(`deliberation ${x.id}`, x.topicId, [x.title, x.subject, ...x.recommendation ? [x.recommendation] : [], ...x.deadlines.map((t) => t.action)]);
 });
 export type BoardCapitalDiscussionFacts = z.infer<typeof boardCapitalDiscussionFactsSchema>;
 
@@ -92,7 +103,6 @@ export function proposeBoardCapitalDiscussionHypotheses(raw: unknown): ProposedH
     const v = d.value, p = `deliberation.${v.id}.`, r = why(d);
     txt(p + "title", v.title, r); txt(p + "subject", v.subject, r); if (v.recommendation !== null) txt(p + "recommendation", v.recommendation, r);
     list(p + "authority", v.authorityBasis === null ? [v.authority] : [v.authority, v.authorityBasis], r);
-    if (v.topicId !== null) txt(p + "topic", v.topicId, r, "identity");
     for (const x of v.deadlines) list(`${p}deadline.${x.id}`, [x.date, x.action], r);
     if (v.deadlines.length) list(p + "order.deadlines", v.deadlines.map((x) => x.id), house("Ordem dos prazos como informada"));
   }
@@ -104,7 +114,6 @@ export function proposeBoardCapitalDiscussionHypotheses(raw: unknown): ProposedH
     txt(p + "role", v.role, r, "convention"); txt(p + "title", v.title, r); list(p + "lines", v.lines, r, "text");
     if (v.recommendation !== null) txt(p + "recommendation", v.recommendation, r);
     if (v.options.length) list(p + "options", v.options, r, "text");
-    if (v.topicId !== null) txt(p + "topic", v.topicId, r, "identity");
   }
   txt("summary.opening", f.summary.value.opening, why(f.summary)); txt("summary.closing", f.summary.value.closing, why(f.summary));
   for (const a of f.appendix) list(`appendix.${a.value.id}`, [a.value.label, ...a.value.sourceIds], why(a));

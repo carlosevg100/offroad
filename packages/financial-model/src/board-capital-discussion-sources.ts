@@ -182,3 +182,11 @@ export function boardFieldOf(methodId: string, path: string): BoardFieldSpec | n
   const pattern = path.replace(/\[[^\]]*\]/g, "[*]");
   return boardFieldRegistry[methodId as BoardSourceMethodId]?.[pattern] ?? null;
 }
+
+// The registry and the released sources are frozen: no running code changes what a field means or which method and version
+// is released. The released entries are frozen one level deep (their schemas are library objects, left as they are).
+{
+  const freeze = (v: unknown): void => {if (v && typeof v === "object" && !Object.isFrozen(v)) {Object.freeze(v); for (const y of Object.values(v as Record<string, unknown>)) freeze(y);}};
+  freeze(boardFieldRegistry); freeze(boardSourceMethodIds);
+  Object.freeze(boardReleasedSources); for (const x of Object.values(boardReleasedSources)) Object.freeze(x);
+}

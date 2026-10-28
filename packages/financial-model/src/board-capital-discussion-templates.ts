@@ -499,7 +499,7 @@ const anchorCommon: BoardCondition[] = [...claim("o saldo do cliente cabe na car
     cmp(at(RF, "result.funding.options[id=$o].byItem[itemId=$d].offered"), "eq", {value: "true"})),
   ...claim("o volume do cliente no programa cabe no saldo dele", cmp("volume", "le", "saldo"))];
 
-export const boardTemplates: Record<string, BoardTemplate> = {
+export const boardTemplates: Readonly<Record<string, BoardTemplate>> = {
   // Deliberations: title, subject, recommendation and dated actions, each bound to its deliberation.
   "delib.packaging_line": t("delib.title", "{projeto}", {projeto: project("Nome")}),
   "delib.packaging_line.subject": t("delib.subject", "decidir o caminho {projeto}", {projeto: project("de")}, {of: "delib.packaging_line"}),
@@ -797,9 +797,48 @@ for (const template of Object.values(boardTemplates)) {
   }
   if (added.length) template.when = [...template.when, ...added];
 }
+/** Frozen, deeply, once complete: no running code (tests included) can change the library; a test exercises a changed
+ * library by passing it explicitly to the self-check or to a single render, never by replacing the production one. */
+export function boardDeepFreeze<T>(value: T): T {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {Object.freeze(value); for (const x of Object.values(value as Record<string, unknown>)) boardDeepFreeze(x);}
+  return value;
+}
+boardDeepFreeze(boardTemplates);
 
 /** The material assertions of the library, template by template: each claim of a fixed text with the verifiable
  * fields and the condition that sustain it. A template whose fixed text asserts nothing beyond its readings has none. */
+/** The closed set of themes: a decision's subject (the packaging line, the crop working capital, the maturities, the
+ * debt policy) or "geral" for what serves every decision (the company's situation, constraints, the decisions page,
+ * the calendar, the summary's frame, the appendix, requesters and authority). */
+export const boardThemes = ["linha-embalagem", "safra", "vencimentos", "politica", "geral"] as const;
+export type BoardTheme = (typeof boardThemes)[number];
+/** Each template's theme, declared by the library and never adopted: a page, deliberation or summary item has the theme of
+ * its templates. Explicit entries first, then the template family. */
+const themeByTemplate: Record<string, BoardTheme> = {
+  "delib.action.supplier_notice": "linha-embalagem", "delib.action.join_programs": "safra", "delib.action.finish_sounding": "vencimentos", "delib.action.decide_route": "vencimentos",
+  "note.case_not_reviewed": "linha-embalagem", "note.program_indicative": "safra", "note.credit_line_terms_not_registered": "safra",
+  "topic.packaging_review": "linha-embalagem", "topic.crop_financing": "safra", "risk.policy_definition": "politica", "risk.policy_readings": "politica", "risk.leverage_path": "geral",
+  "q.strategic": "linha-embalagem", "a.strategic": "linha-embalagem", "q.anchor": "safra", "a.anchor": "safra", "a.anchor_shared": "safra",
+  "q.wheat": "geral", "a.wheat": "geral", "q.plan_vs_base": "geral", "a.plan_vs_base": "geral",
+};
+const themeByFamily: [RegExp, BoardTheme][] = [
+  [/^(delib\.packaging_line|topic\.project_|option\.)/, "linha-embalagem"], [/^(delib\.crop|topic\.crop_)/, "safra"],
+  [/^(delib\.maturities|alternatives\.|recommendation\.|risk\.leverage|what_changes\.|[qa]\.(roll_bank|term|demand|cost|peer|rating))/, "vencimentos"],
+  [/^delib\.policy/, "politica"],
+  [/^(page\.|situation\.|constraint\.|next_steps\.|summary\.|appendix\.|requester\.|authority\.)/, "geral"],
+];
+export function boardTemplateTheme(templateId: string): BoardTheme | null {
+  return themeByTemplate[templateId] ?? themeByFamily.find(([re]) => re.test(templateId))?.[1] ?? null;
+}
+/** The theme of a set of texts (template refs): the one decision theme among them, "geral" when all serve every decision,
+ * null when two decision themes mix or a template has no theme. */
+export function boardThemeOfRefs(refs: readonly string[]): BoardTheme | null {
+  const themes = refs.map((r) => boardTemplateTheme(r.split("|")[0]!));
+  if (themes.some((x) => x === null)) return null;
+  const decision = [...new Set(themes.filter((x) => x !== "geral"))];
+  return decision.length > 1 ? null : decision[0] ?? "geral";
+}
+
 export function boardTemplateClaims() {
   const describe = (o: BoardOperand): string => "slot" in o ? `posição ${o.slot}` : "value" in o ? `"${o.value}"` : "var" in o ? `$${o.var}`
     : "firstPaid" in o ? `primeiro pagamento efetivo de ${o.firstPaid[0]} ${o.firstPaid[1]} (${o.firstPaid[3]} não nulo, por ${o.firstPaid[2]})`
@@ -853,10 +892,10 @@ export const boardNamesAllowedInText: readonly string[] = [];
 export const boardTextRefPattern = /^[a-z][a-z0-9_.]{0,79}(?:\|[a-z][a-z0-9_]{0,30}=(?:deadline:|informed:)?[a-z0-9][a-z0-9.-]{0,80})*$/;
 export type BoardTextRef = {templateId: string; bindings: Record<string, string>};
 /** Parses one reference by name: unknown template, a missing, unknown or repeated slot is refused. */
-export function parseBoardTextRef(ref: string): BoardTextRef & {template: BoardTemplate} {
+export function parseBoardTextRef(ref: string, library: Readonly<Record<string, BoardTemplate>> = boardTemplates): BoardTextRef & {template: BoardTemplate} {
   if (!boardTextRefPattern.test(ref)) throw new Error(`board_capital_text_ref_invalid:${ref.slice(0, 80)}`);
   const [templateId, ...pairs] = ref.split("|");
-  const template = Object.hasOwn(boardTemplates, templateId!) ? boardTemplates[templateId!] : undefined;
+  const template = Object.hasOwn(library, templateId!) ? library[templateId!] : undefined;
   if (!template) throw new Error(`board_capital_template_unknown:${templateId}`);
   const bindings: Record<string, string> = {};
   for (const pair of pairs) {
@@ -1016,18 +1055,18 @@ export const boardQualifierWatch = [...new Set([...boardQualifiers.flatMap((q) =
   "programado", "programada", "indicativo", "indicativa", "indicativas", "firme", "firmes", "regresso", "vigente", "vigentes", "único", "única", "maior", "maiores", "menor", "menores",
   "curto", "curta", "sazonal", "sazonais", "estratégico", "estratégica", "preliminar", "publicada", "barato", "caro", "elevado", "elevada", "baixo", "alto", "forte", "fraco", "sólido", "saudável", "confortável", "apertado"])];
 
-export function checkBoardTemplateLibrary() {
+export function checkBoardTemplateLibrary(library: Readonly<Record<string, BoardTemplate>> = boardTemplates) {
   const problems: string[] = [];
   // The dictionaries shown as text (informed reasons, debtor names) never name an object of a vocabulary.
   for (const [code, text] of [...Object.entries(boardInformedReasons), ...Object.entries(boardDebtorNames)])
     for (const terms of Object.values(boardVocabularies)) for (const term of Object.keys(terms))
       if (new RegExp(`(?<![\\p{L}])${term}(?![\\p{L}])`, "iu").test(text)) problems.push(`dictionary:${code}:object:${term}`);
-  for (const [id, x] of Object.entries(boardTemplates)) {
+  for (const [id, x] of Object.entries(library)) {
     const vars = new Set<string>();
     for (const spec of Object.values(x.slots)) {
       for (const [, path] of spec.from ?? []) for (const m of path.matchAll(/\$([a-z]+)/g)) vars.add(m[1]!);
       if (spec.year) for (const m of spec.year.matchAll(/\$([a-z]+)/g)) vars.add(m[1]!);
-      if (spec.type === "deadline" ? !spec.action || boardTemplates[spec.action]?.use[0] !== "delib.action" : spec.type === "informed" ? !spec.author : !spec.from && !spec.year) problems.push(`${id}:slot`);
+      if (spec.type === "deadline" ? !spec.action || library[spec.action]?.use[0] !== "delib.action" : spec.type === "informed" ? !spec.author : !spec.from && !spec.year) problems.push(`${id}:slot`);
       if (spec.year && spec.type !== "date") problems.push(`${id}:year`);
       if ((spec.type === "label" || spec.type === "informed" || spec.type === "debtor" || spec.type === "object") !== Boolean(spec.generic)) problems.push(`${id}:generic`);
       if ((spec.type === "object") !== Boolean(spec.vocabulary && spec.form)) problems.push(`${id}:vocabulary`);
@@ -1072,12 +1111,12 @@ export function checkBoardTemplateLibrary() {
         problems.push(`${id}:object:${term}`);
     // No fixed text names a creditor or a bank: names enter only through label slots.
     for (const name of boardNameDictionary) if (new RegExp(`(?<![\\p{L}])${name}(?![\\p{L}])`, "u").test(x.text) && !boardNamesAllowedInText.includes(name)) problems.push(`${id}:names:${name}`);
-    if (x.of && boardTemplates[x.of]?.use[0] !== "delib.title") problems.push(`${id}:of`);
+    if (x.of && library[x.of]?.use[0] !== "delib.title") problems.push(`${id}:of`);
     if (["delib.subject", "delib.recommendation", "delib.action"].some((u) => x.use.includes(u as BoardTextUse)) && !x.of) problems.push(`${id}:of_missing`);
-    if (x.use.includes("answer") !== Boolean(x.answers) || (x.answers && boardTemplates[x.answers]?.use[0] !== "question")) problems.push(`${id}:answers`);
+    if (x.use.includes("answer") !== Boolean(x.answers) || (x.answers && library[x.answers]?.use[0] !== "question")) problems.push(`${id}:answers`);
   }
   // Qualifiers: every watched word of the fixed text sits in a registered phrase whose proof the template carries.
-  for (const [id, x] of Object.entries(boardTemplates)) {
+  for (const [id, x] of Object.entries(library)) {
     const facts = JSON.stringify({slots: x.slots, when: x.when});
     const texts: [string, "text" | "nearly_equal" | "gap"][] = [[x.text, "text"], ...(x.nearlyEqual ? [[x.nearlyEqual, "nearly_equal"] as [string, "nearly_equal"]] : []),
       ...Object.values(x.slots).flatMap((spec) => spec.generic ? [[spec.generic, "gap"] as [string, "gap"]] : [])];
@@ -1093,6 +1132,8 @@ export function checkBoardTemplateLibrary() {
         if (!proven) problems.push(`${id}:qualifier_unproved:${word}`);
       }
     }
+    // Every template declares its theme.
+    if (boardTemplateTheme(id) === null) problems.push(`${id}:theme`);
     // Boundaries shown on a limit slot: the phrase holds that slot, and the template proves the field's registered inclusion.
     for (const b of boardBoundaries) if (typeof b.display === "object" && b.phrase.test(x.text)) {
       const slot = (b.display as {slot: string}).slot;
@@ -1119,3 +1160,7 @@ export function checkBoardTemplateLibrary() {
   }
   return problems;
 }
+
+// The other dictionaries of the library are frozen as well.
+for (const x of [boardInformedReasons, boardDebtorNames, boardVocabularies, boardVocabularyLabels, boardObjectGenerics, boardDeferralRules, boardScenarioDefinitions, boardScenariosNotNamed,
+  boardNameDictionary, boardNamesAllowedInText, boardQualifiers, boardBoundaries, boardQualifierWatch, boardThemes, boardInputIgnored, boardTextUses, boardSlotTypes, boardInformedAuthors, themeByTemplate, themeByFamily]) boardDeepFreeze(x);

@@ -62,10 +62,15 @@ describe("board discussion core", () => {
     expect(ordered.map((d) => d.id)).toEqual(["line", "crop", "route", "policy"]);
   });
   it("puts an unseen topic before the recommendation and a seen one in the appendix", () => {
-    const pages = [page("rec", "recommendation"), page("dec", "decisions"), page("line", "topic", "line"), page("debt", "situation")];
-    expect(orderBoardPages(pages, [{id: "line", label: "linha", seen: false}]).main.map((p) => p.id)).toEqual(["dec", "debt", "line", "rec"]);
-    expect(orderBoardPages(pages, [{id: "line", label: "linha", seen: null}]).main.map((p) => p.id)).toEqual(["dec", "debt", "line", "rec"]);
-    const seen = orderBoardPages(pages, [{id: "line", label: "linha", seen: true}]);
+    // The theme is the page's templates' (topic.project_* is the packaging line), whatever topicId the page carries.
+    const titled = (id: string, role: BoardPage["role"], title: string, topicId: string | null) => ({...page(id, role, topicId), title});
+    const pages = [titled("rec", "recommendation", "recommendation.debenture", "vencimentos"), titled("dec", "decisions", "page.decisions", "geral"),
+      titled("line", "topic", "topic.project_return", "safra"), titled("debt", "situation", "situation.debt_total", "geral")];
+    expect(orderBoardPages(pages, [{id: "linha-embalagem", label: "linha", seen: false}]).main.map((p) => p.id)).toEqual(["dec", "debt", "line", "rec"]);
+    expect(orderBoardPages(pages, [{id: "linha-embalagem", label: "linha", seen: null}]).main.map((p) => p.id)).toEqual(["dec", "debt", "line", "rec"]);
+    // A seen theme other than the page's derived one never sends it to the appendix.
+    expect(orderBoardPages(pages, [{id: "safra", label: "safra", seen: true}]).appendix.map((p) => p.id)).toEqual([]);
+    const seen = orderBoardPages(pages, [{id: "linha-embalagem", label: "linha", seen: true}]);
     expect([seen.main.map((p) => p.id), seen.appendix.map((p) => p.id)]).toEqual([["dec", "debt", "rec"], ["line"]]);
   });
   it("tokenizes every number of a final text once: sign, separators, dates and months of a year", () => {
@@ -189,16 +194,15 @@ describe("board discussion core", () => {
         else figures.set(fid, {pending: true, methodId: spec.from![0]![0], path: spec.from![0]![1].replace(/\$y\b/g, "2027").replace(/\$[a-z]+/g, "x")});
         bindings.push(`${slot}=${fid}`);
       }
-      const ref = [id, ...bindings].join("|"), original = boardTemplates[id]!;
-      boardTemplates[id] = {...original, when: [c]};
-      try {
+      const ref = [id, ...bindings].join("|"), original = boardTemplates[id]!, library = {...boardTemplates, [id]: {...original, when: [c]}};
+      {
         let outcome = "rendered";
-        try {renderBoardRef(ref, {figures, deliberations: [holder], nextMeetingDate: null, sources: [], informed});} catch (e) {outcome = String(e);}
+        try {renderBoardRef(ref, {figures, deliberations: [holder], nextMeetingDate: null, sources: [], informed, library});} catch (e) {outcome = String(e);}
         // A condition that reads nothing (only constants and variables already bound) may hold; any other is undefined.
         const readsData = !("bind" in c && "value" in c.to) && !("compare" in c && c.compare.every((o) => typeof o === "string" ? false : "value" in o || "var" in o));
         if (readsData) {expect(outcome, `${id}:${i}`).toContain(`board_capital_template_condition_undefined:${id}:0`); undefinedCount++;}
         else constantOnly++;
-      } finally {boardTemplates[id] = original;}
+      }
     }
     expect(undefinedCount).toBeGreaterThan(150);
     expect(constantOnly).toBeLessThan(20);
@@ -226,14 +230,14 @@ describe("board discussion core", () => {
         ["y", fig("result.table.reconciliation.principal", "2.5", "R$ 2,5 milhões")],
         ["z", fig("result.table.reconciliation.principal", "-0.011", shownPlaces === 1 ? "R$ 0,0 milhão" : "R$ -0,01 milhão")],
         ["w", fig("result.table.reconciliation.principal", "0.011", shownPlaces === 1 ? "R$ 0,0 milhão" : "R$ 0,01 milhão")]]);
-      boardTemplates["zz.order"] = {text: "Valores {x}, {y}, {z} e {w}.", use: ["page.line"], when: [condition],
-        slots: {x: money("result.table.profile.scheduleByYear[year=$a].principal", "flow"), y: money("result.table.reconciliation.principal"), z: money("result.table.reconciliation.principal"), w: money("result.table.reconciliation.principal")}};
-      try {
-        const render = () => renderBoardRef("zz.order|x=x|y=y|z=z|w=w", {figures, deliberations: [], nextMeetingDate: null, sources});
+      const library = {...boardTemplates, "zz.order": {text: "Valores {x}, {y}, {z} e {w}.", use: ["page.line"], when: [condition],
+        slots: {x: money("result.table.profile.scheduleByYear[year=$a].principal", "flow"), y: money("result.table.reconciliation.principal"), z: money("result.table.reconciliation.principal"), w: money("result.table.reconciliation.principal")}} as typeof boardTemplates[string]};
+      {
+        const render = () => renderBoardRef("zz.order|x=x|y=y|z=z|w=w", {figures, deliberations: [], nextMeetingDate: null, sources, library});
         if (shownPlaces === 1) expect(render, name).toThrow("board_capital_display_order_lost:zz.order:0");
         else expect(render().display, name).toContain("Valores");
         checked++;
-      } finally {delete boardTemplates["zz.order"];}
+      }
     }
     expect(checked).toBe(kinds.length * 2);
   });
