@@ -51,7 +51,8 @@ export const boardCapitalDiscussionOutputSchema = z.strictObject({
 });
 
 export const boardCapitalDiscussionExclusions = ["recalculation", "presentation_delivery", "template_import", "third_party_distribution", "credit_approval", "method_release"] as const;
-const sourceReference = z.strictObject({id: key, methodId: key, methodVersion: key, executorVersion: key.nullable(), packetSchemaVersion: key, packetFingerprint: hash, status: key});
+const sourceReference = z.strictObject({id: key, methodId: key, methodVersion: key, executorVersion: key.nullable(), packetSchemaVersion: key, packetFingerprint: hash,
+  moneyScale: z.enum(["reais", "millions"]), status: key});
 export const adoptedBoardCapitalDiscussionOutputSchema = z.strictObject({...common, schemaVersion: z.literal("adopted-board-capital-discussion.v1"),
   analysisId: z.uuid(), perimeter: text, sources: z.array(sourceReference).max(16), discussion: boardCapitalDiscussionOutputSchema.nullable(),
   exclusions: z.array(z.enum(boardCapitalDiscussionExclusions)).length(6)

@@ -31,7 +31,8 @@ export const boardCapitalDiscussionFactsSchema = z.strictObject({
   discussionId: z.uuid(), entityId: z.uuid(), perimeter: text, currency: z.string().regex(/^[A-Z]{3}$/), definitionVersionId: z.uuid(),
   askedOn: fact(z.iso.date()), meetingDate: fact(z.iso.date()), leadDays: fact(z.string().regex(/^\d{1,3}$/)), minutesPerPage: fact(z.string().regex(/^[1-9]\d?$/)),
   agendaMinutes: fact(z.string().regex(/^[1-9]\d{0,2}$/)).nullable(), nextMeetingDate: fact(z.iso.date()).nullable(), template: fact(text).nullable(), outlineConfirmed: fact(z.boolean()),
-  sources: z.array(fact(z.strictObject({id: key, methodId: z.enum(boardSourceMethodIds), packetFingerprint: hash}))).min(1).max(16),
+  /** Each reviewed result with the money scale its basis was adopted in (the producer checks it against the stored basis). */
+  sources: z.array(fact(z.strictObject({id: key, methodId: z.enum(boardSourceMethodIds), packetFingerprint: hash, moneyScale: z.enum(["reais", "millions"])}))).min(1).max(16),
   topics: z.array(fact(z.strictObject({id: key, label: text, seen: z.boolean().nullable()}))).max(12),
   deliberations: z.array(fact(deliberation)).min(1).max(12),
   figures: z.array(fact(figure)).max(160),
@@ -97,7 +98,7 @@ export function proposeBoardCapitalDiscussionHypotheses(raw: unknown): ProposedH
   if (f.nextMeetingDate) date("meeting.nextMeetingDate", f.nextMeetingDate.value, why(f.nextMeetingDate));
   if (f.template) txt("meeting.template", f.template.value, why(f.template));
   flag("meeting.outlineConfirmed", f.outlineConfirmed.value, why(f.outlineConfirmed));
-  for (const s of f.sources) list(`source.${s.value.id}`, [s.value.methodId, s.value.packetFingerprint], why(s));
+  for (const s of f.sources) list(`source.${s.value.id}`, [s.value.methodId, s.value.packetFingerprint, s.value.moneyScale], why(s));
   for (const t of f.topics) {txt(`topic.${t.value.id}.label`, t.value.label, why(t)); if (t.value.seen !== null) flag(`topic.${t.value.id}.seen`, t.value.seen, why(t));}
   for (const d of f.deliberations) {
     const v = d.value, p = `deliberation.${v.id}.`, r = why(d);

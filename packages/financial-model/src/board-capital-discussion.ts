@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
-import {boardCanonicalPath, boardContributionTexts, boardFieldOf, boardFillVariables, boardResolvedRecord, readBoardSourcePath, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
+import {boardCanonicalPath, boardContributionTexts, boardEffectiveScale, boardFieldOf, boardFillVariables, boardResolvedRecord, readBoardSourcePath, type BoardFieldKind, type BoardFieldSpec,
+  type BoardMoneyScale} from "./board-capital-discussion-sources";
 import {boardThemeOfRefs, boardThemes, type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardBoundaries, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTemplate, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
@@ -10,6 +11,8 @@ import {boardThemeOfRefs, boardThemes, type BoardObjectForm, boardObjectGenerics
 export const boardCapitalDiscussionVersion = "2026.10.27-v1";
 
 const Exact = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
+/** A money value in reais, from the scale its source declares: the common scale of every money comparison. */
+export const boardInReais = (value: string, scale: BoardMoneyScale) => (scale === "millions" ? new Exact(value).times(1000000) : new Exact(value)).toFixed();
 
 /** The kinds a reading can be; they come from the field registry, never from a contribution. */
 export const boardFigureUnits = ["money", "rate", "multiple", "years", "months", "bps", "count", "calendar", "date", "label", "flag"] as const satisfies readonly BoardFieldKind[];
@@ -27,9 +30,10 @@ export type BoardOmissionTarget = (typeof boardOmissionTargets)[number];
 export type BoardFigure =
   | {id: string; kind: "reading"; sourceId: string; path: string; presentation: string; stated: string | null}
   | {id: string; kind: "pending"; requiredMethodId: string; requiredPath: string; reason: string};
-/** A reviewed result as the material reads it: identity only; the packet itself is checked by the reader. */
+/** A reviewed result as the material reads it: identity only; the packet itself is checked by the reader. The money
+ * scale is the one its basis was adopted in, declared with the identity: every money field of it is read in that scale. */
 export type BoardSourceReading = {id: string; methodId: string; methodVersion: string; executorVersion: string | null; packetSchemaVersion: string;
-  packetFingerprint: string; status: string; gaps: {operand: string; reason: string}[]; packet: unknown};
+  packetFingerprint: string; moneyScale: BoardMoneyScale; status: string; gaps: {operand: string; reason: string}[]; packet: unknown};
 export type BoardDeliberation = {id: string; title: string; subject: string; recommendation: string | null; topicId: string | null;
   authority: (typeof boardAuthorities)[number]; authorityBasis: string | null; deadlines: {id: string; date: string; action: string}[]};
 export type BoardPage = {id: string; role: BoardPageRole; topicId: string | null; title: string; lines: string[]; recommendation: string | null; options: string[]};
@@ -107,6 +111,8 @@ export function formatBoardReading(raw: unknown, spec: BoardFieldSpec, presentat
     return out(raw, raw, display, display, stated === raw);
   }
   if (!/^[0-2]$/.test(presentation) || !isNumeric(raw)) return null;
+  // The scale is resolved against the reading's source before formatting; a spec still naming its source is never shown.
+  if (spec.scale === "source") throw new Error("board_capital_scale_unresolved");
   const places = Number(presentation);
   const scaled = spec.scale === "reais" ? new Exact(raw as Decimal.Value).div(1e6) : spec.scale === "ratio" ? new Exact(raw as Decimal.Value).times(100) : new Exact(raw as Decimal.Value);
   const rounded = scaled.toDecimalPlaces(places, Decimal.ROUND_HALF_UP), text = rounded.toFixed(places), number = text.replace(".", ",");
@@ -379,6 +385,44 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     return all[0]!;
   };
   const read = (method: string, declared: string) => readBoardSourcePath(sourceOf(method).packet, boardFillVariables(declared, vars, (k) => unverified(`variable_${k}`)));
+  // Money is compared in reais: every money value is converted by the scale its own source declares (resolved by the
+  // registry's one helper), so no comparison sets a value of one scale against a value of another.
+  const sourceById = (id: string) => {const x = (context.sources ?? []).find((y) => y.id === id); if (!x) throw unverified(`source_${id}`); return x;};
+  const figureScale = (f: BoardFigureDisplay) => {
+    if ("pending" in f || !f.origin) throw indefinite("figure_pending");
+    const spec = boardFieldOf(f.origin.methodId, f.origin.path);
+    return spec ? boardEffectiveScale(spec, sourceById(f.origin.sourceId)) : "native";
+  };
+  /** An operand in money terms: its scale when it is a money reading, the source it is read from, and whether its kind is known. */
+  const moneyOf = (o: BoardOperand): {money: BoardMoneyScale | null; source: string | null; known: boolean} => {
+    if ("slot" in o) {
+      const f = context.figures.get(bindings[o.slot]!);
+      if (o.year || !f || "pending" in f || !f.origin) return {money: null, source: null, known: true};
+      return {money: f.unit === "money" ? figureScale(f) as BoardMoneyScale : null, source: f.origin.sourceId, known: true};
+    }
+    if ("at" in o) {
+      if (o.year) return {money: null, source: null, known: true};
+      const spec = boardFieldOf(o.at[0], o.at[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "\u0000")), source = sourceOf(o.at[0]);
+      return {money: spec?.kind === "money" ? boardEffectiveScale(spec, source) as BoardMoneyScale : null, source: source.id, known: spec !== null};
+    }
+    if ("contributed" in o) return {money: null, source: sourceOf(o.contributed[0]).id, known: false};
+    if ("value" in o) return {money: o.scale ?? null, source: null, known: o.scale !== undefined || !/^-?\d+(?:\.\d+)?$/.test(o.value) || new Exact(o.value).eq(0)};
+    if ("var" in o) return {money: null, source: null, known: false};
+    return {money: null, source: null, known: true};
+  };
+  /** Two operands in one scale: when either is money, both in reais. A zero constant is zero in any scale; a field the
+   * registry does not list takes the scale of the same source only; anything else against money is not compared. */
+  const common = (x: BoardOperand, a: string, y: BoardOperand, b: string): [string, string] => {
+    const mx = moneyOf(x), my = moneyOf(y);
+    if (!mx.money && !my.money) return [a, b];
+    const one = (m: ReturnType<typeof moneyOf>, v: string, other: ReturnType<typeof moneyOf>) => {
+      if (m.money) return boardInReais(v, m.money);
+      if (m.known && m.source === null && /^-?\d+(?:\.\d+)?$/.test(v) && new Exact(v).eq(0)) return v;
+      if (!m.known && m.source !== null && m.source === other.source) return boardInReais(v, other.money!);
+      throw unverified("money_scale_unknown");
+    };
+    return [one(mx, a, my), one(my, b, mx)];
+  };
   const scalar = (raw: unknown, why: string) => {
     if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean") return String(raw);
     throw unverified(why);
@@ -418,22 +462,20 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   const shownFigure = (f: BoardFigureDisplay): string => {
     if ("pending" in f || !f.origin) throw indefinite("figure_pending");
     if (["calendar", "date", "label", "flag"].includes(f.unit)) return f.origin.value;
+    const scale = figureScale(f);
     const m = /-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:,\d+)?/.exec(f.display.replace(/\u2212/g, "-"));
-    if (!m) return f.origin.value;
+    if (!m) return f.unit === "money" ? boardInReais(f.origin.value, scale as BoardMoneyScale) : f.origin.value;
     const n = new Exact(m[0].replace(/\./g, "").replace(",", "."));
-    const scale = boardFieldOf(f.origin.methodId, f.origin.path)?.scale;
-    return (scale === "reais" ? n.times(1000000) : scale === "ratio" ? n.div(100) : n).toFixed();
+    // Back in the field's own scale, then money in reais (the common scale of the comparisons).
+    const own = (scale === "reais" ? n.times(1000000) : scale === "ratio" ? n.div(100) : n).toFixed();
+    return f.unit === "money" ? boardInReais(own, scale as BoardMoneyScale) : own;
   };
   const shownOperand = (o: BoardOperand, exact: string): string => {
     if (typeof o === "object" && "at" in o && !o.year) {const hit = [...context.figures.values()].find((f) => atFigure(o, f)); return hit ? shownFigure(hit) : exact;}
     if (typeof o !== "object" || !("slot" in o)) return exact;
     const f = context.figures.get(bindings[o.slot]!);
     if (!f || "pending" in f || !f.origin || ["calendar", "date", "label", "flag"].includes(f.unit) || o.year) return exact;
-    const m = /-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:,\d+)?/.exec(f.display.replace(/\u2212/g, "-"));
-    if (!m) return exact;
-    const n = new Exact(m[0].replace(/\./g, "").replace(",", "."));
-    const scale = boardFieldOf(f.origin.methodId, f.origin.path)?.scale;
-    return (scale === "reais" ? n.times(1000000) : scale === "ratio" ? n.div(100) : n).toFixed();
+    return /-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:,\d+)?/.test(f.display.replace(/\u2212/g, "-")) ? shownFigure(f) : exact;
   };
   const list = (method: string, path: string) => {const xs = read(method, path); if (!Array.isArray(xs) || !xs.length) throw unverified(path); return xs as Record<string, unknown>[];};
   /** A per-period series of a source, by key; null when it does not resolve. */
@@ -481,10 +523,13 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     return out;
   };
+  // Two series are compared value by value only within one source (one scale); series of two sources are not compared.
+  const seriesSource = (x: BoardSeries) => "list" in x ? x.list[0] : "contributed" in x ? x.contributed[0] : "projectionRows" in x ? x.projectionRows[0] : x.projectionDriver[0];
+  const sameSeriesSource = (a: BoardSeries, b: BoardSeries) => {if (seriesSource(a) !== seriesSource(b)) throw unverified("series_sources_differ");};
   let shownLost: {figures: string[]; betweenTwoShown: boolean} | null = null;
   const holds = (c: BoardCondition): boolean => {
     if ("compare" in c) {
-      const a = operand(c.compare[0]), b = operand(c.compare[2]);
+      const [a, b] = common(c.compare[0], operand(c.compare[0]), c.compare[2], operand(c.compare[2]));
       if (!compareBoard(a, c.compare[1], b)) return false;
       if (ordering(c.compare[1])) {
         const sa = shownOperand(c.compare[0], a), sb = shownOperand(c.compare[2], b);
@@ -498,9 +543,11 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     if ("every" in c) {
       const than = operand(c.than), items = list(c.every[0], c.every[1]);
-      if (!items.every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than))) return false;
+      // Each member as a field of the list, against the reference in one scale.
+      const pair = (index: number, item: Record<string, unknown>) => common({at: [c.every[0], `${c.every[1]}[${index}].${c.every[2]}`]}, scalar(item[c.every[2]], c.every[2]), c.than, than);
+      if (!items.every((x, i) => {const [m, t] = pair(i, x); return compareBoard(m, c.op, t);})) return false;
       if (ordering(c.op)) {
-        const sThan = shownOperand(c.than, than), listPath = c.every[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
+        const listPath = c.every[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
         // Every member, shown or not, against the reference as shown: a member shown anywhere in the material enters by its
         // one presentation, a member not shown by its exact value (each reading has one presentation in the material).
         // Each member by its canonical identity (the list's resolved path, the element's index, the field): every reading
@@ -511,7 +558,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         items.forEach((item, index) => {
           const identity = `${listCanonical}[${index}].${c.every[2]}`;
           const shown = [...context.figures].filter(([, f]) => !("pending" in f) && f.origin?.methodId === c.every[0] && canonicalOf(f) === identity);
-          const members = shown.length ? shown.map(([id, f]) => [shownFigure(f), id] as const) : [[scalar(item[c.every[2]], c.every[2]), null] as const];
+          const [exactMember, thanCommon] = pair(index, item), sThan = shownOperand(c.than, thanCommon);
+          const members = shown.length ? shown.map(([id, f]) => [shownFigure(f), id] as const) : [[exactMember, null] as const];
           for (const [member, id] of members) if (!compareBoard(member, c.op, sThan)) lost.push(id ?? identity);
         });
         if (lost.length) shownLost = {figures: [...lost, ...typeof c.than === "object" && "slot" in c.than ? [bindings[c.than.slot]!] : []], betweenTwoShown: false};
@@ -529,6 +577,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("dominates" in c) {
       // Period by period, matched by key; a series that does not resolve, or keys that do not match, fail the condition.
       const series = boardSeriesOf;
+      sameSeriesSource(c.dominates[0], c.dominates[1]);
       const a = series(c.dominates[0]), b = series(c.dominates[1]);
       // Over the horizon of the second series (the base): every one of its periods must exist in the first.
       if (!a || !b || b.size === 0 || [...b.keys()].some((k) => !a.has(k))) throw indefinite("series_absent");
@@ -723,6 +772,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       return defined.size === c.drivers.length && c.drivers.every((d) => defined.has(d));
     }
     if ("atKey" in c) {
+      sameSeriesSource(c.atKey[0], c.atKey[1]);
       const a = boardSeriesOf(c.atKey[0]), b = boardSeriesOf(c.atKey[1]), k = operand(c.key);
       if (!a || !b || !a.has(k) || !b.has(k)) throw indefinite("series_absent");
       return compareBoard(a.get(k)!, c.op, b.get(k)!);
@@ -814,7 +864,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       continue;
     }
     low = high = shownFigure(f);
-    if (side === "not_below" ? new Exact(low).lt(f.origin.value) : new Exact(high).gt(f.origin.value)) throw new Error(`board_capital_boundary_display_unsafe:${templateId}:${id}`);
+    const exact = f.unit === "money" ? boardInReais(f.origin.value, figureScale(f) as BoardMoneyScale) : f.origin.value;
+    if (side === "not_below" ? new Exact(low).lt(exact) : new Exact(high).gt(exact)) throw new Error(`board_capital_boundary_display_unsafe:${templateId}:${id}`);
   }
   const unnamed: string[] = [], unconfirmed: string[] = [], debtors = new Map<string, string>(), objects = new Map<string, string>(), unmatched: string[] = [], unknownSpecies: string[] = [];
   // An instrument's species is named only by its registered label, equal to a species or a declared label of one;
@@ -1371,7 +1422,7 @@ export const boardDeliberationTheme = (x: BoardDeliberation) => boardThemeOfRefs
 export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceReading[]) {
   const byId = new Map(sources.map((s) => [s.id, s]));
   const checks: {figureId: string; sourceId: string; methodId: string; methodVersion: string; packetFingerprint: string; path: string; unit: BoardFigureUnit;
-    scale: BoardFieldSpec["scale"]; period: "annual" | "none" | `months_${string}`; presentation: string; value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
+    scale: Exclude<BoardFieldSpec["scale"], "source">; period: "annual" | "none" | `months_${string}`; presentation: string; value: string; rounded: string; stated: string | null; display: string; matches: true}[] = [];
   const figures = new Map<string, BoardFigureDisplay>();
   for (const f of d.figures) {
     if (f.kind === "pending") {figures.set(f.id, {pending: true, methodId: f.requiredMethodId, path: f.requiredPath}); continue;}
@@ -1389,7 +1440,9 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     const currency = (s.packet as {currency?: unknown}).currency;
     const months = spec.period === "derived" ? spec.horizonMonths?.(s.packet, f.path) ?? null : null;
     if (spec.period === "derived" && months === null) throw new Error(`board_capital_period_unregistered:${f.id}`);
-    const check = formatBoardReading(raw, spec, f.presentation, f.stated, typeof currency === "string" ? currency : "", months);
+    // The field's scale in this source: money in the scale the source declares.
+    const scale = boardEffectiveScale(spec, s);
+    const check = formatBoardReading(raw, {...spec, scale}, f.presentation, f.stated, typeof currency === "string" ? currency : "", months);
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
     const display = unnamed ? boardUnnamedLabel : check.display;
@@ -1397,7 +1450,7 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     figures.set(f.id, {display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: boardCanonicalPath(s.packet, f.path, "text") ?? f.path, value: check.value,
       canonical: boardCanonicalPath(s.packet, f.path) ?? f.path, fingerprint: s.packetFingerprint, ...months ? {periodMonths: months} : {}}, ...unnamed ? {unnamed: true as const} : {}});
     checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: spec.kind,
-      scale: spec.scale, period: spec.period === "derived" ? `months_${months}` : spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display, matches: true as const});
+      scale, period: spec.period === "derived" ? `months_${months}` : spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display, matches: true as const});
   }
   // One presentation per reading in the whole material: the same field of the same result is never shown at two precisions.
   const presentations = new Map<string, {ids: string[]; presentation: string}>();

@@ -1,12 +1,12 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {formatBoardReading} from "./board-capital-discussion";
-import {boardFieldOf} from "./board-capital-discussion-sources";
+import {boardEffectiveScale, boardFieldOf} from "./board-capital-discussion-sources";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, debtTableWithPrincipal, debtTableAtReferenceDate, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraMoneyScale, auroraBoardFacts, auroraBoardPending, debtTableWithPrincipal, debtTableAtReferenceDate, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -114,7 +114,8 @@ export const boardRestateSource = (sourceId: string, methodId: string, packet: R
   for (const [id, r] of Object.entries({...auroraBoardReadings, ...c.extraReadings} as Record<string, [string, string, string, string?]>)) {
     if (r[0] !== sourceId || r[3] === undefined) continue;
     const spec = boardFieldOf(methodId, r[1]), raw = readBoardSourcePath(packet, r[1]);
-    const shown = spec ? formatBoardReading(raw, spec, r[2], null, "BRL", spec.horizonMonths?.(packet, r[1]) ?? null) : null;
+    // The field in the scale the restated source declares (the calibration's).
+    const shown = spec ? formatBoardReading(raw, {...spec, scale: boardEffectiveScale(spec, {id: sourceId, moneyScale: auroraMoneyScale(methodId)})}, r[2], null, "BRL", spec.horizonMonths?.(packet, r[1]) ?? null) : null;
     if (shown) c.extraReadings[id] = [r[0], r[1], r[2], shown.rounded];
   }
 };

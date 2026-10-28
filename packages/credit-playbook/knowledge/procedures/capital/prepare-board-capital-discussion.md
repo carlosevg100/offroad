@@ -67,7 +67,7 @@ Pacote da discussão no conselho: antes do material, o roteiro com as deliberaç
 7. [deterministic] Ajustar :: Regra de omissão material; nova versão preservando a anterior | evidence: pedido na conversa
 
 # Cálculos determinísticos
-- O método não recalcula nenhuma análise. Cada número é uma leitura de um resultado revisado: o caminho no pacote, as casas decimais (0 a 2) ou o formato de data, e o valor escrito. O que o campo é sai só do registro de campos do método de origem: tipo (dinheiro, taxa, múltiplo, prazo em anos ou meses, pontos, contagem, ano, data, rótulo, sim e não), escala de origem (reais, milhões, razão) e periodicidade (anual ou nenhuma). Campo fora do registro não é lido.
+- O método não recalcula nenhuma análise. Cada número é uma leitura de um resultado revisado: o caminho no pacote, as casas decimais (0 a 2) ou o formato de data, e o valor escrito. O que o campo é sai só do registro de campos do método de origem: tipo (dinheiro, taxa, múltiplo, prazo em anos ou meses, pontos, contagem, ano, data, rótulo, sim e não), escala (razão ou nativa; dinheiro na escala monetária da própria fonte) e periodicidade (anual ou nenhuma). Campo fora do registro não é lido.
 - Biblioteca fechada de modelos: a contribuição adotada não escreve texto. Todo texto exibido (assuntos, títulos, linhas, respostas, pendências, motivos, quem pediu, base de autoridade) é uma referência a um modelo do método, no código, com id, posições tipadas e texto fixo revisado: id do modelo seguido de posição=leitura (ou posição=deadline:deliberação). Tipos de posição: dinheiro, taxa, múltiplo, anos, meses, pontos, contagem, data, rótulo, sim e não, prazo de deliberação. Id de modelo desconhecido, posição que o modelo não tem, posição sem ligação ou leitura de tipo diferente do da posição é recusado antes de renderizar. Referência fora do formato (qualquer prosa) é recusada pelo próprio esquema.
 - Posição é conceito, não dimensão: cada posição de cada modelo declara a origem admissível exata (método, caminho registrado e, quando há, o caso, o cenário, a linha ou o período, escritos no modelo ou como variável compartilhada entre posições, por exemplo o mesmo ano no principal e no ano exibido). A leitura ligada precisa vir dessa origem; trocar dívida por cesta, TIR por custo de capital, custo por participação ou o caminho de uma linha por outro é recusado (board_capital_slot_concept_mismatch). Posição de ano admite só leitura de ano, com o valor que o modelo pede; leitura pendente só entra em posição do método que ela aguarda.
 - Prazo é da ação que o modelo anuncia: o aviso ao fornecedor só com o prazo do aviso, a decisão da rota só com o prazo da rota (board_capital_deadline_action_mismatch). Os textos de uma deliberação (assunto, recomendação e ações) pertencem a ela, cada modelo só entra no campo para o qual foi escrito e cada resposta responde à sua pergunta; o resto é recusado (board_capital_deliberation_text_mismatch, board_capital_template_use_invalid, board_capital_answer_mismatch).
@@ -111,6 +111,7 @@ Pacote da discussão no conselho: antes do material, o roteiro com as deliberaç
 - Suporte numérico: o título de cada página (fora decisões e próximos passos) e cada resposta carregam uma leitura econômica (dinheiro, taxa, múltiplo, prazo, pontos ou contagem); data, rótulo ou sim e não não bastam. Próximos passos carregam um prazo de deliberação.
 - Fatos materiais por regra: toda leitura econômica adotada, todo número que a base marca como material e todo prazo de deliberação. Um fato conta como mostrado só se o seu marcador está no texto final de um campo exibido; assunto de deliberação substituído pela recomendação não conta. A versão composta mostra todos, ou é recusada; cada pedido de omissão é aplicado só se a versão renderizada que ele produz ainda mostra todos, senão é recusado com a frase e os fatos que sairiam.
 - Resultado revisado: só de método liberado, na versão liberada, analisado pelo esquema do pacote liberado e com a impressão recalculada igual à nomeada na base; outra companhia ou moeda é recusada.
+- Escala por fonte: cada fonte declara, com o método e a impressão, a escala monetária em que a base dela foi adotada (reais ou milhões); todo valor em dinheiro da fonte é lido nessa escala, e toda comparação de dinheiro, entre leituras de fontes diferentes ou contra constante (que declara a própria escala; zero dispensa), é feita em reais. Fonte sem escala é recusada; escala errada aparece como número divergente onde há número escrito, e o produtor da base confere a escala declarada contra a escala de adoção da ponte do método e da versão da execução anterior, recusando escala desconhecida, misturada ou divergente. A dimensão de escala das entradas monetárias guardadas vale "1" nas duas escalas e não distingue reais de milhões; por isso a conferência usa a convenção de adoção da ponte, nunca essa dimensão.
 - Ordem das deliberações: o prazo mais próximo primeiro; sem prazo por último; empate na ordem adotada.
 - Ordem das páginas: decisões, situação, restrição, temas que o conselho não viu (ou que não se sabe se viu), alternativas, recomendação, riscos, o que mudaria a recomendação, próximos passos. Tema já visto vai ao apêndice.
 - Orçamento: páginas principais até o tempo de pauta dividido pelos minutos por página; acima disso, lacuna.
@@ -4231,6 +4232,16 @@ Retirar a recomendação a pedido de quem apresenta é aceitável; retirar o ret
                             "required": true,
                             "value": {
                               "type": "string"
+                            }
+                          },
+                          "moneyScale": {
+                            "required": true,
+                            "value": {
+                              "type": "enum",
+                              "values": [
+                                "reais",
+                                "millions"
+                              ]
                             }
                           },
                           "status": {
