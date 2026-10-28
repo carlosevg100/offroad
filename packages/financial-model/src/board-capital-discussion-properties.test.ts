@@ -1595,8 +1595,8 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const changed = {...boardTemplates, "risk.leverage_adverse": {...original, text: original.text.replace("{definition:politica:$ma}", "")}};
     expect(checkBoardTemplateLibrary(changed)).toContain("risk.leverage_adverse:definition_token:politica");
     const covenant = auroraBoardSources().find((x) => x.id === "covenant")!, table = auroraBoardSources().find((x) => x.id === "tabela-divida")!;
-    const reading = (x: {id: string; methodId: string; packet: Record<string, unknown>}) => ({id: x.id, methodId: x.methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v",
-      packetFingerprint: String(x.packet.fingerprint), status: "s", gaps: [], packet: x.packet}) as unknown as BoardSourceReading;
+    const reading = (x: {id: string; methodId: string; packet: Record<string, unknown>; moneyScale: string}) => ({id: x.id, methodId: x.methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v",
+      packetFingerprint: String(x.packet.fingerprint), moneyScale: x.moneyScale, status: "s", gaps: [], packet: x.packet}) as unknown as BoardSourceReading;
     const at = (x: {id: string; methodId: string; packet: Record<string, unknown>}, path: string, display: string, unit: "calendar" | "multiple"): BoardFigureDisplay =>
       ({display, unit, origin: {sourceId: x.id, methodId: x.methodId, path, value: String(readBoardSourcePath(x.packet, path))}});
     const figures = new Map<string, BoardFigureDisplay>([["ano", at(table, "result.table.profile.scheduleByYear[year=2027].year", "2027", "calendar")],

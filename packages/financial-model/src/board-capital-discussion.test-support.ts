@@ -5,6 +5,7 @@ import type {BoardCapitalDiscussionFacts} from "./board-capital-discussion-premi
 import {prepareInvestmentDecisionPacket} from "./investment-decision-packet";
 import {c32PacketInput} from "./investment-decision-packet.test-support";
 import {boardDeferralRules, boardShiftDate} from "./board-capital-discussion-templates";
+import type {BoardMoneyScale} from "./board-capital-discussion-sources";
 import {prepareDebtTablePacket} from "./debt-table-packet";
 import {auroraDebtTableBasis} from "./debt-table.test-support";
 import Decimal from "decimal.js";
@@ -414,17 +415,24 @@ export function debtTableWithCreditLineLabel(label: string) {
   entry.value = {type: "text", value: label};
   return prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: b.seal()}) as unknown as Record<string, unknown>;
 }
+/** The money scale each calibration's basis was adopted in: BRL millions, except the C32 packaging line and the C03
+ * relative cost, adopted in reais. */
+export const auroraMoneyScale = (methodId: string): BoardMoneyScale =>
+  methodId === "analyze-investment-project" || methodId === "analyze-relative-debt-cost" ? "reais" : "millions";
+type BoardTestSource = {id: string; methodId: string; packet: Record<string, unknown>; moneyScale: BoardMoneyScale};
 let cached: ReturnType<typeof buildSources> | null = null;
 let replaced: Record<string, Record<string, unknown>> = {};
-let added: {id: string; methodId: string; packet: Record<string, unknown>}[] = [];
-/** The reviewed results, computed once per process and handed out as copies. */
-export function auroraBoardSources(): {id: string; methodId: string; packet: Record<string, unknown>}[] {
+let rescaled: Record<string, BoardMoneyScale> = {};
+let added: BoardTestSource[] = [];
+/** The reviewed results, computed once per process and handed out as copies, each with the money scale it declares. */
+export function auroraBoardSources(): BoardTestSource[] {
   cached ??= buildSources();
-  return [...cached.map((s) => ({id: s.id, methodId: s.methodId, packet: structuredClone(replaced[s.id] ?? s.packet) as unknown as Record<string, unknown>})),
-    ...added.map((s) => ({...s, packet: structuredClone(s.packet)}))];
+  return [...cached.map((s) => ({id: s.id, methodId: s.methodId, packet: structuredClone(replaced[s.id] ?? s.packet) as unknown as Record<string, unknown>,
+    moneyScale: rescaled[s.id] ?? auroraMoneyScale(s.methodId)})), ...added.map((s) => ({...s, packet: structuredClone(s.packet)}))];
 }
 /** Runs a case with a second reviewed result of a method already in the material, named in the basis beside the first. */
-export function withExtraBoardSource<T>(source: {id: string; methodId: string; packet: Record<string, unknown>}, run: () => T): T {
+export function withExtraBoardSource<T>(raw: {id: string; methodId: string; packet: Record<string, unknown>; moneyScale?: BoardMoneyScale}, run: () => T): T {
+  const source = {...raw, moneyScale: raw.moneyScale ?? auroraMoneyScale(raw.methodId)};
   added = [...added, source];
   try {return run();} finally {added = added.filter((x) => x !== source);}
 }
@@ -437,10 +445,23 @@ export function covenantWithAdverseDebt(debt: string) {
   return prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base",
     analysis: c.seal()}) as unknown as Record<string, unknown>;
 }
-/** Runs a case with one reviewed result replaced by another execution of its method; the basis names the new one. */
-export function withBoardSource<T>(id: string, packet: Record<string, unknown>, run: () => T): T {
+/** Runs a case with one reviewed result replaced by another execution of its method; the basis names the new one,
+ * with the money scale given (by default the calibration's). */
+export function withBoardSource<T>(id: string, packet: Record<string, unknown>, run: () => T, moneyScale?: BoardMoneyScale): T {
   replaced = {...replaced, [id]: packet};
-  try {return run();} finally {const {[id]: _gone, ...rest} = replaced; replaced = rest;}
+  if (moneyScale) rescaled = {...rescaled, [id]: moneyScale};
+  try {return run();} finally {const {[id]: _gone, ...rest} = replaced; replaced = rest; const {[id]: _scale, ...others} = rescaled; rescaled = others;}
+}
+/** A calibration executed again by its own method with its basis adopted in reais: every money entry of the basis
+ * (unit currency) times one million, nothing else changed. */
+export function inReaisBasis<B extends {entries: AdoptionBasisEntry[]}>(basis: B): B {
+  const up = (v: unknown) => new Decimal(v as string).times(1000000).toFixed();
+  for (const e of basis.entries) if (e.dimensions.unit === "currency") {
+    const value = e.value as {type: string; value: unknown};
+    if (value.type === "number") e.value = {type: "number", value: up(value.value)} as AdoptionBasisEntry["value"];
+    else if (value.type === "list") e.value = {type: "list", value: (value.value as string[]).map(up)} as AdoptionBasisEntry["value"];
+  }
+  return basis;
 }
 /** The debt table executed by its own method with the largest creditor adopted under another name. */
 export function debtTableWithCreditor(name: string, registered = "Debenturistas") {
@@ -677,7 +698,7 @@ export function auroraBoardBasis(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
       nextMeetingDate: c.nextMeetingDate === null ? null : contribute("meeting.nextMeetingDate", "date", {type: "date", value: c.nextMeetingDate}),
       template: c.template === null ? null : text("meeting.template", c.template),
       outlineConfirmed: contribute("meeting.outlineConfirmed", "convention", {type: "boolean", value: c.outlineConfirmed})},
-    sources: sources.map((s) => ({id: s.id, reading: list(`source.${s.id}`, [s.methodId, s.packet.fingerprint as string])})),
+    sources: sources.map((s) => ({id: s.id, reading: list(`source.${s.id}`, [s.methodId, s.packet.fingerprint as string, s.moneyScale])})),
     topics: c.topics.map((t) => ({id: t.id, label: text(`topic.${t.id}.label`, t.label), seen: t.seen === null ? null : contribute(`topic.${t.id}.seen`, "convention", {type: "boolean", value: t.seen})})),
     deliberations: c.deliberations.map((d) => {const p = `deliberation.${d.id}.`; return {id: d.id, title: text(p + "title", d.title), subject: text(p + "subject", d.subject),
       recommendation: d.recommendation === null ? null : text(p + "recommendation", d.recommendation), authority: list(p + "authority", d.authorityBasis === null ? [d.authority] : [d.authority, d.authorityBasis]),
@@ -710,7 +731,7 @@ export function auroraBoardFacts(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     agendaMinutes: c.agendaMinutes === null ? null : fact(c.agendaMinutes, "informed", "tempo de pauta informado pelo CFO"),
     nextMeetingDate: null, template: c.template === null ? null : fact(c.template, "document", "última apresentação ao conselho, anexada"),
     outlineConfirmed: fact(c.outlineConfirmed, "informed", c.outlineConfirmed ? "CFO seguiu o roteiro e mandou o template" : "roteiro ainda não confirmado"),
-    sources: sources.map((s) => fact({id: s.id, methodId: s.methodId, packetFingerprint: s.packet.fingerprint as string}, "analysis", "resultado revisado no cofre, na versão vigente")),
+    sources: sources.map((s) => fact({id: s.id, methodId: s.methodId, packetFingerprint: s.packet.fingerprint as string, moneyScale: s.moneyScale}, "analysis", "resultado revisado no cofre, na versão vigente")),
     topics: c.topics.map((t) => fact(t, "informed", "o que o conselho já viu, segundo o CFO")),
     deliberations: c.deliberations.map((d) => fact(d, "analysis", "decisões com prazo extraídas das análises revisadas")),
     figures: [...Object.entries({...auroraBoardReadings, ...c.extraReadings}).map(([k, r]) => fact({id: k, kind: "reading" as const, reading: r.filter((x): x is string => x !== undefined)}, "analysis", "leitura do resultado revisado")),
