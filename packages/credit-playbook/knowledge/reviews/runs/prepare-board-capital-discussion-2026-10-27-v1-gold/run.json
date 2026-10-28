@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T15:26:46.233Z",
-    "finishedAt": "2026-10-28T15:30:26.156Z"
+    "startedAt": "2026-10-28T18:12:36.776Z",
+    "finishedAt": "2026-10-28T18:16:03.200Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -748,9 +748,33 @@
       "inputFingerprint": "5180b0206a070d79fbe94a159c04ea876a15e5a511ae0fcc77a44825e51f6b6f",
       "outputFingerprint": "62cc0394a1fb611ccf275d3437d0dcd3f76689dd72ee1d4a4d02a3cdf8c37ccd",
       "passed": true
+    },
+    {
+      "id": "every-record-id-renamed-turn-1-gives-the-same-material",
+      "expectation": "{\"material\":\"73b801cb385de92c611b4163efd3799c971ebb4f630c04619cbb9a2ef60ca7ba\",\"versions\":[],\"status\":\"framed\"}",
+      "observed": "{\"material\":\"73b801cb385de92c611b4163efd3799c971ebb4f630c04619cbb9a2ef60ca7ba\",\"versions\":[],\"status\":\"framed\"}",
+      "inputFingerprint": "77128ba059625bcf3452237280c8ee6d2aa672a700452e8b8096dc871b957d48",
+      "outputFingerprint": "a87a64780893139d9e5d120e9733211ce89e5086a1b4904bd4b8b1ec1b756405",
+      "passed": true
+    },
+    {
+      "id": "every-record-id-renamed-turn-2-gives-the-same-material",
+      "expectation": "{\"material\":\"509479a2f6bee9bbf93ccf6b15f165367342bcde5bdb0943401a77e2925df131\",\"versions\":[\"cf37418d457ab5382f9367333242092cb9a0a3758655b9849eb17bad39b26ac6\"],\"status\":\"partial\"}",
+      "observed": "{\"material\":\"509479a2f6bee9bbf93ccf6b15f165367342bcde5bdb0943401a77e2925df131\",\"versions\":[\"cf37418d457ab5382f9367333242092cb9a0a3758655b9849eb17bad39b26ac6\"],\"status\":\"partial\"}",
+      "inputFingerprint": "27f0577238d7c7dd7d9d907b1bb44208bfe48514d20a4d82a774693241fef9ae",
+      "outputFingerprint": "5c1ad747aeac9de39d585a9aca054c695d571965ebe1cce12f1c9950ad6bcefe",
+      "passed": true
+    },
+    {
+      "id": "every-record-id-renamed-turn-3-gives-the-same-material",
+      "expectation": "{\"material\":\"abe9cc8663992d5365fbedb45919ece07e7cba0e2884da68e0ce69ccd040b13f\",\"versions\":[\"cf37418d457ab5382f9367333242092cb9a0a3758655b9849eb17bad39b26ac6\",\"05036c05099fec8198a81c20db758dcabd0ecbe4e779a95f983f130e5c504614\"],\"status\":\"partial\"}",
+      "observed": "{\"material\":\"abe9cc8663992d5365fbedb45919ece07e7cba0e2884da68e0ce69ccd040b13f\",\"versions\":[\"cf37418d457ab5382f9367333242092cb9a0a3758655b9849eb17bad39b26ac6\",\"05036c05099fec8198a81c20db758dcabd0ecbe4e779a95f983f130e5c504614\"],\"status\":\"partial\"}",
+      "inputFingerprint": "20e9523f5a50a8561ae86c9cb582eeccecb1a0908786a173986a45dfb9295907",
+      "outputFingerprint": "43246e2dd586257102a3f6e9ace54760638a11e5a1abea4fb232a9f7a52bc086",
+      "passed": true
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "de41e0e6dd7fead0dcb23a0e895d7962518d7046b9dde08c7d06394630ba826c",
+  "evidenceFingerprint": "d7ce83cb0c941182229986782f5e3567f65ceb987fcd6b93e4fec8dc0437fbb9",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

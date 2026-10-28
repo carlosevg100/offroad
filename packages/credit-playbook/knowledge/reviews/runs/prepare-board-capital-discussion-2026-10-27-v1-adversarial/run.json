@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T15:26:46.233Z",
-    "finishedAt": "2026-10-28T15:30:26.157Z"
+    "startedAt": "2026-10-28T18:12:36.776Z",
+    "finishedAt": "2026-10-28T18:16:03.201Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -1542,6 +1542,70 @@
       "passed": true
     },
     {
+      "id": "status-quo-path-not-registered",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "349bb8fe28fd0d7dad26f5fae59f87d367c29a4811a086e374ec117dd46e048b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "two-paths-registered-as-the-status-quo",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "904292787a563dd5fdb1c968066a49288d424d13d256ade31289644403ca22f7",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "two-board-policies-in-force",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "427801a04f0004f0545b32f1b436936eb47a7041cc78604f93b73a7ab2529529",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "no-contractual-covenant-in-force",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d44a939292e8ce547dfc07f89aac968857f769930530d3b92e7995c98689b33e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "no-case-registered-as-the-deferral",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "bf2bfddecd29c250dde810c1684f4e02ced175d150ff7b5b04d43ab766b1ea4c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "two-sensitivity-cases-of-the-same-drivers",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "37582645d39e894f13aa1e68bfd8efc0f014ef292d03b43358cd4e9bc0e84815",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "two-alternative-weekly-cases-tied-at-the-lowest-cash",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "06fac2f69cd88259eef2cb0746d4959b403ac02720fdfa6ea9e4ca523cb3642c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "debt-table-row-whose-terms-differ-from-the-plan-instrument",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9145aa0059e03fbf3e11be0667434ed3c9f657f9bac4d690483bdd3b433045ff",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "tampered-envelope",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1583,6 +1647,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "41eda7226bb852a3ee58922483628c0eb9cde77ad9928483ae7e539f3aea39a6",
+  "evidenceFingerprint": "4f66d22a65bf23fabae5a79847b4a72a9d586f24d97aa4a022844d0041979c8b",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

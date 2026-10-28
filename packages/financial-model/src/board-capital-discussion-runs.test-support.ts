@@ -6,6 +6,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
+import {boardAlteredSource, boardRenamedReadings, boardRenamedSources, withBoardSources} from "./board-capital-discussion.test-support";
 import {auroraBoardBasis, auroraMoneyScale, auroraBoardFacts, auroraBoardPending, debtTableWithPrincipal, debtTableAtReferenceDate, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
@@ -480,6 +481,49 @@ function goldCases(): Case[] {
     })(), {title: "A linha de embalagem rende 16% ao ano, praticamente igual ao custo de capital de 16% ao ano"}, (p) => ({title: pageOf(p, "linha").title})),
     reuse("every-number-of-the-final-text-verified", p2, t2, {verified: true, match: true}, (p) => ({verified: p.readings!.material!.verifiedNumbers > 100, match: p.readings!.material!.allFiguresMatch})),
     reuse("never-presents-or-sends", p3, t3, {presented: false, sent: false, grants: false}, (p) => ({presented: p.readings!.presented, sent: p.readings!.sentToThirdParties, grants: p.grantsExecution})),
+    // Every record identifier of every result renamed (random, one set per result, none shared across results; the same
+    // roles and terms): the same material, text, numbers, pages and versions, at each turn.
+    ...([[1, p1], [2, p2], [3, p3]] as const).map(([turn, calibrated]) => observe(`every-record-id-renamed-turn-${turn}-gives-the-same-material`, boardRenamedInput(turn),
+      {material: boardMaterialDigest(calibrated), versions: calibrated.result.discussion!.versions.map((v) => v.fingerprint), status: calibrated.status},
+      (p) => ({material: boardMaterialDigest(p), versions: p.result.discussion!.versions.map((v) => v.fingerprint), status: p.status}))),
+  ];
+}
+/** The material without the identity of the results it reads: versions, gaps, readings, omissions, outline and status. */
+export const boardMaterialDigest = (p: Packet) => fingerprint({versions: p.result.discussion!.versions, gaps: p.gaps, readings: p.readings, status: p.status,
+  omissions: p.result.discussion!.omissions, outline: p.result.discussion!.outline, materialFacts: p.result.discussion!.materialFacts, pending: p.result.discussion!.pending});
+/** The calibration over results whose every record identifier was renamed, the material written against the new ones. */
+export const boardRenamedInput = (turn: BoardTurn, seed = "c47-roles") => {
+  const {packets, renames} = boardRenamedSources(seed);
+  return withBoardSources(packets, () => boardPacketInput(turn, boardRenamedReadings(renames)));
+};
+/** Records bound by role: a role the result does not register, or registers more than once, refuses the template by name. */
+export function boardRoleAttempts(build: (turn: BoardTurn, edit: (c: CaseData) => void) => unknown): [string, () => unknown, string][] {
+  type Contribution = {fieldPath: string; value: {value: unknown}};
+  const contributions = (p: Record<string, unknown>) => (p.result as {contributions: Contribution[]}).contributions;
+  const term = (p: Record<string, unknown>, suffix: string) => contributions(p).find((e) => e.fieldPath.endsWith(`.${suffix}`))!;
+  const run = (sourceId: string, edit: (p: Record<string, unknown>) => void) => () => withBoardSource(sourceId, boardAlteredSource(sourceId, edit), () => build(2, () => undefined));
+  return [
+    ["status-quo-path-not-registered", run("plano-2027", (p) => {term(p, "path.manter.terms").value.value = ["candidate", "seguir"];}),
+      "board_capital_record_role_absent:situation.cash_shortfall:q:status_quo_path"],
+    ["two-paths-registered-as-the-status-quo", run("plano-2027", (p) => {term(p, "path.ccb-tres-anos.terms").value.value = ["status_quo", "seguir"];}),
+      "board_capital_record_role_ambiguous:situation.cash_shortfall:q:status_quo_path:ccb-tres-anos,manter"],
+    ["two-board-policies-in-force", run("covenant", (p) => {const l = (p.result as {headroom: {limits: {id: string; kind: string; status: string}[]}}).headroom.limits.find((x) => x.id === "original")!;
+      l.kind = "board_policy"; l.status = "in_force";}), "board_capital_record_role_ambiguous:delib.policy.definition:lp:limit:original,politica"],
+    ["no-contractual-covenant-in-force", run("covenant", (p) => {(p.result as {headroom: {limits: {id: string; status: string}[]}}).headroom.limits.find((x) => x.id === "aditamento")!.status = "superseded";}),
+      "board_capital_record_role_absent:constraint.covenant_policy:lk:limit"],
+    ["no-case-registered-as-the-deferral", run("linha-embalagem", (p) => {
+      for (const c of (p.cases as {id: string; role: string}[])) if (c.role === "deferral") c.role = "alternative";
+      for (const m of (p.comparison as {metrics: {role: string}[]}).metrics) if (m.role === "deferral") m.role = "alternative";}),
+      "board_capital_record_role_absent:delib.packaging_line.wait:cr:investment_case"],
+    ["two-sensitivity-cases-of-the-same-drivers", run("linha-embalagem", (p) => {const cases = p.cases as {id: string}[]; cases.push({...structuredClone(cases.find((c) => c.id === "economy-4")!), id: "economy-5"});}),
+      "board_capital_record_role_ambiguous:topic.project_sensitivities:ce:sensitivity_case:economy-4,economy-5"],
+    ["two-alternative-weekly-cases-tied-at-the-lowest-cash", run("caixa-semanal", (p) => {const xs = (p.readings as {sensitivities: {caseId: string; minimum: string}[]}).sensitivities;
+      xs.find((x) => x.caseId === "safra-30")!.minimum = xs.find((x) => x.caseId === "sem-linha")!.minimum;}),
+      "board_capital_record_role_ambiguous:situation.cash_without_line:w:lowest_cash_alternative_case:safra-30,sem-linha"],
+    // The debt-table row and the plan instrument: the same final payment, another spread; the plan never registers the creditor.
+    ["debt-table-row-whose-terms-differ-from-the-plan-instrument", run("tabela-divida", (p) => {
+      (p.result as {table: {rows: {id: string; spread: string}[]}}).table.rows.find((x) => x.id === "ccb-bradesco")!.spread = "0.03";}),
+      "board_capital_record_role_absent:alternatives.moves.no_line_debenture:j:plan_instrument_of_row"],
   ];
 }
 
@@ -580,6 +624,8 @@ function adversarialCases(): Case[] {
     ["question-text-used-as-an-answer", () => boardPacketInput(2, (c) => {c.questions[6]!.answer = "q.cost";}), "board_capital_template_use_invalid:question.estrategica.answer"],
     // Review r7: every slot is a concept, every deadline an action, every fixed assertion a condition, every source label a name.
     ...boardConceptAttempts(boardPacketInput),
+    // Records bound by role, never by identifier: a role missing or ambiguous refuses the template by name.
+    ...boardRoleAttempts(boardPacketInput),
     ["tampered-envelope", () => boardPacketInput(2, undefined, (i) => {i.analysis.discussion.envelope = {...i.analysis.discussion.envelope, canonical: i.analysis.discussion.envelope.canonical.replace("2026-10-02", "2026-10-09")};}), "adoption_basis_integrity_mismatch"],
     ["free-material-in-request", () => ({...boardPacketInput(2), material: {pages: []}}), "Unrecognized key"],
     ["fabricated-grant-in-result", forge("grantsExecution"), "grantsExecution"],
@@ -611,8 +657,8 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["debt-total-bound-to-the-free-basket", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=basket-free|ano=year-2027";}), "board_capital_slot_concept_mismatch:situation.debt_total:total"],
     ["program-cost-bound-to-debt-shares", () => build(2, (c) => {c.pages[5]!.lines.push("topic.crop_program_cost|taxa_b=share-12m|taxa_a=largest-share");}), "board_capital_slot_concept_mismatch:topic.crop_program_cost:taxa_b"],
     ["positive-npv-under-a-negative-claim", () => build(2, (c) => {c.pages[4]!.lines[2] = "topic.project_sensitivities|vpl_economia=npv|vpl_capex=npv-capex|vpl_partida=npv-slow";}),
-      "board_capital_slot_concept_mismatch:topic.project_sensitivities:vpl_economia"],
-    ["path-row-reading-another-path", () => build(2, (c) => {c.pages[6]!.lines[3] = row("keep_and_roll", "sem-linha-debenture");}), "board_capital_slot_concept_mismatch:alternatives.row.keep_and_roll:caixa"],
+      "board_capital_record_role_mismatch:topic.project_sensitivities:ce:sensitivity_case"],
+    ["path-row-reading-another-path", () => build(2, (c) => {c.pages[6]!.lines[3] = row("keep_and_roll", "sem-linha-debenture");}), "board_capital_record_role_mismatch:alternatives.row.keep_and_roll:p:status_quo_path"],
     ["ebitda-of-another-year", () => build(2, (c) => {c.pages[11]!.lines[1] = "what_changes.wheat|choque=wheat-shock|defasagem=wheat-lag|ano=year-2028|ebitda=ebitda-wheat|insumo=wheat-label";}),
       "board_capital_slot_concept_mismatch:what_changes.wheat:ebitda:variable_y"],
     ["concentration-year-that-is-not-the-largest", () => build(2, (c) => {c.pages[1]!.title = "situation.debt_total|total=divida-total|ano=year-2028";}), "board_capital_template_condition_failed:situation.debt_total"],
@@ -635,9 +681,9 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["largest-creditor-in-a-row-creditor-slot", () => build(2, (c) => {c.pages[3]!.lines[0] = "constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=largest-creditor";}),
       "board_capital_slot_concept_mismatch:constraint.basket_usage:credor"],
     ["prepaid-creditor-the-plan-does-not-prepay", () => build(2, (c) => {finame(c); c.pages[8]!.lines[0] = "recommendation.debenture_cost|credor=finame-creditor|baixo=deb-cost-low|alto=deb-cost-high";}),
-      "board_capital_template_condition_failed:recommendation.debenture_cost"],
+      "board_capital_record_role_absent:recommendation.debenture_cost:j:plan_instrument_of_row"],
     ["amended-creditor-the-plan-does-not-amend", () => build(2, (c) => {finame(c); c.pages[7]!.lines[6] = c.pages[7]!.lines[6]!.replace("credor=bradesco-creditor", "credor=finame-creditor");}),
-      "board_capital_template_condition_failed:alternatives.moves.extend_bradesco"],
+      "board_capital_record_role_absent:alternatives.moves.extend_bradesco:j:plan_instrument_of_row"],
     ["question-and-answer-name-different-creditors", () => build(2, (c) => {finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor";}), "board_capital_answer_mismatch:bradesco:credor"],
     // Review r9: exposure is the balance the chain owes, never the program's volume or the eligible capacity; a
     // contractual assertion holds only when the registered contract says so.
@@ -662,7 +708,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["sensitivity-called-smaller-economy-with-unchanged-economy", () => {
       const packet = auroraInvestmentPacket({economyCaseWithLargerCapexOnly: true}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
-    }, "board_capital_template_condition_failed:topic.project_sensitivities"],
+    }, "board_capital_record_role_absent:topic.project_sensitivities:ce:sensitivity_case"],
     // Review r21: "estendido na mesma medida" only when the periods added equal the deferral exactly.
     ...[2, 3, 5].flatMap((years) => ([2, 3] as const).map((turn) => [`one-year-deferral-with-a-${years}-year-extension-turn-${turn}`, () => {
       const packet = auroraInvestmentPacket({deferralHorizonYears: years}) as unknown as Record<string, unknown>;
@@ -783,7 +829,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ...([["smaller-economy-with-a-30-percent-discount-rate", true], ["base-operations-at-a-30-percent-discount-rate-called-smaller-economy", false]] as const).map(([name, withEconomy]) => [name, () => {
       const packet = auroraInvestmentPacket({economyCaseDiscountRate: {rate: "0.3", withEconomy}}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
-    }, "board_capital_template_condition_failed:topic.project_sensitivities"] as [string, () => unknown, string]),
+    }, "board_capital_record_role_absent:topic.project_sensitivities:ce:sensitivity_case"] as [string, () => unknown, string]),
     // Review r11: each cause by the driver that defines it, scenario against base, over the scope the sentence states.
     ["later-receivables-claimed-on-longer-inventory", () => {
       const packet = auroraProjectionPacket({inventoryInsteadOfReceivables: true}) as unknown as Record<string, unknown>;
@@ -792,7 +838,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["larger-capex-claimed-on-front-loaded-capex-with-smaller-total", () => {
       const packet = auroraInvestmentPacket({capexFrontLoadedSmallerTotal: true}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {c.extraReadings["npv-capex"] = ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1", boardStatedMillions(packet, "capex-120")];}));
-    }, "board_capital_template_condition_failed:topic.project_sensitivities"],
+    }, "board_capital_record_role_absent:topic.project_sensitivities:cc:sensitivity_case"],
     // Review r12: the cause against the same reference as the effect (the scenario it derives from).
     ["receivables-shorter-than-the-parent-with-longer-inventory", () => {
       const packet = auroraProjectionPacket({shorterThanParentWithInventory: true}) as unknown as Record<string, unknown>;
@@ -832,7 +878,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
         for (const [name, field] of [["five-year-amort", "scheduledAmortization"], ["five-year-available", "availableAfterInterest"]] as const)
           c.extraReadings[name] = ["plano-2027", `result.evaluation.paths[id=emissao-revista].amortizationTests[profileId=cinco-anos].years[year=2029].${field}`, "0", field === "scheduledAmortization" ? "33" : "24"];
         boardRestateSource("plano-2027", "evaluate-financing-paths", packet)(c);}));
-    }, "board_capital_set_incomplete:page.caminhos:paths:-emissao-revista"],
+    }, "board_capital_record_role_ambiguous:alternatives.row.no_line_debenture:p:path_with_moves:emissao-revista,sem-linha-debenture"],
     // Review r42: a composite selector equivalent to the simple one is the same limit, under the same fiscalization.
     ["covenant-of-2-4-read-by-a-composite-selector-breached-at-2-45-not-stated", () => {
       const packet = auroraCovenantPacket({covenantMaximum: "2.4", adverseDebt: "123.57599438"}) as unknown as Record<string, unknown>;
@@ -895,7 +941,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["extension-path-with-an-undeclared-prepayment", () => {
       const packet = auroraPlanPacket({extensionWithExtraPrepayment: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "alongar-bradesco");}));
-    }, "board_capital_template_condition_failed:alternatives.moves.extend_bradesco"],
+    }, "board_capital_record_role_absent:alternatives.row.extend_bradesco:p:path_with_moves"],
     // Review r15: moves and descriptions by the instruments' terms, never by identifiers; a deferral by every component.
     ["extension-whose-amendment-does-not-extend", () => {
       const packet = auroraPlanPacket({amendmentWithoutExtension: true}) as unknown as Record<string, unknown>;
@@ -904,7 +950,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["development-bank-description-on-a-bank-loan", () => {
       const packet = auroraPlanPacket({developmentLoanAsBank: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {for (const id of ["debenture-com-linha", "alongar-com-banco", "alongar-bradesco"]) boardRestatePath(c, packet, id);}));
-    }, "board_capital_template_condition_failed:alternatives.moves.debenture_with_line"],
+    }, "board_capital_record_role_absent:alternatives.row.debenture_with_line:p:path_with_moves"],
     ["deferral-proven-only-by-capex-and-ebitda", () => {
       const packet = auroraPlanPacket({deferralOnlyCapexAndEbitda: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));

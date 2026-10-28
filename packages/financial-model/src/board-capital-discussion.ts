@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 import {boardCanonicalPath, boardContributionTexts, boardEffectiveScale, boardFieldOf, boardFillVariables, boardResolvedRecord, readBoardSourcePath, type BoardFieldKind, type BoardFieldSpec,
   type BoardMoneyScale} from "./board-capital-discussion-sources";
-import {boardThemeOfRefs, boardThemes, type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardBoundaries, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTemplate, type BoardTextUse} from "./board-capital-discussion-templates";
+import {boardThemeOfRefs, boardThemes, type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardBoundaries, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, boardRoleMethods, type BoardComparison, type BoardPathMovesSpec, type BoardRole, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTemplate, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
  * number on the material is read from a reviewed result, shown in the unit, scale and periodicity the
@@ -298,17 +298,147 @@ function compareBoard(a: string, how: BoardComparison, b: string) {
   const c = numeric.test(a) && numeric.test(b) ? new Exact(a).cmp(b) : a < b ? -1 : a > b ? 1 : 0;
   return how === "lt" ? c < 0 : how === "le" ? c <= 0 : how === "gt" ? c > 0 : how === "ge" ? c >= 0 : how === "ne" ? c !== 0 : c === 0;
 }
+type Contribution = {fieldPath?: unknown; value?: {value?: unknown}};
+const contributionsOf = (packet: unknown): Contribution[] => (packet as {result?: {contributions?: Contribution[]}} | null)?.result?.contributions ?? [];
+/** The one adopted term whose field path ends with the suffix, or undefined. */
+const termOf = (contributions: Contribution[], suffix: string): unknown => {
+  const hits = contributions.filter((e) => typeof e.fieldPath === "string" && e.fieldPath.endsWith(`.${suffix}`));
+  return hits.length === 1 ? hits[0]!.value?.value : undefined;
+};
+/** The ids of the records whose adopted terms (`<kind>.<id>.terms`) satisfy the test. */
+const registeredIds = (contributions: Contribution[], kind: "path" | "instrument", test: (terms: unknown[]) => boolean) => contributions.flatMap((e) => {
+  const m = typeof e.fieldPath === "string" ? new RegExp(`\\.${kind}\\.([a-z0-9-]+)\\.terms$`).exec(e.fieldPath) : null, v = e.value?.value;
+  return m && Array.isArray(v) && test(v) ? [m[1]!] : [];
+});
+/** The complete moves of a plan path against the status quo, read from the terms the plan records, never from identifiers:
+ * each new or amended instrument by its kind; each existing instrument removed, prepaid or charged as the named one ($i,
+ * the plan instrument identified with the sentence's row), an existing capital-markets instrument (debenture_atual), or,
+ * when the sentence names no row, any other existing instrument (divida_atual); the project variant against the status
+ * quo's. A code names what cannot be read; null when the path object holds fields the moves do not account for. */
+export function boardPlanPathMoves(packet: unknown, pathId: string, named: string | undefined):
+  {added: string; removed: string; prepaid: string; charges: string; sameVariant: boolean} | null | "status_quo_path" | "existing_debt" | `path_${string}_absent` {
+  const contributions = contributionsOf(packet);
+  const list = (suffix: string) => {const v = termOf(contributions, suffix); return Array.isArray(v) ? v.map(String) : [];};
+  const terms = (id: string) => list(`instrument.${id}.terms`);
+  const quo = registeredIds(contributions, "path", (v) => v[0] === "status_quo");
+  if (quo.length !== 1) return "status_quo_path";
+  const existing = registeredIds(contributions, "instrument", (v) => v[0] === "existing");
+  if (!existing.length) return "existing_debt";
+  const mine = list(`path.${pathId}.instruments`);
+  if (!mine.length) return `path_${pathId}_absent`;
+  // The whole path object: every field the plan records for the path is read here; the label is its name.
+  const pathFields = contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? new RegExp(`\\.path\\.${pathId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null; return m ? [m[1]!] : [];});
+  if (pathFields.some((f) => !["terms", "label", "instruments", "prepayments", "chargeSlots", "chargeAmounts"].includes(f))) return null;
+  if (list(`path.${pathId}.terms`).length !== 2 || list(`path.${pathId}.chargeAmounts`).length !== list(`path.${pathId}.chargeSlots`).length) return null;
+  // The kind of a new or amended instrument, from its terms: amendment, debenture, development bank, bank credit without
+  // a scheduled amortization after the horizon (no term implied), bank credit with one. "Curto prazo" is never a kind.
+  const kind = (id: string) => {
+    const [role, lender, , , , , , , after] = terms(id);
+    if (role === "amended") return "aditamento";
+    if (lender === "capital_markets") return "debenture_nova";
+    if (lender === "development_bank") return "fomento";
+    if (lender === "bank") return after === "none" || after === "seasonal_release" ? "bancario_sem_amortizacao_programada" : after === "scheduled" ? "bancario_programado" : `bancario:${after}`;
+    return `outro:${lender}`;
+  };
+  const touched = (id: string) => named !== undefined && id === named ? "$i" : terms(id)[0] === "existing" && terms(id)[1] === "capital_markets" ? "debenture_atual"
+    : named === undefined && terms(id)[0] === "existing" ? "divida_atual" : `outro:${id}`;
+  const set = (xs: string[]) => [...new Set(xs)].sort().join(",");
+  const variantOf = (id: string) => list(`path.${id}.terms`)[1];
+  return {added: set(mine.filter((x) => !existing.includes(x)).map(kind)), removed: set(existing.filter((x) => !mine.includes(x)).map(touched)),
+    prepaid: set(list(`path.${pathId}.prepayments`).map((x) => touched(x.split("|")[0]!))),
+    charges: set(list(`path.${pathId}.chargeSlots`).map((x) => {const [k, id] = x.split("|"); return `${k}|${touched(id!)}`;})), sameVariant: variantOf(pathId) === variantOf(quo[0]!)};
+}
+/** The moves read against the declared ones, each set compared whole. */
+export function boardMovesMatch(got: NonNullable<Exclude<ReturnType<typeof boardPlanPathMoves>, string>>, want: BoardPathMovesSpec) {
+  const set = (xs: readonly string[]) => [...new Set(xs)].sort().join(",");
+  return got.added === set(want.added) && got.removed === set(want.removed) && got.prepaid === set(want.prepaid) && got.charges === set(want.charges)
+    && got.sameVariant === (want.variant === "same");
+}
+/** Two input objects (canonical) differ exactly in the named fields: each differs, every other field is equal. */
+export function boardChangesExactly(a: Map<string, BoardCanonicalInput>, b: Map<string, BoardCanonicalInput>, fields: readonly string[]) {
+  for (const key of new Set([...a.keys(), ...b.keys()])) {
+    const x = a.get(key), y = b.get(key);
+    if (fields.includes(key)) {if (!x || !y || JSON.stringify(x) === JSON.stringify(y)) return false; continue;}
+    if (!x || !y || JSON.stringify(x) !== JSON.stringify(y)) return false;
+  }
+  return true;
+}
+/** A record a role resolves to: its id and, for a sensitivity, its reference case. */
+export type BoardRoleRecord = {id: string; reference?: string};
+/** The records of a source that hold a role, by what the result registers (never by identifier, never by order). A string
+ * names why the role cannot be read at all (its source or a variable it depends on). */
+export function boardRoleRecords(r: BoardRole, sourceOf: (method: string) => BoardSourceReading, vars: Readonly<Record<string, string>>): BoardRoleRecord[] | string {
+  const packet = sourceOf(boardRoleMethods[r.role]).packet as Record<string, unknown>;
+  const ids = (xs: string[]) => xs.map((id) => ({id}));
+  const records = (path: string) => {const v = readBoardSourcePath(packet, path); return Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => isRecord(x)) : [];};
+  if (r.role === "status_quo_path") return ids(registeredIds(contributionsOf(packet), "path", (v) => v[0] === "status_quo"));
+  if (r.role === "path_with_moves") {
+    const out: string[] = [];
+    for (const id of registeredIds(contributionsOf(packet), "path", () => true)) {
+      const got = boardPlanPathMoves(packet, id, vars.j);
+      if (got === "status_quo_path" || got === "existing_debt") return got;
+      if (got !== null && typeof got !== "string" && boardMovesMatch(got, r.moves)) out.push(id);
+    }
+    return ids(out);
+  }
+  if (r.role === "investment_case") return ids(records("cases").filter((c) => c.role === r.caseRole && typeof c.id === "string").map((c) => c.id as string));
+  if (r.role === "sensitivity_case") {
+    const cases = records("cases"), metrics = records("comparison.metrics");
+    return cases.flatMap((c) => {
+      const result = isRecord(c.result) ? c.result : {};
+      // The reference is the case whose registered scenario the case inherits; one, or none.
+      const refs = metrics.filter((m) => typeof result.inheritedScenario === "string" && m.scenario === result.inheritedScenario).map((m) => String(m.caseId));
+      const reference = refs.length === 1 ? cases.find((x) => x.id === refs[0]) : undefined;
+      if (c.role !== "sensitivity" || typeof c.id !== "string" || !reference) return [];
+      const a = boardCanonicalInputs(result.contributions), b = boardCanonicalInputs(isRecord(reference.result) ? reference.result.contributions : undefined);
+      return a && b && boardChangesExactly(a, b, r.changes) ? [{id: c.id, reference: refs[0]!}] : [];
+    });
+  }
+  if (r.role === "limit") return ids(records("result.headroom.limits").filter((l) => l.kind === r.kind && l.status === "in_force" && typeof l.id === "string").map((l) => l.id as string));
+  if (r.role === "lowest_cash_alternative_case") {
+    const alternative = new Set(records("result.weekly.cases").filter((c) => c.role === "alternative").map((c) => String(c.id)));
+    const cases = records("readings.sensitivities").filter((x) => alternative.has(String(x.caseId)) && isNumeric(x.minimum));
+    if (!cases.length) return [];
+    const lowest = cases.reduce((m, x) => new Exact(String(x.minimum)).lt(m) ? new Exact(String(x.minimum)) : m, new Exact(String(cases[0]!.minimum)));
+    return ids(cases.filter((x) => new Exact(String(x.minimum)).eq(lowest)).map((x) => String(x.caseId)));
+  }
+  // The plan instrument of a debt-table row: the plan registers no creditor, so the identity is the contractual terms both
+  // results register (final payment date; spread of an index-plus-spread rate): at least one must be registered by both,
+  // every one registered by both must agree, and the match is mutual and unique. The balance is not an identity term: the
+  // plan's opening principal is at the plan's start, which need not be the table's reference date.
+  if (!Object.hasOwn(vars, r.row)) return `variable_${r.row}`;
+  const table = sourceOf("build-company-debt-table"), plan = sourceOf(boardRoleMethods[r.role]);
+  const rows = ((table.packet as {result?: {table?: {rows?: unknown}}}).result?.table?.rows);
+  const tableRows = Array.isArray(rows) ? rows.filter((x): x is Record<string, unknown> => isRecord(x)) : [];
+  const contributions = contributionsOf(plan.packet);
+  const same = (row: Record<string, unknown>, id: string) => {
+    const terms = termOf(contributions, `instrument.${id}.terms`), rates = termOf(contributions, `instrument.${id}.rates`);
+    const final = termOf(contributions, `instrument.${id}.finalPaymentDate`);
+    if (!Array.isArray(terms)) return false;
+    const checks: boolean[] = [];
+    if (typeof final === "string" && typeof row.finalPayment === "string") checks.push(final === row.finalPayment);
+    if (terms[2] === "index_plus_spread" && Array.isArray(rates) && isNumeric(rates[0]) && isNumeric(row.spread)) checks.push(new Exact(String(rates[0])).eq(String(row.spread)));
+    return checks.length > 0 && checks.every(Boolean);
+  };
+  const row = tableRows.find((x) => x.id === vars[r.row]);
+  if (!row) return [];
+  const existing = registeredIds(contributions, "instrument", (v) => v[0] === "existing");
+  return ids(existing.filter((id) => same(row, id) && tableRows.filter((x) => same(x, id)).length === 1));
+}
+
 /** Renders one text of the closed library. Each slot is checked against its concept before anything is written:
  * the reading's method and path match the admissible origin (shared variables equal across slots), a year matches
  * the year the slot admits, a deadline is the deadline of the action the template announces; then every condition
  * the fixed text asserts is checked against the bound readings and their sources. A pending reading fits a slot of
  * its method and leaves the conditions on it unchecked (it is a named gap). Anything else is refused by name. */
-export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]; unmatched: string[]; unknownSpecies: string[]} {
+export function renderBoardRef(ref: string, context: Context): Resolved & {bindings: BoardBinding[]; unnamed: string[]; unconfirmed: string[]; unmatched: string[]; unknownSpecies: string[]; vars: Record<string, string>} {
   const {templateId, bindings, template} = parseBoardTextRef(ref, context.library);
   const concept = (slot: string, why: string) => new Error(`board_capital_slot_concept_mismatch:${templateId}:${slot}:${why}`);
   const vars: Record<string, string> = {};
-  const share = (slot: string, got: Record<string, string>) => {
-    for (const [k, v] of Object.entries(got)) {if (Object.hasOwn(vars, k) && vars[k] !== v) throw concept(slot, `variable_${k}`); vars[k] = v;}
+  // Variables bound by readings, and those bound only by pending readings (their role is not resolved: the gap is named).
+  const readVars = new Set<string>(), pendingOnly = new Set<string>();
+  const share = (slot: string, got: Record<string, string>, pending = false) => {
+    for (const [k, v] of Object.entries(got)) {if (Object.hasOwn(vars, k) && vars[k] !== v) throw concept(slot, `variable_${k}`); vars[k] = v; (pending ? pendingOnly : readVars).add(k);}
   };
   const values: Record<string, {value: string; methodId: string; sourceId: string} | null> = {};
   const out: BoardBinding[] = [];
@@ -350,7 +480,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       if (field && !slotAccepts[spec.type as Exclude<BoardSlotType, "deadline" | "informed">]?.includes(field.kind as BoardFigureUnit)) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}:${field.kind}`);
       if (spec.concept !== undefined && field?.concept !== spec.concept) throw concept(slot, "pending_concept");
       if (spec.nature !== undefined && field?.nature !== spec.nature) throw concept(slot, "pending_nature");
-      share(slot, got);
+      share(slot, got, true);
       values[slot] = null; continue;
     }
     if (!slotAccepts[spec.type].includes(figure.unit)) throw new Error(`board_capital_slot_type_mismatch:${templateId}:${slot}:${figure.unit}`);
@@ -384,6 +514,22 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (Object.values(values).some((v) => v !== null && v.methodId === method && v.sourceId !== all[0]!.id)) throw new Error(`board_capital_source_mixed:${templateId}:${method}`);
     return all[0]!;
   };
+  // The records the template reads, each bound by the role its result registers (after the slots, before the conditions).
+  for (const r of template.roles ?? []) {
+    if (pendingOnly.has(r.bind) && !readVars.has(r.bind)) continue;
+    const named = (what: string, detail = "") => new Error(`board_capital_record_role_${what}:${templateId}:${r.bind}:${r.role}${detail}`);
+    let found: BoardRoleRecord[] | string;
+    // A role whose source is not in the material cannot be resolved: the template does not apply, by name.
+    try {found = boardRoleRecords(r, (method) => sourceOf(method), vars);} catch (e) {if (e instanceof BoardIndefinite) throw named("absent", `:${e.message.split(":").at(-1)}`); throw e;}
+    if (typeof found === "string") throw named("absent", `:${found}`);
+    if (!found.length) throw named("absent");
+    if (found.length > 1) throw named("ambiguous", `:${found.map((x) => x.id).sort().join(",")}`);
+    const [one] = found as [BoardRoleRecord];
+    for (const [k, v] of [[r.bind, one.id], ...one.reference !== undefined && r.role === "sensitivity_case" ? [[r.reference, one.reference]] : []] as [string, string][]) {
+      if (Object.hasOwn(vars, k) && vars[k] !== v) throw named("mismatch", `:${k}`);
+      vars[k] = v;
+    }
+  }
   const read = (method: string, declared: string) => readBoardSourcePath(sourceOf(method).packet, boardFillVariables(declared, vars, (k) => unverified(`variable_${k}`)));
   // Money is compared in reais: every money value is converted by the scale its own source declares (resolved by the
   // registry's one helper), so no comparison sets a value of one scale against a value of another.
@@ -589,7 +735,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("pathMoves" in c || "extendsDebt" in c) {
       // A plan path's moves read from the terms the plan records, never from identifiers: each new instrument by its role,
       // lender kind and schedule; each prepayment and charge by the instrument it touches; the project variant against the
-      // status quo's. The creditor named in a sentence is joined to its debt-table row through the shared instrument id.
+      // status quo's. The creditor named in a sentence is the plan instrument its debt-table row is identified with ($j).
       const method = "pathMoves" in c ? c.pathMoves[0] : c.extendsDebt[0];
       const packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
       const contributions = packet.result?.contributions ?? [];
@@ -613,44 +759,10 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         return typeof later === "string" && typeof before === "string" && later > before && a.length === o.length && a.length > 0
           && a.every((x, i) => new Exact(x).lte(o[i]!)) && a.some((x, i) => new Exact(x).lt(o[i]!));
       }
-      const pathId = fill(c.pathMoves[1]);
-      const quo = contributions.flatMap((e) => {
-        const m = typeof e.fieldPath === "string" ? /\.path\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
-        return m && Array.isArray(v) && v[0] === "status_quo" ? [m[1]!] : [];
-      });
-      if (quo.length !== 1) throw unverified("status_quo_path");
-      const existing = contributions.flatMap((e) => {
-        const m = typeof e.fieldPath === "string" ? /\.instrument\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
-        return m && Array.isArray(v) && v[0] === "existing" ? [m[1]!] : [];
-      });
-      if (!existing.length) throw unverified("existing_debt");
-      const mine = list(`path.${pathId}.instruments`);
-      if (!mine.length) throw indefinite(`path_${pathId}_absent`);
-      // The whole path object: every field the plan records for the path is read here; the label is its name.
-      const pathFields = contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? new RegExp(`\\.path\\.${pathId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null; return m ? [m[1]!] : [];});
-      if (pathFields.some((f) => !["terms", "label", "instruments", "prepayments", "chargeSlots", "chargeAmounts"].includes(f))) return false;
-      if (list(`path.${pathId}.terms`).length !== 2 || list(`path.${pathId}.chargeAmounts`).length !== list(`path.${pathId}.chargeSlots`).length) return false;
-      // The kind of a new or amended instrument, from its terms: amendment, debenture, development bank, bank credit without
-      // a scheduled amortization after the horizon (no term implied), bank credit with one. "Curto prazo" is never a kind.
-      const kind = (id: string) => {
-        const [role, lender, , , , , , , after] = terms(id);
-        if (role === "amended") return "aditamento";
-        if (lender === "capital_markets") return "debenture_nova";
-        if (lender === "development_bank") return "fomento";
-        if (lender === "bank") return after === "none" || after === "seasonal_release" ? "bancario_sem_amortizacao_programada" : after === "scheduled" ? "bancario_programado" : `bancario:${after}`;
-        return `outro:${lender}`;
-      };
-      // An existing instrument touched by a prepayment or a charge: the named row by the shared id, an existing debenture by its kind.
-      const touched = (id: string) => vars.i !== undefined && id === vars.i ? "$i" : terms(id)[0] === "existing" && terms(id)[1] === "capital_markets" ? "debenture_atual" : `outro:${id}`;
-      const set = (xs: string[]) => [...new Set(xs)].sort().join(",");
-      const want = (xs: readonly string[]) => set(xs.map((x) => x === "$i" ? "$i" : x));
-      const added = set(mine.filter((x) => !existing.includes(x)).map(kind));
-      const removed = set(existing.filter((x) => !mine.includes(x)).map(touched));
-      const prepaid = set(list(`path.${pathId}.prepayments`).map((x) => touched(x.split("|")[0]!)));
-      const charges = set(list(`path.${pathId}.chargeSlots`).map((x) => {const [k, id] = x.split("|"); return `${k}|${touched(id!)}`;}));
-      const variantOf = (id: string) => list(`path.${id}.terms`)[1];
-      return added === want(c.added) && removed === want(c.removed) && prepaid === want(c.prepaid) && charges === want(c.charges)
-        && (c.variant === "same" ? variantOf(pathId) === variantOf(quo[0]!) : variantOf(pathId) !== variantOf(quo[0]!));
+      const got = boardPlanPathMoves(packet, fill(c.pathMoves[1]), vars.j);
+      if (got === "status_quo_path" || got === "existing_debt") throw unverified(got);
+      if (typeof got === "string") throw indefinite(got);
+      return got !== null && boardMovesMatch(got, c);
     }
     if ("sameBase" in c) {
       const [method, pa, pb] = c.sameBase;
@@ -676,12 +788,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const [method, pathA, pathB] = c.changedOnly;
       const a = boardCanonicalInputs(read(method, pathA)), b = boardCanonicalInputs(read(method, pathB));
       if (!a || !b) throw unverified(pathA);
-      for (const key of new Set([...a.keys(), ...b.keys()])) {
-        const x = a.get(key), y = b.get(key);
-        if (c.fields.includes(key)) {if (!x || !y || JSON.stringify(x) === JSON.stringify(y)) return false; continue;}
-        if (!x || !y || JSON.stringify(x) !== JSON.stringify(y)) return false;
-      }
-      return true;
+      return boardChangesExactly(a, b, c.fields);
     }
     if ("boundary" in c) {
       const f = context.figures.get(bindings[c.boundary[0]]!);
@@ -760,7 +867,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       // The scenario's whole input object: every contribution recorded under the scenario, provenance tags (origin) aside,
       // must belong to the named drivers, and every named driver must be there.
       const packet = sourceOf(c.scenarioDefines[0]).packet as {result?: {contributions?: {fieldPath?: unknown}[]}};
-      const id = c.scenarioDefines[1];
+      const id = boardFillVariables(c.scenarioDefines[1], vars, (k) => unverified(`variable_${k}`));
       const fields = (packet.result?.contributions ?? []).flatMap((e) => {
         const m = typeof e.fieldPath === "string" ? new RegExp(`\\.scenario\\.${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null;
         return m && !boardIgnoredInputKey(m[1]!.split(".").at(-1)!) ? [m[1]!] : [];
@@ -880,9 +987,11 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   const limitDefinition = (limit: string) => cvPacket().result?.definitions?.find((x) => x.limitId === limit)?.definition ?? null;
   for (const c of template.when) if ("testsLimit" in c) {
     const limit = c.testsLimit[2].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
-    if (limitDefinition(limit) === null && !new RegExp(`\\{definition:${limit}:`).test(shownText)) throw new Error(`board_capital_limit_definition_not_named:${templateId}:${limit}`);
+    if (limitDefinition(limit) === null && !shownText.includes(`{definition:${c.testsLimit[2]}:`)) throw new Error(`board_capital_limit_definition_not_named:${templateId}:${limit}`);
   }
-  shownText = shownText.replace(/\{definition:([a-z0-9-]+):([$a-z0-9-]+)\}/g, (_m: string, limit: string, scope: string) => {
+  shownText = shownText.replace(/\{definition:([$a-z0-9-]+):([$a-z0-9-]+)\}/g, (_m: string, declared: string, scope: string) => {
+    // The limit by the variable its role binds, never by its identifier.
+    const limit = declared.replace(/^\$([a-z]+)$/, (_x: string, k: string) => vars[k] ?? "\u0000");
     if (limitDefinition(limit) !== null) return "";
     const head = cvPacket().result?.headroom, measurements = head?.measurements ?? [];
     const definitionOf = (m: (typeof measurements)[number]) => {
@@ -921,7 +1030,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     }
     const label = ids.length === 1 ? term(`instrument.${ids[0]}.label`) : undefined;
     const species = typeof label === "string" ? boardObjectTerm("species", label) : null;
-    const key = `species-${selector.replace(/[^a-z0-9-]/g, "")}`;
+    // The gap names the record the selector resolved to (the path the role bound), never the variable's name.
+    const key = `species-${selector.replace(/\$([a-z]+)/g, (_x: string, k: string) => vars[k] ?? "").replace(/[^a-z0-9-]/g, "")}`;
     if (!species) {unknownSpecies.push(key); return boardObjectGenerics.species[form as BoardObjectForm]!;}
     objects.set(key, boardVocabularies.species[species]![form as BoardObjectForm]!);
     return `{object:${key}}`;
@@ -966,7 +1076,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (spec.type === "label" && figure && !("pending" in figure) && figure.unnamed) {unnamed.push(bound); return spec.generic!;}
     return prep ? `{${prep}:${bound}}` : `{${bound}}`;
   });
-  return {...renderBoardTemplate(text, {...context, debtors, objects}), bindings: out, unnamed, unconfirmed, unmatched, unknownSpecies};
+  return {...renderBoardTemplate(text, {...context, debtors, objects}), bindings: out, unnamed, unconfirmed, unmatched, unknownSpecies, vars: {...vars}};
 }
 
 /** The single number tokenizer of the material, applied to the final text: a day of a month (21/dez), a month
@@ -1351,7 +1461,7 @@ export type BoardVersionTexts = {summary: string; deliberations: {text: string}[
  * (titled with the count of paths evaluated) has one row per evaluated path, each exactly once, the recommended among
  * them, and the count shown is that number; the page of moves has one line per evaluated path, each exactly once. A set
  * the library cannot represent (a path without a row or a line in the library) is refused, never truncated. */
-export function boardSetsComplete(d: BoardDiscussion, sources: BoardSourceReading[]) {
+export function boardSetsComplete(d: BoardDiscussion, sources: BoardSourceReading[], figures: Map<string, BoardFigureDisplay> = new Map()) {
   const fp = sources.find((x) => x.methodId === "evaluate-financing-paths");
   if (!fp) return;
   const plan = fp.packet as {readings?: {horizon?: {candidatePaths?: unknown}; recommendation?: {pathId?: unknown}}; result?: {evaluation?: {paths?: {id: string; role: string}[]}}};
@@ -1367,9 +1477,11 @@ export function boardSetsComplete(d: BoardDiscussion, sources: BoardSourceReadin
       return ids.size === 1 ? [...ids][0]! : null;
     }
     if (parsed.templateId.startsWith("alternatives.moves.") && parsed.templateId !== "alternatives.moves.title") {
-      // The line's path, by the record its moves condition names in the evaluation.
+      // The line's path, by the record its moves condition names in the evaluation: the variable its role binds when it renders.
       const named = parsed.template.when.flatMap((c) => "pathMoves" in c ? [c.pathMoves[1]] : []);
-      const r = named.length === 1 ? boardResolvedRecord(fp.packet, `result.evaluation.paths[id=${named[0]}].id`, "result.evaluation.paths") : null;
+      const vars = named.length === 1 ? renderBoardRef(ref, {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed}).vars : {};
+      const id = named.length === 1 ? named[0]!.replace(/^\$([a-z]+)$/, (_x: string, k: string) => vars[k] ?? "\u0000") : null;
+      const r = id ? boardResolvedRecord(fp.packet, `result.evaluation.paths[id=${id}].id`, "result.evaluation.paths") : null;
       return r ? String(r.record.id) : null;
     }
     return null;
@@ -1398,7 +1510,10 @@ export function boardBreachesDisclosed(d: BoardDiscussion, sources: BoardSourceR
   const shownLimits = new Set(d.figures.flatMap((f) => {const id = recordOf(f.id, "result.headroom.limits", "maximumRatio"); return id === null ? [] : [id];}));
   const measurements = ((cv.packet as {result?: {headroom?: {measurements?: {id: string; role: string; tests?: {limitId: string; breached: boolean}[]}[]}}}).result?.headroom?.measurements) ?? [];
   const breaches = measurements.flatMap((m) => m.role !== "test" ? [] : (m.tests ?? []).filter((t) => t.breached === true && shownLimits.has(t.limitId)).map((t) => ({limit: t.limitId, measurement: m.id})));
-  const byLimit: Record<string, string> = {aditamento: "risk.leverage_breach_covenant", politica: "risk.leverage_breach_policy"};
+  // The breach sentence of a limit by the limit's registered kind, never by its identifier.
+  const limits = ((cv.packet as {result?: {headroom?: {limits?: {id: string; kind: string}[]}}}).result?.headroom?.limits) ?? [];
+  const sentenceOf: Record<string, string> = {contractual: "risk.leverage_breach_covenant", board_policy: "risk.leverage_breach_policy"};
+  const byLimit = Object.fromEntries(limits.flatMap((l) => sentenceOf[l.kind] ? [[l.id, sentenceOf[l.kind]!]] : []));
   const refs = [...d.pages.flatMap((p) => [p.title, ...p.lines]), ...d.questions.map((q) => q.answer)];
   for (const b of breaches) {
     const disclosed = refs.some((r) => {
@@ -1497,7 +1612,7 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   if (produce) boardBreachesDisclosed(d, sources);
   const first = produce ? renderVersion(d, figures, noRemoval(), 1, sources) : null;
   // A page presented as the whole set covers it (checked once every text has rendered, so a text's own refusal comes first).
-  if (first) boardSetsComplete(d, sources);
+  if (first) boardSetsComplete(d, sources, figures);
   // The composed material shows every material fact of the basis, or it is refused by name.
   if (first) {const lost = boardMissingFacts(d, figures, first.material); const id = [...lost.figures, ...lost.deadlines][0]; if (id) throw new Error(`board_capital_material_fact_not_shown:${id}`);}
   const {decisions, removed} = produce ? decideBoardOmissions(d, figures, sources) : {decisions: [], removed: noRemoval()};

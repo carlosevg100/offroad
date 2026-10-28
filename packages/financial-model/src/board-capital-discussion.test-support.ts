@@ -9,6 +9,8 @@ import type {BoardMoneyScale} from "./board-capital-discussion-sources";
 import {prepareDebtTablePacket} from "./debt-table-packet";
 import {auroraDebtTableBasis} from "./debt-table.test-support";
 import Decimal from "decimal.js";
+import {createHash} from "node:crypto";
+import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {prepareCovenantHeadroomPacket} from "./covenant-headroom-packet";
 import {auroraCovenantBasis} from "./covenant-headroom.test-support";
 import {prepareWeeklyCashPacket} from "./weekly-cash-packet";
@@ -676,6 +678,8 @@ export function auroraBoardCase(turn: BoardTurn) {
     informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", code: "reduce_single_supplier_dependence"}],
     /** Readings a test adds to the basis beside the calibration's own. */
     extraReadings: {} as Record<string, Reading>,
+    /** Pending figures a test writes in place of the calibration's own (same ids). */
+    extraPending: {} as Record<string, [string, string, string]>,
     omissions: turn === 3 ? [{id: "linha-sem-recomendacao", target: "recommendation", targetId: "linha", requestedBy: "requester.chair"}] : [] as {id: string; target: string; targetId: string; requestedBy: string}[],
   };
 }
@@ -704,7 +708,7 @@ export function auroraBoardBasis(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
       recommendation: d.recommendation === null ? null : text(p + "recommendation", d.recommendation), authority: list(p + "authority", d.authorityBasis === null ? [d.authority] : [d.authority, d.authorityBasis]),
       deadlines: d.deadlines.map((x) => ({id: x.id, reading: list(`${p}deadline.${x.id}`, [x.date, x.action])}))};}),
     figures: [...Object.entries({...auroraBoardReadings, ...c.extraReadings}).map(([k, r]) => ({id: k, kind: "reading" as const, reading: list(`figure.${k}.reading`, r.filter((x): x is string => x !== undefined))})),
-      ...Object.entries(auroraBoardPending).map(([k, r]) => ({id: k, kind: "pending" as const, reading: list(`figure.${k}.pending`, r)}))],
+      ...Object.entries({...auroraBoardPending, ...c.extraPending}).map(([k, r]) => ({id: k, kind: "pending" as const, reading: list(`figure.${k}.pending`, r)}))],
     materialFigureIds: list("figures.material", auroraMaterialFigures),
     indicative: auroraIndicative.figures.map((x) => ({figureId: x, reason: text(`figure.${x}.indicative`, auroraIndicative.reason)})),
     pages: c.pages.map((pg) => {const p = `page.${pg.id}.`; return {id: pg.id, role: contribute(p + "role", "convention", {type: "text", value: pg.role}), title: text(p + "title", pg.title),
@@ -735,7 +739,7 @@ export function auroraBoardFacts(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     topics: c.topics.map((t) => fact(t, "informed", "o que o conselho já viu, segundo o CFO")),
     deliberations: c.deliberations.map((d) => fact(d, "analysis", "decisões com prazo extraídas das análises revisadas")),
     figures: [...Object.entries({...auroraBoardReadings, ...c.extraReadings}).map(([k, r]) => fact({id: k, kind: "reading" as const, reading: r.filter((x): x is string => x !== undefined)}, "analysis", "leitura do resultado revisado")),
-      ...Object.entries(auroraBoardPending).map(([k, r]) => fact({id: k, kind: "pending" as const, reading: r}, "house", "número sem resultado revisado"))],
+      ...Object.entries({...auroraBoardPending, ...c.extraPending}).map(([k, r]) => fact({id: k, kind: "pending" as const, reading: r}, "house", "número sem resultado revisado"))],
     materialFigureIds: fact(auroraMaterialFigures, "house", "fatos materiais para as decisões do conselho"),
     indicative: auroraIndicative.figures.map((x) => fact({figureId: x, reason: auroraIndicative.reason}, "analysis", "programa da rede A sem prazo confirmado")),
     pages: c.pages.map((p) => fact(p, "house", "plano de páginas proposto")),
@@ -763,3 +767,79 @@ export const auroraProjectionPacket = memoPacket(buildAuroraProjectionPacket);
 export const auroraWeeklyPacket = memoPacket(buildAuroraWeeklyPacket);
 export const auroraPlanPacket = memoPacket(buildAuroraPlanPacket);
 export const auroraReceivablesPacket = memoPacket(buildAuroraReceivablesPacket);
+
+/** Identifiers each method fixes itself (not records of the company): the plan's adopted amortization profile and the
+ * projection's base scenario. Every other record identifier of a result is the company's and is renamed. */
+const boardMethodFixedIds: Record<string, readonly string[]> = {"evaluate-financing-paths": ["adopted"], "build-operating-projection": ["base"]};
+/** Keys whose values are registered vocabularies, never record identifiers, where a vocabulary word equals an identifier
+ * of the same result (the investment case "base" and the role base; the covenant limit "original" and the scenario). */
+const boardVocabularyKeys: Record<string, readonly string[]> = {"analyze-investment-project": ["role"], "measure-covenant-headroom": ["scenario"]};
+const recordIdKey = /^(id|[a-zA-Z]+Id|[a-zA-Z]+Ids|usedBy|basedOn|inheritedScenario)$/;
+const linkKey = /^(entityId|analysisId|workId|versionId|decisionId|decisionIds|actorId|definitionVersionId|comparisonId|peerEntityId|observationId)$/;
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** Every record identifier of one reviewed result renamed to a random one (seeded), wherever the result writes it (fields,
+ * lists, field paths and composite terms such as "id|date"), roles, terms, labels other than identifiers and numbers
+ * unchanged; the result is parsed by its released schema and sealed again. Returns the packet and the renaming. */
+export function boardRenamedPacket(methodId: string, packet: Record<string, unknown>, seed: string) {
+  const ids = new Set<string>();
+  const collect = (v: unknown, key: string): void => {
+    if (Array.isArray(v)) v.forEach((x) => collect(x, key));
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) collect(x, k);
+    else if (typeof v === "string" && recordIdKey.test(key) && !linkKey.test(key) && (uuid.test(v) || /^[a-z][a-z0-9-]*$/.test(v)) && !(boardMethodFixedIds[methodId] ?? []).includes(v)) ids.add(v);
+  };
+  collect(packet, "");
+  // A random identifier of the same form: a key, or a UUID where the result writes UUIDs.
+  const random = (id: string) => {const h = createHash("sha256").update(`${seed}|${methodId}|${id}`).digest("hex");
+    return uuid.test(id) ? `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-9${h.slice(17, 20)}-${h.slice(20, 32)}` : `r${h.slice(0, 10)}`;};
+  const rename = new Map([...ids].sort().map((id) => [id, random(id)]));
+  const vocabulary = boardVocabularyKeys[methodId] ?? [];
+  // A contribution's value is renamed unless it is a registered key of the method's own dictionary (the debtor key).
+  const walk = (v: unknown, key: string, keepValue: boolean): unknown => {
+    if (Array.isArray(v)) return v.map((x) => walk(x, key, keepValue));
+    if (v && typeof v === "object") {
+      const o = v as Record<string, unknown>, dictionary = typeof o.fieldPath === "string" && /\.debtorKey$/.test(o.fieldPath);
+      return Object.fromEntries(Object.entries(o).map(([k, x]) => [k, walk(x, k, keepValue || (dictionary && k === "value"))]));
+    }
+    if (typeof v !== "string" || keepValue || vocabulary.includes(key)) return v;
+    return v.split(/([.|])/).map((t) => rename.get(t) ?? t).join("");
+  };
+  return {packet: boardResealed(methodId, walk(packet, "", false) as Record<string, unknown>), rename};
+}
+/** A result changed after its execution, parsed by its released schema and sealed again (regressions only). */
+export function boardResealed(methodId: string, packet: Record<string, unknown>): Record<string, unknown> {
+  const schema = boardReleasedSources[methodId as keyof typeof boardReleasedSources].schema as unknown as {parse: (v: unknown) => Record<string, unknown>};
+  const {fingerprint: _f, ...payload} = schema.parse(packet);
+  return {...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
+}
+/** One calibration result with a change made after its execution, sealed again (regressions only). */
+export function boardAlteredSource(sourceId: string, edit: (packet: Record<string, unknown>) => void): Record<string, unknown> {
+  const source = auroraBoardSources().find((x) => x.id === sourceId)!;
+  edit(source.packet);
+  return boardResealed(source.methodId, source.packet);
+}
+/** Every reviewed result of the calibration with all its record identifiers renamed (one random set per result, so no
+ * identifier is shared across results), and the renaming of each. */
+export function boardRenamedSources(seed = "c47-roles") {
+  const out = auroraBoardSources().map((s) => ({...s, ...boardRenamedPacket(s.methodId, s.packet, seed)}));
+  return {packets: Object.fromEntries(out.map((s) => [s.id, s.packet])), renames: Object.fromEntries(out.map((s) => [s.id, s.rename])) as Record<string, Map<string, string>>};
+}
+/** Runs a case with every reviewed result replaced at once. */
+export function withBoardSources<T>(packets: Record<string, Record<string, unknown>>, run: () => T): T {
+  const before = replaced;
+  replaced = {...replaced, ...packets};
+  try {return run();} finally {replaced = before;}
+}
+/** A path of a result with each selector value renamed as the result was. */
+export function boardRenamedPath(path: string, rename: Map<string, string>) {
+  return path.replace(/\[([^[\]]+)\]/g, (_m: string, body: string) => `[${body.split("&").map((part) => {const k = part.indexOf("="); return `${part.slice(0, k)}=${rename.get(part.slice(k + 1)) ?? part.slice(k + 1)}`;}).join("&")}]`);
+}
+/** The material written against the renamed results: every reading's path (and every pending figure's required field)
+ * with the identifiers its result now registers; texts, figure ids, pages, deliberations and numbers unchanged. */
+export function boardRenamedReadings(renames: Record<string, Map<string, string>>) {
+  const bySource = (id: string) => renames[id] ?? new Map<string, string>();
+  const sourceOfMethod = (method: string) => auroraBoardSources().find((s) => s.methodId === method)?.id ?? "";
+  return (c: ReturnType<typeof auroraBoardCase>) => {
+    for (const [id, r] of Object.entries({...auroraBoardReadings, ...c.extraReadings})) c.extraReadings[id] = [r[0], boardRenamedPath(r[1], bySource(r[0])), ...r.slice(2)] as Reading;
+    for (const [id, r] of Object.entries(auroraBoardPending)) c.extraPending[id] = [r[0], boardRenamedPath(r[1], bySource(sourceOfMethod(r[0]))), r[2]];
+  };
+}

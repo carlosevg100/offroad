@@ -151,6 +151,9 @@ describe("board discussion core", () => {
       return [make("base", {}), make("economy-4", {avoided: ["0", "20", "20"]}), make("capex-120", {capex: ["12", "9.6", "0"], dep: ["2.16", "2.16", "2.16"]}),
         make("slower-start", {active: ["0", "0.2", "1"], load: ["0", "0.1", "0.95"], start: "2027-11-01"})];
     })()})];
+    // The comparison registers each case's role and scenario key: a reference case is the one whose scenario a case inherits.
+    const investment = sources[1]!.packet as {cases: {id: string; role: string}[]; comparison?: unknown};
+    investment.comparison = {metrics: investment.cases.map((c) => ({caseId: c.id, role: c.role, scenario: c.id}))};
     const action = (t: string): BoardDeliberation => ({...deliberation("v", ["2026-11-15"]), title: "delib.maturities|ano=y", deadlines: [{id: "rota", date: "2026-11-15", action: t}]});
     const context = {figures, deliberations: [action("delib.action.decide_route")], nextMeetingDate: null, sources};
     const render = (ref: string) => renderBoardRef(ref, context).display;
@@ -197,7 +200,8 @@ describe("board discussion core", () => {
         else figures.set(fid, {pending: true, methodId: spec.from![0]![0], path: spec.from![0]![1].replace(/\$y\b/g, "2027").replace(/\$[a-z]+/g, "x")});
         bindings.push(`${slot}=${fid}`);
       }
-      const ref = [id, ...bindings].join("|"), original = boardTemplates[id]!, library = {...boardTemplates, [id]: {...original, when: [c]}};
+      // The conditions alone: the roles are resolved before them and are exercised by their own property.
+      const ref = [id, ...bindings].join("|"), original = boardTemplates[id]!, library = {...boardTemplates, [id]: {...original, when: [c], roles: []}};
       {
         let outcome = "rendered";
         try {renderBoardRef(ref, {figures, deliberations: [holder], nextMeetingDate: null, sources: [], informed, library});} catch (e) {outcome = String(e);}
