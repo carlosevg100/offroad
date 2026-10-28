@@ -32,6 +32,8 @@ export const compiledMethodAdapters = [
     exports: {calculate: "prepareReceivedProposalPacket", input: "receivedProposalPacketInputSchema", output: "receivedProposalPacketOutputSchema"}},
   {methodId: "evaluate-financing-paths", executorKey: "@offroad/financial-model#prepareCapitalPathsPacket", executorVersion: "2026.10.27-v1",
     exports: {calculate: "prepareCapitalPathsPacket", input: "capitalPathsPacketInputSchema", output: "capitalPathsPacketOutputSchema"}},
+  {methodId: "prepare-board-capital-discussion", executorKey: "@offroad/financial-model#prepareBoardCapitalDiscussionPacket", executorVersion: "2026.10.27-v1",
+    exports: {calculate: "prepareBoardCapitalDiscussionPacket", input: "boardCapitalDiscussionPacketInputSchema", output: "boardCapitalDiscussionPacketOutputSchema"}},
 ] as const;
 export type CompiledMethodAdapter = (typeof compiledMethodAdapters)[number];
 export const compiledMethodIds: readonly string[] = compiledMethodAdapters.map(a => a.methodId);

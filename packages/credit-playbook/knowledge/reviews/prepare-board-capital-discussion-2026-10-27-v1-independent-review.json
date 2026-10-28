@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "prepare-board-capital-discussion-2026-10-27-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "prepare-board-capital-discussion",
+    "version": "2026.10.27-v1",
+    "fingerprint": "330b21f31b7949d41cb948fff3c56ed403adfe9ad8be027418064599326109b8"
+  },
+  "run": {
+    "id": "c47-r44",
+    "startedAt": "2026-10-28T11:10:27Z",
+    "finishedAt": "2026-10-28T11:19:50Z",
+    "commit": "2c1ae90115debf37f36a557015b5a1d6f5a7613e"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 13 arquivos fixados conferem com os SHA-256 da base. As duas referências profissionais também conferem. A revisão e os testes usaram uma cópia extraída do commit indicado.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/prepare-board-capital-discussion-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O percurso fatos, premissas, base adotada, compositor, leitor e pacote reproduz os três turnos. Os resultados de origem são produzidos pelos próprios executores das calibrações; o método do conselho lê e formata seus valores.",
+      "source": "packages/financial-model/src/board-capital-discussion.test-support.ts",
+      "anchor": "buildSources; auroraBoardBasis; auroraBoardFacts",
+      "result": "confirmed",
+      "note": "As adaptações de identidade e a leitura gerencial acrescentada ao covenant estão declaradas. Não identifiquei substituição de valores para aproximar o material do gabarito."
+    },
+    {
+      "claim": "Recalculei independentemente, com Decimal do Python, as 90 leituras econômicas de cada turno, conferindo valor de origem, escala, arredondamento e valor escrito. Todas conferem.",
+      "source": "Pacotes reproduzidos pelo percurso completo; result.discussion.identity",
+      "result": "confirmed",
+      "note": "A amostra explicitamente examinada incluiu 25 números: dívida, principal, participação, prazo médio, concentração, três valores da cesta, limites, cinco medições de alavancagem e EBITDA, caixa, retorno, custo de capital, VPL, payback, necessidade acumulada e três sensibilidades. Também rastreei todas as ocorrências numéricas das páginas pelos vínculos de campo, leituras, prazos e ordinais."
+    },
+    {
+      "claim": "As divergências de prazo médio, caixa do projeto e payback seguem as análises executadas.",
+      "source": "Calibrações de build-company-debt-table e analyze-investment-project",
+      "result": "confirmed",
+      "note": "Prazo médio exato de 1,451141144531085353 ano, exibido como 1,5; fluxo acumulado de -21.659.499,99999999999998676 reais, exibido como -21,7 milhões em dezembro de 2027; payback de 5,85360438703604711444 anos, exibido como cerca de seis. A meta de três anos não foi inventada."
+    },
+    {
+      "claim": "Recebíveis, concentração e rating preservam as grandezas e limitações das fontes. A faixa atual da debênture é 3,46% a 3,56%, corrigindo a faixa de 3,49% a 3,59% mencionada no pedido.",
+      "source": "Calibrações de recebíveis, custo relativo e evaluate-financing-paths",
+      "result": "corrected",
+      "note": "Programas: 23,5 milhões, com spreads de 1,2% e 1,5%. Rede A: saldo de 19,8 milhões sobre carteira de 62 milhões, sem calcular participação ausente. Rating: -0,17 a 0,03 milhão por ano. Spreads equivalentes exatos da debênture: 0.0346124587317108532 e 0.03562771280284960303. Os 55 pontos não explicados continuam sem atribuição causal."
+    },
+    {
+      "claim": "Recomputei independentemente os fingerprints dos nove pacotes de origem, dos três pacotes do conselho, dos resultados adotados e das versões publicadas. Todos reproduzem.",
+      "source": "packages/financial-model/src/board-capital-discussion-sources.ts; board-capital-discussion-packet.ts",
+      "anchor": "verifyBoardSource; boardCanonicalJson; boardVersionFingerprint",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Deliberações seguem o primeiro prazo, com itens sem prazo ao final. Inverter as listas de entrada preservou a ordem linha, safra, vencimentos e política. Pedir o material imediatamente não ultrapassou o roteiro não confirmado quando havia tempo.",
+      "source": "packages/financial-model/src/board-capital-discussion.ts",
+      "anchor": "orderBoardDeliberations; prepareBoardCapitalDiscussion",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O comando solicitado passou: cinco arquivos e 73 testes. As corridas registradas reproduziram integralmente casos e fingerprints: 91 de ouro, 195 adversariais e seis de consistência.",
+      "source": "npx vitest run src/board-capital-discussion",
+      "anchor": "Executado em packages/financial-model da cópia temporária",
+      "result": "confirmed",
+      "note": "Duração de 483,88 segundos. As regressões das rodadas anteriores, incluindo definições da r13, identidade canônica, divulgação de violações, base comum, precisão e completude da r43, passaram."
+    },
+    {
+      "claim": "Os 24 ataques e controles próprios confirmaram recusa de número alterado, fonte de outra empresa ou versão, pacote editado com fingerprint antigo, ausência de decisões, prazo ligado a outra ação e caminhos repetidos ou ausentes.",
+      "source": "Ensaio independente r44 pelo percurso completo, executado exclusivamente na cópia temporária",
+      "result": "confirmed",
+      "note": "Alterar o VPL escrito de 0,7 para 0,8 produziu figure_diverges. Empresa trocada com fingerprint recalculado produziu source_context_mismatch. Repetição e ausência de caminhos produziram set_incomplete. Os controles foram executados nos turnos 2 e 3."
+    },
+    {
+      "claim": "Pedidos de retirar página, número ou prazo foram recusados com a justificativa prevista. Retirar a recomendação da linha preservou fatos, sensibilidades, aviso ao fornecedor e versão anterior, sem retirar recomendações dos demais temas.",
+      "source": "packages/financial-model/src/board-capital-discussion.ts",
+      "anchor": "decideBoardOmissions; boardMissingFacts; boardWithdrawalVerified",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O material conserva a substância e a sequência da ficha, com uma página adicional para explicitar os movimentos dos caminhos. Síntese e dez perguntas acompanham as páginas. A redação é técnica, sóbria e não critica a companhia.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C47/corpo.html; estudo.html",
+      "result": "confirmed",
+      "note": "Os títulos apresentam conclusões sustentadas por números. Fatos informados ficam atribuídos ao presidente. Recomendações são identificáveis e retiradas por tema. A descrição do caso registrado como adiamento é uma atribuição honesta à análise, sem afirmar equivalência com o deslocamento uniforme estrito."
+    },
+    {
+      "claim": "As limitações estão declaradas: termos da linha de crédito pendentes, opção em etapas sem caso revisado, alçada sem comprovação documental e template recebido sem aplicação.",
+      "source": "Pacotes reproduzidos; pending; pendingFigures; gaps; exclusions",
+      "result": "limitation",
+      "note": "O turno 2 fica parcial pelos termos da linha; o turno 3 acrescenta a opção em etapas. Não houve renderização do template da companhia, apresentação ou distribuição. A conferência das leituras de evaluate-financing-paths não substitui sua revisão econômica separada."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "Não encontrei divergência numérica, omissão material aplicada ou ordenação incorreta das deliberações nos bytes revisados. As proteções examinadas sustentam as afirmações efetivamente exibidas, incluindo precisão, conceito, período, definição, cenário, origem e cobertura dos caminhos. O parecer se limita ao método e à versão fixados; não constitui aprovação humana, promoção ou autorização de execução externa. Nenhum arquivo rastreado foi alterado. A cópia temporária, os ensaios próprios e seus resultados locais foram removidos antes do encerramento."
+}

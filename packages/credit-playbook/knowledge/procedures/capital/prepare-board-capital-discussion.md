@@ -1,7 +1,7 @@
 ---
 id: prepare-board-capital-discussion
 version: 2026.10.27-v1
-maturity: implemented
+maturity: tested
 title_pt: Preparar a discussão de estrutura de capital no conselho
 title_en: Prepare the Board Discussion of Capital Structure
 role: credit_structuring
@@ -30,7 +30,7 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [prepare-board-capital-discussion-2026-10-27-v1-consistency]
 adversarial_run_ids: [prepare-board-capital-discussion-2026-10-27-v1-adversarial]
-review_ids: []
+review_ids: [prepare-board-capital-discussion-2026-10-27-v1-independent-review]
 gold_run_ids: [prepare-board-capital-discussion-2026-10-27-v1-gold]
 ---
 
@@ -5890,7 +5890,9 @@ Retirar a recomendação a pedido de quem apresenta é aceitável; retirar o ret
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/prepare-board-capital-discussion-2026-10-27-v1-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/prepare-board-capital-discussion-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json"
       ]
     }
   ]

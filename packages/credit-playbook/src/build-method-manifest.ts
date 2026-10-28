@@ -75,6 +75,7 @@ export function buildMethodManifest(repositoryRoot: string) {
     {path: "packages/financial-model/contracts/received-proposal-evidence.json", exportName: "calculateReceivedProposalEvidence"},
     {path: "packages/financial-model/contracts/received-proposal-packet.json", exportName: "prepareReceivedProposalPacket"},
     {path: "packages/financial-model/contracts/capital-structure-paths-packet.json", exportName: "prepareCapitalPathsPacket"},
+    {path: "packages/financial-model/contracts/board-capital-discussion-packet.json", exportName: "prepareBoardCapitalDiscussionPacket"},
     {path: "packages/financial-model/contracts/capital-contract-preparation-v2.json", exportName: "prepareCapitalContractEvidenceV2"},
     {path: "packages/financial-model/contracts/capital-procedure-packet-v2.json", exportName: "prepareCapitalProcedurePacketV2"},
     {path: "packages/financial-model/contracts/capital-decision-delivery.json", exportName: "prepareCapitalDecisionDelivery"},

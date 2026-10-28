@@ -67,3 +67,4 @@ export {operatingProjectionPacketExecutorContracts} from "./operating-projection
 export {documentFolderInventoryPacketExecutorContracts} from "./document-folder-inventory-contracts";
 export {receivedProposalPacketExecutorContracts} from "./evaluate-received-proposal-contracts";
 export {capitalPathsPacketExecutorContracts} from "./capital-structure-paths-contracts";
+export {boardCapitalDiscussionPacketExecutorContracts} from "./board-capital-discussion-contracts";

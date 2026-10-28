@@ -92,6 +92,12 @@ export const compiledExecutorAdapters = Object.freeze([
     exports: Object.freeze({calculate: 'prepareCapitalPathsPacket', input: 'capitalPathsPacketInputSchema', output: 'capitalPathsPacketOutputSchema'}),
     entry: 'export {prepareCapitalPathsPacket, capitalPathsPacketInputSchema, capitalPathsPacketOutputSchema} from "../../packages/financial-model/src/capital-structure-paths-packet.ts";',
   }),
+  Object.freeze({
+    methodId: 'prepare-board-capital-discussion',
+    executorKey: '@offroad/financial-model#prepareBoardCapitalDiscussionPacket', executorVersion: '2026.10.27-v1',
+    exports: Object.freeze({calculate: 'prepareBoardCapitalDiscussionPacket', input: 'boardCapitalDiscussionPacketInputSchema', output: 'boardCapitalDiscussionPacketOutputSchema'}),
+    entry: 'export {prepareBoardCapitalDiscussionPacket, boardCapitalDiscussionPacketInputSchema, boardCapitalDiscussionPacketOutputSchema} from "../../packages/financial-model/src/board-capital-discussion-packet.ts";',
+  }),
 ]);
 
 /** The adapter for a derived profile, or a refusal. Method id, executor key and version must all match. */
