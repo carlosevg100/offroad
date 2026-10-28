@@ -1,0 +1,202 @@
+{
+  "title": "Proposta recebida",
+  "lender": "Proposta de {lender}",
+  "status": "Situação",
+  "question": "Pergunta",
+  "gaps": "Lacunas de informação",
+  "noGaps": "Sem lacunas de informação.",
+  "exclusionsTitle": "O que esta análise não faz",
+  "yes": "Sim",
+  "no": "Não",
+  "units": "Valores em milhões de {currency}; spreads e custos em porcentagem ao ano sobre o CDI; covenant em vezes o EBITDA.",
+  "noReading": "Faltam premissas para ler a proposta; o que falta está nas lacunas.",
+  "openQuestions": {
+    "indexer_confirmation": "Antes de qualquer número, o indexador da proposta precisa ser confirmado pelo term sheet ou pela companhia."
+  },
+  "firmness": {
+    "indicative": "Proposta indicativa, sujeita à aprovação de crédito, válida até {date}.",
+    "committed": "Proposta firme, válida até {date}."
+  },
+  "sawIndenture": "O banco viu a escritura.",
+  "didNotSeeIndenture": "O banco não viu a escritura.",
+  "diligence": "Na diligência, a restrição de garantia da escritura tende a aparecer, e é provável que o crédito reabra a estrutura.",
+  "liquidityTitle": "Calendário de pagamentos",
+  "liquidity": "Em {year}, o serviço da dívida existente é de {existing} contra {available} de caixa disponível para atendê-lo; a proposta acrescenta {proposal}, total de {total}.",
+  "peakQuarter": "A maior pressão fica no trimestre encerrado em {date}.",
+  "minimumWith": "Com a proposta, o menor caixa do horizonte é {amount}, em {date}.",
+  "belowPolicy": "Com a proposta, o caixa fica abaixo do mínimo a partir de {with}; sem ela, a partir de {without}.",
+  "belowPolicyWithOnly": "Com a proposta, o caixa fica abaixo do mínimo a partir de {with}.",
+  "fitTitle": "Prazo contra o uso do dinheiro",
+  "fit": "{share} do valor financia uso sazonal. Vida média de {life} anos, último pagamento em {date}.",
+  "useReadings": {
+    "longer_than_use": "o prazo da proposta passa o prazo do uso",
+    "shorter_than_use": "o prazo da proposta é menor que o prazo do uso",
+    "within_use": "o prazo da proposta cabe no prazo do uso"
+  },
+  "use": "{label} ({amount}): {reading}.",
+  "covenantTitle": "Covenant com a proposta",
+  "scenarios": {
+    "base": "Caso da companhia",
+    "bank": "Caso do banco"
+  },
+  "limits": {
+    "indenture": "Escritura",
+    "proposal": "Credor",
+    "board-policy": "Política do conselho"
+  },
+  "notTested": "não testado",
+  "breached": "acima do limite",
+  "testsPerYear": "O credor testa {lender} vezes por ano; a escritura, {indenture}.",
+  "anyBreachUnknown": "Sem todas as apurações exigidas, não há conclusão de cumprimento.",
+  "anyBreachYes": "Há data e cenário em que um limite fica acima do permitido com a proposta.",
+  "anyBreachNo": "Em todas as datas e cenários exigidos, os limites ficam dentro do permitido com a proposta.",
+  "missingTests": "Apurações exigidas que faltam: {list}.",
+  "untestedLimits": "Limites sem nenhuma apuração, não testados: {list}.",
+  "lenderBeforeDraw": "Datas de teste do credor anteriores ao desembolso, só como contraste: {list}.",
+  "collateralTitle": "Garantia e escritura",
+  "collateral": "A cobertura de {coverage}% pede {required} de recebíveis. Dos {free} nominalmente livres, {assignable} podem ser cedidos.",
+  "shortfall": "A carteira que pode ser cedida fica {shortfall} abaixo do pedido.",
+  "leftAfter": "Depois da cessão, sobram {left} cedíveis, para um pico sazonal de {peak}.",
+  "restrictedAccount": "O banco pede conta vinculada.",
+  "reference": "Cobertura de referência de {low}% a {high}%.",
+  "atTop": "A cobertura pedida está no topo da referência ou acima dele.",
+  "reasons": {
+    "assigned_to_other_creditor": "já cedido a outro credor",
+    "assignment_prohibited_without_debtor_consent": "contrato veda a cessão sem anuência do sacado",
+    "past_due": "em atraso"
+  },
+  "pledge": "A exceção da escritura para garantia nova é de {limit} ({basis}), com {occupied} já ocupados; restam {remaining}.",
+  "bases": {
+    "aggregate": "valor agregado",
+    "per_operation": "por operação"
+  },
+  "consent": "A garantia pedida passa a exceção em {excess} e depende de anuência dos debenturistas.",
+  "consentWindow": "Convocando a assembleia agora, a anuência sai até {by}; o dinheiro é para {need} ({slack} dias de folga).",
+  "noConsent": "A garantia pedida cabe na exceção da escritura.",
+  "priceTitle": "Preço e custo",
+  "price": "Spread nominal de CDI mais {nominal}. Custo efetivo pela vida de CDI mais {gross} bruto.",
+  "net": "Líquido de imposto, CDI mais {net}, pela convenção simplificada de dedução plena no lucro real.",
+  "netConventions": {
+    "not_all_periods_taxable": "Há período sem lucro tributável na vida da proposta; o custo líquido não é afirmado.",
+    "life_beyond_fiscal_calendar": "A proposta vai além do calendário fiscal adotado; sem hipótese para esses anos, o custo líquido não é afirmado.",
+    "no_deduction_presumido": "No lucro presumido, o custo líquido é igual ao bruto.",
+    "regime_unknown": "Regime tributário não informado; custo líquido não calculado."
+  },
+  "upfront": "Comissão e IOF retidos no desembolso somam {upfront}% do valor, dos quais {iof}% de IOF.",
+  "positions": {
+    "below_range": "abaixo da faixa",
+    "at_or_below_median": "dentro da faixa, até a mediana",
+    "above_median_within_range": "dentro da faixa, acima da mediana",
+    "above_range": "acima da faixa"
+  },
+  "market": "O spread nominal está {position} de comparáveis, de {low}% a {high}% com mediana de {median}% ({sample} comparáveis, confiança {confidence}, em {date}).",
+  "confidences": {
+    "high": "alta",
+    "moderate": "moderada",
+    "low": "baixa"
+  },
+  "history": "Contra a {peer} ({date}): diferença observada de {observed} pontos-base, esperada de {expected}, resíduo de {residual}.",
+  "historyNoResidual": "Contra a {peer} ({date}): diferença observada de {observed} pontos-base, esperada de {expected}.",
+  "families": {
+    "pricing_date": "mercado na data",
+    "tenor": "prazo",
+    "guarantee": "garantia",
+    "instrument_distribution": "instrumento",
+    "scale": "porte",
+    "other": "risco e outros"
+  },
+  "step": "{family}: {bps} pontos-base",
+  "asksTitle": "O que cada pedido ao banco compra",
+  "alternativesTitle": "Alternativas da companhia na mesma base",
+  "columns": {
+    "year": "Ano",
+    "existingService": "Serviço existente",
+    "proposalService": "Da proposta",
+    "totalService": "Total",
+    "available": "Disponível para o serviço",
+    "shortfallWith": "Falta com a proposta",
+    "date": "Data",
+    "scenario": "Cenário",
+    "ratio": "Dívida líquida sobre EBITDA",
+    "bucket": "Grupo da carteira",
+    "amount": "Valor",
+    "holder": "Com quem",
+    "reasons": "Por que não entra",
+    "ask": "Pedido",
+    "serviceDelta": "Serviço no ano de pico",
+    "costDelta": "Custo efetivo (pontos-base)",
+    "collateralDelta": "Garantia pedida",
+    "consent": "Ainda exige anuência",
+    "account": "Conta vinculada",
+    "route": "Rota",
+    "uses": "Usos cobertos",
+    "allIn": "Custo total sobre o CDI",
+    "difference": "Diferença contra a proposta (pontos-base)",
+    "guarantee": "Garantia",
+    "months": "Meses até o dinheiro"
+  },
+  "monthsRange": "{min} a {max}",
+  "notComparable": "não comparável",
+  "assessmentTitle": "Leitura",
+  "factsTitle": "Fatos",
+  "readingsTitle": "Leitura",
+  "recommendationsTitle": "O que eu pediria",
+  "wouldChangeTitle": "O que mudaria a conclusão",
+  "questionsTitle": "Perguntas ao banco e à companhia",
+  "facts": {
+    "proposal_indicative": "A proposta é indicativa e depende de aprovação de crédito.",
+    "collateral_exceeds_assignable_portfolio": "A garantia pedida passa a carteira que pode ser cedida.",
+    "assignment_prohibited_receivables_excluded": "Recebíveis de cliente que veda a cessão ficam de fora.",
+    "indenture_consent_required": "A garantia pedida passa a exceção da escritura e depende de anuência dos debenturistas.",
+    "peak_year_service_exceeds_available_cash": "No ano de pico, o serviço da dívida passa o caixa disponível para atendê-lo.",
+    "cash_below_minimum_with_proposal": "Com a proposta, o caixa fica abaixo do mínimo em algum trimestre.",
+    "board_policy_breached_in_a_case": "Em algum caso, a alavancagem passa o limite da política do conselho.",
+    "lender_tests_more_often_than_indenture": "O credor testa o covenant mais vezes que a escritura.",
+    "restricted_account_requested": "O banco pede conta vinculada.",
+    "coverage_at_top_of_reference": "A cobertura pedida está no topo da referência ou acima dele."
+  },
+  "readings": {
+    "term_longer_than_seasonal_use": "O prazo é mais longo que o uso sazonal que ele financia.",
+    "term_shorter_than_capex_use": "O prazo é mais curto que a vida do investimento que ele financia.",
+    "all_in_cost_well_above_nominal": "O custo pela vida fica bem acima do spread nominal.",
+    "nominal_spread_below_range": "O spread nominal está abaixo da faixa de comparáveis.",
+    "nominal_spread_at_or_below_median": "O spread nominal está dentro da faixa, até a mediana.",
+    "nominal_spread_above_median_within_range": "O spread nominal está dentro da faixa, acima da mediana.",
+    "nominal_spread_above_range": "O spread nominal está acima da faixa de comparáveis.",
+    "improvement_partly_paid_in_collateral": "A melhora contra a última operação é paga em parte com garantia.",
+    "real_improvement_against_last_operation": "A melhora contra a última operação aparece também depois dos ajustes.",
+    "covenant_headroom_tight": "A folga do covenant fica apertada em alguma data.",
+    "diligence_may_reopen_structure": "A diligência pode reabrir a estrutura.",
+    "covenant_tests_missing": "Faltam apurações exigidas do covenant.",
+    "net_cost_conditioned_on_taxable_profit": "O custo líquido depende de lucro tributável que não está adotado em toda a vida."
+  },
+  "recommendations": {
+    "address_indenture_consent_before_signing": "Tratar com o banco a anuência da escritura antes de assinar.",
+    "ask_longer_grace_and_tenor": "Pedir carência e prazo maiores para aliviar o ano de pico.",
+    "ask_lower_coverage_and_no_restricted_account": "Pedir cobertura menor e retirar a conta vinculada.",
+    "separate_uses_by_term": "Separar os usos por prazo, com uma rota para cada um.",
+    "keep_price_discussion_secondary": "Com o spread na faixa, concentrar a negociação na estrutura antes do preço."
+  },
+  "wouldChange": {
+    "debtor_consent_for_restricted_receivables": "Anuência do cliente que veda a cessão.",
+    "indenture_clause_wording": "A redação da cláusula de garantias da escritura.",
+    "other_free_asset_for_collateral": "Outro ativo livre para compor a garantia.",
+    "seasonal_need_above_adopted": "Uma necessidade sazonal maior que a adotada.",
+    "committed_terms_after_diligence": "Os termos firmes depois da diligência."
+  },
+  "questions": {
+    "lender_covenant_definition": "Ao banco: a definição do covenant é a da escritura?",
+    "reciprocity_expected_by_lender": "Ao banco: há reciprocidade esperada?",
+    "restricted_debtor_consent": "À companhia: o cliente que veda a cessão daria anuência?",
+    "indenture_clause_wording": "À companhia: a exceção da escritura é por valor agregado ou por operação, e o que já está dentro dela?",
+    "other_free_asset": "À companhia: há outro ativo livre para compor a garantia?"
+  },
+  "process": "Esta análise não aceita a proposta, não fala com o banco e não envia contraproposta.",
+  "exclusions": {
+    "proposal_acceptance": "aceitar a proposta",
+    "counterparty_contact": "falar com o banco",
+    "credit_approval": "aprovar crédito",
+    "legal_opinion": "dar opinião jurídica",
+    "reciprocity_pricing": "precificar reciprocidade"
+  }
+}

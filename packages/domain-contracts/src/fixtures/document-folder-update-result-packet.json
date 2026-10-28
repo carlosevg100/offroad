@@ -1,0 +1,4659 @@
+{
+  "schemaVersion": "document-folder-inventory-packet.v1",
+  "executorVersion": "2026.10.27-v1",
+  "question": "Segue a página 7 legível e o balancete de março. A minuta não foi para nenhum banco.",
+  "mode": "organize",
+  "basisFingerprint": "d25609137f85e23f003c03c524cabf600dd06777382837f1d1f6bd940a99428e",
+  "scope": {
+    "workId": "ac400000-0000-4000-9000-000000000007",
+    "purpose": "synthetic document folder inventory",
+    "versionId": "ac400000-0000-4000-9000-000000000501"
+  },
+  "entityId": "ac400000-0000-4000-9000-000000000001",
+  "result": {
+    "schemaVersion": "adopted-document-folder-inventory.v1",
+    "version": "2026.10.27-v1",
+    "scope": {
+      "workId": "ac400000-0000-4000-9000-000000000007",
+      "purpose": "synthetic document folder inventory",
+      "versionId": "ac400000-0000-4000-9000-000000000501"
+    },
+    "analysisId": "ac400000-0000-4000-9000-000000000070",
+    "entityId": "ac400000-0000-4000-9000-000000000001",
+    "perimeter": "consolidated",
+    "currency": "BRL",
+    "basisFingerprint": "d25609137f85e23f003c03c524cabf600dd06777382837f1d1f6bd940a99428e",
+    "base": {
+      "analysisId": "ac400000-0000-4000-9000-000000000070",
+      "basisFingerprint": "a3f3d048a27dabe155786f2510148dc8de0be4082a299f52026ba548c62e7a5d",
+      "inventoryFingerprint": "42ca476670aebbe258405566ceeea9360d763d85ee7500bd64fa94237552016f"
+    },
+    "update": {
+      "analysisId": "ac400000-0000-4000-9000-000000000071",
+      "basisFingerprint": "d25609137f85e23f003c03c524cabf600dd06777382837f1d1f6bd940a99428e",
+      "inventoryFingerprint": "b9d1e583b7976ad247cc88831673faeeb4958bbc307869bb179475741f9885f9"
+    },
+    "inventory": {
+      "schemaVersion": "document-folder-inventory.v1",
+      "version": "2026.10.27-v1",
+      "asOf": "2026-09-02",
+      "mode": "organize",
+      "partitionByEntity": false,
+      "rows": [
+        {
+          "fileId": "f01",
+          "fileName": "DF_2025_final.pdf",
+          "sha256": "2678fbce5bcc88cf9d275369b1713910faf626429b5b1223bc811c07af93c1df",
+          "order": 0,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Demonstrações financeiras auditadas, com parecer sem ressalva",
+          "entity": "Aurora Alimentos S.A., individual e consolidado",
+          "period": "exercício 2025",
+          "version": "auditada, assinada em 18/mar/26",
+          "status": "audited",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f02",
+          "fileName": "DF 2025 versao banco.pdf",
+          "sha256": "520fa17ee46d8a6eccbcb66b137d528031b47baba8509548e50939566b66f61a",
+          "order": 1,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Demonstrações de 2025 sem parecer, versão anterior aos ajustes de auditoria",
+          "entity": "Aurora Alimentos S.A., consolidado",
+          "period": "exercício 2025",
+          "version": "minuta de fev/26, não auditada",
+          "status": "draft",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": {
+              "fileId": "f01",
+              "reason": "audited_over_draft"
+            },
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida; superada pela auditada",
+          "findingIds": [
+            "f02-draft"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f03",
+          "fileName": "DFs 2024.pdf",
+          "sha256": "48f807a1da7e4b555c52409015e752ae0f7c1dc757b0046dabf438123be44410",
+          "order": 2,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Demonstrações financeiras auditadas",
+          "entity": "Aurora Alimentos S.A., individual e consolidado",
+          "period": "exercício 2024",
+          "version": "auditada",
+          "status": "audited",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f04",
+          "fileName": "Aurora Log balanço 2025.xlsx",
+          "sha256": "f5494e5845c3806a398c12f9d72b7cddc21ebab6a3136cd4cc80df1b59419872",
+          "order": 3,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Balanço e resultado da controlada",
+          "entity": "Aurora Logística Ltda., 100% da Aurora",
+          "period": "exercício 2025",
+          "version": "gerencial, não auditado em separado",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f04-subsidiary"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f05",
+          "fileName": "Carta recomendacoes auditoria 2025.pdf",
+          "sha256": "963212166871e67679d3646c8101d855f3e709c163df9547fea3ed2c0e970a36",
+          "order": 4,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "auditor_management_letter",
+          "description": "Carta de controles internos da auditoria",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "2025",
+          "version": "final",
+          "status": "final",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f05-controles"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f06",
+          "fileName": "balancete jan26.xlsx",
+          "sha256": "4c0c054ca56b358724d3f0a903b9c191bdf991d83e4ff85d46b9cb18471a760f",
+          "order": 5,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "jan/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f07",
+          "fileName": "balancete fev26.xlsx",
+          "sha256": "33d7a2e39f68f75c58a60d812b7a736024a0cf244b253096766dbb158ced477a",
+          "order": 6,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "fev/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f08",
+          "fileName": "balancete abr26.xlsx",
+          "sha256": "da44f193c224a3a8adf0d20a1b297dd0c3529c8a19092e203eb3172366420fd7",
+          "order": 7,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "abr/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f09",
+          "fileName": "balancete mai26.xlsx",
+          "sha256": "70a102258f3d966eebf78adfc2284894282a771e574d7d56d55f8124a3b27bff",
+          "order": 8,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "mai/26",
+          "version": "versão 1",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": {
+              "fileId": "f10",
+              "reason": "later_version"
+            },
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida; superada pela v2",
+          "findingIds": [
+            "f09-superseded"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f10",
+          "fileName": "balancete mai26 v2 revisado.xlsx",
+          "sha256": "fc62a74da446f5d7d501cbcf5ddb9bc23ca2831c65a85ac24ade93399fadec7a",
+          "order": 9,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "mai/26",
+          "version": "versão 2, vigente",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f11",
+          "fileName": "balancete jun26.xlsx",
+          "sha256": "b9d15980ee833562868fd4b04af0d72f92dba00f9d046b08e5a5d203de56ca10",
+          "order": 10,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "jun/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f11-series-gap"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f12",
+          "fileName": "Gerencial 1S26.xlsx",
+          "sha256": "c28afc38a4ab257fab4ec783d4fd7de78e108828538d7788c4a6791ad092e8b0",
+          "order": 11,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "management_report",
+          "description": "Relatório gerencial do semestre",
+          "entity": "Aurora, consolidado",
+          "period": "1S26",
+          "version": "fechado em jul/26",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f12-prazo-embalagem",
+            "f12-units"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f13",
+          "fileName": "Orcamento 2026 aprovado.xlsx",
+          "sha256": "73620c41742e14ba18c1a46864e8ca0587458f647a0e894062a4c595f7e45a65",
+          "order": 12,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "budget",
+          "description": "Orçamento anual aprovado pelo conselho",
+          "entity": "Aurora, consolidado",
+          "period": "2026",
+          "version": "aprovado em dez/25",
+          "status": "approved",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [
+              "f14"
+            ],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f14",
+          "fileName": "orcamento 2026 rev jul.xlsx",
+          "sha256": "4b8921e9d8d7add93e7389b4c5d851109ca17626a1423d912ca980b1d2823d35",
+          "order": 13,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "budget",
+          "description": "Revisão do orçamento",
+          "entity": "Aurora, consolidado",
+          "period": "2026",
+          "version": "revisão de trabalho, não aprovada",
+          "status": "working_revision",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [
+              "f13"
+            ],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f14-side-by-side"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f15",
+          "fileName": "fluxo 13 semanas.xlsx",
+          "sha256": "5a5c9b2d9a3d9d2a42ead1bea3d4587b21524b1bd53f28f2e46e69635b7e1fc4",
+          "order": 14,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "cash_flow_forecast",
+          "description": "Fluxo de caixa de 13 semanas",
+          "entity": "Aurora, consolidado",
+          "period": "mar/26 a mai/26",
+          "version": "desatualizado",
+          "status": "outdated",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f15-stale"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f16",
+          "fileName": "tabela de divida jun26.xlsx",
+          "sha256": "3751245e3b9d390e5ee480f2584d1008d29b818e2fe25b4b6ada936d9b4fc9f1",
+          "order": 15,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debt_schedule",
+          "description": "Tabela de dívida",
+          "entity": "Aurora, consolidado",
+          "period": "jun/26",
+          "version": "gerencial",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f16-debt-total"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f17",
+          "fileName": "Copia de Copia de tabela final (2).xlsx",
+          "sha256": "5891db711a842f850f42bd9854995e93c38616d0c5d51b689d102f8999be8e85",
+          "order": 16,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debt_schedule",
+          "description": "Tabela de dívida",
+          "entity": "Aurora, consolidado",
+          "period": "dez/25",
+          "version": "versão anterior",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": {
+              "fileId": "f16",
+              "reason": "later_position"
+            },
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida; superada",
+          "findingIds": [
+            "f17-superseded"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f18",
+          "fileName": "Escritura debenture 2021.pdf",
+          "sha256": "8ab1db0e4aadfe6fa5fb1b637d2cbab6a4d0b1b0f884ca95b77fab144164bc74",
+          "order": 17,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debenture_indenture",
+          "description": "Escritura da 1ª emissão de debêntures",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "out/2021",
+          "version": "original",
+          "status": "registered",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": "cofre-escritura-2021"
+          },
+          "situationLabel": "lida; já estava no cofre",
+          "findingIds": [
+            "f18-amended"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f19",
+          "fileName": "1o aditamento escritura 2023.pdf",
+          "sha256": "65dc9847f2b3fee9a6f1a6b9edd7ff930e9526626c60edc512e61e4ce8d9b643",
+          "order": 18,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debenture_indenture",
+          "description": "Primeiro aditamento à escritura",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "jun/2023",
+          "version": "assinado e registrado",
+          "status": "registered",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f19-amendment"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f20",
+          "fileName": "CCB Bradesco 2024 scan.pdf",
+          "sha256": "5eb3034d295b605069d611306e15f0bfa32e49a523d35ab42b2bb0e2475ed135",
+          "order": 19,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "bank_credit_note",
+          "description": "Cédula de crédito bancário",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "set/2024",
+          "version": "assinada",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [
+              {
+                "page": 7,
+                "fileId": "s01",
+                "sha256": "2d80b9bc33fda3486bcf97a3e82974708af7ff685165416e184e7a010be79ace"
+              }
+            ],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": "cofre-ccb-bradesco"
+          },
+          "situationLabel": "lida; já estava no cofre",
+          "findingIds": [
+            "f20-blocked-text-in-force",
+            "f20-s01:reforco",
+            "f20-unreadable-p7"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f21",
+          "fileName": "Finame contrato.pdf",
+          "sha256": "d97e3bc193fe8104a75c831dc48ee62e138af1670b2dad8348498e0bcce3bb0f",
+          "order": 20,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "development_bank_financing",
+          "description": "Contrato de financiamento Finame",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "2022",
+          "version": "assinado",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f22",
+          "fileName": "Contrato cliente A.pdf",
+          "sha256": "13075de9f2894e297340f6667abbffa01a39f5d5d65deab959ed9e59313d6316",
+          "order": 21,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "contracts",
+          "groupLabel": "Contratos",
+          "kind": "customer_contract",
+          "description": "Contrato de fornecimento com o maior cliente (32% da carteira)",
+          "entity": "Aurora e rede de varejo A",
+          "period": "2025 a 2027",
+          "version": "assinado",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f22-cessao"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f23",
+          "fileName": "Contrato embalagem fornecedor.pdf",
+          "sha256": "9a5a11e141f48c6612658fefe932c1e92f9538febfea917f1f18ab9a71061bab",
+          "order": 22,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "contracts",
+          "groupLabel": "Contratos",
+          "kind": "supplier_contract",
+          "description": "Contrato de fornecimento de embalagem",
+          "entity": "Aurora e fornecedor de embalagem",
+          "period": "até dez/2026, renovação automática anual",
+          "version": "assinado",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f23-prazo",
+            "f23-renovacao"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f24",
+          "fileName": "Ata conselho mar26.pdf",
+          "sha256": "25f584caea641fa9af949faa9688347416e6fb6a9797f13ee9dcabb08a2939b6",
+          "order": 23,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "governance",
+          "groupLabel": "Governança",
+          "kind": "board_minutes",
+          "description": "Ata de reunião do conselho de administração",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "mar/2026",
+          "version": "assinada",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f24-blocked-comparison-politica",
+            "f24-politica"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f25",
+          "fileName": "Ata AGO 2026.pdf",
+          "sha256": "99393930e32ac1795129e3f9410faff3c235a89b5f80fd1650f385ab5730ee84",
+          "order": 24,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "governance",
+          "groupLabel": "Governança",
+          "kind": "shareholders_minutes",
+          "description": "Ata da assembleia geral ordinária",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "abr/2026",
+          "version": "assinada",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f25-dividendos"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f26",
+          "fileName": "aging clientes jun26.xlsx",
+          "sha256": "ba8b83a3994bdad6917d451d722101786350b3ad22d9db36a5a1dfc12adb2572",
+          "order": 25,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "receivables",
+          "groupLabel": "Carteira",
+          "kind": "receivables_aging",
+          "description": "Posição da carteira por cliente e vencimento",
+          "entity": "Aurora, consolidado",
+          "period": "jun/26",
+          "version": "gerencial",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f27",
+          "fileName": "Laudo avaliacao imovel fabrica 2023.pdf",
+          "sha256": "a99df801969e3de174c65132bd3a9b938c5ebaecf4b603f6334c1b7d1749cceb",
+          "order": 26,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "assets",
+          "groupLabel": "Ativos",
+          "kind": "appraisal_report",
+          "description": "Laudo de avaliação do imóvel industrial",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "ago/2023",
+          "version": "final",
+          "status": "final",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f27-registry"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f28",
+          "fileName": "Apresentacao institucional 2025.pptx",
+          "sha256": "60cdd9cef506a39d5d582b9dc4b84631b1ecafc2d2c4369d6e7f0043f84db920",
+          "order": 27,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "other",
+          "groupLabel": "Outros",
+          "kind": "institutional_presentation",
+          "description": "Apresentação institucional",
+          "entity": "Aurora",
+          "period": "2025",
+          "version": "material de marketing",
+          "status": "marketing",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f28-receita"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f29",
+          "fileName": "foto_nota.jpg",
+          "sha256": "b4c35509a6a2662205dd39048f4240b6aa4b24b1df2f1b02f975b6673d50c38b",
+          "order": 28,
+          "partition": null,
+          "economicGroup": null,
+          "group": "other",
+          "groupLabel": "Outros",
+          "kind": "invoice",
+          "description": "Foto de uma nota fiscal de compra de insumo",
+          "entity": "não identificável",
+          "period": "sem data legível",
+          "version": "imagem",
+          "status": "image",
+          "situation": {
+            "read": "unreadable",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "ilegível",
+          "findingIds": [
+            "f29-unreadable"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f30",
+          "fileName": "DF_2025_final (1).pdf",
+          "sha256": "2678fbce5bcc88cf9d275369b1713910faf626429b5b1223bc811c07af93c1df",
+          "order": 29,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Cópia idêntica de DF_2025_final.pdf",
+          "entity": "Aurora",
+          "period": "exercício 2025",
+          "version": "duplicado exato",
+          "status": "audited",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": "f01",
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "duplicado",
+          "findingIds": [
+            "f30-duplicate"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "s02",
+          "fileName": "balancete mar26.xlsx",
+          "sha256": "af1e9da01ecffa488147a889d1541bddf1c1acd6319a50efd15c61fe3fe2be65",
+          "order": 31,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "mar/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        }
+      ],
+      "groups": [
+        {
+          "partition": null,
+          "group": "statements",
+          "label": "Demonstrações",
+          "fileIds": [
+            "f01",
+            "f02",
+            "f03",
+            "f04",
+            "f05",
+            "f30"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "management",
+          "label": "Gerencial",
+          "fileIds": [
+            "f06",
+            "f07",
+            "f08",
+            "f09",
+            "f10",
+            "f11",
+            "f12",
+            "f13",
+            "f14",
+            "f15",
+            "s02"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "debt",
+          "label": "Dívida",
+          "fileIds": [
+            "f16",
+            "f17",
+            "f18",
+            "f19",
+            "f20",
+            "f21"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "contracts",
+          "label": "Contratos",
+          "fileIds": [
+            "f22",
+            "f23"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "governance",
+          "label": "Governança",
+          "fileIds": [
+            "f24",
+            "f25"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "receivables",
+          "label": "Carteira",
+          "fileIds": [
+            "f26"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "assets",
+          "label": "Ativos",
+          "fileIds": [
+            "f27"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "other",
+          "label": "Outros",
+          "fileIds": [
+            "f28",
+            "f29"
+          ]
+        }
+      ],
+      "families": [
+        {
+          "id": "annual_financial_statements:aurora:2025-01-01:2025-12-31",
+          "basis": "period",
+          "resolution": "audited_over_draft",
+          "prevails": [
+            "f01"
+          ],
+          "superseded": [
+            "f02"
+          ],
+          "sideBySide": [],
+          "highlighted": false
+        },
+        {
+          "id": "budget:aurora:2026-01-01:2026-12-31",
+          "basis": "period",
+          "resolution": "side_by_side",
+          "prevails": [],
+          "superseded": [],
+          "sideBySide": [
+            "f13",
+            "f14"
+          ],
+          "highlighted": false
+        },
+        {
+          "id": "debt_schedule:aurora",
+          "basis": "position",
+          "resolution": "later_position",
+          "prevails": [
+            "f16"
+          ],
+          "superseded": [
+            "f17"
+          ],
+          "sideBySide": [],
+          "highlighted": false
+        },
+        {
+          "id": "instrument:deb-aurora-1",
+          "basis": "instrument",
+          "resolution": "effective_text",
+          "prevails": [
+            "f18",
+            "f19"
+          ],
+          "superseded": [],
+          "sideBySide": [],
+          "highlighted": false
+        },
+        {
+          "id": "trial_balance:aurora:2026-05-01:2026-05-31",
+          "basis": "period",
+          "resolution": "later_version",
+          "prevails": [
+            "f10"
+          ],
+          "superseded": [
+            "f09"
+          ],
+          "sideBySide": [],
+          "highlighted": false
+        }
+      ],
+      "effectiveTexts": [
+        {
+          "instrumentRef": "deb-aurora-1",
+          "entityId": "aurora",
+          "fileIds": [
+            "f18",
+            "f19"
+          ],
+          "clauses": [
+            {
+              "type": "financial_covenant",
+              "fileId": "f19",
+              "clauseId": "covenant"
+            },
+            {
+              "type": "negative_pledge",
+              "fileId": "f19",
+              "clauseId": "garantia-negativa"
+            }
+          ],
+          "knowledge": "known",
+          "conflicts": [],
+          "unread": [],
+          "future": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "f02-draft",
+          "code": "draft_superseded",
+          "anchor": "f02",
+          "sources": [
+            {
+              "fileId": "f02",
+              "page": 5,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": 6,
+              "section": null
+            }
+          ],
+          "statement": "EBITDA de R$ 54,8 milhões contra R$ 52 milhões na auditada: a minuta não tem a baixa de estoque obsoleto (R$ 900 mil) nem a provisão para devedores duvidosos (R$ 1,9 milhão). Verificar se essa versão foi enviada a algum banco.",
+          "topic": "statements_version",
+          "effect": "version_conflict",
+          "decisionStatement": "Há duas versões das demonstrações de 2025. A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões, depois da baixa de estoque obsoleto e da provisão para devedores duvidosos. A auditada é a que vale.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f09-superseded",
+          "code": "version_superseded",
+          "anchor": "f09",
+          "sources": [
+            {
+              "fileId": "f09",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f10",
+              "page": null,
+              "section": "Notas"
+            }
+          ],
+          "statement": "Duas versões de maio de 2026; a v2 vale e esta fica como histórico.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f10",
+            "page": null,
+            "section": "Notas",
+            "text": "reclassifica R$ 1,2 mi de despesa financeira para despesa operacional"
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f14-side-by-side",
+          "code": "versions_side_by_side",
+          "anchor": "f14",
+          "sources": [
+            {
+              "fileId": "f14",
+              "page": null,
+              "section": "Resumo"
+            },
+            {
+              "fileId": "f13",
+              "page": null,
+              "section": "Resumo"
+            }
+          ],
+          "statement": "EBITDA de 2026 revisto para R$ 55,5 milhões contra R$ 58 milhões no aprovado. Preservar as duas: aprovado e revisão em trabalho.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f17-superseded",
+          "code": "position_superseded",
+          "anchor": "f17",
+          "sources": [
+            {
+              "fileId": "f17",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f16",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Versão de 31 de dezembro de 2025 da mesma tabela de dívida. Histórico, não base atual.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f18-amended",
+          "code": "amended_original",
+          "anchor": "f18",
+          "sources": [
+            {
+              "fileId": "f18",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f19",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f19-amendment",
+          "code": "amendment_in_force",
+          "anchor": "f19",
+          "sources": [
+            {
+              "fileId": "f19",
+              "page": 2,
+              "section": null
+            },
+            {
+              "fileId": "f18",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. É o texto vigente junto com a escritura.",
+          "topic": "debt_covenant",
+          "effect": "binding_limit",
+          "decisionStatement": "O covenant da escritura é o do aditamento de junho de 2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": [
+            {
+              "type": "financial_covenant",
+              "current": true,
+              "before": {
+                "fileId": "f18",
+                "page": 18,
+                "section": null,
+                "text": "Dívida líquida / EBITDA de no máximo 2,75x, apurado anualmente."
+              },
+              "after": {
+                "fileId": "f19",
+                "page": 2,
+                "section": null,
+                "text": "Dívida líquida / EBITDA de no máximo 3,0x."
+              }
+            },
+            {
+              "type": "negative_pledge",
+              "current": true,
+              "before": {
+                "fileId": "f18",
+                "page": 21,
+                "section": null,
+                "text": "Vedação de garantias a outros credores, sem exceção de valor."
+              },
+              "after": {
+                "fileId": "f19",
+                "page": 3,
+                "section": null,
+                "text": "Exceção de R$ 15 milhões em valor agregado de garantias."
+              }
+            }
+          ],
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f16-debt-total",
+          "code": "total_includes_unused_limit",
+          "anchor": "f16",
+          "sources": [
+            {
+              "fileId": "f16",
+              "page": null,
+              "section": "Dívida"
+            }
+          ],
+          "statement": "Soma R$ 140 milhões porque a conta garantida entra pelo limite (R$ 10 milhões); o saldo utilizado é zero. Dívida em 30 de junho de 2026: R$ 130 milhões.",
+          "topic": "debt_position",
+          "effect": "figure_correction",
+          "decisionStatement": "A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f05-controles",
+          "code": "observation",
+          "anchor": "f05",
+          "sources": [
+            {
+              "fileId": "f05",
+              "page": 2,
+              "section": null
+            }
+          ],
+          "statement": "Registrado no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f05",
+            "page": 2,
+            "section": null,
+            "text": "Aponta conciliação bancária fora do prazo e ausência de controle de garantias prestadas. Relevante para qualquer diligência de credor."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f12-units",
+          "code": "mixed_units",
+          "anchor": "f12",
+          "sources": [
+            {
+              "fileId": "f12",
+              "page": null,
+              "section": "Caixa"
+            },
+            {
+              "fileId": "f12",
+              "page": null,
+              "section": "DRE"
+            }
+          ],
+          "statement": "Unidades misturadas: o mesmo arquivo tem abas em R$ e em R$ mil.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f12-prazo-embalagem",
+          "code": "observation",
+          "anchor": "f12",
+          "sources": [
+            {
+              "fileId": "f12",
+              "page": null,
+              "section": "Fornecedores"
+            }
+          ],
+          "statement": "Registrado no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f12",
+            "page": null,
+            "section": "Fornecedores",
+            "text": "Prazo médio do fornecedor de embalagem: 60 dias."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f15-stale",
+          "code": "stale_forecast",
+          "anchor": "f15",
+          "sources": [
+            {
+              "fileId": "f15",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Última atualização em março de 2026; cobre só até 31 de maio de 2026, antes da data desta leitura.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f20-s01:reforco",
+          "code": "clause",
+          "anchor": "f20",
+          "sources": [
+            {
+              "fileId": "s01",
+              "page": 7,
+              "section": null
+            }
+          ],
+          "statement": "Cláusula lida na cópia legível da página 7.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "s01",
+            "page": 7,
+            "section": null,
+            "text": "A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f22-cessao",
+          "code": "clause",
+          "anchor": "f22",
+          "sources": [
+            {
+              "fileId": "f22",
+              "page": 9,
+              "section": null
+            }
+          ],
+          "statement": "Limita qualquer financiamento com cessão dessa carteira.",
+          "topic": "receivables_assignment",
+          "effect": "collateral_restriction",
+          "decisionStatement": "Os recebíveis do contrato com o cliente não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão; a contraparte responde por 32% da carteira. Isso reduz a carteira disponível para qualquer financiamento com cessão.",
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f22",
+            "page": 9,
+            "section": null,
+            "text": "Veda a cessão dos recebíveis sem anuência do cliente."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f23-prazo",
+          "code": "clause",
+          "anchor": "f23",
+          "sources": [
+            {
+              "fileId": "f23",
+              "page": 4,
+              "section": null
+            }
+          ],
+          "statement": "Cláusula lida no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f23",
+            "page": 4,
+            "section": null,
+            "text": "Prazo de pagamento de 60 dias."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f23-renovacao",
+          "code": "clause",
+          "anchor": "f23",
+          "sources": [
+            {
+              "fileId": "f23",
+              "page": 11,
+              "section": null
+            }
+          ],
+          "statement": "Aviso até 2 de outubro de 2026 para renegociar preço ou não renovar.",
+          "topic": "supplier_contract",
+          "effect": "deadline",
+          "decisionStatement": "O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.",
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f23",
+            "page": 11,
+            "section": null,
+            "text": "Renovação automática em dez/26 salvo aviso até 2/out/26."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f24-politica",
+          "code": "clause",
+          "anchor": "f24",
+          "sources": [
+            {
+              "fileId": "f24",
+              "page": 3,
+              "section": null
+            }
+          ],
+          "statement": "Política de no máximo 2,5x, mais restritiva que o covenant vigente de 3,0x.",
+          "topic": "debt_policy",
+          "effect": "policy_limit",
+          "decisionStatement": "Há uma política de endividamento aprovada pelo conselho. A ata do conselho de março de 2026 fixa dívida líquida de no máximo 2,5x o EBITDA, abaixo do covenant vigente de 3,0x. Entre os limites lidos, é o mais restritivo.",
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f24",
+            "page": 3,
+            "section": null,
+            "text": "Aprova política de endividamento com dívida líquida / EBITDA de no máximo 2,5x"
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f25-dividendos",
+          "code": "observation",
+          "anchor": "f25",
+          "sources": [
+            {
+              "fileId": "f25",
+              "page": 2,
+              "section": null
+            }
+          ],
+          "statement": "Registrado no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f25",
+            "page": 2,
+            "section": null,
+            "text": "Sem distribuição de dividendos além do mínimo legal em 2026."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f29-unreadable",
+          "code": "file_unreadable",
+          "anchor": "f29",
+          "sources": [
+            {
+              "fileId": "f29",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Não foi possível extrair conteúdo útil; pedir o arquivo original se for relevante.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f04-subsidiary",
+          "code": "subsidiary_in_consolidated",
+          "anchor": "f04",
+          "sources": [
+            {
+              "fileId": "f04",
+              "page": null,
+              "section": "Balanço"
+            }
+          ],
+          "statement": "A consolidada inclui a controlada; a análise de crédito da devedora precisa do individual. O caixa da controlada (R$ 4,1 milhões) só sobe à controladora por dividendos ou mútuo.",
+          "topic": "group_perimeter",
+          "effect": "perimeter",
+          "decisionStatement": "A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f27-registry",
+          "code": "appraisal_without_registry",
+          "anchor": "f27",
+          "sources": [
+            {
+              "fileId": "f27",
+              "page": 12,
+              "section": null
+            }
+          ],
+          "statement": "Valor de R$ 48 milhões. Sem matrícula atualizada não dá para saber se o imóvel avaliado está livre de ônus.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f28-receita",
+          "code": "figure_basis_differs",
+          "anchor": "f28",
+          "sources": [
+            {
+              "fileId": "f28",
+              "page": 4,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": 31,
+              "section": null
+            }
+          ],
+          "statement": "Cita receita de R$ 450 milhões, que é a receita bruta; a líquida das demonstrações é R$ 420 milhões.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f30-duplicate",
+          "code": "duplicate",
+          "anchor": "f30",
+          "sources": [
+            {
+              "fileId": "f30",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Mesmo conteúdo, mesmo hash.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f20-blocked-text-in-force",
+          "code": "effect_blocked",
+          "anchor": "f20",
+          "sources": [
+            {
+              "fileId": "f20",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "O texto vigente da cédula de crédito bancário não é afirmado: depende de documento com página ou arquivo não lido. Fica pendente até a leitura completa.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": null,
+          "changes": null,
+          "status": "resolved",
+          "resolvedBy": [
+            "s01",
+            "s02"
+          ]
+        },
+        {
+          "id": "f11-series-gap",
+          "code": "series_gap",
+          "anchor": "f11",
+          "sources": [
+            {
+              "fileId": "f06",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f07",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f08",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f10",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f11",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Falta o balancete de março de 2026: a série não fecha mês a mês sem ele.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "resolved",
+          "resolvedBy": [
+            "s02"
+          ]
+        },
+        {
+          "id": "f20-unreadable-p7",
+          "code": "page_unreadable",
+          "anchor": "f20",
+          "sources": [
+            {
+              "fileId": "f20",
+              "page": 7,
+              "section": null
+            }
+          ],
+          "statement": "A página 7 não pôde ser lida; a página 2 do próprio documento indica o que ela traz. Pedir cópia legível.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": {
+            "fileId": "f20",
+            "page": 2,
+            "section": null,
+            "text": "a cláusula de reforço da cessão"
+          },
+          "changes": null,
+          "status": "resolved",
+          "resolvedBy": [
+            "s01"
+          ]
+        },
+        {
+          "id": "f24-blocked-comparison-politica",
+          "code": "effect_blocked",
+          "anchor": "f24",
+          "sources": [
+            {
+              "fileId": "f20",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "A comparação da política com os covenants não é afirmado: depende de documento com página ou arquivo não lido. Fica pendente até a leitura completa.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": null,
+          "changes": null,
+          "status": "resolved",
+          "resolvedBy": [
+            "s01",
+            "s02"
+          ]
+        }
+      ],
+      "decisionFindings": [
+        {
+          "rank": 1,
+          "findingId": "f19-amendment",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "binding_limit",
+          "statement": "O covenant da escritura é o do aditamento de junho de 2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.",
+          "sources": [
+            {
+              "fileId": "f19",
+              "page": 2,
+              "section": null
+            },
+            {
+              "fileId": "f18",
+              "page": null,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "findingId": "f24-politica",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "policy_limit",
+          "statement": "Há uma política de endividamento aprovada pelo conselho. A ata do conselho de março de 2026 fixa dívida líquida de no máximo 2,5x o EBITDA, abaixo do covenant vigente de 3,0x. Entre os limites lidos, é o mais restritivo.",
+          "sources": [
+            {
+              "fileId": "f24",
+              "page": 3,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "findingId": "f22-cessao",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "collateral_restriction",
+          "statement": "Os recebíveis do contrato com o cliente não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão; a contraparte responde por 32% da carteira. Isso reduz a carteira disponível para qualquer financiamento com cessão.",
+          "sources": [
+            {
+              "fileId": "f22",
+              "page": 9,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "findingId": "f23-renovacao",
+          "decisionIds": [
+            "linha-embalagem"
+          ],
+          "effect": "deadline",
+          "statement": "O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.",
+          "sources": [
+            {
+              "fileId": "f23",
+              "page": 11,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "findingId": "f16-debt-total",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "figure_correction",
+          "statement": "A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.",
+          "sources": [
+            {
+              "fileId": "f16",
+              "page": null,
+              "section": "Dívida"
+            }
+          ]
+        },
+        {
+          "rank": 6,
+          "findingId": "f02-draft",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "version_conflict",
+          "statement": "Há duas versões das demonstrações de 2025. A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões, depois da baixa de estoque obsoleto e da provisão para devedores duvidosos. A auditada é a que vale.",
+          "sources": [
+            {
+              "fileId": "f02",
+              "page": 5,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": 6,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 7,
+          "findingId": "f04-subsidiary",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "perimeter",
+          "statement": "A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.",
+          "sources": [
+            {
+              "fileId": "f04",
+              "page": null,
+              "section": "Balanço"
+            }
+          ]
+        }
+      ],
+      "generalFindings": null,
+      "identityChecks": [
+        {
+          "id": "f12-months",
+          "kind": "period_against_months",
+          "fileIds": [
+            "f12",
+            "f06",
+            "f07",
+            "s02",
+            "f08",
+            "f10",
+            "f11"
+          ],
+          "status": "matches",
+          "reported": "27000000",
+          "recomposed": "27000000",
+          "currency": "BRL",
+          "reason": null
+        },
+        {
+          "id": "f16-reported-total",
+          "kind": "reported_total",
+          "fileIds": [
+            "f16"
+          ],
+          "status": "differs",
+          "reported": "140000000",
+          "recomposed": "130000000",
+          "currency": "BRL",
+          "reason": "unused_limit_counted"
+        }
+      ],
+      "gaps": [
+        {
+          "id": "real-collateral-f27",
+          "need": "real_collateral",
+          "item": "Matrícula atualizada do imóvel avaliado no laudo",
+          "why": "saber se o imóvel está livre para uma garantia",
+          "quoted": null,
+          "purposes": [
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f27-registry",
+          "conditional": false,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "group-perimeter-f04",
+          "need": "group_perimeter",
+          "item": "Demonstrações auditadas da controlada, se existirem",
+          "why": "perímetro da devedora e caixa disponível na controladora",
+          "quoted": null,
+          "purposes": [
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f04-subsidiary",
+          "conditional": true,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "liquidity-projection-f15",
+          "need": "liquidity_projection",
+          "item": "Projeção ou fluxo de caixa de 13 semanas atualizado",
+          "why": "liquidez a partir de setembro de 2026; o fluxo da pasta não chega a essa data",
+          "quoted": null,
+          "purposes": [
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f15-stale",
+          "conditional": false,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "monthly-series-f11-2026-3",
+          "need": "monthly_series",
+          "item": "Balancete de março de 2026",
+          "why": "fechar a série mês a mês e conferir o gerencial do mesmo período",
+          "quoted": null,
+          "purposes": [
+            "inventario",
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f11-series-gap",
+          "conditional": false,
+          "status": "resolved",
+          "resolvedBy": [
+            "s02"
+          ]
+        },
+        {
+          "id": "reading-substitute-f20",
+          "need": "reading_substitute",
+          "item": "Página 7 legível da cédula de crédito bancário",
+          "why": "o próprio documento indica, na página 2, conteúdo que não foi lido",
+          "quoted": {
+            "fileId": "f20",
+            "page": 2,
+            "section": null,
+            "text": "a cláusula de reforço da cessão"
+          },
+          "purposes": [
+            "inventario",
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f20-unreadable-p7",
+          "conditional": false,
+          "status": "resolved",
+          "resolvedBy": [
+            "s01"
+          ]
+        }
+      ],
+      "questions": [
+        {
+          "id": "circulacao-f02",
+          "text": "A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.",
+          "fileIds": [
+            "f02"
+          ],
+          "findingId": "f02-draft",
+          "status": "answered",
+          "answeredBy": "minuta-nao-circulou"
+        }
+      ],
+      "informed": [
+        {
+          "id": "minuta-nao-circulou",
+          "questionId": "circulacao-f02",
+          "statement": "A minuta não foi para nenhum banco.",
+          "author": "Controller da Aurora",
+          "date": "2026-09-02",
+          "origin": "informed"
+        }
+      ],
+      "followUps": [
+        {
+          "kind": "effective_text",
+          "instrumentRef": "deb-aurora-1",
+          "entityId": "aurora",
+          "fileIds": [
+            "f18",
+            "f19"
+          ]
+        },
+        {
+          "kind": "notice_deadline",
+          "date": "2026-10-02",
+          "fileId": "f23",
+          "clauseId": "renovacao",
+          "decisionIds": [
+            "linha-embalagem"
+          ],
+          "scheduled": false
+        }
+      ],
+      "counts": {
+        "files": 31,
+        "duplicates": 1,
+        "incompleteReadings": 1,
+        "superseded": 3,
+        "inVault": 2,
+        "withFinding": 21,
+        "pageSubstitutes": 1
+      },
+      "readingConflicts": [],
+      "update": {
+        "priorFingerprint": "42ca476670aebbe258405566ceeea9360d763d85ee7500bd64fa94237552016f",
+        "rowsUpdated": [
+          "f20"
+        ],
+        "rowsAdded": [
+          "s02"
+        ],
+        "rowsPreserved": 29,
+        "findingsResolved": [
+          "f11-series-gap",
+          "f20-blocked-text-in-force",
+          "f20-unreadable-p7",
+          "f24-blocked-comparison-politica"
+        ],
+        "findingsAdded": [
+          "f20-s01:reforco"
+        ],
+        "gapsResolved": [
+          "monthly-series-f11-2026-3",
+          "reading-substitute-f20"
+        ],
+        "questionsAnswered": [
+          "circulacao-f02"
+        ]
+      }
+    },
+    "priorInventory": {
+      "schemaVersion": "document-folder-inventory.v1",
+      "version": "2026.10.27-v1",
+      "asOf": "2026-09-01",
+      "mode": "organize",
+      "partitionByEntity": false,
+      "rows": [
+        {
+          "fileId": "f01",
+          "fileName": "DF_2025_final.pdf",
+          "sha256": "2678fbce5bcc88cf9d275369b1713910faf626429b5b1223bc811c07af93c1df",
+          "order": 0,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Demonstrações financeiras auditadas, com parecer sem ressalva",
+          "entity": "Aurora Alimentos S.A., individual e consolidado",
+          "period": "exercício 2025",
+          "version": "auditada, assinada em 18/mar/26",
+          "status": "audited",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f02",
+          "fileName": "DF 2025 versao banco.pdf",
+          "sha256": "520fa17ee46d8a6eccbcb66b137d528031b47baba8509548e50939566b66f61a",
+          "order": 1,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Demonstrações de 2025 sem parecer, versão anterior aos ajustes de auditoria",
+          "entity": "Aurora Alimentos S.A., consolidado",
+          "period": "exercício 2025",
+          "version": "minuta de fev/26, não auditada",
+          "status": "draft",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": {
+              "fileId": "f01",
+              "reason": "audited_over_draft"
+            },
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida; superada pela auditada",
+          "findingIds": [
+            "f02-draft"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f03",
+          "fileName": "DFs 2024.pdf",
+          "sha256": "48f807a1da7e4b555c52409015e752ae0f7c1dc757b0046dabf438123be44410",
+          "order": 2,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Demonstrações financeiras auditadas",
+          "entity": "Aurora Alimentos S.A., individual e consolidado",
+          "period": "exercício 2024",
+          "version": "auditada",
+          "status": "audited",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f04",
+          "fileName": "Aurora Log balanço 2025.xlsx",
+          "sha256": "f5494e5845c3806a398c12f9d72b7cddc21ebab6a3136cd4cc80df1b59419872",
+          "order": 3,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Balanço e resultado da controlada",
+          "entity": "Aurora Logística Ltda., 100% da Aurora",
+          "period": "exercício 2025",
+          "version": "gerencial, não auditado em separado",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f04-subsidiary"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f05",
+          "fileName": "Carta recomendacoes auditoria 2025.pdf",
+          "sha256": "963212166871e67679d3646c8101d855f3e709c163df9547fea3ed2c0e970a36",
+          "order": 4,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "auditor_management_letter",
+          "description": "Carta de controles internos da auditoria",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "2025",
+          "version": "final",
+          "status": "final",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f05-controles"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f06",
+          "fileName": "balancete jan26.xlsx",
+          "sha256": "4c0c054ca56b358724d3f0a903b9c191bdf991d83e4ff85d46b9cb18471a760f",
+          "order": 5,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "jan/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f07",
+          "fileName": "balancete fev26.xlsx",
+          "sha256": "33d7a2e39f68f75c58a60d812b7a736024a0cf244b253096766dbb158ced477a",
+          "order": 6,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "fev/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f08",
+          "fileName": "balancete abr26.xlsx",
+          "sha256": "da44f193c224a3a8adf0d20a1b297dd0c3529c8a19092e203eb3172366420fd7",
+          "order": 7,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "abr/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f09",
+          "fileName": "balancete mai26.xlsx",
+          "sha256": "70a102258f3d966eebf78adfc2284894282a771e574d7d56d55f8124a3b27bff",
+          "order": 8,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "mai/26",
+          "version": "versão 1",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": {
+              "fileId": "f10",
+              "reason": "later_version"
+            },
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida; superada pela v2",
+          "findingIds": [
+            "f09-superseded"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f10",
+          "fileName": "balancete mai26 v2 revisado.xlsx",
+          "sha256": "fc62a74da446f5d7d501cbcf5ddb9bc23ca2831c65a85ac24ade93399fadec7a",
+          "order": 9,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "mai/26",
+          "version": "versão 2, vigente",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f11",
+          "fileName": "balancete jun26.xlsx",
+          "sha256": "b9d15980ee833562868fd4b04af0d72f92dba00f9d046b08e5a5d203de56ca10",
+          "order": 10,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "trial_balance",
+          "description": "Balancete mensal",
+          "entity": "Aurora, consolidado",
+          "period": "jun/26",
+          "version": "fechado",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f11-series-gap"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f12",
+          "fileName": "Gerencial 1S26.xlsx",
+          "sha256": "c28afc38a4ab257fab4ec783d4fd7de78e108828538d7788c4a6791ad092e8b0",
+          "order": 11,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "management_report",
+          "description": "Relatório gerencial do semestre",
+          "entity": "Aurora, consolidado",
+          "period": "1S26",
+          "version": "fechado em jul/26",
+          "status": "closed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f12-prazo-embalagem",
+            "f12-units"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f13",
+          "fileName": "Orcamento 2026 aprovado.xlsx",
+          "sha256": "73620c41742e14ba18c1a46864e8ca0587458f647a0e894062a4c595f7e45a65",
+          "order": 12,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "budget",
+          "description": "Orçamento anual aprovado pelo conselho",
+          "entity": "Aurora, consolidado",
+          "period": "2026",
+          "version": "aprovado em dez/25",
+          "status": "approved",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [
+              "f14"
+            ],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f14",
+          "fileName": "orcamento 2026 rev jul.xlsx",
+          "sha256": "4b8921e9d8d7add93e7389b4c5d851109ca17626a1423d912ca980b1d2823d35",
+          "order": 13,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "budget",
+          "description": "Revisão do orçamento",
+          "entity": "Aurora, consolidado",
+          "period": "2026",
+          "version": "revisão de trabalho, não aprovada",
+          "status": "working_revision",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [
+              "f13"
+            ],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f14-side-by-side"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f15",
+          "fileName": "fluxo 13 semanas.xlsx",
+          "sha256": "5a5c9b2d9a3d9d2a42ead1bea3d4587b21524b1bd53f28f2e46e69635b7e1fc4",
+          "order": 14,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "management",
+          "groupLabel": "Gerencial",
+          "kind": "cash_flow_forecast",
+          "description": "Fluxo de caixa de 13 semanas",
+          "entity": "Aurora, consolidado",
+          "period": "mar/26 a mai/26",
+          "version": "desatualizado",
+          "status": "outdated",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f15-stale"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f16",
+          "fileName": "tabela de divida jun26.xlsx",
+          "sha256": "3751245e3b9d390e5ee480f2584d1008d29b818e2fe25b4b6ada936d9b4fc9f1",
+          "order": 15,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debt_schedule",
+          "description": "Tabela de dívida",
+          "entity": "Aurora, consolidado",
+          "period": "jun/26",
+          "version": "gerencial",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f16-debt-total"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f17",
+          "fileName": "Copia de Copia de tabela final (2).xlsx",
+          "sha256": "5891db711a842f850f42bd9854995e93c38616d0c5d51b689d102f8999be8e85",
+          "order": 16,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debt_schedule",
+          "description": "Tabela de dívida",
+          "entity": "Aurora, consolidado",
+          "period": "dez/25",
+          "version": "versão anterior",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": {
+              "fileId": "f16",
+              "reason": "later_position"
+            },
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida; superada",
+          "findingIds": [
+            "f17-superseded"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f18",
+          "fileName": "Escritura debenture 2021.pdf",
+          "sha256": "8ab1db0e4aadfe6fa5fb1b637d2cbab6a4d0b1b0f884ca95b77fab144164bc74",
+          "order": 17,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debenture_indenture",
+          "description": "Escritura da 1ª emissão de debêntures",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "out/2021",
+          "version": "original",
+          "status": "registered",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": "cofre-escritura-2021"
+          },
+          "situationLabel": "lida; já estava no cofre",
+          "findingIds": [
+            "f18-amended"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f19",
+          "fileName": "1o aditamento escritura 2023.pdf",
+          "sha256": "65dc9847f2b3fee9a6f1a6b9edd7ff930e9526626c60edc512e61e4ce8d9b643",
+          "order": 18,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "debenture_indenture",
+          "description": "Primeiro aditamento à escritura",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "jun/2023",
+          "version": "assinado e registrado",
+          "status": "registered",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f19-amendment"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f20",
+          "fileName": "CCB Bradesco 2024 scan.pdf",
+          "sha256": "5eb3034d295b605069d611306e15f0bfa32e49a523d35ab42b2bb0e2475ed135",
+          "order": 19,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "bank_credit_note",
+          "description": "Cédula de crédito bancário",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "set/2024",
+          "version": "assinada",
+          "status": "signed",
+          "situation": {
+            "read": "partial",
+            "unreadablePages": [
+              7
+            ],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": "cofre-ccb-bradesco"
+          },
+          "situationLabel": "lida, exceto a página 7, ilegível; já estava no cofre",
+          "findingIds": [
+            "f20-blocked-text-in-force",
+            "f20-unreadable-p7"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f21",
+          "fileName": "Finame contrato.pdf",
+          "sha256": "d97e3bc193fe8104a75c831dc48ee62e138af1670b2dad8348498e0bcce3bb0f",
+          "order": 20,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "debt",
+          "groupLabel": "Dívida",
+          "kind": "development_bank_financing",
+          "description": "Contrato de financiamento Finame",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "2022",
+          "version": "assinado",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f22",
+          "fileName": "Contrato cliente A.pdf",
+          "sha256": "13075de9f2894e297340f6667abbffa01a39f5d5d65deab959ed9e59313d6316",
+          "order": 21,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "contracts",
+          "groupLabel": "Contratos",
+          "kind": "customer_contract",
+          "description": "Contrato de fornecimento com o maior cliente (32% da carteira)",
+          "entity": "Aurora e rede de varejo A",
+          "period": "2025 a 2027",
+          "version": "assinado",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f22-cessao"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f23",
+          "fileName": "Contrato embalagem fornecedor.pdf",
+          "sha256": "9a5a11e141f48c6612658fefe932c1e92f9538febfea917f1f18ab9a71061bab",
+          "order": 22,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "contracts",
+          "groupLabel": "Contratos",
+          "kind": "supplier_contract",
+          "description": "Contrato de fornecimento de embalagem",
+          "entity": "Aurora e fornecedor de embalagem",
+          "period": "até dez/2026, renovação automática anual",
+          "version": "assinado",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f23-prazo",
+            "f23-renovacao"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f24",
+          "fileName": "Ata conselho mar26.pdf",
+          "sha256": "25f584caea641fa9af949faa9688347416e6fb6a9797f13ee9dcabb08a2939b6",
+          "order": 23,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "governance",
+          "groupLabel": "Governança",
+          "kind": "board_minutes",
+          "description": "Ata de reunião do conselho de administração",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "mar/2026",
+          "version": "assinada",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f24-blocked-comparison-politica",
+            "f24-politica"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f25",
+          "fileName": "Ata AGO 2026.pdf",
+          "sha256": "99393930e32ac1795129e3f9410faff3c235a89b5f80fd1650f385ab5730ee84",
+          "order": 24,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "governance",
+          "groupLabel": "Governança",
+          "kind": "shareholders_minutes",
+          "description": "Ata da assembleia geral ordinária",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "abr/2026",
+          "version": "assinada",
+          "status": "signed",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f25-dividendos"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f26",
+          "fileName": "aging clientes jun26.xlsx",
+          "sha256": "ba8b83a3994bdad6917d451d722101786350b3ad22d9db36a5a1dfc12adb2572",
+          "order": 25,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "receivables",
+          "groupLabel": "Carteira",
+          "kind": "receivables_aging",
+          "description": "Posição da carteira por cliente e vencimento",
+          "entity": "Aurora, consolidado",
+          "period": "jun/26",
+          "version": "gerencial",
+          "status": "management",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [],
+          "validated": false
+        },
+        {
+          "fileId": "f27",
+          "fileName": "Laudo avaliacao imovel fabrica 2023.pdf",
+          "sha256": "a99df801969e3de174c65132bd3a9b938c5ebaecf4b603f6334c1b7d1749cceb",
+          "order": 26,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "assets",
+          "groupLabel": "Ativos",
+          "kind": "appraisal_report",
+          "description": "Laudo de avaliação do imóvel industrial",
+          "entity": "Aurora Alimentos S.A.",
+          "period": "ago/2023",
+          "version": "final",
+          "status": "final",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f27-registry"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f28",
+          "fileName": "Apresentacao institucional 2025.pptx",
+          "sha256": "60cdd9cef506a39d5d582b9dc4b84631b1ecafc2d2c4369d6e7f0043f84db920",
+          "order": 27,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "other",
+          "groupLabel": "Outros",
+          "kind": "institutional_presentation",
+          "description": "Apresentação institucional",
+          "entity": "Aurora",
+          "period": "2025",
+          "version": "material de marketing",
+          "status": "marketing",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "lida",
+          "findingIds": [
+            "f28-receita"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f29",
+          "fileName": "foto_nota.jpg",
+          "sha256": "b4c35509a6a2662205dd39048f4240b6aa4b24b1df2f1b02f975b6673d50c38b",
+          "order": 28,
+          "partition": null,
+          "economicGroup": null,
+          "group": "other",
+          "groupLabel": "Outros",
+          "kind": "invoice",
+          "description": "Foto de uma nota fiscal de compra de insumo",
+          "entity": "não identificável",
+          "period": "sem data legível",
+          "version": "imagem",
+          "status": "image",
+          "situation": {
+            "read": "unreadable",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": null,
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "ilegível",
+          "findingIds": [
+            "f29-unreadable"
+          ],
+          "validated": false
+        },
+        {
+          "fileId": "f30",
+          "fileName": "DF_2025_final (1).pdf",
+          "sha256": "2678fbce5bcc88cf9d275369b1713910faf626429b5b1223bc811c07af93c1df",
+          "order": 29,
+          "partition": null,
+          "economicGroup": "aurora",
+          "group": "statements",
+          "groupLabel": "Demonstrações",
+          "kind": "annual_financial_statements",
+          "description": "Cópia idêntica de DF_2025_final.pdf",
+          "entity": "Aurora",
+          "period": "exercício 2025",
+          "version": "duplicado exato",
+          "status": "audited",
+          "situation": {
+            "read": "complete",
+            "unreadablePages": [],
+            "pagesFrom": [],
+            "duplicateOf": "f01",
+            "supersededBy": null,
+            "sideBySideWith": [],
+            "inVault": null
+          },
+          "situationLabel": "duplicado",
+          "findingIds": [
+            "f30-duplicate"
+          ],
+          "validated": false
+        }
+      ],
+      "groups": [
+        {
+          "partition": null,
+          "group": "statements",
+          "label": "Demonstrações",
+          "fileIds": [
+            "f01",
+            "f02",
+            "f03",
+            "f04",
+            "f05",
+            "f30"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "management",
+          "label": "Gerencial",
+          "fileIds": [
+            "f06",
+            "f07",
+            "f08",
+            "f09",
+            "f10",
+            "f11",
+            "f12",
+            "f13",
+            "f14",
+            "f15"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "debt",
+          "label": "Dívida",
+          "fileIds": [
+            "f16",
+            "f17",
+            "f18",
+            "f19",
+            "f20",
+            "f21"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "contracts",
+          "label": "Contratos",
+          "fileIds": [
+            "f22",
+            "f23"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "governance",
+          "label": "Governança",
+          "fileIds": [
+            "f24",
+            "f25"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "receivables",
+          "label": "Carteira",
+          "fileIds": [
+            "f26"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "assets",
+          "label": "Ativos",
+          "fileIds": [
+            "f27"
+          ]
+        },
+        {
+          "partition": null,
+          "group": "other",
+          "label": "Outros",
+          "fileIds": [
+            "f28",
+            "f29"
+          ]
+        }
+      ],
+      "families": [
+        {
+          "id": "annual_financial_statements:aurora:2025-01-01:2025-12-31",
+          "basis": "period",
+          "resolution": "audited_over_draft",
+          "prevails": [
+            "f01"
+          ],
+          "superseded": [
+            "f02"
+          ],
+          "sideBySide": [],
+          "highlighted": false
+        },
+        {
+          "id": "budget:aurora:2026-01-01:2026-12-31",
+          "basis": "period",
+          "resolution": "side_by_side",
+          "prevails": [],
+          "superseded": [],
+          "sideBySide": [
+            "f13",
+            "f14"
+          ],
+          "highlighted": false
+        },
+        {
+          "id": "debt_schedule:aurora",
+          "basis": "position",
+          "resolution": "later_position",
+          "prevails": [
+            "f16"
+          ],
+          "superseded": [
+            "f17"
+          ],
+          "sideBySide": [],
+          "highlighted": false
+        },
+        {
+          "id": "instrument:deb-aurora-1",
+          "basis": "instrument",
+          "resolution": "effective_text",
+          "prevails": [
+            "f18",
+            "f19"
+          ],
+          "superseded": [],
+          "sideBySide": [],
+          "highlighted": false
+        },
+        {
+          "id": "trial_balance:aurora:2026-05-01:2026-05-31",
+          "basis": "period",
+          "resolution": "later_version",
+          "prevails": [
+            "f10"
+          ],
+          "superseded": [
+            "f09"
+          ],
+          "sideBySide": [],
+          "highlighted": false
+        }
+      ],
+      "effectiveTexts": [
+        {
+          "instrumentRef": "deb-aurora-1",
+          "entityId": "aurora",
+          "fileIds": [
+            "f18",
+            "f19"
+          ],
+          "clauses": [
+            {
+              "type": "financial_covenant",
+              "fileId": "f19",
+              "clauseId": "covenant"
+            },
+            {
+              "type": "negative_pledge",
+              "fileId": "f19",
+              "clauseId": "garantia-negativa"
+            }
+          ],
+          "knowledge": "known",
+          "conflicts": [],
+          "unread": [],
+          "future": []
+        }
+      ],
+      "findings": [
+        {
+          "id": "f02-draft",
+          "code": "draft_superseded",
+          "anchor": "f02",
+          "sources": [
+            {
+              "fileId": "f02",
+              "page": 5,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": 6,
+              "section": null
+            }
+          ],
+          "statement": "EBITDA de R$ 54,8 milhões contra R$ 52 milhões na auditada: a minuta não tem a baixa de estoque obsoleto (R$ 900 mil) nem a provisão para devedores duvidosos (R$ 1,9 milhão). Verificar se essa versão foi enviada a algum banco.",
+          "topic": "statements_version",
+          "effect": "version_conflict",
+          "decisionStatement": "Há duas versões das demonstrações de 2025. A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões, depois da baixa de estoque obsoleto e da provisão para devedores duvidosos. A auditada é a que vale.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f09-superseded",
+          "code": "version_superseded",
+          "anchor": "f09",
+          "sources": [
+            {
+              "fileId": "f09",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f10",
+              "page": null,
+              "section": "Notas"
+            }
+          ],
+          "statement": "Duas versões de maio de 2026; a v2 vale e esta fica como histórico.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f10",
+            "page": null,
+            "section": "Notas",
+            "text": "reclassifica R$ 1,2 mi de despesa financeira para despesa operacional"
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f14-side-by-side",
+          "code": "versions_side_by_side",
+          "anchor": "f14",
+          "sources": [
+            {
+              "fileId": "f14",
+              "page": null,
+              "section": "Resumo"
+            },
+            {
+              "fileId": "f13",
+              "page": null,
+              "section": "Resumo"
+            }
+          ],
+          "statement": "EBITDA de 2026 revisto para R$ 55,5 milhões contra R$ 58 milhões no aprovado. Preservar as duas: aprovado e revisão em trabalho.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f17-superseded",
+          "code": "position_superseded",
+          "anchor": "f17",
+          "sources": [
+            {
+              "fileId": "f17",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f16",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Versão de 31 de dezembro de 2025 da mesma tabela de dívida. Histórico, não base atual.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f20-blocked-text-in-force",
+          "code": "effect_blocked",
+          "anchor": "f20",
+          "sources": [
+            {
+              "fileId": "f20",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "O texto vigente da cédula de crédito bancário não é afirmado: depende de documento com página ou arquivo não lido. Fica pendente até a leitura completa.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f18-amended",
+          "code": "amended_original",
+          "anchor": "f18",
+          "sources": [
+            {
+              "fileId": "f18",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f19",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Na versão original, o covenant é de 2,75x e não há exceção de valor na garantia negativa. Ler sempre com o aditamento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f19-amendment",
+          "code": "amendment_in_force",
+          "anchor": "f19",
+          "sources": [
+            {
+              "fileId": "f19",
+              "page": 2,
+              "section": null
+            },
+            {
+              "fileId": "f18",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. É o texto vigente junto com a escritura.",
+          "topic": "debt_covenant",
+          "effect": "binding_limit",
+          "decisionStatement": "O covenant da escritura é o do aditamento de junho de 2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": [
+            {
+              "type": "financial_covenant",
+              "current": true,
+              "before": {
+                "fileId": "f18",
+                "page": 18,
+                "section": null,
+                "text": "Dívida líquida / EBITDA de no máximo 2,75x, apurado anualmente."
+              },
+              "after": {
+                "fileId": "f19",
+                "page": 2,
+                "section": null,
+                "text": "Dívida líquida / EBITDA de no máximo 3,0x."
+              }
+            },
+            {
+              "type": "negative_pledge",
+              "current": true,
+              "before": {
+                "fileId": "f18",
+                "page": 21,
+                "section": null,
+                "text": "Vedação de garantias a outros credores, sem exceção de valor."
+              },
+              "after": {
+                "fileId": "f19",
+                "page": 3,
+                "section": null,
+                "text": "Exceção de R$ 15 milhões em valor agregado de garantias."
+              }
+            }
+          ],
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f11-series-gap",
+          "code": "series_gap",
+          "anchor": "f11",
+          "sources": [
+            {
+              "fileId": "f06",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f07",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f08",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f10",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f11",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Falta o balancete de março de 2026: a série não fecha mês a mês sem ele.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f16-debt-total",
+          "code": "total_includes_unused_limit",
+          "anchor": "f16",
+          "sources": [
+            {
+              "fileId": "f16",
+              "page": null,
+              "section": "Dívida"
+            }
+          ],
+          "statement": "Soma R$ 140 milhões porque a conta garantida entra pelo limite (R$ 10 milhões); o saldo utilizado é zero. Dívida em 30 de junho de 2026: R$ 130 milhões.",
+          "topic": "debt_position",
+          "effect": "figure_correction",
+          "decisionStatement": "A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f05-controles",
+          "code": "observation",
+          "anchor": "f05",
+          "sources": [
+            {
+              "fileId": "f05",
+              "page": 2,
+              "section": null
+            }
+          ],
+          "statement": "Registrado no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f05",
+            "page": 2,
+            "section": null,
+            "text": "Aponta conciliação bancária fora do prazo e ausência de controle de garantias prestadas. Relevante para qualquer diligência de credor."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f12-units",
+          "code": "mixed_units",
+          "anchor": "f12",
+          "sources": [
+            {
+              "fileId": "f12",
+              "page": null,
+              "section": "Caixa"
+            },
+            {
+              "fileId": "f12",
+              "page": null,
+              "section": "DRE"
+            }
+          ],
+          "statement": "Unidades misturadas: o mesmo arquivo tem abas em R$ e em R$ mil.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f12-prazo-embalagem",
+          "code": "observation",
+          "anchor": "f12",
+          "sources": [
+            {
+              "fileId": "f12",
+              "page": null,
+              "section": "Fornecedores"
+            }
+          ],
+          "statement": "Registrado no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f12",
+            "page": null,
+            "section": "Fornecedores",
+            "text": "Prazo médio do fornecedor de embalagem: 60 dias."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f15-stale",
+          "code": "stale_forecast",
+          "anchor": "f15",
+          "sources": [
+            {
+              "fileId": "f15",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Última atualização em março de 2026; cobre só até 31 de maio de 2026, antes da data desta leitura.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f20-unreadable-p7",
+          "code": "page_unreadable",
+          "anchor": "f20",
+          "sources": [
+            {
+              "fileId": "f20",
+              "page": 7,
+              "section": null
+            }
+          ],
+          "statement": "A página 7 não pôde ser lida; a página 2 do próprio documento indica o que ela traz. Pedir cópia legível.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": {
+            "fileId": "f20",
+            "page": 2,
+            "section": null,
+            "text": "a cláusula de reforço da cessão"
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f22-cessao",
+          "code": "clause",
+          "anchor": "f22",
+          "sources": [
+            {
+              "fileId": "f22",
+              "page": 9,
+              "section": null
+            }
+          ],
+          "statement": "Limita qualquer financiamento com cessão dessa carteira.",
+          "topic": "receivables_assignment",
+          "effect": "collateral_restriction",
+          "decisionStatement": "Os recebíveis do contrato com o cliente não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão; a contraparte responde por 32% da carteira. Isso reduz a carteira disponível para qualquer financiamento com cessão.",
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f22",
+            "page": 9,
+            "section": null,
+            "text": "Veda a cessão dos recebíveis sem anuência do cliente."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f23-prazo",
+          "code": "clause",
+          "anchor": "f23",
+          "sources": [
+            {
+              "fileId": "f23",
+              "page": 4,
+              "section": null
+            }
+          ],
+          "statement": "Cláusula lida no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f23",
+            "page": 4,
+            "section": null,
+            "text": "Prazo de pagamento de 60 dias."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f23-renovacao",
+          "code": "clause",
+          "anchor": "f23",
+          "sources": [
+            {
+              "fileId": "f23",
+              "page": 11,
+              "section": null
+            }
+          ],
+          "statement": "Aviso até 2 de outubro de 2026 para renegociar preço ou não renovar.",
+          "topic": "supplier_contract",
+          "effect": "deadline",
+          "decisionStatement": "O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.",
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f23",
+            "page": 11,
+            "section": null,
+            "text": "Renovação automática em dez/26 salvo aviso até 2/out/26."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f24-blocked-comparison-politica",
+          "code": "effect_blocked",
+          "anchor": "f24",
+          "sources": [
+            {
+              "fileId": "f20",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "A comparação da política com os covenants não é afirmado: depende de documento com página ou arquivo não lido. Fica pendente até a leitura completa.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f24-politica",
+          "code": "clause",
+          "anchor": "f24",
+          "sources": [
+            {
+              "fileId": "f24",
+              "page": 3,
+              "section": null
+            }
+          ],
+          "statement": "Política de no máximo 2,5x.",
+          "topic": "debt_policy",
+          "effect": "policy_limit",
+          "decisionStatement": "Há uma política de endividamento aprovada pelo conselho. A ata do conselho de março de 2026 fixa dívida líquida de no máximo 2,5x o EBITDA.",
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f24",
+            "page": 3,
+            "section": null,
+            "text": "Aprova política de endividamento com dívida líquida / EBITDA de no máximo 2,5x"
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f25-dividendos",
+          "code": "observation",
+          "anchor": "f25",
+          "sources": [
+            {
+              "fileId": "f25",
+              "page": 2,
+              "section": null
+            }
+          ],
+          "statement": "Registrado no documento.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": {
+            "fileId": "f25",
+            "page": 2,
+            "section": null,
+            "text": "Sem distribuição de dividendos além do mínimo legal em 2026."
+          },
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f29-unreadable",
+          "code": "file_unreadable",
+          "anchor": "f29",
+          "sources": [
+            {
+              "fileId": "f29",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Não foi possível extrair conteúdo útil; pedir o arquivo original se for relevante.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "unread",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f04-subsidiary",
+          "code": "subsidiary_in_consolidated",
+          "anchor": "f04",
+          "sources": [
+            {
+              "fileId": "f04",
+              "page": null,
+              "section": "Balanço"
+            }
+          ],
+          "statement": "A consolidada inclui a controlada; a análise de crédito da devedora precisa do individual. O caixa da controlada (R$ 4,1 milhões) só sobe à controladora por dividendos ou mútuo.",
+          "topic": "group_perimeter",
+          "effect": "perimeter",
+          "decisionStatement": "A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.",
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f27-registry",
+          "code": "appraisal_without_registry",
+          "anchor": "f27",
+          "sources": [
+            {
+              "fileId": "f27",
+              "page": 12,
+              "section": null
+            }
+          ],
+          "statement": "Valor de R$ 48 milhões. Sem matrícula atualizada não dá para saber se o imóvel avaliado está livre de ônus.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f28-receita",
+          "code": "figure_basis_differs",
+          "anchor": "f28",
+          "sources": [
+            {
+              "fileId": "f28",
+              "page": 4,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": 31,
+              "section": null
+            }
+          ],
+          "statement": "Cita receita de R$ 450 milhões, que é a receita bruta; a líquida das demonstrações é R$ 420 milhões.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "f30-duplicate",
+          "code": "duplicate",
+          "anchor": "f30",
+          "sources": [
+            {
+              "fileId": "f30",
+              "page": null,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": null,
+              "section": null
+            }
+          ],
+          "statement": "Mesmo conteúdo, mesmo hash.",
+          "topic": null,
+          "effect": null,
+          "decisionStatement": null,
+          "knowledge": "known",
+          "quoted": null,
+          "changes": null,
+          "status": "open",
+          "resolvedBy": []
+        }
+      ],
+      "decisionFindings": [
+        {
+          "rank": 1,
+          "findingId": "f19-amendment",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "binding_limit",
+          "statement": "O covenant da escritura é o do aditamento de junho de 2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.",
+          "sources": [
+            {
+              "fileId": "f19",
+              "page": 2,
+              "section": null
+            },
+            {
+              "fileId": "f18",
+              "page": null,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "findingId": "f24-politica",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "policy_limit",
+          "statement": "Há uma política de endividamento aprovada pelo conselho. A ata do conselho de março de 2026 fixa dívida líquida de no máximo 2,5x o EBITDA.",
+          "sources": [
+            {
+              "fileId": "f24",
+              "page": 3,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "findingId": "f22-cessao",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "collateral_restriction",
+          "statement": "Os recebíveis do contrato com o cliente não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão; a contraparte responde por 32% da carteira. Isso reduz a carteira disponível para qualquer financiamento com cessão.",
+          "sources": [
+            {
+              "fileId": "f22",
+              "page": 9,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 4,
+          "findingId": "f23-renovacao",
+          "decisionIds": [
+            "linha-embalagem"
+          ],
+          "effect": "deadline",
+          "statement": "O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.",
+          "sources": [
+            {
+              "fileId": "f23",
+              "page": 11,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 5,
+          "findingId": "f16-debt-total",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "figure_correction",
+          "statement": "A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.",
+          "sources": [
+            {
+              "fileId": "f16",
+              "page": null,
+              "section": "Dívida"
+            }
+          ]
+        },
+        {
+          "rank": 6,
+          "findingId": "f02-draft",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "version_conflict",
+          "statement": "Há duas versões das demonstrações de 2025. A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões, depois da baixa de estoque obsoleto e da provisão para devedores duvidosos. A auditada é a que vale.",
+          "sources": [
+            {
+              "fileId": "f02",
+              "page": 5,
+              "section": null
+            },
+            {
+              "fileId": "f01",
+              "page": 6,
+              "section": null
+            }
+          ]
+        },
+        {
+          "rank": 7,
+          "findingId": "f04-subsidiary",
+          "decisionIds": [
+            "plano-financiamento-2027"
+          ],
+          "effect": "perimeter",
+          "statement": "A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.",
+          "sources": [
+            {
+              "fileId": "f04",
+              "page": null,
+              "section": "Balanço"
+            }
+          ]
+        }
+      ],
+      "generalFindings": null,
+      "identityChecks": [
+        {
+          "id": "f12-months",
+          "kind": "period_against_months",
+          "fileIds": [
+            "f12",
+            "f06",
+            "f07",
+            "f08",
+            "f10",
+            "f11",
+            "f09"
+          ],
+          "status": "not_run",
+          "reported": null,
+          "recomposed": null,
+          "currency": "BRL",
+          "reason": "missing_source:missing_months:2026-03"
+        },
+        {
+          "id": "f16-reported-total",
+          "kind": "reported_total",
+          "fileIds": [
+            "f16"
+          ],
+          "status": "differs",
+          "reported": "140000000",
+          "recomposed": "130000000",
+          "currency": "BRL",
+          "reason": "unused_limit_counted"
+        }
+      ],
+      "gaps": [
+        {
+          "id": "monthly-series-f11-2026-3",
+          "need": "monthly_series",
+          "item": "Balancete de março de 2026",
+          "why": "fechar a série mês a mês e conferir o gerencial do mesmo período",
+          "quoted": null,
+          "purposes": [
+            "inventario",
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f11-series-gap",
+          "conditional": false,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "reading-substitute-f20",
+          "need": "reading_substitute",
+          "item": "Página 7 legível da cédula de crédito bancário",
+          "why": "o próprio documento indica, na página 2, conteúdo que não foi lido",
+          "quoted": {
+            "fileId": "f20",
+            "page": 2,
+            "section": null,
+            "text": "a cláusula de reforço da cessão"
+          },
+          "purposes": [
+            "inventario",
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f20-unreadable-p7",
+          "conditional": false,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "real-collateral-f27",
+          "need": "real_collateral",
+          "item": "Matrícula atualizada do imóvel avaliado no laudo",
+          "why": "saber se o imóvel está livre para uma garantia",
+          "quoted": null,
+          "purposes": [
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f27-registry",
+          "conditional": false,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "group-perimeter-f04",
+          "need": "group_perimeter",
+          "item": "Demonstrações auditadas da controlada, se existirem",
+          "why": "perímetro da devedora e caixa disponível na controladora",
+          "quoted": null,
+          "purposes": [
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f04-subsidiary",
+          "conditional": true,
+          "status": "open",
+          "resolvedBy": []
+        },
+        {
+          "id": "liquidity-projection-f15",
+          "need": "liquidity_projection",
+          "item": "Projeção ou fluxo de caixa de 13 semanas atualizado",
+          "why": "liquidez a partir de setembro de 2026; o fluxo da pasta não chega a essa data",
+          "quoted": null,
+          "purposes": [
+            "plano-financiamento-2027"
+          ],
+          "findingId": "f15-stale",
+          "conditional": false,
+          "status": "open",
+          "resolvedBy": []
+        }
+      ],
+      "questions": [
+        {
+          "id": "circulacao-f02",
+          "text": "A minuta das demonstrações de 2025 foi enviada a algum banco? Se foi, vale mandar a versão auditada com uma nota sobre a diferença.",
+          "fileIds": [
+            "f02"
+          ],
+          "findingId": "f02-draft",
+          "status": "open",
+          "answeredBy": null
+        }
+      ],
+      "informed": [],
+      "followUps": [
+        {
+          "kind": "effective_text",
+          "instrumentRef": "deb-aurora-1",
+          "entityId": "aurora",
+          "fileIds": [
+            "f18",
+            "f19"
+          ]
+        },
+        {
+          "kind": "notice_deadline",
+          "date": "2026-10-02",
+          "fileId": "f23",
+          "clauseId": "renovacao",
+          "decisionIds": [
+            "linha-embalagem"
+          ],
+          "scheduled": false
+        }
+      ],
+      "counts": {
+        "files": 30,
+        "duplicates": 1,
+        "incompleteReadings": 2,
+        "superseded": 3,
+        "inVault": 2,
+        "withFinding": 21,
+        "pageSubstitutes": 0
+      },
+      "readingConflicts": [],
+      "update": null
+    },
+    "gaps": [],
+    "bindings": [],
+    "contributions": [],
+    "status": "complete",
+    "derivedDependencies": [
+      {
+        "result": "document_folder_inventory",
+        "decisionIds": [
+          "ac400000-0000-4000-9000-000000001001",
+          "ac400000-0000-4000-9000-000000001002",
+          "ac400000-0000-4000-9000-000000001003",
+          "ac400000-0000-4000-9000-000000001004",
+          "ac400000-0000-4000-9000-000000001005",
+          "ac400000-0000-4000-9000-000000001006",
+          "ac400000-0000-4000-9000-000000001000",
+          "ac400000-0000-4000-9000-000000001007",
+          "ac400000-0000-4000-9000-000000001008",
+          "ac400000-0000-4000-9000-000000001009",
+          "ac400000-0000-4000-9000-000000001010",
+          "ac400000-0000-4000-9000-000000001011",
+          "ac400000-0000-4000-9000-000000001012",
+          "ac400000-0000-4000-9000-000000001013",
+          "ac400000-0000-4000-9000-000000001014",
+          "ac400000-0000-4000-9000-000000001015",
+          "ac400000-0000-4000-9000-000000001016",
+          "ac400000-0000-4000-9000-000000001017",
+          "ac400000-0000-4000-9000-000000001018",
+          "ac400000-0000-4000-9000-000000001019",
+          "ac400000-0000-4000-9000-000000001020",
+          "ac400000-0000-4000-9000-000000001021",
+          "ac400000-0000-4000-9000-000000001022",
+          "ac400000-0000-4000-9000-000000001023",
+          "ac400000-0000-4000-9000-000000001024",
+          "ac400000-0000-4000-9000-000000001025",
+          "ac400000-0000-4000-9000-000000001026",
+          "ac400000-0000-4000-9000-000000001027",
+          "ac400000-0000-4000-9000-000000001028",
+          "ac400000-0000-4000-9000-000000001029",
+          "ac400000-0000-4000-9000-000000001030",
+          "ac400000-0000-4000-9000-000000001031",
+          "ac400000-0000-4000-9000-000000001032",
+          "ac400000-0000-4000-9000-000000001033",
+          "ac400000-0000-4000-9000-000000001034",
+          "ac400000-0000-4000-9000-000000001035",
+          "ac400000-0000-4000-9000-000000001036",
+          "ac400000-0000-4000-9000-000000003000",
+          "ac400000-0000-4000-9000-000000003001",
+          "ac400000-0000-4000-9000-000000003002",
+          "ac400000-0000-4000-9000-000000003003"
+        ]
+      }
+    ],
+    "classification": "working_hypothesis",
+    "exclusions": [
+      "ratio_calculation",
+      "projection",
+      "recommendation",
+      "document_validation",
+      "third_party_distribution",
+      "credit_approval"
+    ],
+    "grantsExecution": false,
+    "grantsPublication": false,
+    "fingerprint": "615a76972859d14a1e7bb6c7556b5565ba23befffd0946f3363be5f5f4d556fd"
+  },
+  "readings": {
+    "opening": {
+      "files": 31,
+      "groups": [
+        "Demonstrações",
+        "Gerencial",
+        "Dívida",
+        "Contratos",
+        "Governança",
+        "Carteira",
+        "Ativos",
+        "Outros"
+      ],
+      "duplicates": 1,
+      "superseded": 3,
+      "inVault": 2
+    },
+    "decisionFindings": [
+      {
+        "rank": 1,
+        "statement": "O covenant da escritura é o do aditamento de junho de 2023. A versão original diz que o covenant é de 2,75x e não há exceção de valor na garantia negativa; o aditamento elevou o covenant para 3,0x e criou a exceção de R$ 15 milhões em valor agregado. As duas precisam ser lidas juntas.",
+        "decisionIds": [
+          "plano-financiamento-2027"
+        ],
+        "sources": [
+          {
+            "fileId": "f19",
+            "page": 2,
+            "section": null
+          },
+          {
+            "fileId": "f18",
+            "page": null,
+            "section": null
+          }
+        ]
+      },
+      {
+        "rank": 2,
+        "statement": "Há uma política de endividamento aprovada pelo conselho. A ata do conselho de março de 2026 fixa dívida líquida de no máximo 2,5x o EBITDA, abaixo do covenant vigente de 3,0x. Entre os limites lidos, é o mais restritivo.",
+        "decisionIds": [
+          "plano-financiamento-2027"
+        ],
+        "sources": [
+          {
+            "fileId": "f24",
+            "page": 3,
+            "section": null
+          }
+        ]
+      },
+      {
+        "rank": 3,
+        "statement": "Os recebíveis do contrato com o cliente não podem ser cedidos sem anuência da contraparte. O contrato veda a cessão; a contraparte responde por 32% da carteira. Isso reduz a carteira disponível para qualquer financiamento com cessão.",
+        "decisionIds": [
+          "plano-financiamento-2027"
+        ],
+        "sources": [
+          {
+            "fileId": "f22",
+            "page": 9,
+            "section": null
+          }
+        ]
+      },
+      {
+        "rank": 4,
+        "statement": "O contrato com o fornecedor renova sozinho em dezembro de 2026. Para renegociar preço ou não renovar, o aviso precisa sair até 2 de outubro de 2026.",
+        "decisionIds": [
+          "linha-embalagem"
+        ],
+        "sources": [
+          {
+            "fileId": "f23",
+            "page": 11,
+            "section": null
+          }
+        ]
+      },
+      {
+        "rank": 5,
+        "statement": "A dívida em 30 de junho de 2026 é de R$ 130 milhões, não R$ 140 milhões. A tabela soma o limite da conta garantida, que está sem uso.",
+        "decisionIds": [
+          "plano-financiamento-2027"
+        ],
+        "sources": [
+          {
+            "fileId": "f16",
+            "page": null,
+            "section": "Dívida"
+          }
+        ]
+      },
+      {
+        "rank": 6,
+        "statement": "Há duas versões das demonstrações de 2025. A minuta tem EBITDA de R$ 54,8 milhões; a auditada, R$ 52 milhões, depois da baixa de estoque obsoleto e da provisão para devedores duvidosos. A auditada é a que vale.",
+        "decisionIds": [
+          "plano-financiamento-2027"
+        ],
+        "sources": [
+          {
+            "fileId": "f02",
+            "page": 5,
+            "section": null
+          },
+          {
+            "fileId": "f01",
+            "page": 6,
+            "section": null
+          }
+        ]
+      },
+      {
+        "rank": 7,
+        "statement": "A controlada entra no consolidado. O caixa dela, R$ 4,1 milhões, só chega à controladora por dividendo ou mútuo.",
+        "decisionIds": [
+          "plano-financiamento-2027"
+        ],
+        "sources": [
+          {
+            "fileId": "f04",
+            "page": null,
+            "section": "Balanço"
+          }
+        ]
+      }
+    ],
+    "generalFindings": null,
+    "versions": [
+      {
+        "familyId": "annual_financial_statements:aurora:2025-01-01:2025-12-31",
+        "resolution": "audited_over_draft",
+        "prevails": [
+          "f01"
+        ],
+        "superseded": [
+          "f02"
+        ],
+        "sideBySide": [],
+        "highlighted": false
+      },
+      {
+        "familyId": "budget:aurora:2026-01-01:2026-12-31",
+        "resolution": "side_by_side",
+        "prevails": [],
+        "superseded": [],
+        "sideBySide": [
+          "f13",
+          "f14"
+        ],
+        "highlighted": false
+      },
+      {
+        "familyId": "debt_schedule:aurora",
+        "resolution": "later_position",
+        "prevails": [
+          "f16"
+        ],
+        "superseded": [
+          "f17"
+        ],
+        "sideBySide": [],
+        "highlighted": false
+      },
+      {
+        "familyId": "instrument:deb-aurora-1",
+        "resolution": "effective_text",
+        "prevails": [
+          "f18",
+          "f19"
+        ],
+        "superseded": [],
+        "sideBySide": [],
+        "highlighted": false
+      },
+      {
+        "familyId": "trial_balance:aurora:2026-05-01:2026-05-31",
+        "resolution": "later_version",
+        "prevails": [
+          "f10"
+        ],
+        "superseded": [
+          "f09"
+        ],
+        "sideBySide": [],
+        "highlighted": false
+      }
+    ],
+    "documentary": [
+      {
+        "findingId": "f09-superseded",
+        "fileId": "f10",
+        "page": null,
+        "section": "Notas",
+        "text": "reclassifica R$ 1,2 mi de despesa financeira para despesa operacional"
+      },
+      {
+        "findingId": "f05-controles",
+        "fileId": "f05",
+        "page": 2,
+        "section": null,
+        "text": "Aponta conciliação bancária fora do prazo e ausência de controle de garantias prestadas. Relevante para qualquer diligência de credor."
+      },
+      {
+        "findingId": "f12-prazo-embalagem",
+        "fileId": "f12",
+        "page": null,
+        "section": "Fornecedores",
+        "text": "Prazo médio do fornecedor de embalagem: 60 dias."
+      },
+      {
+        "findingId": "f20-s01:reforco",
+        "fileId": "s01",
+        "page": 7,
+        "section": null,
+        "text": "A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9."
+      },
+      {
+        "findingId": "f22-cessao",
+        "fileId": "f22",
+        "page": 9,
+        "section": null,
+        "text": "Veda a cessão dos recebíveis sem anuência do cliente."
+      },
+      {
+        "findingId": "f23-prazo",
+        "fileId": "f23",
+        "page": 4,
+        "section": null,
+        "text": "Prazo de pagamento de 60 dias."
+      },
+      {
+        "findingId": "f23-renovacao",
+        "fileId": "f23",
+        "page": 11,
+        "section": null,
+        "text": "Renovação automática em dez/26 salvo aviso até 2/out/26."
+      },
+      {
+        "findingId": "f24-politica",
+        "fileId": "f24",
+        "page": 3,
+        "section": null,
+        "text": "Aprova política de endividamento com dívida líquida / EBITDA de no máximo 2,5x"
+      },
+      {
+        "findingId": "f25-dividendos",
+        "fileId": "f25",
+        "page": 2,
+        "section": null,
+        "text": "Sem distribuição de dividendos além do mínimo legal em 2026."
+      },
+      {
+        "findingId": "f19-amendment",
+        "fileId": "f18",
+        "page": 18,
+        "section": null,
+        "text": "Dívida líquida / EBITDA de no máximo 2,75x, apurado anualmente."
+      },
+      {
+        "findingId": "f19-amendment",
+        "fileId": "f19",
+        "page": 2,
+        "section": null,
+        "text": "Dívida líquida / EBITDA de no máximo 3,0x."
+      },
+      {
+        "findingId": "f19-amendment",
+        "fileId": "f18",
+        "page": 21,
+        "section": null,
+        "text": "Vedação de garantias a outros credores, sem exceção de valor."
+      },
+      {
+        "findingId": "f19-amendment",
+        "fileId": "f19",
+        "page": 3,
+        "section": null,
+        "text": "Exceção de R$ 15 milhões em valor agregado de garantias."
+      }
+    ],
+    "notRead": [
+      {
+        "fileId": "f29",
+        "pages": null,
+        "statement": "Não foi possível extrair conteúdo útil; pedir o arquivo original se for relevante."
+      }
+    ],
+    "gaps": [
+      {
+        "item": "Matrícula atualizada do imóvel avaliado no laudo",
+        "why": "saber se o imóvel está livre para uma garantia",
+        "purposes": [
+          "plano-financiamento-2027"
+        ],
+        "conditional": false
+      },
+      {
+        "item": "Demonstrações auditadas da controlada, se existirem",
+        "why": "perímetro da devedora e caixa disponível na controladora",
+        "purposes": [
+          "plano-financiamento-2027"
+        ],
+        "conditional": true
+      },
+      {
+        "item": "Projeção ou fluxo de caixa de 13 semanas atualizado",
+        "why": "liquidez a partir de setembro de 2026; o fluxo da pasta não chega a essa data",
+        "purposes": [
+          "plano-financiamento-2027"
+        ],
+        "conditional": false
+      }
+    ],
+    "questions": [],
+    "update": {
+      "rowsUpdated": [
+        "f20"
+      ],
+      "rowsAdded": [
+        "s02"
+      ],
+      "rowsPreserved": 29,
+      "newFindings": [
+        {
+          "statement": "Cláusula lida na cópia legível da página 7.",
+          "quoted": {
+            "fileId": "s01",
+            "page": 7,
+            "section": null,
+            "text": "A página 7 prevê reforço da cessão em cinco dias úteis se a cobertura cair abaixo de 80% e não restringe o pré-pagamento previsto na cláusula 9."
+          }
+        }
+      ],
+      "identityChecks": [
+        {
+          "id": "f12-months",
+          "status": "matches",
+          "reported": "27000000",
+          "recomposed": "27000000"
+        }
+      ],
+      "informed": [
+        {
+          "statement": "A minuta não foi para nenhum banco.",
+          "author": "Controller da Aurora",
+          "date": "2026-09-02"
+        }
+      ],
+      "stillOpen": [
+        "Matrícula atualizada do imóvel avaliado no laudo",
+        "Projeção ou fluxo de caixa de 13 semanas atualizado"
+      ]
+    },
+    "historical": null,
+    "numericAnalysis": "none",
+    "documentsValidated": false
+  },
+  "gaps": [],
+  "status": "prepared_for_human_review",
+  "exclusions": [
+    "ratio_calculation",
+    "projection",
+    "recommendation",
+    "document_validation",
+    "third_party_distribution"
+  ],
+  "grantsExecution": false,
+  "grantsPublication": false,
+  "fingerprint": "c662b898890df71ed42c6567384253d705101c7d739b262c7a9af06eda875b55"
+}

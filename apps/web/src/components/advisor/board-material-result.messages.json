@@ -1,0 +1,324 @@
+{
+  "pt-BR": {
+    "App": {
+      "workExecutions": {
+        "boardMaterial": {
+          "title": "Discussão de estrutura de capital no conselho",
+          "status": "Situação",
+          "question": "Pergunta",
+          "outlineFirst": "Há tempo para alinhar o roteiro antes de produzir: estas são as deliberações e as perguntas que mudam o material. O material sai depois da confirmação.",
+          "materialReady": "Material preparado, versão {version}, para revisão antes da reunião.",
+          "noReading": "Faltam premissas para preparar a discussão; o que falta está nas lacunas.",
+          "deliberations": "Deliberações pedidas, por urgência",
+          "deadline": "{action} até {date}",
+          "narrative": "Linha narrativa",
+          "questionsBefore": "Antes do material",
+          "pages": "Páginas ({count})",
+          "agendaFits": "{pages} páginas cabem em {minutes} minutos de pauta.",
+          "agendaExceeds": "{pages} páginas passam do que cabe em {minutes} minutos ({capacity} páginas).",
+          "agendaUnknown": "Tempo de pauta não informado; uma página a cada {perPage} minutos.",
+          "pageTitle": "{number}. {title}",
+          "options": "Opções, com os critérios:",
+          "appendixPages": "Páginas no apêndice",
+          "summary": "Síntese para leitura prévia",
+          "questions": "Perguntas prováveis e respostas",
+          "appendix": "Apêndice",
+          "identity": "Conferência dos números",
+          "identityMatches": "Os {count} números do material foram conferidos contra as análises revisadas e batem; os {facts} fatos materiais aparecem no texto final.",
+          "identityPartial": "{count} números conferidos contra as análises revisadas.",
+          "columns": {
+            "shown": "Como aparece",
+            "source": "Análise revisada",
+            "path": "Campo lido"
+          },
+          "pending": "Pendências declaradas",
+          "indicative": "{reason}.",
+          "sourcePartial": "{source}: análise com lacunas próprias, citadas no material.",
+          "omissions": "Pedidos de retirada",
+          "omission": "Pedido de {requester}: {outcome}.",
+          "versionsKept": "{count} versões do material preservadas; a anterior continua disponível.",
+          "notSent": "Nada foi apresentado nem enviado a terceiros.",
+          "sourcesTitle": "Análises revisadas lidas",
+          "gaps": "Lacunas de informação",
+          "noGaps": "Sem lacunas de informação.",
+          "exclusionsTitle": "O que esta preparação não faz",
+          "authorities": {
+            "board": "alçada do conselho",
+            "executive": "alçada da diretoria",
+            "shareholders": "alçada dos acionistas"
+          },
+          "roles": {
+            "decisions": "decisões",
+            "situation": "situação",
+            "constraint": "restrição",
+            "topic": "tema",
+            "alternatives": "alternativas",
+            "recommendation": "recomendação",
+            "risk": "riscos",
+            "what_changes": "o que muda a recomendação",
+            "next_steps": "próximos passos"
+          },
+          "outlineQuestions": {
+            "template": "A última apresentação ao conselho, para usar o template.",
+            "agenda_minutes": "Quanto tempo há na pauta.",
+            "board_has_seen": "Se o conselho já viu o tema."
+          },
+          "outcomes": {
+            "applied": "atendido",
+            "refused": "não atendido"
+          },
+          "templates": {
+            "not_supplied": "Template da companhia não enviado.",
+            "supplied_not_applied": "Template recebido; a aplicação visual é feita na revisão do material."
+          },
+          "sources": {
+            "tabela-divida": "Tabela de dívida",
+            "covenant": "Covenant e política",
+            "caixa-semanal": "Caixa semanal",
+            "linha-embalagem": "Projeto de investimento",
+            "projecao": "Projeção por drivers",
+            "plano-fpa": "Crítica ao plano da área financeira",
+            "recebiveis": "Recebíveis",
+            "custo-relativo": "Custo relativo da dívida",
+            "plano-2027": "Plano de financiamento"
+          },
+          "gapReasons": {
+            "figure_pending_reviewed_result": "número sem análise revisada",
+            "layout_exceeds_page": "texto maior que a página",
+            "pages_exceed_agenda": "páginas acima do tempo de pauta",
+            "recommendation_removed_without_options": "recomendação retirada sem opções",
+            "label_not_in_dictionary": "nome fora do dicionário",
+            "informed_reason_not_in_dictionary": "motivo fora do dicionário",
+            "object_not_in_vocabulary": "objeto fora do vocabulário",
+            "species_not_registered": "espécie do instrumento não registrada"
+          },
+          "exclusions": {
+            "recalculation": "Não recalcula as análises revisadas.",
+            "presentation_delivery": "Não apresenta o material.",
+            "template_import": "Não importa o template automaticamente.",
+            "third_party_distribution": "Não envia nada a terceiros.",
+            "credit_approval": "Não é aprovação de crédito."
+          }
+        }
+      }
+    },
+    "DebtMethodsPremisesCard": {
+      "methods": {
+        "boardMaterial": {
+          "title": "Premissas para a discussão no conselho",
+          "lead": "Preparo a discussão sobre as análises revisadas deste trabalho, cada uma fixada na versão que li; páginas, decisões e números vêm delas. Confirme para preparar, ou corrija na conversa e eu refaço.",
+          "cases": "Roteiro antes do material quando há tempo; depois as páginas com a conclusão no título, a síntese, o apêndice, as perguntas com resposta e a conferência de cada número."
+        }
+      },
+      "houseLabels": {
+        "boardMeetingDate": "Data da reunião",
+        "boardAgendaMinutes": "Tempo de pauta",
+        "boardTemplate": "Template do conselho",
+        "boardOutlineConfirmed": "Roteiro confirmado",
+        "boardLeadDays": "Antecedência do roteiro",
+        "boardMinutesPerPage": "Minutos por página",
+        "boardSource": {
+          "tabela-divida": "Resultado revisado: Tabela de dívida",
+          "covenant": "Resultado revisado: Covenant e política",
+          "caixa-semanal": "Resultado revisado: Caixa semanal",
+          "linha-embalagem": "Resultado revisado: Projeto de investimento",
+          "projecao": "Resultado revisado: Projeção por drivers",
+          "plano-fpa": "Resultado revisado: Crítica ao plano da área financeira",
+          "recebiveis": "Resultado revisado: Recebíveis",
+          "custo-relativo": "Resultado revisado: Custo relativo da dívida",
+          "plano-2027": "Resultado revisado: Plano de financiamento"
+        },
+        "boardDeliberation": {
+          "linha": "Deliberação: linha de embalagem",
+          "vencimentos": "Deliberação: vencimentos",
+          "politica": "Deliberação: política de endividamento",
+          "safra": "Deliberação: capital de giro da safra"
+        },
+        "boardPage": {
+          "decisions": "Página: decisões",
+          "situation": "Página: situação",
+          "constraint": "Página: restrição",
+          "topic": "Página: tema",
+          "alternatives": "Página: alternativas",
+          "recommendation": "Página: recomendação",
+          "risk": "Página: riscos",
+          "what_changes": "Página: o que muda a recomendação",
+          "next_steps": "Página: próximos passos"
+        },
+        "boardTopicSeen": {
+          "yes": "Tema já visto pelo conselho: {label}",
+          "no": "Tema não visto pelo conselho: {label}",
+          "unknown": "Tema a confirmar se o conselho viu: {label}"
+        },
+        "boardInformedReason": "Motivo informado pelo presidente do conselho",
+        "boardOmission": {
+          "recommendation": "Retirar a recomendação: {label}",
+          "page": "Retirar a página: {label}",
+          "deadline": "Retirar o prazo: {label}"
+        },
+        "boardOmitted": "Fora do material: {label}"
+      }
+    }
+  },
+  "en-US": {
+    "App": {
+      "workExecutions": {
+        "boardMaterial": {
+          "title": "Board discussion of the capital structure",
+          "status": "Status",
+          "question": "Question",
+          "outlineFirst": "There is time to align the outline before producing: these are the deliberations and the questions that change the material. The material comes after confirmation.",
+          "materialReady": "Material prepared, version {version}, for review before the meeting.",
+          "noReading": "Premises are missing to prepare the discussion; what is missing is in the gaps.",
+          "deliberations": "Deliberations requested, by urgency",
+          "deadline": "{action} by {date}",
+          "narrative": "Narrative",
+          "questionsBefore": "Before the material",
+          "pages": "Pages ({count})",
+          "agendaFits": "{pages} pages fit in {minutes} minutes of agenda.",
+          "agendaExceeds": "{pages} pages exceed what fits in {minutes} minutes ({capacity} pages).",
+          "agendaUnknown": "Agenda time not stated; one page every {perPage} minutes.",
+          "pageTitle": "{number}. {title}",
+          "options": "Options, with the criteria:",
+          "appendixPages": "Pages in the appendix",
+          "summary": "Summary for prior reading",
+          "questions": "Likely questions and answers",
+          "appendix": "Appendix",
+          "identity": "Figure check",
+          "identityMatches": "The {count} figures of the material were checked against the reviewed analyses and match; the {facts} material facts appear in the final text.",
+          "identityPartial": "{count} figures checked against the reviewed analyses.",
+          "columns": {
+            "shown": "As shown",
+            "source": "Reviewed analysis",
+            "path": "Field read"
+          },
+          "pending": "Declared pending items",
+          "indicative": "{reason}.",
+          "sourcePartial": "{source}: analysis with its own gaps, cited in the material.",
+          "omissions": "Removal requests",
+          "omission": "Request by {requester}: {outcome}.",
+          "versionsKept": "{count} versions of the material kept; the earlier one remains available.",
+          "notSent": "Nothing was presented or sent to third parties.",
+          "sourcesTitle": "Reviewed analyses read",
+          "gaps": "Information gaps",
+          "noGaps": "No information gaps.",
+          "exclusionsTitle": "What this preparation does not do",
+          "authorities": {
+            "board": "board authority",
+            "executive": "management authority",
+            "shareholders": "shareholder authority"
+          },
+          "roles": {
+            "decisions": "decisions",
+            "situation": "situation",
+            "constraint": "constraint",
+            "topic": "topic",
+            "alternatives": "alternatives",
+            "recommendation": "recommendation",
+            "risk": "risks",
+            "what_changes": "what changes the recommendation",
+            "next_steps": "next steps"
+          },
+          "outlineQuestions": {
+            "template": "The last board presentation, to use its template.",
+            "agenda_minutes": "How much time is on the agenda.",
+            "board_has_seen": "Whether the board has seen the topic."
+          },
+          "outcomes": {
+            "applied": "applied",
+            "refused": "not applied"
+          },
+          "templates": {
+            "not_supplied": "Company template not sent.",
+            "supplied_not_applied": "Template received; the visual application happens in the material review."
+          },
+          "sources": {
+            "tabela-divida": "Debt table",
+            "covenant": "Covenant and policy",
+            "caixa-semanal": "Weekly cash",
+            "linha-embalagem": "Investment project",
+            "projecao": "Driver-based projection",
+            "plano-fpa": "Challenge to the finance plan",
+            "recebiveis": "Receivables",
+            "custo-relativo": "Relative cost of debt",
+            "plano-2027": "Financing plan"
+          },
+          "gapReasons": {
+            "figure_pending_reviewed_result": "figure without a reviewed analysis",
+            "layout_exceeds_page": "text longer than the page",
+            "pages_exceed_agenda": "pages above the agenda time",
+            "recommendation_removed_without_options": "recommendation removed without options",
+            "label_not_in_dictionary": "name outside the dictionary",
+            "informed_reason_not_in_dictionary": "reason outside the dictionary",
+            "object_not_in_vocabulary": "object outside the vocabulary",
+            "species_not_registered": "instrument kind not registered"
+          },
+          "exclusions": {
+            "recalculation": "Does not recalculate the reviewed analyses.",
+            "presentation_delivery": "Does not present the material.",
+            "template_import": "Does not import the template automatically.",
+            "third_party_distribution": "Sends nothing to third parties.",
+            "credit_approval": "Is not a credit approval."
+          }
+        }
+      }
+    },
+    "DebtMethodsPremisesCard": {
+      "methods": {
+        "boardMaterial": {
+          "title": "Premises for the board discussion",
+          "lead": "I prepare the discussion over this work's reviewed analyses, each pinned to the version I read; pages, decisions and figures come from them. Confirm to prepare, or correct it in the conversation and I redo it.",
+          "cases": "Outline before the material when there is time; then the pages with the conclusion in the title, the summary, the appendix, the questions with answers and the check of every figure."
+        }
+      },
+      "houseLabels": {
+        "boardMeetingDate": "Meeting date",
+        "boardAgendaMinutes": "Agenda time",
+        "boardTemplate": "Board template",
+        "boardOutlineConfirmed": "Outline confirmed",
+        "boardLeadDays": "Outline lead time",
+        "boardMinutesPerPage": "Minutes per page",
+        "boardSource": {
+          "tabela-divida": "Reviewed result: Debt table",
+          "covenant": "Reviewed result: Covenant and policy",
+          "caixa-semanal": "Reviewed result: Weekly cash",
+          "linha-embalagem": "Reviewed result: Investment project",
+          "projecao": "Reviewed result: Driver-based projection",
+          "plano-fpa": "Reviewed result: Challenge to the finance plan",
+          "recebiveis": "Reviewed result: Receivables",
+          "custo-relativo": "Reviewed result: Relative cost of debt",
+          "plano-2027": "Reviewed result: Financing plan"
+        },
+        "boardDeliberation": {
+          "linha": "Deliberation: packaging line",
+          "vencimentos": "Deliberation: maturities",
+          "politica": "Deliberation: debt policy",
+          "safra": "Deliberation: crop working capital"
+        },
+        "boardPage": {
+          "decisions": "Page: decisions",
+          "situation": "Page: situation",
+          "constraint": "Page: constraint",
+          "topic": "Page: topic",
+          "alternatives": "Page: alternatives",
+          "recommendation": "Page: recommendation",
+          "risk": "Page: risks",
+          "what_changes": "Page: what changes the recommendation",
+          "next_steps": "Page: next steps"
+        },
+        "boardTopicSeen": {
+          "yes": "Topic the board has seen: {label}",
+          "no": "Topic the board has not seen: {label}",
+          "unknown": "Topic to confirm whether the board has seen it: {label}"
+        },
+        "boardInformedReason": "Reason stated by the board chair",
+        "boardOmission": {
+          "recommendation": "Remove the recommendation: {label}",
+          "page": "Remove the page: {label}",
+          "deadline": "Remove the deadline: {label}"
+        },
+        "boardOmitted": "Left out of the material: {label}"
+      }
+    }
+  }
+}

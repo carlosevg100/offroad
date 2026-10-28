@@ -1,0 +1,696 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "prepared_for_human_review",
+      "question": "O Itaú mandou proposta de CCB de R$ 30 milhões, três anos, CDI mais 2,1, com cessão fiduciária de recebíveis. É boa?",
+      "currency": "BRL",
+      "lender": "Itaú",
+      "firmness": {
+        "firmness": "indicative",
+        "validUntil": "2026-09-13",
+        "bankSawIndenture": false,
+        "diligenceMayReopenStructure": true
+      },
+      "openQuestions": [],
+      "process": {
+        "acceptsProposal": false,
+        "contactsLender": false,
+        "counterproposalSent": false
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "liquidity",
+    "kind": "section",
+    "content": {
+      "peak": {
+        "peakYear": 2027,
+        "existingService": "89.67953712",
+        "proposalService": "12.21201309247233715218",
+        "totalService": "101.89155021247233715218",
+        "availableForService": "35.68437595",
+        "peakQuarter": "2027-09-30",
+        "minimumCashWith": {
+          "periodEnd": "2028-12-31",
+          "amount": "-63.2842834349992039182"
+        },
+        "firstBelowPolicyWith": "2027-09-30",
+        "firstBelowPolicyWithout": "2026-12-31"
+      },
+      "years": [
+        {
+          "year": 2026,
+          "periods": 2,
+          "existingService": "28.10205268",
+          "proposalService": "0.76519318951091104774",
+          "totalService": "28.86724586951091104774",
+          "availableForService": "17.27136458",
+          "shortfallWithout": "10.8306881",
+          "shortfallWith": "11.59588128951091104774"
+        },
+        {
+          "year": 2027,
+          "periods": 4,
+          "existingService": "89.67953712",
+          "proposalService": "12.21201309247233715218",
+          "totalService": "101.89155021247233715218",
+          "availableForService": "35.68437595",
+          "shortfallWithout": "53.99516117",
+          "shortfallWith": "66.20717426247233715218"
+        },
+        {
+          "year": 2028,
+          "periods": 4,
+          "existingService": "24.34521568",
+          "proposalService": "14.35421877426874718587",
+          "totalService": "38.69943445426874718587",
+          "availableForService": "35.29070666",
+          "shortfallWithout": "-10.94549098",
+          "shortfallWith": "3.40872779426874718587"
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "service:2027",
+        "kind": "calculation",
+        "value": "101.89155021247233715218",
+        "unit": "BRL",
+        "period": "2027",
+        "supportIds": [
+          "2a8cd8b46380e684b882424f58df6301aa03ac080e9c25c1103555336226a98c"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "fit",
+    "kind": "section",
+    "content": {
+      "seasonalShare": "0.66666666666666666667",
+      "weightedAverageLifeYears": "1.77195767195767195768",
+      "finalPaymentDate": "2029-10-01",
+      "uses": [
+        {
+          "id": "safra",
+          "amount": "20",
+          "reading": "longer_than_use",
+          "label": "Compra de safra de outubro a dezembro"
+        },
+        {
+          "id": "embalagem",
+          "amount": "10",
+          "reading": "shorter_than_use",
+          "label": "Antecipar a linha de embalagem"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "covenant",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "date": "2026-12-31",
+          "scenario": "bank",
+          "ratioWith": "2.53144167930036791726",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": true,
+              "headroomWith": "0.46855832069963208274",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "0.46855832069963208274",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": true,
+              "headroomWith": "-0.03144167930036791726",
+              "breachedWith": true
+            }
+          ]
+        },
+        {
+          "date": "2026-12-31",
+          "scenario": "base",
+          "ratioWith": "2.40130522247452767209",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": true,
+              "headroomWith": "0.59869477752547232791",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "0.59869477752547232791",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": true,
+              "headroomWith": "0.09869477752547232791",
+              "breachedWith": false
+            }
+          ]
+        },
+        {
+          "date": "2027-06-30",
+          "scenario": "bank",
+          "ratioWith": "2.27087360779632749213",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": false,
+              "headroomWith": "0.72912639220367250787",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "0.72912639220367250787",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": false,
+              "headroomWith": "0.22912639220367250787",
+              "breachedWith": false
+            }
+          ]
+        },
+        {
+          "date": "2027-06-30",
+          "scenario": "base",
+          "ratioWith": "1.9183392823302597985",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": false,
+              "headroomWith": "1.0816607176697402015",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "1.0816607176697402015",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": false,
+              "headroomWith": "0.5816607176697402015",
+              "breachedWith": false
+            }
+          ]
+        },
+        {
+          "date": "2027-12-31",
+          "scenario": "bank",
+          "ratioWith": "2.60950708126636122249",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": true,
+              "headroomWith": "0.39049291873363877751",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "0.39049291873363877751",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": true,
+              "headroomWith": "-0.10950708126636122249",
+              "breachedWith": true
+            }
+          ]
+        },
+        {
+          "date": "2027-12-31",
+          "scenario": "base",
+          "ratioWith": "2.06882106856506381044",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": true,
+              "headroomWith": "0.93117893143493618956",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "0.93117893143493618956",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": true,
+              "headroomWith": "0.43117893143493618956",
+              "breachedWith": false
+            }
+          ]
+        },
+        {
+          "date": "2028-06-30",
+          "scenario": "bank",
+          "ratioWith": "1.72327928867371052012",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": false,
+              "headroomWith": "1.27672071132628947988",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "1.27672071132628947988",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": false,
+              "headroomWith": "0.77672071132628947988",
+              "breachedWith": false
+            }
+          ]
+        },
+        {
+          "date": "2028-06-30",
+          "scenario": "base",
+          "ratioWith": "1.2788742154565523827",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": false,
+              "headroomWith": "1.7211257845434476173",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "1.7211257845434476173",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": false,
+              "headroomWith": "1.2211257845434476173",
+              "breachedWith": false
+            }
+          ]
+        },
+        {
+          "date": "2028-12-31",
+          "scenario": "bank",
+          "ratioWith": "1.92672747244622127339",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": true,
+              "headroomWith": "1.07327252755377872661",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "1.07327252755377872661",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": true,
+              "headroomWith": "0.57327252755377872661",
+              "breachedWith": false
+            }
+          ]
+        },
+        {
+          "date": "2028-12-31",
+          "scenario": "base",
+          "ratioWith": "1.40157955930419423816",
+          "headroom": [
+            {
+              "limitId": "indenture",
+              "testedOnDate": true,
+              "headroomWith": "1.59842044069580576184",
+              "breachedWith": false
+            },
+            {
+              "limitId": "proposal",
+              "testedOnDate": true,
+              "headroomWith": "1.59842044069580576184",
+              "breachedWith": false
+            },
+            {
+              "limitId": "board-policy",
+              "testedOnDate": true,
+              "headroomWith": "1.09842044069580576184",
+              "breachedWith": false
+            }
+          ]
+        }
+      ],
+      "testsPerYear": {
+        "indenture": 1,
+        "lender": 2
+      },
+      "anyBreachWith": true,
+      "missingTests": [],
+      "untestedLimits": [],
+      "lenderDatesBeforeDraw": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "collateral",
+    "kind": "section",
+    "content": {
+      "collateral": {
+        "required": "39",
+        "nominallyFree": "46",
+        "assignable": "25.41",
+        "shortfallToAssignable": "13.59",
+        "assignableLeftAfter": "0",
+        "seasonalPeak": "25",
+        "excluded": [
+          {
+            "id": "rede-a",
+            "amount": "18.56",
+            "holder": null,
+            "reasons": [
+              "assignment_prohibited_without_debtor_consent"
+            ],
+            "label": "Rede A (maior cliente)"
+          },
+          {
+            "id": "redes-c-d",
+            "amount": "12",
+            "holder": "Bradesco",
+            "reasons": [
+              "assigned_to_other_creditor"
+            ],
+            "label": "Contratos de dois clientes cedidos ao Bradesco"
+          },
+          {
+            "id": "vencidos",
+            "amount": "2.03",
+            "holder": null,
+            "reasons": [
+              "past_due"
+            ],
+            "label": "Atraso acima de 30 dias"
+          }
+        ],
+        "coverage": "1.3",
+        "restrictedAccount": true
+      },
+      "reference": {
+        "low": "1.2",
+        "high": "1.3",
+        "atOrAboveTop": true
+      },
+      "negativePledge": {
+        "basis": "aggregate",
+        "limit": "15",
+        "occupied": "12",
+        "remaining": "3",
+        "consentRequired": true,
+        "excess": "36",
+        "consentBy": "2026-09-13",
+        "needDate": "2026-10-01",
+        "slackDays": 18
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "price",
+    "kind": "section",
+    "content": {
+      "price": {
+        "nominalSpread": "0.021",
+        "equivalentSpread": "0.04902762175047231073",
+        "equivalentSpreadNet": "0.03235823035531172508",
+        "netConvention": "full_deductibility_simplified",
+        "upfrontShare": "0.04047813333333333333",
+        "creditTaxRate": "0.03247813333333333333",
+        "weightedAverageLifeYears": "1.77195767195767195768",
+        "marketPosition": "above_median_within_range",
+        "history": {
+          "observedBps": "-50",
+          "expectedBps": "-70",
+          "residualBps": "20"
+        }
+      },
+      "market": {
+        "position": "above_median_within_range",
+        "toMedianBps": "20",
+        "toHighBps": "-10",
+        "low": "0.017",
+        "median": "0.019",
+        "high": "0.022",
+        "sample": 12,
+        "confidence": "high",
+        "observedOn": "2026-08-14"
+      },
+      "history": {
+        "peer": "CCB Bradesco de setembro de 2024",
+        "peerDate": "2024-09-15",
+        "steps": [
+          {
+            "id": "mercado",
+            "family": "pricing_date",
+            "bps": "-60"
+          },
+          {
+            "id": "risco",
+            "family": "other",
+            "bps": "15"
+          },
+          {
+            "id": "estrutura",
+            "family": "guarantee",
+            "bps": "-25"
+          }
+        ]
+      }
+    },
+    "claims": [
+      {
+        "claimId": "equivalent-spread",
+        "kind": "calculation",
+        "value": "0.04902762175047231073",
+        "unit": "ratio",
+        "period": null,
+        "supportIds": [
+          "2a8cd8b46380e684b882424f58df6301aa03ac080e9c25c1103555336226a98c"
+        ]
+      },
+      {
+        "claimId": "equivalent-spread-net",
+        "kind": "calculation",
+        "value": "0.03235823035531172508",
+        "unit": "ratio",
+        "period": null,
+        "supportIds": [
+          "2a8cd8b46380e684b882424f58df6301aa03ac080e9c25c1103555336226a98c"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "asks",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "carencia-12-prazo-48",
+          "label": "Carência de 12 meses e prazo de 48",
+          "peakYearServiceDelta": "-5.98878373283034372464",
+          "equivalentSpreadDeltaBps": "-66.8988537243485389",
+          "collateralDelta": "0",
+          "consentStillRequired": true,
+          "netConvention": "full_deductibility_simplified",
+          "restrictedAccount": true
+        },
+        {
+          "id": "carencia-12-prazo-60",
+          "label": "Carência de 12 meses e prazo de 60",
+          "peakYearServiceDelta": "-6.40292511128909465602",
+          "equivalentSpreadDeltaBps": "-94.802112990092028",
+          "collateralDelta": "0",
+          "consentStillRequired": true,
+          "netConvention": "full_deductibility_simplified",
+          "restrictedAccount": true
+        },
+        {
+          "id": "cobertura-120-sem-conta",
+          "label": "Cobertura de 120% sem conta vinculada",
+          "peakYearServiceDelta": "0",
+          "equivalentSpreadDeltaBps": "0",
+          "collateralDelta": "-3",
+          "consentStillRequired": true,
+          "netConvention": "full_deductibility_simplified",
+          "restrictedAccount": false
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "ask-service:carencia-12-prazo-48",
+        "kind": "calculation",
+        "value": "-5.98878373283034372464",
+        "unit": "BRL",
+        "period": "2027",
+        "supportIds": [
+          "2a8cd8b46380e684b882424f58df6301aa03ac080e9c25c1103555336226a98c"
+        ]
+      },
+      {
+        "claimId": "ask-service:carencia-12-prazo-60",
+        "kind": "calculation",
+        "value": "-6.40292511128909465602",
+        "unit": "BRL",
+        "period": "2027",
+        "supportIds": [
+          "2a8cd8b46380e684b882424f58df6301aa03ac080e9c25c1103555336226a98c"
+        ]
+      },
+      {
+        "claimId": "ask-service:cobertura-120-sem-conta",
+        "kind": "calculation",
+        "value": "0",
+        "unit": "BRL",
+        "period": "2027",
+        "supportIds": [
+          "2a8cd8b46380e684b882424f58df6301aa03ac080e9c25c1103555336226a98c"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "alternatives",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "giro-seis-meses",
+          "usesCovered": [
+            "safra"
+          ],
+          "allInSpreadDifferenceBps": "189.7237824952768927",
+          "consentRequired": false,
+          "label": "Linha de giro de seis meses para a safra",
+          "allInSpread": "0.068",
+          "collateral": "3",
+          "monthsToMoney": {
+            "min": 0,
+            "max": 1
+          }
+        },
+        {
+          "id": "finame-linha",
+          "usesCovered": [
+            "embalagem"
+          ],
+          "allInSpreadDifferenceBps": null,
+          "consentRequired": false,
+          "label": "Finame para a linha de embalagem",
+          "allInSpread": null,
+          "collateral": "0",
+          "monthsToMoney": {
+            "min": 3,
+            "max": 5
+          }
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "assessment",
+    "kind": "section",
+    "content": {
+      "facts": [
+        "proposal_indicative",
+        "collateral_exceeds_assignable_portfolio",
+        "assignment_prohibited_receivables_excluded",
+        "indenture_consent_required",
+        "peak_year_service_exceeds_available_cash",
+        "cash_below_minimum_with_proposal",
+        "board_policy_breached_in_a_case",
+        "lender_tests_more_often_than_indenture",
+        "restricted_account_requested",
+        "coverage_at_top_of_reference"
+      ],
+      "readings": [
+        "term_longer_than_seasonal_use",
+        "term_shorter_than_capex_use",
+        "all_in_cost_well_above_nominal",
+        "nominal_spread_above_median_within_range",
+        "improvement_partly_paid_in_collateral",
+        "diligence_may_reopen_structure"
+      ],
+      "recommendations": [
+        "address_indenture_consent_before_signing",
+        "ask_longer_grace_and_tenor",
+        "ask_lower_coverage_and_no_restricted_account",
+        "separate_uses_by_term",
+        "keep_price_discussion_secondary"
+      ],
+      "wouldChange": [
+        "debtor_consent_for_restricted_receivables",
+        "indenture_clause_wording",
+        "other_free_asset_for_collateral",
+        "seasonal_need_above_adopted",
+        "committed_terms_after_diligence"
+      ],
+      "questions": [
+        "lender_covenant_definition",
+        "reciprocity_expected_by_lender",
+        "restricted_debtor_consent",
+        "indenture_clause_wording",
+        "other_free_asset"
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "exclusions",
+    "kind": "section",
+    "content": {
+      "items": [
+        "proposal_acceptance",
+        "counterparty_contact",
+        "credit_approval",
+        "legal_opinion",
+        "reciprocity_pricing"
+      ]
+    },
+    "claims": []
+  }
+]

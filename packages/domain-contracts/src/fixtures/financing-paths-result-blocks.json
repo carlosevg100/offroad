@@ -1,0 +1,869 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "prepared_for_human_review",
+      "question": "Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?",
+      "currency": "BRL",
+      "horizon": {
+        "firstPeriodEnd": "2026-09-30",
+        "lastPeriodEnd": "2028-12-31",
+        "candidatePaths": 7,
+        "companionPaths": 2,
+        "minimumCash": "15"
+      },
+      "withoutAction": {
+        "pathId": "manter",
+        "firstBelowMinimum": "2026-12-31",
+        "lowest": {
+          "periodId": "2027-12-31",
+          "amount": "-78.62584928"
+        },
+        "peakYear": {
+          "year": 2027,
+          "service": "89.67953712",
+          "principal": "76.66666668",
+          "interestPaid": "13.01287044",
+          "availableForService": "35.68437595",
+          "gap": "53.99516117"
+        }
+      },
+      "assessment": {
+        "facts": [
+          "status_quo_below_minimum_cash",
+          "status_quo_peak_service_exceeds_available_cash",
+          "indenture_basket_partly_occupied"
+        ],
+        "readings": [
+          "recommended_path_inside_every_gate",
+          "cheapest_path_misses_a_gate",
+          "paths_with_the_project_miss_gates",
+          "stress_policy_headroom_tight",
+          "shorter_amortization_fails_after_horizon",
+          "alternative_depends_on_consent",
+          "alternative_misses_amortization_test"
+        ],
+        "recommendations": [
+          "follow_recommended_path_under_condition",
+          "review_project_before_committing",
+          "ask_for_the_longer_amortization",
+          "negotiate_covenant_headroom_in_new_terms",
+          "keep_dated_alternative"
+        ],
+        "wouldChange": [
+          "issue_demand_below_minimum_amount",
+          "sensitivity_breaks_recommendation"
+        ]
+      },
+      "process": {
+        "contactsInvestors": false,
+        "contactsLenders": false,
+        "issuesOrSigns": false
+      }
+    },
+    "claims": [
+      {
+        "claimId": "without-action-lowest",
+        "kind": "calculation",
+        "value": "-78.62584928",
+        "unit": "BRL",
+        "period": "2027-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "without-action-peak-service",
+        "kind": "calculation",
+        "value": "89.67953712",
+        "unit": "BRL",
+        "period": "2027",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "recommendation",
+    "kind": "section",
+    "content": {
+      "recommendation": {
+        "pathId": "sem-linha-debenture",
+        "label": "Sem a linha agora: giro de R$ 17 mi e debênture de R$ 80 mi",
+        "minimumCash": {
+          "periodId": "2026-12-31",
+          "amount": "15.45720185"
+        },
+        "horizonFinancingCost": "49.4360524",
+        "netDebtAtHorizon": "79.31379459",
+        "leverage": [
+          {
+            "periodId": "2026-12-31",
+            "ratio": "2.19824203514563106796"
+          },
+          {
+            "periodId": "2027-12-31",
+            "ratio": "1.85301114776119402985"
+          },
+          {
+            "periodId": "2028-12-31",
+            "ratio": "1.42139416827956989247"
+          }
+        ],
+        "stressWorst": {
+          "periodId": "2027-12-31",
+          "ratio": "2.37072723608955885613"
+        },
+        "indentureLimit": "3",
+        "policyLimit": "2.5",
+        "prepaidInstrumentIds": [
+          "debenture-2021",
+          "ccb-bradesco"
+        ],
+        "ebitdaByYear": [
+          {
+            "year": 2026,
+            "ebitda": "27.5"
+          },
+          {
+            "year": 2027,
+            "ebitda": "56.6"
+          },
+          {
+            "year": 2028,
+            "ebitda": "58.8"
+          }
+        ],
+        "longInstrument": {
+          "id": "debenture-80",
+          "issueTarget": "80",
+          "issueFloorInsideGates": "74.44",
+          "drawPeriodId": "2027-03-31",
+          "termYears": "7",
+          "firstAmortizationYear": 2029,
+          "lastAmortizationYear": 2033,
+          "equivalentSpread": "0.0346124587317108532",
+          "maximumSpread": "0.03",
+          "equivalentSpreadAtCondition": "0.03562771280284960303",
+          "insideGatesAtCondition": true,
+          "chargesOutsideSpread": []
+        },
+        "soundingBy": "2026-10-31",
+        "routeDecisionBy": "2026-11-15",
+        "mustPrecede": {
+          "instrumentId": "ccb-bradesco",
+          "date": "2027-09-15"
+        },
+        "daysToMaturity": 304
+      },
+      "alternative": {
+        "pathId": "banco-sem-linha",
+        "label": "Sem a linha: giro de R$ 17 mi e alongamento bancário de R$ 70 mi",
+        "longInstrumentId": "ccb-alongamento",
+        "issueTarget": "70",
+        "conditions": [
+          "basket_without_consent",
+          "amortization_after_horizon"
+        ],
+        "decisionBy": "2026-11-15"
+      }
+    },
+    "claims": [
+      {
+        "claimId": "recommended-minimum-cash",
+        "kind": "calculation",
+        "value": "15.45720185",
+        "unit": "BRL",
+        "period": "2026-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "recommended-financing-cost",
+        "kind": "calculation",
+        "value": "49.4360524",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "recommended-net-debt",
+        "kind": "calculation",
+        "value": "79.31379459",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "paths",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "sem-linha-debenture",
+          "label": "Sem a linha agora: giro de R$ 17 mi e debênture de R$ 80 mi",
+          "role": "candidate",
+          "rank": 1,
+          "eligible": true,
+          "failedGates": [],
+          "minimumCash": {
+            "periodId": "2026-12-31",
+            "amount": "15.45720185"
+          },
+          "shortfallVsPolicyMinimum": "0",
+          "horizonFinancingCost": "49.4360524",
+          "netDebtAtHorizon": "79.31379459",
+          "worstLeverage": "2.19824203514563106796",
+          "stressWorstLeverage": "2.37072723608955885613",
+          "consentRequired": false
+        },
+        {
+          "id": "adiar-linha",
+          "label": "Adiar a linha de embalagem doze meses",
+          "role": "candidate",
+          "rank": 2,
+          "eligible": false,
+          "failedGates": [
+            "minimum_cash_base",
+            "cash_nonnegative_stress"
+          ],
+          "minimumCash": {
+            "periodId": "2028-06-30",
+            "amount": "-60.18234637"
+          },
+          "shortfallVsPolicyMinimum": "75.18234637",
+          "horizonFinancingCost": "31.30590355",
+          "netDebtAtHorizon": "88.84389634",
+          "worstLeverage": "2.20637578776699029126",
+          "stressWorstLeverage": "2.47731471580580802483",
+          "consentRequired": false
+        },
+        {
+          "id": "banco-sem-linha",
+          "label": "Sem a linha: giro de R$ 17 mi e alongamento bancário de R$ 70 mi",
+          "role": "companion",
+          "rank": 3,
+          "eligible": false,
+          "failedGates": [
+            "basket_without_consent",
+            "amortization_after_horizon"
+          ],
+          "minimumCash": {
+            "periodId": "2026-12-31",
+            "amount": "15.45720185"
+          },
+          "shortfallVsPolicyMinimum": "0",
+          "horizonFinancingCost": "52.49375573",
+          "netDebtAtHorizon": "81.72891318",
+          "worstLeverage": "2.19824203514563106796",
+          "stressWorstLeverage": "2.43935657237863001552",
+          "consentRequired": true
+        },
+        {
+          "id": "debenture-com-linha",
+          "label": "Separar por uso e nova debênture que substitui a de 2021 e o Bradesco",
+          "role": "candidate",
+          "rank": 4,
+          "eligible": false,
+          "failedGates": [
+            "policy_stress",
+            "amortization_after_horizon"
+          ],
+          "minimumCash": {
+            "periodId": "2026-12-31",
+            "amount": "15.03831359"
+          },
+          "shortfallVsPolicyMinimum": "0",
+          "horizonFinancingCost": "56.89026112",
+          "netDebtAtHorizon": "102.14595542",
+          "worstLeverage": "2.40055054504854368932",
+          "stressWorstLeverage": "2.76017682698835448326",
+          "consentRequired": false
+        },
+        {
+          "id": "manter",
+          "label": "Manter e rolar no vencimento",
+          "role": "status_quo",
+          "rank": 5,
+          "eligible": false,
+          "failedGates": [
+            "minimum_cash_base",
+            "cash_nonnegative_stress",
+            "policy_stress"
+          ],
+          "minimumCash": {
+            "periodId": "2027-12-31",
+            "amount": "-78.62584928"
+          },
+          "shortfallVsPolicyMinimum": "93.62584928",
+          "horizonFinancingCost": "25.4601388",
+          "netDebtAtHorizon": "81.01369161",
+          "worstLeverage": "2.37858941300970873786",
+          "stressWorstLeverage": "2.52623111932738001984",
+          "consentRequired": false
+        },
+        {
+          "id": "ccb-tres-anos",
+          "label": "CCB de três anos para safra e capex",
+          "role": "candidate",
+          "rank": 6,
+          "eligible": false,
+          "failedGates": [
+            "minimum_cash_base",
+            "cash_nonnegative_stress",
+            "policy_stress",
+            "basket_without_consent"
+          ],
+          "minimumCash": {
+            "periodId": "2028-12-31",
+            "amount": "-64.70729201"
+          },
+          "shortfallVsPolicyMinimum": "79.70729201",
+          "horizonFinancingCost": "34.59185654",
+          "netDebtAtHorizon": "87.04062531",
+          "worstLeverage": "2.41029097844660194175",
+          "stressWorstLeverage": "2.61953064285341271085",
+          "consentRequired": true
+        },
+        {
+          "id": "bradesco-sem-linha",
+          "label": "Sem a linha: giro de R$ 17 mi e só o Bradesco alongado",
+          "role": "companion",
+          "rank": 7,
+          "eligible": false,
+          "failedGates": [
+            "minimum_cash_base",
+            "cash_nonnegative_stress",
+            "basket_without_consent",
+            "amortization_after_horizon"
+          ],
+          "minimumCash": {
+            "periodId": "2028-06-30",
+            "amount": "-3.23207894"
+          },
+          "shortfallVsPolicyMinimum": "18.23207894",
+          "horizonFinancingCost": "39.71755702",
+          "netDebtAtHorizon": "72.89958763",
+          "worstLeverage": "2.19824203514563106796",
+          "stressWorstLeverage": "2.31974625121457489879",
+          "consentRequired": true
+        },
+        {
+          "id": "alongar-com-banco",
+          "label": "Separar por uso e alongar 2027 com banco",
+          "role": "candidate",
+          "rank": 8,
+          "eligible": false,
+          "failedGates": [
+            "minimum_cash_base",
+            "policy_stress",
+            "basket_without_consent",
+            "amortization_after_horizon"
+          ],
+          "minimumCash": {
+            "periodId": "2028-06-30",
+            "amount": "11.80899139"
+          },
+          "shortfallVsPolicyMinimum": "3.19100861",
+          "horizonFinancingCost": "56.54389269",
+          "netDebtAtHorizon": "102.18926187",
+          "worstLeverage": "2.40055054504854368932",
+          "stressWorstLeverage": "2.79486919985377826518",
+          "consentRequired": true
+        },
+        {
+          "id": "alongar-bradesco",
+          "label": "Alongar só o Bradesco por dois anos",
+          "role": "candidate",
+          "rank": 9,
+          "eligible": false,
+          "failedGates": [
+            "minimum_cash_base",
+            "cash_nonnegative_stress",
+            "policy_stress",
+            "basket_without_consent",
+            "amortization_after_horizon"
+          ],
+          "minimumCash": {
+            "periodId": "2028-06-30",
+            "amount": "-10.51712039"
+          },
+          "shortfallVsPolicyMinimum": "25.51712039",
+          "horizonFinancingCost": "43.76769398",
+          "netDebtAtHorizon": "93.09667803",
+          "worstLeverage": "2.40055054504854368932",
+          "stressWorstLeverage": "2.64929099524779361847",
+          "consentRequired": true
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "cost:sem-linha-debenture",
+        "kind": "calculation",
+        "value": "49.4360524",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:adiar-linha",
+        "kind": "calculation",
+        "value": "31.30590355",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:banco-sem-linha",
+        "kind": "calculation",
+        "value": "52.49375573",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:debenture-com-linha",
+        "kind": "calculation",
+        "value": "56.89026112",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:manter",
+        "kind": "calculation",
+        "value": "25.4601388",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:ccb-tres-anos",
+        "kind": "calculation",
+        "value": "34.59185654",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:bradesco-sem-linha",
+        "kind": "calculation",
+        "value": "39.71755702",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:alongar-com-banco",
+        "kind": "calculation",
+        "value": "56.54389269",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      },
+      {
+        "claimId": "cost:alongar-bradesco",
+        "kind": "calculation",
+        "value": "43.76769398",
+        "unit": "BRL",
+        "period": "2028-12-31",
+        "supportIds": [
+          "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "cash",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "periodId": "2026-09-30",
+          "withoutAction": "39.430246",
+          "recommended": "39.430246"
+        },
+        {
+          "periodId": "2026-12-31",
+          "withoutAction": "-10.83068811",
+          "recommended": "15.45720185"
+        },
+        {
+          "periodId": "2027-03-31",
+          "withoutAction": "14.79220386",
+          "recommended": "20.58020015"
+        },
+        {
+          "periodId": "2027-06-30",
+          "withoutAction": "-5.67233938",
+          "recommended": "20.18616708"
+        },
+        {
+          "periodId": "2027-09-30",
+          "withoutAction": "-42.97310073",
+          "recommended": "26.61712533"
+        },
+        {
+          "periodId": "2027-12-31",
+          "withoutAction": "-78.62584928",
+          "recommended": "20.67860246"
+        },
+        {
+          "periodId": "2028-03-31",
+          "withoutAction": "-46.80713825",
+          "recommended": "31.87763992"
+        },
+        {
+          "periodId": "2028-06-30",
+          "withoutAction": "-56.07341362",
+          "recommended": "32.44093661"
+        },
+        {
+          "periodId": "2028-09-30",
+          "withoutAction": "-49.38976406",
+          "recommended": "39.16100163"
+        },
+        {
+          "periodId": "2028-12-31",
+          "withoutAction": "-67.68035831",
+          "recommended": "34.01953871"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "instruments",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "debenture-2021",
+          "label": "Debênture 2021"
+        },
+        {
+          "id": "ccb-bradesco",
+          "label": "CCB Bradesco"
+        },
+        {
+          "id": "finame",
+          "label": "Finame"
+        },
+        {
+          "id": "giro-4t26-27",
+          "label": "Giro da safra de 2026, R$ 27 mi"
+        },
+        {
+          "id": "giro-4t26-17",
+          "label": "Giro da safra de 2026, R$ 17 mi"
+        },
+        {
+          "id": "giro-4t27",
+          "label": "Giro da safra de 2027"
+        },
+        {
+          "id": "giro-4t28",
+          "label": "Giro da safra de 2028"
+        },
+        {
+          "id": "ccb-tres-anos",
+          "label": "CCB de três anos, R$ 30 mi"
+        },
+        {
+          "id": "finame-linha",
+          "label": "Finame da linha de embalagem"
+        },
+        {
+          "id": "ccb-alongamento",
+          "label": "CCB de cinco anos, R$ 70 mi"
+        },
+        {
+          "id": "debenture-90",
+          "label": "Debênture da 2ª emissão, R$ 90 mi"
+        },
+        {
+          "id": "debenture-80",
+          "label": "Debênture da 2ª emissão, R$ 80 mi"
+        },
+        {
+          "id": "ccb-bradesco-aditada",
+          "label": "CCB Bradesco alongada até 2029"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "amortization",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "pathId": "manter",
+          "instrumentId": "finame",
+          "profileId": "adopted",
+          "passes": true,
+          "firstShortfallYear": null,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "6.66666665",
+            "availableAfterInterest": "30.4278000016005"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "ccb-tres-anos",
+          "instrumentId": "ccb-tres-anos",
+          "profileId": "adopted",
+          "passes": true,
+          "firstShortfallYear": null,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "15.66666665",
+            "availableAfterInterest": "30.0015456016005"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "alongar-com-banco",
+          "instrumentId": "ccb-alongamento",
+          "profileId": "adopted",
+          "passes": false,
+          "firstShortfallYear": 2029,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "29.9999999833333333331",
+            "availableAfterInterest": "24.72980000160049999999"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "debenture-com-linha",
+          "instrumentId": "finame",
+          "profileId": "adopted",
+          "passes": true,
+          "firstShortfallYear": null,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "6.66666665",
+            "availableAfterInterest": "30.4278000016005"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "alongar-bradesco",
+          "instrumentId": "ccb-bradesco-aditada",
+          "profileId": "adopted",
+          "passes": false,
+          "firstShortfallYear": 2029,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "46.66666665",
+            "availableAfterInterest": "28.4298480016005"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "adiar-linha",
+          "instrumentId": "finame",
+          "profileId": "adopted",
+          "passes": true,
+          "firstShortfallYear": null,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "6.66666665",
+            "availableAfterInterest": "30.4278000016005"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "sem-linha-debenture",
+          "instrumentId": "debenture-80",
+          "profileId": "adopted",
+          "passes": true,
+          "firstShortfallYear": null,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "22.66666665",
+            "availableAfterInterest": "23.1819504016005"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "sem-linha-debenture",
+          "instrumentId": "debenture-80",
+          "profileId": "cinco-anos",
+          "passes": false,
+          "firstShortfallYear": 2029,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "33.3333333166666666664",
+            "availableAfterInterest": "23.71868000160049999999"
+          },
+          "label": "Amortização de 2029 a 2031"
+        },
+        {
+          "pathId": "banco-sem-linha",
+          "instrumentId": "ccb-alongamento",
+          "profileId": "adopted",
+          "passes": false,
+          "firstShortfallYear": 2029,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "29.9999999833333333331",
+            "availableAfterInterest": "24.72980000160049999999"
+          },
+          "label": "Perfil adotado"
+        },
+        {
+          "pathId": "bradesco-sem-linha",
+          "instrumentId": "ccb-bradesco-aditada",
+          "profileId": "adopted",
+          "passes": false,
+          "firstShortfallYear": 2029,
+          "firstYear": {
+            "year": 2029,
+            "scheduledAmortization": "46.66666665",
+            "availableAfterInterest": "28.4298480016005"
+          },
+          "label": "Perfil adotado"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "would-change",
+    "kind": "section",
+    "content": {
+      "wouldChange": {
+        "demand": {
+          "instrumentId": "debenture-80",
+          "issueTarget": "80",
+          "issueFloorInsideGates": "74.44"
+        },
+        "sensitivities": [
+          {
+            "id": "trigo",
+            "label": "Trigo 15% mais caro com repasse em quatro meses: EBITDA de 2027 de 52,64, nível do cenário informado da C24",
+            "recommendationHolds": false,
+            "recommendedPathId": null,
+            "failedGatesOnRecommended": [
+              "policy_stress"
+            ],
+            "ebitdaByYear": [
+              {
+                "year": 2026,
+                "ebitda": "27.5"
+              },
+              {
+                "year": 2027,
+                "ebitda": "52.6405745"
+              },
+              {
+                "year": 2028,
+                "ebitda": "58.8"
+              }
+            ]
+          },
+          {
+            "id": "prazo-redes-60",
+            "label": "Prazo das redes de 50 para 60 dias",
+            "recommendationHolds": false,
+            "recommendedPathId": null,
+            "failedGatesOnRecommended": [
+              "minimum_cash_base",
+              "policy_stress"
+            ],
+            "ebitdaByYear": [
+              {
+                "year": 2026,
+                "ebitda": "27.5"
+              },
+              {
+                "year": 2027,
+                "ebitda": "56.6"
+              },
+              {
+                "year": 2028,
+                "ebitda": "58.8"
+              }
+            ]
+          },
+          {
+            "id": "caixa-minimo-25",
+            "label": "Política da companhia com caixa mínimo de R$ 25 mi",
+            "recommendationHolds": false,
+            "recommendedPathId": null,
+            "failedGatesOnRecommended": [
+              "minimum_cash_base"
+            ],
+            "ebitdaByYear": [
+              {
+                "year": 2026,
+                "ebitda": "27.5"
+              },
+              {
+                "year": 2027,
+                "ebitda": "56.6"
+              },
+              {
+                "year": 2028,
+                "ebitda": "58.8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": []
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "exclusions",
+    "kind": "section",
+    "content": {
+      "items": [
+        "investor_demand",
+        "lender_appetite",
+        "legal_opinion_on_indenture",
+        "contact_with_counterparties",
+        "issuance_or_signature"
+      ]
+    },
+    "claims": []
+  }
+]

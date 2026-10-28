@@ -1,0 +1,202 @@
+{
+  "title": "Received proposal",
+  "lender": "Proposal from {lender}",
+  "status": "Status",
+  "question": "Question",
+  "gaps": "Information gaps",
+  "noGaps": "No information gaps.",
+  "exclusionsTitle": "What this analysis does not do",
+  "yes": "Yes",
+  "no": "No",
+  "units": "Amounts in millions of {currency}; spreads and costs in percent a year over CDI; covenant in times EBITDA.",
+  "noReading": "Premises are missing to read the proposal; what is missing is in the gaps.",
+  "openQuestions": {
+    "indexer_confirmation": "Before any number, the proposal's indexer must be confirmed by the term sheet or by the company."
+  },
+  "firmness": {
+    "indicative": "Indicative proposal, subject to credit approval, valid until {date}.",
+    "committed": "Committed proposal, valid until {date}."
+  },
+  "sawIndenture": "The bank has seen the indenture.",
+  "didNotSeeIndenture": "The bank has not seen the indenture.",
+  "diligence": "In diligence, the indenture's lien restriction is likely to surface, and credit is likely to reopen the structure.",
+  "liquidityTitle": "Payment calendar",
+  "liquidity": "In {year}, existing debt service is {existing} against {available} of cash available to meet it; the proposal adds {proposal}, for a total of {total}.",
+  "peakQuarter": "The heaviest pressure falls in the quarter ending {date}.",
+  "minimumWith": "With the proposal, the lowest cash in the horizon is {amount}, on {date}.",
+  "belowPolicy": "With the proposal, cash falls below the minimum from {with}; without it, from {without}.",
+  "belowPolicyWithOnly": "With the proposal, cash falls below the minimum from {with}.",
+  "fitTitle": "Term against the use of the money",
+  "fit": "{share} of the amount funds a seasonal use. Average life of {life} years, last payment on {date}.",
+  "useReadings": {
+    "longer_than_use": "the proposal's term exceeds the term of the use",
+    "shorter_than_use": "the proposal's term is shorter than the term of the use",
+    "within_use": "the proposal's term fits the term of the use"
+  },
+  "use": "{label} ({amount}): {reading}.",
+  "covenantTitle": "Covenant with the proposal",
+  "scenarios": {
+    "base": "Company case",
+    "bank": "Bank case"
+  },
+  "limits": {
+    "indenture": "Indenture",
+    "proposal": "Lender",
+    "board-policy": "Board policy"
+  },
+  "notTested": "not tested",
+  "breached": "above the limit",
+  "testsPerYear": "The lender tests {lender} times a year; the indenture, {indenture}.",
+  "anyBreachUnknown": "Without every required test, there is no compliance conclusion.",
+  "anyBreachYes": "There is a date and case where a limit goes above what is allowed with the proposal.",
+  "anyBreachNo": "On every required date and case, the limits stay within what is allowed with the proposal.",
+  "missingTests": "Required tests that are missing: {list}.",
+  "untestedLimits": "Limits with no test at all, not tested: {list}.",
+  "lenderBeforeDraw": "Lender test dates before the draw, as contrast only: {list}.",
+  "collateralTitle": "Collateral and indenture",
+  "collateral": "Coverage of {coverage}% asks for {required} of receivables. Of the {free} nominally free, {assignable} can be assigned.",
+  "shortfall": "The assignable portfolio is {shortfall} short of the request.",
+  "leftAfter": "After the assignment, {left} remains assignable, against a seasonal peak of {peak}.",
+  "restrictedAccount": "The bank asks for a restricted account.",
+  "reference": "Reference coverage from {low}% to {high}%.",
+  "atTop": "The requested coverage is at or above the top of the reference.",
+  "reasons": {
+    "assigned_to_other_creditor": "already assigned to another creditor",
+    "assignment_prohibited_without_debtor_consent": "contract forbids assignment without the debtor's consent",
+    "past_due": "past due"
+  },
+  "pledge": "The indenture's basket for new liens is {limit} ({basis}), with {occupied} already used; {remaining} remains.",
+  "bases": {
+    "aggregate": "aggregate amount",
+    "per_operation": "per operation"
+  },
+  "consent": "The requested collateral exceeds the basket by {excess} and depends on the debenture holders' consent.",
+  "consentWindow": "Calling the meeting now, consent comes by {by}; the money is needed on {need} ({slack} days of slack).",
+  "noConsent": "The requested collateral fits in the indenture's basket.",
+  "priceTitle": "Price and cost",
+  "price": "Nominal spread of CDI plus {nominal}. Effective cost over the life of CDI plus {gross} gross.",
+  "net": "Net of tax, CDI plus {net}, under the simplified full-deduction convention in lucro real.",
+  "netConventions": {
+    "not_all_periods_taxable": "There is a period without taxable profit in the proposal's life; the net cost is not stated.",
+    "life_beyond_fiscal_calendar": "The proposal runs beyond the adopted fiscal calendar; without a hypothesis for those years, the net cost is not stated.",
+    "no_deduction_presumido": "Under lucro presumido, the net cost equals the gross cost.",
+    "regime_unknown": "Tax regime not reported; net cost not computed."
+  },
+  "upfront": "Fee and IOF withheld at the draw add up to {upfront}% of the amount, of which {iof}% is IOF.",
+  "positions": {
+    "below_range": "below the range",
+    "at_or_below_median": "within the range, up to the median",
+    "above_median_within_range": "within the range, above the median",
+    "above_range": "above the range"
+  },
+  "market": "The nominal spread is {position} of comparables, from {low}% to {high}% with a median of {median}% ({sample} comparables, {confidence} confidence, on {date}).",
+  "confidences": {
+    "high": "high",
+    "moderate": "moderate",
+    "low": "low"
+  },
+  "history": "Against the {peer} ({date}): observed difference of {observed} basis points, expected {expected}, residual {residual}.",
+  "historyNoResidual": "Against the {peer} ({date}): observed difference of {observed} basis points, expected {expected}.",
+  "families": {
+    "pricing_date": "market on the date",
+    "tenor": "tenor",
+    "guarantee": "collateral",
+    "instrument_distribution": "instrument",
+    "scale": "size",
+    "other": "risk and other"
+  },
+  "step": "{family}: {bps} basis points",
+  "asksTitle": "What each ask to the bank buys",
+  "alternativesTitle": "The company's alternatives on the same basis",
+  "columns": {
+    "year": "Year",
+    "existingService": "Existing service",
+    "proposalService": "From the proposal",
+    "totalService": "Total",
+    "available": "Available for service",
+    "shortfallWith": "Shortfall with the proposal",
+    "date": "Date",
+    "scenario": "Case",
+    "ratio": "Net debt to EBITDA",
+    "bucket": "Portfolio group",
+    "amount": "Amount",
+    "holder": "With whom",
+    "reasons": "Why it is left out",
+    "ask": "Ask",
+    "serviceDelta": "Service in the peak year",
+    "costDelta": "Effective cost (basis points)",
+    "collateralDelta": "Collateral asked",
+    "consent": "Still needs consent",
+    "account": "Restricted account",
+    "route": "Route",
+    "uses": "Uses covered",
+    "allIn": "All-in cost over CDI",
+    "difference": "Difference against the proposal (basis points)",
+    "guarantee": "Collateral",
+    "months": "Months to the money"
+  },
+  "monthsRange": "{min} to {max}",
+  "notComparable": "not comparable",
+  "assessmentTitle": "Reading",
+  "factsTitle": "Facts",
+  "readingsTitle": "Reading",
+  "recommendationsTitle": "What I would ask for",
+  "wouldChangeTitle": "What would change the conclusion",
+  "questionsTitle": "Questions for the bank and the company",
+  "facts": {
+    "proposal_indicative": "The proposal is indicative and depends on credit approval.",
+    "collateral_exceeds_assignable_portfolio": "The requested collateral exceeds the portfolio that can be assigned.",
+    "assignment_prohibited_receivables_excluded": "Receivables of a customer that forbids assignment are left out.",
+    "indenture_consent_required": "The requested collateral exceeds the indenture's basket and depends on the debenture holders' consent.",
+    "peak_year_service_exceeds_available_cash": "In the peak year, debt service exceeds the cash available to meet it.",
+    "cash_below_minimum_with_proposal": "With the proposal, cash falls below the minimum in some quarter.",
+    "board_policy_breached_in_a_case": "In some case, leverage exceeds the board policy limit.",
+    "lender_tests_more_often_than_indenture": "The lender tests the covenant more often than the indenture.",
+    "restricted_account_requested": "The bank asks for a restricted account.",
+    "coverage_at_top_of_reference": "The requested coverage is at or above the top of the reference."
+  },
+  "readings": {
+    "term_longer_than_seasonal_use": "The term is longer than the seasonal use it funds.",
+    "term_shorter_than_capex_use": "The term is shorter than the life of the investment it funds.",
+    "all_in_cost_well_above_nominal": "The cost over the life is well above the nominal spread.",
+    "nominal_spread_below_range": "The nominal spread is below the comparables range.",
+    "nominal_spread_at_or_below_median": "The nominal spread is within the range, up to the median.",
+    "nominal_spread_above_median_within_range": "The nominal spread is within the range, above the median.",
+    "nominal_spread_above_range": "The nominal spread is above the comparables range.",
+    "improvement_partly_paid_in_collateral": "The improvement against the last operation is partly paid with collateral.",
+    "real_improvement_against_last_operation": "The improvement against the last operation remains after the adjustments.",
+    "covenant_headroom_tight": "Covenant headroom is tight on some date.",
+    "diligence_may_reopen_structure": "Diligence may reopen the structure.",
+    "covenant_tests_missing": "Required covenant tests are missing.",
+    "net_cost_conditioned_on_taxable_profit": "The net cost depends on taxable profit not adopted for the whole life."
+  },
+  "recommendations": {
+    "address_indenture_consent_before_signing": "Address the indenture consent with the bank before signing.",
+    "ask_longer_grace_and_tenor": "Ask for longer grace and tenor to relieve the peak year.",
+    "ask_lower_coverage_and_no_restricted_account": "Ask for lower coverage and no restricted account.",
+    "separate_uses_by_term": "Separate the uses by term, with a route for each.",
+    "keep_price_discussion_secondary": "With the spread in the range, negotiate the structure before the price."
+  },
+  "wouldChange": {
+    "debtor_consent_for_restricted_receivables": "Consent from the customer that forbids assignment.",
+    "indenture_clause_wording": "The wording of the indenture's lien clause.",
+    "other_free_asset_for_collateral": "Another free asset to make up the collateral.",
+    "seasonal_need_above_adopted": "A seasonal need above the one adopted.",
+    "committed_terms_after_diligence": "The committed terms after diligence."
+  },
+  "questions": {
+    "lender_covenant_definition": "To the bank: is the covenant definition the indenture's?",
+    "reciprocity_expected_by_lender": "To the bank: is reciprocity expected?",
+    "restricted_debtor_consent": "To the company: would the customer that forbids assignment consent?",
+    "indenture_clause_wording": "To the company: is the indenture's basket an aggregate amount or per operation, and what is already in it?",
+    "other_free_asset": "To the company: is there another free asset to make up the collateral?"
+  },
+  "process": "This analysis does not accept the proposal, does not talk to the bank and does not send a counterproposal.",
+  "exclusions": {
+    "proposal_acceptance": "accept the proposal",
+    "counterparty_contact": "talk to the bank",
+    "credit_approval": "approve credit",
+    "legal_opinion": "give a legal opinion",
+    "reciprocity_pricing": "price reciprocity"
+  }
+}
