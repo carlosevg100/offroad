@@ -105340,7 +105340,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     },
     "source": {
       "path": "capital/prepare-board-capital-discussion.md",
-      "hash": "9a24698ec3b0cbd2a92e04de2f342acdedfb82a3fdf41339cf3af7f9e0ae04a0"
+      "hash": "62834076ab3b19075f71b9fa59a4c506ce9f8d93501be6874dce2ae62e821b63"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -112880,12 +112880,12 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/evidence/prepare-board-capital-discussion-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
-            "hash": "493213fab30bba02da6c8687f3048113ca627c8715e82ab2ecb6445f316b0074"
+            "hash": "e04acad0af194ac1a47e2983ebde748495165b87fa272d9d032de861f47e56c9"
           }
         ]
       }
     ],
-    "manifestHash": "6f4a18a0e04c820b5a3bccc54a09d4eec8bbc49e07b900c044dc00e4f962a1e9"
+    "manifestHash": "5cd76e2e8b80fee9a1ace88065437d9e5f7ae70588271fcf33486158a40e414c"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
