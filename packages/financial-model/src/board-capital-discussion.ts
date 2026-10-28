@@ -1371,6 +1371,29 @@ export function boardWithdrawalVerified(recommendations: readonly {theme: string
     && recommendations.filter((r) => r.theme !== theme && shown(before, r.text)).every((r) => shown(after, r.text));
 }
 export type BoardVersionTexts = {summary: string; deliberations: {text: string}[]; pages: {title: string; lines: string[]; recommendation: string | null; options: string[]}[]};
+/** A breach the covenant result registers (a registered test with breached true) of a limit the material shows is a
+ * material fact: the material carries the breach sentence of that limit bound to that measurement, or it is refused by
+ * name. No compliance sentence about the limit comes out without it. */
+export function boardBreachesDisclosed(d: BoardDiscussion, sources: BoardSourceReading[]) {
+  const cv = sources.find((x) => x.methodId === "measure-covenant-headroom");
+  if (!cv) return;
+  const figureById = new Map(d.figures.map((f) => [f.id, f]));
+  const pathOf = (id: string) => {const f = figureById.get(id); return f && f.kind === "reading" && f.sourceId === cv.id ? f.path : null;};
+  const shownLimits = new Set(d.figures.flatMap((f) => {const m = f.kind === "reading" && f.sourceId === cv.id ? /^result\.headroom\.limits\[id=([a-z0-9-]+)\]\.maximumRatio$/.exec(f.path) : null; return m ? [m[1]!] : [];}));
+  const measurements = ((cv.packet as {result?: {headroom?: {measurements?: {id: string; role: string; tests?: {limitId: string; breached: boolean}[]}[]}}}).result?.headroom?.measurements) ?? [];
+  const breaches = measurements.flatMap((m) => m.role !== "test" ? [] : (m.tests ?? []).filter((t) => t.breached === true && shownLimits.has(t.limitId)).map((t) => ({limit: t.limitId, measurement: m.id})));
+  const byLimit: Record<string, string> = {aditamento: "risk.leverage_breach_covenant", politica: "risk.leverage_breach_policy"};
+  const refs = [...d.pages.flatMap((p) => [p.title, ...p.lines]), ...d.questions.map((q) => q.answer)];
+  for (const b of breaches) {
+    const disclosed = refs.some((r) => {
+      const parsed = (() => {try {return parseBoardTextRef(r);} catch {return null;}})();
+      if (!parsed || parsed.templateId !== byLimit[b.limit]) return false;
+      const ratio = parsed.bindings.alavancagem;
+      return ratio !== undefined && pathOf(ratio) === `result.headroom.measurements[id=${b.measurement}].ratio`;
+    });
+    if (!disclosed) throw new Error(`board_capital_breach_not_disclosed:${b.limit}:${b.measurement}`);
+  }
+}
 /** The texts that make a page or a deliberation, whose templates give its theme. */
 export const boardPageRefs = (p: BoardPage) => [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : [], ...p.options];
 export const boardDeliberationRefs = (x: BoardDeliberation) => [x.title, x.subject, ...x.recommendation ? [x.recommendation] : [], ...x.deadlines.map((t) => t.action)];
@@ -1453,6 +1476,7 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   if (daysBefore < 0) throw new Error("board_capital_meeting_before_request");
   const timeToAlign = daysBefore >= d.leadDays;
   const produce = d.outlineConfirmed || !timeToAlign;
+  if (produce) boardBreachesDisclosed(d, sources);
   const first = produce ? renderVersion(d, figures, noRemoval(), 1, sources) : null;
   // The composed material shows every material fact of the basis, or it is refused by name.
   if (first) {const lost = boardMissingFacts(d, figures, first.material); const id = [...lost.figures, ...lost.deadlines][0]; if (id) throw new Error(`board_capital_material_fact_not_shown:${id}`);}

@@ -75,6 +75,14 @@ export const boardStrictDeferral = (c: CaseData) => {
  * managerial measurement (test side only). */
 export const boardCovenantAnswer = (cov: string, managerial: boolean) => (c: CaseData) => {
   c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "1", cov];
+  // Review r41: every adverse test the covenant breaches is stated on the risk page (its own sentence), as the rule requires.
+  const breaches: [string, string, string, string, string][] = [["dez26-adverso", "2.32", "52.4", "2026-12-31", "26"], ["dez27-adverso", "2.37", "48.1", "2027-12-31", "27"]];
+  for (const [id, ratio, ebitda, date, yy] of breaches) if (new Decimal(ratio).gt(cov)) {
+    const lev = yy === "27" ? "lev-adv27" : `lev-adv${yy}`, eb = yy === "27" ? "ebitda-adv27" : `ebitda-adv${yy}`;
+    if (yy !== "27") {c.extraReadings[lev] = ["covenant", `result.headroom.measurements[id=${id}].ratio`, "2", ratio]; c.extraReadings[eb] = ["covenant", `result.headroom.measurements[id=${id}].reportedEbitda`, "1", ebitda];}
+    c.extraReadings[`adv${yy}-date`] = ["covenant", `result.headroom.measurements[id=${id}].date`, "month_long", date];
+    c.pages.find((x) => x.id === "alavancagem")!.lines.push(`risk.leverage_breach_covenant|ebitda=${eb}|data=adv${yy}-date|alavancagem=${lev}|covenant=cov-limit`);
+  }
   if (!managerial) return;
   c.extraReadings["lev-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].ratio", "2", "2.22"];
   c.extraReadings["ebitda-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].reportedEbitda", "1", "48.1"];
@@ -357,6 +365,16 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r41: the 2027 breach of a covenant of 2,35x stated in its own sentence; the material comes out.
+    observe("covenant-of-2-35-breached-in-2027-stated-with-limit-measurement-and-date", (() => {
+      const packet = auroraCovenantPacket({covenantMaximum: "2.35"}) as unknown as Record<string, unknown>;
+      return withBoardSource("covenant", packet, () => boardPacketInput(2, (c) => {boardRestateSource("covenant", "measure-covenant-headroom", packet)(c);
+        c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "2", "2.35"];
+        c.extraReadings["adv27-date"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].date", "month_long", "2027-12-31"];
+        c.questions = c.questions.filter((q) => q.id !== "trigo");
+        c.pages.find((x) => x.id === "alavancagem")!.lines.push("risk.leverage_breach_covenant|ebitda=ebitda-adv27|data=adv27-date|alavancagem=lev-adv27|covenant=cov-limit");}));
+    })(), {line: "Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,37x e passa o covenant de 2,35x."},
+      (p) => ({line: pageOf(p, "alavancagem").lines.find((l) => l.includes("passa o covenant"))})),
     // Review r40: with several tested profiles, the term answer names the one it reads by what is proven, never "mais curto".
     observe("term-answer-with-a-shorter-profile-registered-names-the-profile-read", (() => {
       const packet = auroraPlanPacket({shorterProfile: true}) as unknown as Record<string, unknown>;
@@ -680,7 +698,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     // Review r30: compliance with a limit only by a registered, unbreached test of that very limit.
     ...([2, 3] as const).flatMap((turn) => [
       [`managerial-adverse-read-below-a-breached-covenant-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({covenantMaximum: "2.3", adverseManagerial: true}) as unknown as Record<string, unknown>,
-        () => build(turn, boardCovenantAnswer("2.3", true))), "board_capital_template_condition_failed:a.wheat:7"],
+        () => build(turn, boardCovenantAnswer("2.3", true))), "board_capital_template_condition_failed:a.wheat:8"],
       [`contractual-adverse-against-a-covenant-of-2-3-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({covenantMaximum: "2.3", adverseManagerial: true}) as unknown as Record<string, unknown>,
         () => build(turn, boardCovenantAnswer("2.3", false))), "board_capital_template_condition_failed:a.wheat:3"],
     ] as [string, () => unknown, string][]),
@@ -791,6 +809,19 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r41: one period per sentence; a registered breach of a shown limit must be stated.
+    ["wheat-answer-for-2027-with-the-adverse-measurement-of-2026", () => {
+      const packet = auroraCovenantPacket() as unknown as Record<string, unknown>;
+      return withBoardSource("covenant", packet, () => build(2, (c) => {boardRestateSource("covenant", "measure-covenant-headroom", packet)(c);
+        c.extraReadings["ebitda-adv27"] = ["covenant", "result.headroom.measurements[id=dez26-adverso].reportedEbitda", "1", "52.4"];
+        c.extraReadings["lev-adv26"] = ["covenant", "result.headroom.measurements[id=dez26-adverso].ratio", "2", "2.32"];
+        const q = c.questions.find((x) => x.id === "trigo")!; q.answer = q.answer.replace("alavancagem=lev-adv27", "alavancagem=lev-adv26");}));
+    }, "board_capital_template_condition_failed:a.wheat"],
+    ["covenant-of-2-35-breached-in-2027-not-stated", () => {
+      const packet = auroraCovenantPacket({covenantMaximum: "2.35"}) as unknown as Record<string, unknown>;
+      return withBoardSource("covenant", packet, () => build(2, (c) => {boardRestateSource("covenant", "measure-covenant-headroom", packet)(c);
+        c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "2", "2.35"];}));
+    }, "board_capital_breach_not_disclosed:aditamento:dez27-adverso"],
     // Review r40: two readings compared share their base; otherwise refused.
     ["policy-definitions-compared-with-another-managerial-debt", () => {
       const packet = auroraCovenantPacket({managerialDebt: "80"}) as unknown as Record<string, unknown>;

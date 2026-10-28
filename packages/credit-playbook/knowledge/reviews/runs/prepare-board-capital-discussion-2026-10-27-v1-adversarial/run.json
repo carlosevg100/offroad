@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T08:40:41.474Z",
-    "finishedAt": "2026-10-28T08:44:27.416Z"
+    "startedAt": "2026-10-28T09:33:06.255Z",
+    "finishedAt": "2026-10-28T09:36:52.416Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -953,7 +953,7 @@
       "id": "managerial-adverse-read-below-a-breached-covenant-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b218879331e7968be02a75232ee0992db0482920d51d678c79e71d406e0aa88b",
+      "inputFingerprint": "9b9adf06533d38c16cbea5388f7bc530746faf46f4365cd21a63015e1602381d",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -961,7 +961,7 @@
       "id": "contractual-adverse-against-a-covenant-of-2-3-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "924972aca0334a09705382cbbcf176e53c662813392b06ea10a9f76fda7c4a9e",
+      "inputFingerprint": "971a1cbb0661717de6d18e3a5034eae951618f3c3b8c4572aeaf5271760dbc1d",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -969,7 +969,7 @@
       "id": "managerial-adverse-read-below-a-breached-covenant-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c4ba6d6cee257ce9fe0b5f874c9df60353415b4e16041de34d3d10ef35f74a61",
+      "inputFingerprint": "c6710265b96aa2205eefda3e668beaece4cf45af17b1c26c1205eeb6eb854fcf",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -977,7 +977,7 @@
       "id": "contractual-adverse-against-a-covenant-of-2-3-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "d4dd2961f8540ded260016cecd21b3be7c5cc510c0c5d5f5ad01e466864ebc00",
+      "inputFingerprint": "c1535cdda13d69c90ec66c60c6907bbeab06c17abdbb8a2527539a799187d87a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1318,6 +1318,22 @@
       "passed": true
     },
     {
+      "id": "wheat-answer-for-2027-with-the-adverse-measurement-of-2026",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "e138833a4af4c6ea5dfa0e0a34fe7a95ea83cf2d25651ee5e6b4bd5bbe4a7593",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "covenant-of-2-35-breached-in-2027-not-stated",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8023d008b5d4cbad07617fab3c04674ede01868c3bdc02d8b31625e6f3e09931",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "policy-definitions-compared-with-another-managerial-debt",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1543,6 +1559,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "192e2041f3fb9e879a251719dc5f5455d0035d97eb35e8394d973cdc0e18d368",
+  "evidenceFingerprint": "7acc2139a19995fdf84716ecce9f0fe6a3bb1f4e1fc1ed489072b0dcaf38fdca",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

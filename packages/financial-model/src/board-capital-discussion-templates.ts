@@ -659,6 +659,16 @@ export const boardTemplates: Readonly<Record<string, BoardTemplate>> = {
             "tests[*].breached", "tests[*].ebitdaHeadroom", "tests[*].netDebtHeadroom", "tests[*].unrealizedEbitdaLossToLimit"]})]}),
   "risk.leverage_adverse": t("page.line", "No adverso {de:ano}, chega a {adverso}, contra a política de {politica}{definition:politica:$ma}.",
     {ano: yr("$y"), adverso: measurement("multiple", "$ma", "ratio"), politica: policy}, {when: [adverseYear, adverseScenario, ...policyIsBoard, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica")), ...complies("$ma", "politica")]}),
+  // A breach the source registers for a limit the material shows is a material fact, in its own sentence: the
+  // measurement (a registered test of that limit), its date and the limit.
+  "risk.leverage_breach_covenant": t("page.line", "Com EBITDA de {ebitda} {em:data}, a alavancagem chega a {alavancagem} e passa o covenant de {covenant}.",
+    {ebitda: measurement("money", "$mb", "reportedEbitda", "flow"), data: measurement("date", "$mb", "date"), alavancagem: measurement("multiple", "$mb", "ratio"), covenant},
+    {when: [...claim("a fonte registra a violação do covenant nesta medição, teste registrado do limite", cmp(at(CV, "result.headroom.measurements[id=$mb].tests[limitId=aditamento].breached"), "eq", {value: "true"})),
+      ...claim("a alavancagem passa o covenant", cmp("alavancagem", "gt", "covenant"))]}),
+  "risk.leverage_breach_policy": t("page.line", "Com EBITDA de {ebitda} {em:data}, a alavancagem chega a {alavancagem} e passa a política de {politica}{definition:politica:$mb}.",
+    {ebitda: measurement("money", "$mb", "reportedEbitda", "flow"), data: measurement("date", "$mb", "date"), alavancagem: measurement("multiple", "$mb", "ratio"), politica: policy},
+    {when: [...claim("a fonte registra a violação da política nesta medição, teste registrado do limite", cmp(at(CV, "result.headroom.measurements[id=$mb].tests[limitId=politica].breached"), "eq", {value: "true"})),
+      ...claim("a alavancagem passa a política", cmp("alavancagem", "gt", "politica"))]}),
   "risk.policy_definition": t("page.title", "A política de {politica} precisa de uma definição de EBITDA", {politica: policy}, {when: [...policyIsBoard, ...policyUndefined]}),
   "risk.policy_readings": t("page.line", "Pelo EBITDA gerencial, {gerencial}; pela definição da escritura, {escritura} {em:data}.",
     {gerencial: measurement("multiple", "$mg", "ratio"), escritura: measurement("multiple", "$me", "ratio"), data: measurement("date", "$me", "date")},
@@ -759,6 +769,8 @@ export const boardTemplates: Readonly<Record<string, BoardTemplate>> = {
       ebitda_adverso: measurement("money", "$ma", "reportedEbitda", "flow"), alavancagem: measurement("multiple", "$ma", "ratio"), covenant},
     {answers: "q.wheat", when: [...wheatScenario("informado-trigo-4m"),
       ...claim("a alavancagem adversa fica abaixo do covenant", cmp("alavancagem", "lt", "covenant")), adverseScenario,
+      // Temporal coherence: the adverse measurement is of the year the projection announces.
+      adverseYear,
       ...claim("o covenant é contratual e está em vigor", cmp(at(CV, "result.headroom.limits[id=aditamento].kind"), "eq", {value: "contractual"}),
         cmp(at(CV, "result.headroom.limits[id=aditamento].status"), "eq", {value: "in_force"})), ...complies("$ma", "aditamento")]}),
   // A debtor is named by the debtor key of its item; its balance, contract and program follow the same item, and the
@@ -1058,6 +1070,7 @@ export const boardBoundaries: readonly {phrase: RegExp; relation: "<" | "<=" | "
   {phrase: /antes do vencimento dessa dívida/, relation: "<", field: "prazo e finalPayment", rule: "prazo estritamente anterior ao vencimento (lt)", proof: /\{"slot":"prazo"\},"lt",\{"slot":"vencimento"\}/, display: "two_shown"},
   {phrase: /começando depois dos do plano de referência/, relation: ">", field: "componentes da variante", rule: "cada componente começa estritamente depois (startsLater)", proof: /"startsLater"|"planDeferred"/, display: "no_value"},
   {phrase: /que termina antes do adotado/, relation: "<", field: "amortizationTests[*].years: último pagamento efetivo", rule: "o último pagamento efetivo do perfil lido vem antes do do adotado (lastPaid lt); nenhum superlativo sobre os demais perfis", proof: /"lastPaid".*"lt",\{"lastPaid"/, display: "no_value"},
+  {phrase: /passa (?:o covenant|a política) de \{(?:covenant|politica)\}/, relation: ">", field: "measurements[*].ratio e limits[*].maximumRatio", rule: "violação registrada pela fonte (breached) e alavancagem estritamente acima do limite (gt), em exato e no exibido", proof: /breached"\]\},"eq",\{"value":"true"\}.*\{"slot":"alavancagem"\},"gt"/, display: "two_shown"},
   {phrase: /passa o caixa disponível/, relation: ">", field: "scheduledAmortization, availableAfterInterest", rule: "amortização estritamente maior que o caixa disponível (gt)", proof: /\{"slot":"amortizacao"\},"gt",\{"slot":"disponivel"\}/, display: "two_shown"},
   {phrase: /passa a capacidade da fábrica/, relation: ">", field: "readings.capacity.aboveWithoutInvestment", rule: "volume acima da capacidade registrado", proof: /aboveWithoutInvestment"\]\},"eq",\{"value":"true"\}/, display: "no_value"},
   {phrase: /disponível depois dos juros/, relation: "campo", field: "availableAfterInterest", rule: "nome do campo (caixa disponível depois dos juros), não fronteira", proof: /availableAfterInterest/, display: "no_value"},
@@ -1144,6 +1157,23 @@ export function checkBoardTemplateLibrary(library: Readonly<Record<string, Board
           .some((p) => p.index! <= m.index! && m.index! < p.index! + p[0].length)
           && (q.proof === "question" ? x.use.includes("question") && kind === "text" : q.proof === "nearly_equal" ? kind === "nearly_equal" : q.proof === "gap" ? kind === "gap" : q.proof.test(facts)));
         if (!proven) problems.push(`${id}:qualifier_unproved:${word}`);
+      }
+    }
+    // Temporal coherence: every slot that reads a period shares the period of the sentence. A value read from a
+    // measurement ($m) needs the measurement's date shown in the sentence, or a condition tying that date to the shown
+    // year or date; a value read by a year variable needs that year shown. A declared difference shows both periods.
+    {
+      const facts = JSON.stringify(x.when);
+      const shownYears = new Set(Object.values(x.slots).flatMap((spec) => spec.year ? [spec.year] : []));
+      const shownMeasurementDates = new Set(Object.values(x.slots).flatMap((spec) => (spec.from ?? []).flatMap(([, path]) => {const m = /measurements\[id=(\$[a-z]+)\]\.date$/.exec(path); return m ? [m[1]!] : [];})));
+      for (const [slot, spec] of Object.entries(x.slots)) for (const [, path] of spec.from ?? []) {
+        const m = /measurements\[id=(\$[a-z]+)\]\.(?!date$)/.exec(path);
+        if (m) {
+          const v = m[1]!.replace("$", "\\$");
+          const tied = new RegExp(`\\{"slot":"[a-z_]+"\\},"eq",\\{"at":\\["measure-covenant-headroom","result\\.headroom\\.measurements\\[id=${v}\\]\\.date"\\](?:,"year":true)?\\}|measurements\\[id=${v}\\]\\.date"\\]\\},"eq",\\{"slot":"[a-z_]+"\\}`).test(facts);
+          if (!shownMeasurementDates.has(m[1]!) && !tied) problems.push(`${id}:period:${slot}:${m[1]}`);
+        }
+        for (const y of path.match(/\$y\b/g) ?? []) if (!shownYears.has(y)) problems.push(`${id}:period:${slot}:${y}`);
       }
     }
     // Every template declares its theme.

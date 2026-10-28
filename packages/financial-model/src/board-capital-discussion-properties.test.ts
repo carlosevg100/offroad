@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardShownTexts, boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardRestateSource, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardCovenantAnswer, boardShownTexts, boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardRestateSource, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, debtTableWithPrincipal, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, debtTableAtReferenceDate, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
@@ -116,6 +116,10 @@ const meaning: Record<string, Record<string, string>> = {
   "risk.leverage": {politica: CV + "result.headroom.limits[id=politica].maximumRatio", adverso: CV + "result.headroom.measurements[id=*].ratio", ano: "year"},
   "risk.leverage_path": {inicio: CV + "result.headroom.measurements[id=*].ratio", data_inicio: CV + "result.headroom.measurements[id=*].date",
     fim: CV + "result.headroom.measurements[id=*].ratio", data_fim: CV + "result.headroom.measurements[id=*].date"},
+  "risk.leverage_breach_covenant": {ebitda: CV + "result.headroom.measurements[id=*].reportedEbitda", data: CV + "result.headroom.measurements[id=*].date",
+    alavancagem: CV + "result.headroom.measurements[id=*].ratio", covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio"},
+  "risk.leverage_breach_policy": {ebitda: CV + "result.headroom.measurements[id=*].reportedEbitda", data: CV + "result.headroom.measurements[id=*].date",
+    alavancagem: CV + "result.headroom.measurements[id=*].ratio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
   "risk.leverage_adverse": {ano: "year", adverso: CV + "result.headroom.measurements[id=*].ratio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
   "risk.policy_definition": {politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
   "risk.policy_readings": {gerencial: CV + "result.headroom.measurements[id=*].ratio", escritura: CV + "result.headroom.measurements[id=*].ratio",
@@ -186,6 +190,7 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
   "topic.project_return": (v) => v.retorno!.gt(v.custo!), "topic.project_sensitivities": (v) => [v.vpl_economia, v.vpl_capex, v.vpl_partida].every((x) => x!.lt(0)),
   "recommendation.debenture_cost": (v) => v.baixo!.lte(v.alto!), "recommendation.amortization": (v) => v.inicio!.lte(v.fim!),
   "risk.leverage_path": (v) => v.fim!.lt(v.inicio!), "risk.leverage_adverse": (v) => v.adverso!.lt(v.politica!), "risk.leverage": (v) => v.adverso!.lt(v.politica!),
+  "risk.leverage_breach_covenant": (v) => v.alavancagem!.gt(v.covenant!), "risk.leverage_breach_policy": (v) => v.alavancagem!.gt(v.politica!),
   "what_changes.demand": (v) => v.piso!.lte(v.alvo!), "what_changes.title": (v) => v.piso!.gt(0), "what_changes.receivable_days": (v) => v.giro!.gt(0), "what_changes.wheat": (v) => v.choque!.gt(0),
   "a.roll_bank": (v) => v.falta!.gt(0), "a.term": (v) => v.amortizacao!.gt(v.disponivel!), "a.peer": (v) => v.data!.lte(v.total!), "a.rating": (v) => v.baixo!.lte(v.alto!), "a.rating_known_costs": (v) => v.baixo!.lte(v.alto!),
   "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "a.anchor_shared": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
@@ -732,6 +737,32 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     if (!(tested.last !== undefined && adopted.last !== undefined && tested.last < adopted.last && tested.last < tested.listed!)) bad.push(`term_last_payment:${t.slice(0, 60)}`);
     // Superlative lens: "mais curto" quantifies over every registered profile; the one read must end strictly first.
     if (/mais curto/.test(t) && tests.some((x) => x.profileId !== readId && x.profileId !== "adopted" && (last(x.profileId).last ?? Infinity) <= (tested.last ?? -Infinity))) bad.push(`superlative_term:${t.slice(0, 60)}`);
+  }
+  // Temporal lens and breach disclosure, the oracle's own reading: a measurement read in a field without its date shown
+  // must be of a year the field shows; a breach the covenant result registers for a limit the material shows must be
+  // stated (the limit passed, with that measurement's leverage).
+  {
+    const cvt = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
+      {result?: {headroom?: {measurements?: {id: string; date: string; role: string; tests?: {limitId: string; breached: boolean}[]}[]}}} | undefined;
+    const records = cvt?.result?.headroom?.measurements ?? [];
+    const idOf = (figureId: string | null) => {const x = d.identity.find((i) => i.figureId === figureId); const m = x ? /measurements\[id=([^\]&]+)\]\.(\w+)/.exec(x.path) : null; return m ? {id: m[1]!, field: m[2]!} : null;};
+    for (const field of [...new Set(v.bindings.map((b) => b.field))]) {
+      const bound = v.bindings.filter((b) => b.field === field);
+      const years = bound.flatMap((b) => {const x = d.identity.find((i) => i.figureId === b.figureId); return x && x.unit === "calendar" ? [x.value] : [];});
+      const read = bound.map((b) => idOf(b.figureId)).filter((x): x is {id: string; field: string} => x !== null);
+      for (const r of read.filter((x) => x.field !== "date")) {
+        if (read.some((x) => x.id === r.id && x.field === "date")) continue;
+        // Its date shown through another measurement of the same date, or a year the field shows.
+        const date = records.find((m) => m.id === r.id)?.date, shownDates = read.filter((x) => x.field === "date").map((x) => records.find((m) => m.id === x.id)?.date);
+        if (!date || !(years.includes(date.slice(0, 4)) || shownDates.includes(date))) bad.push(`period:${field}:${r.id}`);
+      }
+    }
+    const shownLimits = new Set(d.identity.flatMap((i) => {const m = i.methodId === "measure-covenant-headroom" ? /limits\[id=([a-z0-9-]+)\]\.maximumRatio/.exec(i.path) : null; return m ? [m[1]!] : [];}));
+    for (const m of records.filter((x) => x.role === "test")) for (const t of (m.tests ?? []).filter((x) => x.breached && shownLimits.has(x.limitId))) {
+      const ratios = d.identity.filter((i) => i.path === `result.headroom.measurements[id=${m.id}].ratio`).map((i) => i.display);
+      const verb = t.limitId === "aditamento" ? "passa o covenant de" : "passa a política de";
+      if (!texts.some((x) => x.includes(verb) && ratios.some((r) => x.includes(r)))) bad.push(`breach_omitted:${t.limitId}:${m.id}`);
+    }
   }
   // Common-base lens, the oracle's own reading: two measurements compared in one sentence share their base. The policy's
   // definitions: same debt, cash, net debt, date and scenario; the leverage path over time: same scenario, role,
@@ -1474,7 +1505,8 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
   });
   it("regression r30: compliance with a limit only by a registered, unbreached test of that very limit at the date and scenario (full path, oracle not vacuous)", () => {
     const edit = (cov: string, managerial: boolean) => (c: CaseData) => {
-      c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "1", cov];
+      // The breached tests of the covenant are stated first (review r41), so the compliance sentence is what is tested.
+      boardCovenantAnswer(cov, false)(c);
       if (managerial) {
         c.extraReadings["lev-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].ratio", "2", "2.22"];
         c.extraReadings["ebitda-adv27-ger"] = ["covenant", "result.headroom.measurements[id=dez27-adverso-gerencial].reportedEbitda", "1", "48.1"];
@@ -1486,7 +1518,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const at30 = auroraCovenantPacket({adverseManagerial: true}) as unknown as Record<string, unknown>;
     for (const turn of [2, 3] as const) {
       // The managerial 2,2229x (tests only the policy) beside the breached contractual 2,3707x, against 2,3x: refused.
-      expect(() => withBoardSource("covenant", at23, () => full(turn, edit("2.3", true)))).toThrow("board_capital_template_condition_failed:a.wheat:7");
+      expect(() => withBoardSource("covenant", at23, () => full(turn, edit("2.3", true)))).toThrow("board_capital_template_condition_failed:a.wheat:8");
       // Controls: the contractual test against 2,3x is refused; against 3,0x it is accepted.
       expect(() => withBoardSource("covenant", at23, () => full(turn, edit("2.3", false)))).toThrow("board_capital_template_condition_failed:a.wheat:3");
       const p = withBoardSource("covenant", at30, () => full(turn, edit("3.0", false)));
@@ -1962,6 +1994,47 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       // Not vacuous: the calibrated comparisons read against those sources are flagged on the base; the calibration is clean.
       expect(readAgainst(calibrated, "measure-covenant-headroom", managerial).some((x) => x.startsWith("base_policy:")), `${turn}`).toBe(true);
       expect(readAgainst(calibrated, "measure-covenant-headroom", unadjusted).some((x) => x.startsWith("base_leverage_path:")), `${turn}`).toBe(true);
+      expect(oracle(calibrated), `${turn}`).toEqual({bad: [], missing: []});
+    }
+  });
+  it("regression r41: one period per sentence; a registered breach of a shown limit is stated (full path, turns 2 and 3, oracle not vacuous)", () => {
+    const covenantAt = (max: string | null) => (max ? auroraCovenantPacket({covenantMaximum: max}) : auroraCovenantPacket()) as unknown as Record<string, unknown>;
+    // The reviewer's evasion: the 2027 projection answered with the adverse measurement of December 2026.
+    const evade = (packet: Record<string, unknown>, max: string | null) => (c: CaseData) => {
+      boardRestateSource("covenant", "measure-covenant-headroom", packet)(c);
+      c.extraReadings["ebitda-adv27"] = ["covenant", "result.headroom.measurements[id=dez26-adverso].reportedEbitda", "1", "52.4"];
+      c.extraReadings["lev-adv26"] = ["covenant", "result.headroom.measurements[id=dez26-adverso].ratio", "2", "2.32"];
+      if (max) c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "2", max];
+      const q = c.questions.find((x) => x.id === "trigo")!; q.answer = q.answer.replace("alavancagem=lev-adv27", "alavancagem=lev-adv26");
+    };
+    const at235 = covenantAt("2.35");
+    expect((at235 as {readings: {anyBreach: boolean}}).readings.anyBreach).toBe(true);
+    // The breach line on the risk page, the wheat answer (a compliance sentence on the same limit) taken out.
+    const disclose = (c: CaseData) => {
+      boardRestateSource("covenant", "measure-covenant-headroom", at235)(c);
+      c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "2", "2.35"];
+      c.extraReadings["adv27-date"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].date", "month_long", "2027-12-31"];
+      c.questions = c.questions.filter((q) => q.id !== "trigo");
+      c.pages.find((x) => x.id === "alavancagem")!.lines.push("risk.leverage_breach_covenant|ebitda=ebitda-adv27|data=adv27-date|alavancagem=lev-adv27|covenant=cov-limit");
+    };
+    for (const turn of [2, 3] as const) {
+      // Without a breach: the 2026 measurement in the 2027 answer is refused by the period of the sentence.
+      expect(() => withBoardSource("covenant", covenantAt(null), () => full(turn, evade(covenantAt(null), null))), `${turn}`).toThrow(/board_capital_template_condition_failed:a\.wheat/);
+      // Covenant of 2,35x: the 2027 adverse test breaches; the same evasion, and the calibrated material without the breach, are refused.
+      expect(() => withBoardSource("covenant", at235, () => full(turn, evade(at235, "2.35"))), `${turn}`).toThrow("board_capital_breach_not_disclosed:aditamento:dez27-adverso");
+      expect(() => withBoardSource("covenant", at235, () => full(turn, (c) => {boardRestateSource("covenant", "measure-covenant-headroom", at235)(c);
+        c.extraReadings["cov-limit"] = ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "2", "2.35"];})), `${turn}`).toThrow("board_capital_breach_not_disclosed:aditamento:dez27-adverso");
+      // Disclosed: the breach is stated and the material comes out; the oracle reads it clean.
+      const p = withBoardSource("covenant", at235, () => full(turn, disclose));
+      expect(current(p).pages.find((x) => x.id === "alavancagem")!.lines, `${turn}`).toContain("Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,37x e passa o covenant de 2,35x.");
+      expect(oracle(p, [{packet: at235}, ...auroraBoardSources().filter((x) => x.id !== "covenant")]), `${turn}`).toEqual({bad: [], missing: []});
+      // Not vacuous: the breach line removed is flagged; the wheat answer read on a 2026 measurement is flagged; the calibration is clean.
+      const removed = structuredClone(p), page = current(removed).pages.find((x) => x.id === "alavancagem")!;
+      page.lines = page.lines.filter((l) => !l.includes("passa o covenant"));
+      expect(oracle(removed, [{packet: at235}, ...auroraBoardSources().filter((x) => x.id !== "covenant")]).bad, `${turn}`).toContain("breach_omitted:aditamento:dez27-adverso");
+      const calibrated = packet(turn, () => undefined), shifted = structuredClone(calibrated);
+      const lev = shifted.result.discussion!.identity.find((i) => i.figureId === "lev-adv27")!; lev.path = "result.headroom.measurements[id=dez26-adverso].ratio";
+      expect(oracle(shifted).bad.some((x) => x.startsWith("period:question.trigo.answer:dez26-adverso")), `${turn}`).toBe(true);
       expect(oracle(calibrated), `${turn}`).toEqual({bad: [], missing: []});
     }
   });

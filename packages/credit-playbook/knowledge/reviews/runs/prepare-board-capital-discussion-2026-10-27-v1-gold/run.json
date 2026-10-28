@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T08:40:41.474Z",
-    "finishedAt": "2026-10-28T08:44:27.415Z"
+    "startedAt": "2026-10-28T09:33:06.255Z",
+    "finishedAt": "2026-10-28T09:36:52.414Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,14 @@
       "passed": true
     },
     {
+      "id": "covenant-of-2-35-breached-in-2027-stated-with-limit-measurement-and-date",
+      "expectation": "{\"line\":\"Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,37x e passa o covenant de 2,35x.\"}",
+      "observed": "{\"line\":\"Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,37x e passa o covenant de 2,35x.\"}",
+      "inputFingerprint": "917419a2df7b820978393a5ab4967deb65d79ba58c6e6e6dfa7ee04c34d32403",
+      "outputFingerprint": "7677ec34d618b08606a9f019621870ebc7f0751f78a746e3759a96063b368985",
+      "passed": true
+    },
+    {
       "id": "term-answer-with-a-shorter-profile-registered-names-the-profile-read",
       "expectation": "{\"answer\":\"Num perfil de amortização testado que termina antes do adotado, a amortização de 2029, de R$ 33 milhões, passa o caixa disponível depois dos juros, de R$ 24 milhões; o perfil adotado passa em todo o horizonte.\"}",
       "observed": "{\"answer\":\"Num perfil de amortização testado que termina antes do adotado, a amortização de 2029, de R$ 33 milhões, passa o caixa disponível depois dos juros, de R$ 24 milhões; o perfil adotado passa em todo o horizonte.\"}",
@@ -735,6 +743,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "e5bed6ff936b9e3e8c571036438cd65126c6859d5832f4190f52326f447a4a7b",
+  "evidenceFingerprint": "97b3c1fdb59930a37ac2cc170ffbc0585f913a4f1e4970652f7964a8ff69ca06",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
