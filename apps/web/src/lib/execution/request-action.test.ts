@@ -235,7 +235,8 @@ describe("capital execution request action", () => {
     for (const [message, error] of [["board_material_prior_rights_denied", "provenance_denied"], ["board_material_prior_source_unpinned", "provenance_denied"],
       ["board_material_prior_fingerprint_mismatch", "stale"], ["board_material_prior_not_released", "prior_invalid"], ["board_material_prior_not_found", "prior_invalid"],
       ["board_material_priors_invalid", "invalid"], ["document_folder_prior_input_mismatch", "stale"], ["board_material_prior_scale_mismatch", "stale"], ["document_folder_prior_not_completed", "prior_invalid"],
-      ["document_folder_prior_rights_denied", "provenance_denied"], ["document_folder_priors_invalid", "invalid"]] as const)
+      ["document_folder_prior_rights_denied", "provenance_denied"], ["document_folder_priors_invalid", "invalid"],
+      ["board_material_prior_manifest_mismatch", "prior_invalid"], ["document_folder_prior_manifest_mismatch", "prior_invalid"]] as const)
       expect(executionRequestFailure({code: "42501", message}), message).toBe(error);
   });
 });

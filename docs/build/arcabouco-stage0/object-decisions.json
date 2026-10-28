@@ -343950,7 +343950,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 362,
+          "line": 367,
           "anchor": "create function private.board_material_latest_priors_v1(p_org uuid,p_work uuid,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344122,7 +344122,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 375,
+          "line": 380,
           "anchor": "create function private.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344284,7 +344284,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 205,
+          "line": 210,
           "anchor": "create function private.board_material_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
         }
@@ -344338,7 +344338,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 457,
+          "line": 462,
           "anchor": "create function private.document_folder_decision_kind_v1(p_objective text) returns text",
           "mechanism": "direct_ddl"
         }
@@ -344500,7 +344500,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 236,
+          "line": 241,
           "anchor": "create function private.document_folder_prior_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
         }
@@ -344564,7 +344564,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 414,
+          "line": 419,
           "anchor": "create function private.document_folder_prior_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344618,7 +344618,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 466,
+          "line": 471,
           "anchor": "create function private.document_folder_work_dossiers_v1(p_org uuid,p_work uuid,p_subject uuid) returns uuid[]",
           "mechanism": "direct_ddl"
         }
@@ -344888,7 +344888,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 336,
+          "line": 341,
           "anchor": "create function private.lote4_latest_prior_v1(p_org uuid,p_work uuid,p_expected jsonb,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345222,7 +345222,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 264,
+          "line": 269,
           "anchor": "create function private.request_work_execution_producer_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345286,7 +345286,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 395,
+          "line": 400,
           "anchor": "create function private.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345350,7 +345350,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 476,
+          "line": 481,
           "anchor": "create function private.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345414,7 +345414,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 434,
+          "line": 439,
           "anchor": "create function private.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345478,7 +345478,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 388,
+          "line": 393,
           "anchor": "create function public.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345542,7 +345542,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 428,
+          "line": 433,
           "anchor": "create function public.document_folder_prior_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345606,7 +345606,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 327,
+          "line": 332,
           "anchor": "create function public.request_work_execution_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345670,7 +345670,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 408,
+          "line": 413,
           "anchor": "create function public.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345734,7 +345734,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 554,
+          "line": 559,
           "anchor": "create function public.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -345798,7 +345798,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120200_lote4_priors.sql",
-          "line": 447,
+          "line": 452,
           "anchor": "create function public.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }

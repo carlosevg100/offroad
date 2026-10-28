@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "prepare-board-capital-discussion-2026.10.27-v1",
+    "artifactHash": "824d7bb8163b45c43829b161568bb24f29e0dfed8f554ddcde400ba2fc156d38",
+    "profileFingerprint": "9f852586406937c271e4895753b11c71e00c90a7adee53de146fcbe9b4082813"
+  },
+  "subjectCommit": "407b8119c0d8abd6938bf7f987d6342ac9f8bff3",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-28T23:13:31.925Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98",
+    "manifestFileHash": "a2101d76876761f3d28fd5dd93b3370a16e80546a64210a66503ce51fb8473a9",
+    "canonicalProfileTextSha256": "a7388115c179356543dfc1cf139c4b692806b893200ce154ddb222588a12e55c",
+    "canonicalProfileTextBytes": 1471,
+    "reviewedWorktreeHead": "407b8119c0d8abd6938bf7f987d6342ac9f8bff3",
+    "originMainHead": "34cb9daf4d6758ce5f44b9aed0df22d7db2bf1b2",
+    "checksPerformed": [
+      "HEAD 407b8119c0d8abd6938bf7f987d6342ac9f8bff3 no branch feat/lote4-bridge, worktree limpo. git merge-base --is-ancestor confirmou sourceCommit 34cb9daf4d6758ce5f44b9aed0df22d7db2bf1b2 como ancestral de HEAD. origin/main registrado localmente, sem fetch.",
+      "Snapshot ccd886ed18f796e8e947314eab6ddda72e68ad087de6c197e26d4f9b4bd4b3ad.sources.json: SHA-256 dos bytes igual ao snapshotHash e sourceCommit consistente. Todos os 460 arquivos pinned comparados byte a byte com git show no sourceCommit.",
+      "Os 451 executorSources conferem individualmente com SHA-256 dos bytes no sourceCommit. Também conferem 9 pins do compilador, 5 de evidências e 2 parseOnlySources. Manifesto no sourceCommit idêntico ao local: SHA-256 a2101d76876761f3d28fd5dd93b3370a16e80546a64210a66503ce51fb8473a9, igual ao manifestFileHash.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs terminou com exit 0 em Node 24.19.0. Duas reconstruções adicionais por rebuildReleasedExecutor produziram bytes idênticos entre si e ao artefato instalado: 1955076 bytes, SHA-256 824d7bb8163b45c43829b161568bb24f29e0dfed8f554ddcde400ba2fc156d38, igual ao lock.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada da release, com methodId prepare-board-capital-discussion, methodVersion 2026.10.27-v1, manifestHash e artifactHash corretos. Manifesto empacotado idêntico byte a byte ao manifesto fonte.",
+      "deriveExecutionProfile e executionCanonicalText executados a partir das fontes em HEAD. Texto idêntico byte a byte a /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote4-2026-10-27/perfil/profile-prepare-board-capital-discussion.txt: 1471 bytes, SHA-256 a7388115c179356543dfc1cf139c4b692806b893200ce154ddb222588a12e55c.",
+      "Fingerprint interno recalculado sobre o perfil sem fingerprint: 9f852586406937c271e4895753b11c71e00c90a7adee53de146fcbe9b4082813, igual ao lock. A derivação verificou manifestHash sobre o manifesto sem manifestHash e os hashes do compilador, componentes e executor.",
+      "Política confirmada: grantsExecution=false, maxModelCalls=0, maxCostMicrousd=0, orçamento original com custo e chamadas zero, allowedEffects=[read_only], tools=[], allowedTools=[], maximumEffect=none e maxDurationMs=31000. Exatamente um executor: @offroad/financial-model#prepareBoardCapitalDiscussionPacket, versão 2026.10.27-v1; selectedComponentId=board-capital-discussion.packet.",
+      "Em apps/document-worker, npx vitest run src/released-lote4-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts terminou com exit 0: 4 arquivos e 27 testes aprovados, duração 60.06 s. Inclui paridade do executor C47 com a fonte e recusa do manifesto candidato anterior; transporte de banco simulado.",
+      "Leitura estática de supabase/migrations/20261028120400_lote4_payload_provenance.sql: C47 vinculado à versão 2026.10.27-v1, manifestHash 48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98 e schema board-capital-discussion-packet-input.v1. methodId nulo retorna false. Arquivo com 18735 bytes, sem newline final, MD5 54933cabe3cb6842e3ade50b4aaf3841.",
+      "C47 exige board_material_priors_recorded_v1 antes de excluir analysis.sources da caminhada e exige a versionId do envelope entre as assumptionVersionId fixadas no contrato. Leitura do helper e do produtor v4 confirmou priors registrados para a execução, mesmo trabalho, resultado succeeded, versões, fingerprints e canonical_result exatos. O bloco C47 de execution_capital_provenance.sql testa hash, versão e schema com helper temporariamente simulado; lote4_priors.sql cobre os priors. SQL não executado.",
+      "Comparação independente com 20261027010426_lote3_quarter_update_priors.sql: retirar as 28 linhas marcadas lote 4 e os quatro novos métodos recupera byte a byte o corpo anterior de 13997 bytes. Ramos de capital, investimento, lote 1, lote 2 e lote 3 preservados. Em packages/execution-request, npx vitest run src/lote4-payload-provenance-regression.test.ts terminou com exit 0: 1 arquivo, 3 testes aprovados.",
+      "Blobs e último commit do helper obtidos diretamente do Git em HEAD; fontes locais do adaptador e helper idênticas aos blobs. Nenhum arquivo rastreado alterado e nenhum banco acessado. JSON final validado em packages/credit-playbook com node --input-type=module e adapterReviewSchema.parse, importado diretamente de src/review-record.ts; sem chaves adicionais."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo técnico solicitado, sem achados. Identidades, hashes, reconstrução determinística, perfil canônico, política restritiva e testes conferem. A migração preserva os ramos anteriores e exige os priors registrados e o envelope fixado para C47. Revisão do SQL estática, sem acesso a banco; aplicação e ativação em produção não foram verificadas. Esta revisão não concede execução nem representa aprovação humana do método."
+}

@@ -193,6 +193,11 @@ begin
  released:=private.prior_method_released_v1(m.payload#>>'{method,methodId}',m.payload#>>'{method,methodVersion}');
  code:=case p_kind when 'board_material' then private.board_material_prior_content_v1(p_role,p_ref,p_embedded,p_contract_sources,m.payload,r.canonical_result,r.result,released)
   else private.document_folder_prior_content_v1(p_ref,p_embedded,p_contract_sources,m.payload,s.payload,r.result,released) end;
+ -- The prior ran under the manifest its method version was published with: the stored manifest names the hash of the
+ -- platform release it was issued from, for the same method and version.
+ if code is null and not exists(select 1 from private.platform_method_releases x where x.id=m.platform_release_id
+   and x.method_id=m.payload#>>'{method,methodId}' and x.version=m.payload#>>'{method,methodVersion}' and x.manifest_hash=m.payload#>>'{method,manifestHash}')
+ then code:=p_kind||'_prior_manifest_mismatch';end if;
  if code is not null then raise exception '%',code using errcode='42501';end if;
  return jsonb_build_object('role',p_role,'executionId',e.id,'methodId',m.payload#>>'{method,methodId}','methodVersion',m.payload#>>'{method,methodVersion}',
   'inputFingerprint',s.payload_fingerprint,'resultFingerprint',r.result->>'fingerprint');
