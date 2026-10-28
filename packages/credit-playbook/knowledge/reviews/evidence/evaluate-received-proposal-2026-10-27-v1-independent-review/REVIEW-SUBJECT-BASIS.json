@@ -1,0 +1,81 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "evaluate-received-proposal",
+  "version": "2026.10.27-v1"
+ },
+ "commit": "1d434b919ea69b16904af43ce7a3c3bc58f56ced",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/evaluate-received-proposal.md",
+   "sha256": "980d24cc6f7641a3c90762e873243bbfd1aaaa22725dd19190c5e9257e831acc"
+  },
+  {
+   "path": "packages/financial-core/src/evaluate-received-proposal.ts",
+   "sha256": "f31dc74fbdddf4aa9122bba80f889ded75da5f81dcc0987cc8f94e35d23383e3"
+  },
+  {
+   "path": "packages/financial-core/src/evaluate-received-proposal.fixture.ts",
+   "sha256": "d0023110c8189433b5bee5fdcfb5b9ee67e7d9a39c60ae9abd9a5b0094e3f94b"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-evaluate-received-proposal.ts",
+   "sha256": "1ed6a383a8c80728572020b7afbe4912314daa1a0d95c0f7a3f3dcb8d0880dbe"
+  },
+  {
+   "path": "packages/financial-model/src/evaluate-received-proposal-results.ts",
+   "sha256": "d68158d797893e7c42db3a3f90e35db2678fe6f56b764560339f2d8b3f2c2e51"
+  },
+  {
+   "path": "packages/financial-model/src/evaluate-received-proposal-packet.ts",
+   "sha256": "06aad6163db4020337e525a7594103d1a6c6f23495d8dcddb261a4f10a432e12"
+  },
+  {
+   "path": "packages/financial-model/src/evaluate-received-proposal-premises.ts",
+   "sha256": "ea26525a7ccba2702c0af0ca4122137913b96c63ba88a511fcd0bc0dde260792"
+  },
+  {
+   "path": "packages/financial-model/src/evaluate-received-proposal-composer.ts",
+   "sha256": "e5553cb78edcf2606c3a0144684572e444a461fad8e6dd78739453bfcdfbe303"
+  },
+  {
+   "path": "packages/financial-model/src/evaluate-received-proposal-contracts.ts",
+   "sha256": "814aaed477f5c5b4f8225e754aac661203595b8aa5efd00aea5aaa8827ec55c9"
+  },
+  {
+   "path": "packages/financial-model/src/evaluate-received-proposal-runs.test-support.ts",
+   "sha256": "e3a55fd13d8c5eb13bddf8dcafb61835d8b46065199e39f0aa32b4d49b00471a"
+  },
+  {
+   "path": "packages/financial-model/src/evaluate-received-proposal.test-support.ts",
+   "sha256": "29ddcb55e84f982c5b17cef21971048cf10083d826553c3884b7c8ea640176a7"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  },
+  {
+   "path": "packages/financial-core/src/evaluate-received-proposal.properties.test.ts",
+   "sha256": "825ed33ce4f97852fe51f94ed390e067fe6cb1afa08e20b8971bab9b756e1742"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/biblioteca-expertise-2026-09/ficha1-conversa.html",
+   "sha256": "8f9b19ec68df3e14f06b1ad21ecbb2485ec7a9293d46ca46a3c94ee34467a6bf"
+  },
+  {
+   "path": "outputs/biblioteca-expertise-2026-09/arvore-proposta-recebida.html",
+   "sha256": "14be8d1ccf48aeea8eaca12309d23838529c8751f7fed0ec4e89dfc1ed17edcb"
+  },
+  {
+   "path": "outputs/biblioteca-expertise-2026-09/metodos-analise.html",
+   "sha256": "f9c8782b78360f156668c7d6a119f17a10e3539fc7c39c962aff0bc1765c86d8"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C32/modelo_aurora_c32.py",
+   "sha256": "f2fb8619f2a04a9b02401a96cc2efb7c8690cba42098e139a7e7b32b80c09ea8"
+  }
+ ]
+}

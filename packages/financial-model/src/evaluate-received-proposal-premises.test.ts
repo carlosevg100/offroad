@@ -1,0 +1,127 @@
+import {createHash} from "node:crypto";
+import {describe, expect, it} from "vitest";
+import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
+import {composeBoundReceivedProposal} from "./evaluate-received-proposal-composer";
+import {prepareReceivedProposalPacket} from "./evaluate-received-proposal-packet";
+import {proposeReceivedProposalHypotheses, type ReceivedProposalFacts} from "./evaluate-received-proposal-premises";
+import {auroraReceivedProposalBasis, auroraReceivedProposalFacts, receivedProposalQuestion as question} from "./evaluate-received-proposal.test-support";
+import {analysisTestId as id} from "./adopted-analysis.test-support";
+
+function envelopeOf(entries: AdoptionBasisEntry[]) {
+  const snapshot: AdoptionBasisSnapshot = {schemaVersion: "contextual-adoption.v1", versionId: id(500), setId: id(6), workId: id(7), purpose: "synthetic received proposal",
+    contextKey: "proposta-recebida", revision: 1, previousVersionId: null, classification: "working_basis", entries};
+  const canonical = JSON.stringify(snapshot);
+  return {envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")}, scope: {workId: id(7), purpose: snapshot.purpose, versionId: id(500)}};
+}
+function adopt(facts: ReceivedProposalFacts) {
+  let n = 9000;
+  const entries = proposeReceivedProposalHypotheses(facts).map((h) => ({decisionId: id(n++), slotKey: createHash("sha256").update(h.fieldPath + h.dimensions.scenario).digest("hex"),
+    kind: "hypothesis", fieldPath: h.fieldPath, dimensions: {...h.dimensions}, value: h.value, observationId: null, referenceValue: null, referenceDimensions: null,
+    definitionKind: "managerial", actorId: id(5), reason: h.reason}) as AdoptionBasisEntry);
+  return {entries, ...envelopeOf(entries)};
+}
+const packetOf = (b: ReturnType<typeof envelopeOf>) => prepareReceivedProposalPacket(composeBoundReceivedProposal({envelope: b.envelope, scope: b.scope, question}));
+
+describe("ficha 1 premises proposed from facts with origin, adopted, composed and measured", {timeout: 300_000}, () => {
+  it("stays inside the basis limit and states the origin of every premise", () => {
+    const h = proposeReceivedProposalHypotheses(auroraReceivedProposalFacts());
+    expect(h.length).toBeLessThanOrEqual(256);
+    expect(h.every((x) => x.reason.startsWith("Origem: "))).toBe(true);
+    expect(h.find((x) => x.fieldPath.endsWith(".proposal.drawDate"))!.reason).toMatch(/^Origem: estimativa\./);
+    expect(h.find((x) => x.fieldPath.endsWith(".proposal.annualSpread"))!.reason).toMatch(/^Origem: documento\./);
+    expect(h.find((x) => x.fieldPath.endsWith(".market.median"))!.reason).toMatch(/^Origem: faixa de mercado\./);
+  });
+  it("reproduces the hand-built basis: same readings and numbers", () => {
+    const p = packetOf(envelopeOf(adopt(auroraReceivedProposalFacts()).entries));
+    const reference = prepareReceivedProposalPacket({schemaVersion: "received-proposal-packet-input.v1", question, analysis: auroraReceivedProposalBasis().seal()});
+    expect(p.status).toBe(reference.status);
+    expect(p.readings).toEqual(reference.readings);
+    expect(p.result.evaluation).toEqual(reference.result.evaluation);
+    expect([p.readings!.collateral.assignable, p.readings!.negativePledge.remaining]).toEqual(["25.41", "3"]);
+  });
+  it("declares an absent mandatory operand missing and leaves an absent optional group null", () => {
+    const a = adopt(auroraReceivedProposalFacts());
+    const gapped = packetOf(envelopeOf(a.entries.filter((e) => !e.fieldPath.endsWith(".basket.occupied"))));
+    expect(gapped.status).toBe("framed");
+    expect(gapped.gaps.some((g) => g.operand.endsWith(".basket.occupied") && g.reason.startsWith("No contribution adopted for basket.occupied"))).toBe(true);
+    const facts = auroraReceivedProposalFacts(); facts.policy = null; facts.history = null;
+    const input = composeBoundReceivedProposal({...envelopeOf(adopt(facts).entries), question});
+    expect([input.analysis.covenant.policyLimit, input.analysis.history]).toEqual([null, null]);
+    expect(packetOf(envelopeOf(adopt(facts).entries)).status).toBe("partial");
+  });
+  it("reports two contributions for one slot as missing, never picks one", () => {
+    const a = adopt(auroraReceivedProposalFacts()), twin = a.entries.find((e) => e.fieldPath.endsWith(".basket.basis"))!;
+    const entries = [...a.entries, {...twin, decisionId: id(9999), slotKey: "f".repeat(64), value: {type: "text" as const, value: "per_operation"}}];
+    const input = composeBoundReceivedProposal({...envelopeOf(entries), question});
+    expect(input.analysis.basket.basis.missingReason).toContain("2 contributions match basket.basis");
+    expect(packetOf(envelopeOf(entries)).status).toBe("framed");
+  });
+  it("composes every listed or named bucket and never drops one silently", () => {
+    const a = adopt(auroraReceivedProposalFacts()), order = a.entries.find((e) => e.fieldPath.endsWith(".order.buckets"))!;
+    const unlisted = a.entries.map((e) => e === order ? {...e, value: {type: "list" as const, value: (e.value.value as string[]).filter((x) => x !== "rede-a")}} : e);
+    expect(composeBoundReceivedProposal({...envelopeOf(unlisted), question}).analysis.portfolio.map((b) => b.id).at(-1)).toBe("rede-a");
+    expect(packetOf(envelopeOf(unlisted)).readings!.collateral.assignable).toBe("25.41");
+  });
+  it("never assumes the indexer: absent, it is asked; estimated, it is refused", () => {
+    const facts = auroraReceivedProposalFacts(); facts.indexer = null;
+    const h = proposeReceivedProposalHypotheses(facts);
+    expect(h.some((x) => x.fieldPath.endsWith(".proposal.indexer"))).toBe(false);
+    const q = packetOf(envelopeOf(adopt(facts).entries));
+    expect([q.status, q.openQuestions, q.gaps.some((g) => g.operand.endsWith(".proposal.indexer"))]).toEqual(["framed", ["indexer_confirmation"], true]);
+    expect(h.length).toBe(proposeReceivedProposalHypotheses(auroraReceivedProposalFacts()).length - 1);
+    const guessed = auroraReceivedProposalFacts(); guessed.indexer = {value: "cdi_plus", origin: "estimate", source: "provavelmente CDI"};
+    expect(() => proposeReceivedProposalHypotheses(guessed)).toThrow("never assumed");
+    const reason = proposeReceivedProposalHypotheses(auroraReceivedProposalFacts()).find((x) => x.fieldPath.endsWith(".proposal.indexer"))!.reason;
+    expect(reason).toBe("Origem: documento. term sheet do Itaú: CDI mais 2,10% ao ano");
+  });
+  it("refuses generated tax rates outside [0, 1] in the facts and proposes those inside", () => {
+    let seed = 20261027; const next = () => {seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648;};
+    for (let k = 0; k < 60; k++) {
+      const rate = (Math.floor(next() * 30000) / 10000).toFixed(4), facts = auroraReceivedProposalFacts(); facts.tax.value.rate = rate;
+      if (Number(rate) > 1) expect(() => proposeReceivedProposalHypotheses(facts)).toThrow("Tax rate outside [0, 1]");
+      else expect(proposeReceivedProposalHypotheses(facts).find((h) => h.fieldPath.endsWith(".tax.rate"))!.value).toEqual({type: "number", value: rate});
+    }
+  });
+  it("refuses a rate just above one in the facts and composes an absence of every covenant test into gaps", () => {
+    const high = auroraReceivedProposalFacts(); high.tax.value.rate = "1.00000000000000000001";
+    expect(() => proposeReceivedProposalHypotheses(high)).toThrow("Tax rate outside [0, 1]");
+    const none = auroraReceivedProposalFacts(); none.measurements.value = [];
+    const q = packetOf(envelopeOf(adopt(none).entries));
+    expect([q.status, q.readings!.covenant.anyBreachWith, q.readings!.covenant.untestedLimits, q.readings!.covenant.missingTests.length]).toEqual(["partial", null, ["indenture", "proposal", "board-policy"], 10]);
+  });
+  it("from facts to packet: a repeated test date is refused in every list and permutations change no derived field", () => {
+    let seed = 20261027; const next = () => {seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648;};
+    const shuffle = <T>(xs: readonly T[]) => {const y = [...xs]; for (let a = y.length - 1; a > 0; a--) {const b = Math.floor(next() * (a + 1)); [y[a], y[b]] = [y[b]!, y[a]!];} return y;};
+    type Facts = ReturnType<typeof auroraReceivedProposalFacts>;
+    const lists: [string, (f: Facts) => string[], (f: Facts, v: string[]) => void][] = [
+      ["indenture", (f) => f.indenture.value.testDates, (f, v) => {f.indenture.value.testDates = v;}],
+      ["policy", (f) => f.policy!.value.testDates, (f, v) => {f.policy!.value.testDates = v;}],
+      ["lender", (f) => f.proposal.value.covenant!.testDates, (f, v) => {f.proposal.value.covenant!.testDates = v;}]];
+    const facts = () => {const f = auroraReceivedProposalFacts(); f.variants = []; return f;};
+    for (const [name, get, set] of lists) {
+      const f = facts(), d = get(f); set(f, [...d, d[Math.floor(next() * d.length)]!]);
+      expect(() => proposeReceivedProposalHypotheses(f)).toThrow(`received_proposal_duplicate_test_date: ${name}`);
+    }
+    const twin = facts(); twin.measurements.value = [...twin.measurements.value, twin.measurements.value[0]!];
+    expect(() => proposeReceivedProposalHypotheses(twin)).toThrow("received_proposal_covenant_duplicate_test");
+    const reference = packetOf(envelopeOf(adopt(facts()).entries));
+    expect(reference.readings!.assessment.facts.includes("lender_tests_more_often_than_indenture")).toBe(true);
+    for (const [, get, set] of [...lists, ["measurements", () => [], () => undefined] as const]) {
+      const f = facts();
+      if (get(f).length) set(f, shuffle(get(f))); else f.measurements.value = shuffle(f.measurements.value);
+      const p = packetOf(envelopeOf(adopt(f).entries));
+      expect(p.readings).toEqual(reference.readings);
+      expect(p.result.evaluation).toEqual(reference.result.evaluation);
+    }
+  });
+  it("refuses inconsistent facts before proposing premises", () => {
+    const holder = auroraReceivedProposalFacts(); holder.portfolio[1]!.value.holder = null;
+    expect(() => proposeReceivedProposalHypotheses(holder)).toThrow("names the holder of its assignment");
+    const free = auroraReceivedProposalFacts(); free.portfolio[3]!.value.countsAgainstBasket = true;
+    expect(() => proposeReceivedProposalHypotheses(free)).toThrow("cannot occupy the basket");
+    const test = auroraReceivedProposalFacts(); test.measurements.value[0]!.date = "2026-11-30";
+    expect(() => proposeReceivedProposalHypotheses(test)).toThrow("is not a period end");
+    const precise = auroraReceivedProposalFacts(); precise.proposal.value.amount = "30.123456789";
+    expect(() => proposeReceivedProposalHypotheses(precise)).toThrow();
+  });
+});

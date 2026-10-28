@@ -1,0 +1,73 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "evaluate-financing-paths",
+  "version": "2026.10.27-v1"
+ },
+ "commit": "70432962467302743f29512a8d16608c683f8c3b",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/evaluate-financing-paths.md",
+   "sha256": "c55d7a4e9f25306c207373975f6fc13c35faa6c27333732f2ecd7024600a3c3d"
+  },
+  {
+   "path": "packages/financial-core/src/capital-structure-paths.ts",
+   "sha256": "8891927becd29d509a5078ad0feb7e79d105cd09e05e41e70ce639c3f9919ff0"
+  },
+  {
+   "path": "packages/financial-core/src/capital-structure-paths.fixture.ts",
+   "sha256": "05b8c21494354caf0a93597408a247405e514d40fb546d6f2c71cca0b4f7dc61"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-capital-structure-paths.ts",
+   "sha256": "78dc4c8551eaad2b97836aad16f120e6b77730a31623488707b30ce4034bc374"
+  },
+  {
+   "path": "packages/financial-model/src/capital-structure-paths-results.ts",
+   "sha256": "ae187e796f162cb8309e78baae73e98a03370f79a1b167967a4be08b6654a860"
+  },
+  {
+   "path": "packages/financial-model/src/capital-structure-paths-packet.ts",
+   "sha256": "f4f888841c36b6a023a6882fb54641f7d9ce1c2bcb466c6fad46a992146a3104"
+  },
+  {
+   "path": "packages/financial-model/src/capital-structure-paths-premises.ts",
+   "sha256": "c6fc349de270d40e2a91bfa755a0f1246c31181d1e54787bfe75759d3e77ccbe"
+  },
+  {
+   "path": "packages/financial-model/src/capital-structure-paths-composer.ts",
+   "sha256": "3077120c4cd183067da385e266b602172221138a1ab0e72bac45a843f25fd2af"
+  },
+  {
+   "path": "packages/financial-model/src/capital-structure-paths-contracts.ts",
+   "sha256": "8962e63e4cb8f485c2ff00f8021f3f1d30d7cf16c567cbcb8d372b83ad84b78f"
+  },
+  {
+   "path": "packages/financial-model/src/capital-structure-paths-runs.test-support.ts",
+   "sha256": "492ab2b13ed74addb9e07100a0bde0ad019a02e2fbb85f0d752beede7e86e658"
+  },
+  {
+   "path": "packages/financial-model/src/capital-structure-paths.test-support.ts",
+   "sha256": "094caf67c569b37cbe58edaa8460c7694484690e41982623f6b57dce896d6081"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C32/modelo_aurora_c32.py",
+   "sha256": "f2fb8619f2a04a9b02401a96cc2efb7c8690cba42098e139a7e7b32b80c09ea8"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C32/corpo.html",
+   "sha256": "a5456ba6110e6d2fac80110b9ad68cf6b95d767be7234894fdac8e32a0a28174"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C47/corpo.html",
+   "sha256": "f7cc5edb696a66dd666f1fdda75d9eca753a9f4b549a42d381218e9ddf204e9a"
+  }
+ ]
+}

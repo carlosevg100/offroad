@@ -64,3 +64,7 @@ export {quarterUpdatePacketExecutorContracts} from "./quarter-update-contracts";
 export {receivablesFundingPacketExecutorContracts} from "./receivables-funding-contracts";
 export {projectionChallengePacketExecutorContracts} from "./projection-challenge-contracts";
 export {operatingProjectionPacketExecutorContracts} from "./operating-projection-contracts";
+export {documentFolderInventoryPacketExecutorContracts} from "./document-folder-inventory-contracts";
+export {receivedProposalPacketExecutorContracts} from "./evaluate-received-proposal-contracts";
+export {capitalPathsPacketExecutorContracts} from "./capital-structure-paths-contracts";
+export {boardCapitalDiscussionPacketExecutorContracts} from "./board-capital-discussion-contracts";

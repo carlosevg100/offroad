@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "prepare-board-capital-discussion-2026-10-27-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "prepare-board-capital-discussion",
+    "version": "2026.10.27-v1",
+    "fingerprint": "493213fab30bba02da6c8687f3048113ca627c8715e82ab2ecb6445f316b0074"
+  },
+  "run": {
+    "id": "c47-r45",
+    "startedAt": "2026-10-28T14:26:05Z",
+    "finishedAt": "2026-10-28T14:37:34Z",
+    "commit": "0671a3e4965f137a4d709622d8eba8cf1e77c2fb"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 13 arquivos fixados e as duas referências profissionais conferem com os SHA-256 da base. A impressão dos bytes da própria base também confere com a impressão solicitada. Os ensaios concluídos usaram uma cópia temporária extraída do commit.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/prepare-board-capital-discussion-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O diff direto contra o commit da rodada 44 contém as alterações declaradas em quatro arquivos TypeScript e alterações adicionais de metadados no procedimento. Oito arquivos fixados são idênticos. Não há outras diferenças nos arquivos fixados.",
+      "source": "git diff 2c1ae90115debf37f36a557015b5a1d6f5a7613e 0671a3e4965f137a4d709622d8eba8cf1e77c2fb, limitado aos 13 arquivos fixados",
+      "result": "corrected",
+      "note": "A afirmação de apenas duas mudanças exige esta correção: o procedimento passou de implemented para tested, recebeu review_ids e duas referências de evidência. Reconstruir essas alterações e as substituições declaradas reproduziu exatamente todos os arquivos atuais. O conteúdo profissional do procedimento permaneceu igual."
+    },
+    {
+      "claim": "As expressões antigas e novas produziram correspondências, capturas, posições e substituições iguais no conjunto enumerado: 112 templates, 462 entradas textuais, incluindo 126 textos distintos, e 369 caminhos.",
+      "source": "packages/financial-model/src/board-capital-discussion-templates.ts; board-capital-discussion-sources.ts; board-capital-discussion.ts",
+      "anchor": "boardTemplates; boardFieldRegistry; boardPathSegments; renderBoardTemplate",
+      "result": "confirmed",
+      "note": "A enumeração incluiu textos, variantes nearlyEqual, palavras genéricas, caminhos de posições, condições, registros e calibrações. Os padrões de seletores foram comparados também por segmento. A equivalência confirmada é sobre o conjunto existente; as novas classes excluem aberturas aninhadas. A captura de medição contém exatamente um cifrão, tornando replace e replaceAll equivalentes nesse uso."
+    },
+    {
+      "claim": "O reconhecimento de rótulo numérico permaneceu igual nos 26 rótulos resolvidos dos pacotes, no conjunto de 125 entradas de rótulos e vocabulários e em 2.400 combinações adicionais.",
+      "source": "packages/financial-model/src/board-capital-discussion.ts",
+      "anchor": "formatBoardReading; ramo spec.kind === label",
+      "result": "confirmed",
+      "note": "Foram exercitados espaços, tabulações, quebras de linha, espaço inseparável, sinais, separadores decimais, percentuais, texto e dígitos de outra escrita. As duas terminações representam a mesma sequência de espaços com percentual opcional."
+    },
+    {
+      "claim": "Os sete builders memoizados reproduziram byte a byte o JSON dos builders da rodada 44 nas 59 variantes literais enumeradas. Chamadas repetidas devolveram cópias independentes em todos os objetos aninhados; mutações não contaminaram chamadas posteriores.",
+      "source": "packages/financial-model/src/board-capital-discussion.test-support.ts",
+      "anchor": "memoPacket; sete exports aurora*Packet",
+      "result": "confirmed",
+      "note": "Variantes por builder: custo relativo 3, covenant 12, investimento 10, projeção 9, caixa semanal 2, plano 17 e recebíveis 6. Os consumidores encontrados estão no suporte das corridas e nos testes de propriedades. Não encontrei dependência de identidade, protótipo ou efeito lateral de reconstrução. As variantes dinâmicas dos ensaios existentes também passaram."
+    },
+    {
+      "claim": "O comando solicitado passou sob Node 24: cinco arquivos e 73 testes, em 263,30 segundos.",
+      "source": "npx vitest run src/board-capital-discussion",
+      "anchor": "packages/financial-model da cópia temporária",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As corridas registradas reproduziram byte a byte a serialização JSON de todos os campos de evidência regeneráveis, incluindo casos, expectativas, observações e fingerprints: 91 casos de ouro, 195 adversariais e seis de consistência.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-*/run.json",
+      "anchor": "buildBoardCapitalDiscussionRuns",
+      "result": "confirmed",
+      "note": "Impressões reproduzidas: ouro 895c1607de08d05b745b33e676a316d97fa2b08ffade07037048b395235f6608; adversarial 70cf65faaf6791ae3bf03e6dbd699e8b8e5035063a4fd7d6c02b263fc021f5b3; consistência 09be67c7c9f71a4ba40411ae893f717cf5f85d71940ee45ce9026a1370dd0b64. Os metadados históricos de execução não foram tratados como uma nova execução idêntica no tempo."
+    },
+    {
+      "claim": "Recalculei com Decimal do Python as 90 leituras econômicas de cada um dos três turnos. Valor de origem, escala, arredondamento e valor escrito conferem. Rastreiei todas as ocorrências numéricas das páginas, da síntese e das perguntas aos respectivos vínculos.",
+      "source": "Pacotes reproduzidos pelo percurso fatos, premissas, compositor, leitor adotado e pacote; result.discussion.identity",
+      "result": "confirmed",
+      "note": "A conferência excedeu a amostra mínima de vinte números. Também recalculei os fingerprints dos nove pacotes de origem, dos três pacotes do conselho, dos resultados adotados e das versões do material. Todos reproduziram."
+    },
+    {
+      "claim": "As divergências profissionais continuam explicadas pelas análises de origem, sem alteração de valores para aproximar o material da ficha.",
+      "source": "packages/financial-model/src/board-capital-discussion.test-support.ts",
+      "anchor": "buildSources; calibrações dos nove métodos",
+      "result": "corrected",
+      "note": "Prazo médio: 1,451141144531085353, exibido como 1,5 ano. Fluxo acumulado do projeto: -21,7 milhões em dezembro de 2027. Payback: 5,85360438703604711444 anos, sem inventar meta de três. Programas: 23,5 milhões, spreads de 1,2% e 1,5%. Debênture: CDI mais 3,46% a 3,56%, preservando a correção da rodada 44 à faixa citada no pedido. Rede A: 19,8 milhões sobre carteira de 62 milhões, sem participação calculada pelo método. Rating: -0,17 a 0,03 milhão por ano; 55 pontos continuam sem explicação causal."
+    },
+    {
+      "claim": "Os 11 ataques e controles próprios confirmaram recusa de valor alterado, pacote editado com fingerprint antigo, versão diferente, outra empresa com fingerprint recalculado, ausência de deliberações e título inadequado. Pedidos para omitir página, número ou prazo foram recusados com uma frase.",
+      "source": "Ensaios independentes r45 na cópia temporária; board-capital-discussion.ts; board-capital-discussion-sources.ts",
+      "anchor": "prepareBoardCapitalDiscussion; verifyBoardSource; decideBoardOmissions",
+      "result": "confirmed",
+      "note": "Alterar o VPL de 0,7 para 0,8 produziu figure_diverges. Inverter deliberações e prazos de entrada preservou linha, safra, vencimentos e política. Pedir material antes de confirmar o roteiro manteve outline_proposed e nenhuma versão material. A retirada permitida da recomendação preservou os fatos materiais e a versão anterior."
+    },
+    {
+      "claim": "Mantêm-se as conclusões de conteúdo da rodada 44: substância e sequência das doze páginas da ficha, com página adicional de movimentos, síntese, apêndice e dez perguntas. Os títulos apresentam conclusões sustentadas; a redação separa fatos atribuídos, leituras e recomendações, sem crítica à companhia.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C47/corpo.html; estudo.html",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As limitações permanecem declaradas: termos da linha de crédito, alçadas sem comprovação documental, condições indicativas e opção em etapas sem caso revisado. O template recebido não é aplicado nesta versão.",
+      "source": "Pacotes reproduzidos; pending; pendingFigures; gaps; exclusions",
+      "result": "limitation",
+      "note": "Não houve renderização do template, apresentação ou distribuição. A conferência das leituras de evaluate-financing-paths não substitui sua revisão econômica separada."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "As conclusões técnicas e profissionais da rodada 44 se mantêm. Não encontrei número divergente da fonte, omissão material aplicada ou ordenação incorreta das deliberações. A descrição do delta foi corrigida para incluir os metadados adicionais do procedimento, que não alteram seu conteúdo profissional. A equivalência das expressões foi verificada sobre o conjunto enumerado da biblioteca e dos registros, sem afirmar equivalência universal das classes que agora excluem delimitadores aninhados. Nenhum arquivo rastreado foi alterado por esta revisão. A cópia temporária e os ensaios locais foram removidos antes do encerramento. Este parecer não constitui aprovação humana, promoção de método ou autorização de efeito externo."
+}

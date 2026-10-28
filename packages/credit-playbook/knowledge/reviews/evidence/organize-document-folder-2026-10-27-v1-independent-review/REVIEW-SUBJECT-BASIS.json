@@ -1,0 +1,73 @@
+{
+ "schemaVersion": "review-subject-basis.v1",
+ "subject": {
+  "kind": "method",
+  "id": "organize-document-folder",
+  "version": "2026.10.27-v1"
+ },
+ "commit": "3a5d9fa016d3fab721c19386878a92b122bf5d96",
+ "pins": [
+  {
+   "path": "packages/credit-playbook/knowledge/procedures/capital/organize-document-folder.md",
+   "sha256": "76e99a6706899b1ae40e895e4812cb5bdd9bd13d0a24b08a36152854912f21e8"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory-packet.ts",
+   "sha256": "7443745b02b92b8be7cc04d3749d0301119a39fd08e7cafb98f94c30f1e9c7a1"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-document-folder-inventory.ts",
+   "sha256": "4181627415b3c6ee4f09ef0cf6fb8e4e3a845a19d8386c97262c0f4542caf353"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory.ts",
+   "sha256": "d3994c55300a2f33ffe017d41621d9ae30396d3d879562c4e4253e786271feb6"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory-premises.ts",
+   "sha256": "7a6d1e6176f90fcb4a260208f2bfd378cb5bd204bbffd9e5151cfef7c5d37b13"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory-composer.ts",
+   "sha256": "10aed5b5ec970f63806b68428f3b327aed88a304c59e57cc344e66dbf803ae0b"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory-contracts.ts",
+   "sha256": "86147efa160a6871eac50abc9712445d933e3c355e23d731f0d1b0896f176466"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory-runs.test-support.ts",
+   "sha256": "455d0ffc2828bba0d1003177e34ea3bd977196367940540ca257aea2ad5b4542"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory.test-support.ts",
+   "sha256": "32c859f01bf6c14cd7fa1d03fd061a3abd52ab73f3b5326a506216199bd704fa"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory-answer-key.test-support.ts",
+   "sha256": "e735230df07a3477ff9ed5f38222962709a02631b93634cfc91d5611873b1735"
+  },
+  {
+   "path": "packages/financial-model/src/adopted-analysis-binding.ts",
+   "sha256": "e5c37dd98d1746ad92b67d2b1af001c1afdb5a9d458dae73c4cd04cdc9d08461"
+  },
+  {
+   "path": "packages/financial-model/src/document-folder-inventory.properties.test.ts",
+   "sha256": "d04403fb96395e1fe70b6bfe2387d328e234a9ccf980f6dce9f549e252e0412a"
+  }
+ ],
+ "externalOracle": [
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C09/inventario_gabarito.py",
+   "sha256": "cf5271f7116039234d9555db0cc20c1ee5b660faf636da94e764c1ccc02fb7c8"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C09/inventario_gabarito.json",
+   "sha256": "0f2baca03e693866010700f831560ea0b4930b736bc56299e832966b1023bc9d"
+  },
+  {
+   "path": "outputs/fichas-ensaio-2026-10/C09/corpo.html",
+   "sha256": "ea90fd1ea686ae2a8c12bd8dd29dbeb3c0e3dc7bd47d75c0a6aea025b7a69039"
+  }
+ ]
+}

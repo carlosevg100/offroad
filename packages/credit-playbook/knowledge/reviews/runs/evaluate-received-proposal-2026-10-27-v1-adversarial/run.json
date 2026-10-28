@@ -1,0 +1,237 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "evaluate-received-proposal-2026-10-27-v1-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "evaluate-received-proposal",
+    "version": "2026.10.27-v1"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareReceivedProposalPacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/evaluate-received-proposal-runs.test-support.ts",
+    "exportName": "buildReceivedProposalRuns"
+  },
+  "run": {
+    "startedAt": "2026-10-27T12:45:17.042Z",
+    "finishedAt": "2026-10-27T12:47:38.563Z",
+    "commit": "5d37d51503580fe9f08c70276bf3d66332272975"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tampered-envelope",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "445a6ad0f27a90a8bda9c2c1e800129fc2659908660cb3cbb68fe506d675d86b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "free-result-in-request",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "5db80cf2f34c4ff11abf8695d560a147fd8e24a3f6024a1333f34f69fd2e1303",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-grant-in-result",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "93c8cd29f0d97fbe9a61534d69526c6d3c9c9a0313ef0bbf555079b868d381e6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-verdict-in-readings",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "59368f695339db90d09f18612635a002d848b9b76357afb71b2ecbf542fbd0b5",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-acceptance-of-the-proposal",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "2cdd63d1a1772eb959e2db2dd3168e4f2bcc46b93d82781afef612969d755e08",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "nominal-spread-offered-as-the-cost",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "856d0072f9c5af32eeadc0e70d74ebca04d9984874fd095dd2ab1fb851aeec77",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "equivalent-spread-replaced-by-nominal-under-old-fingerprint",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "4e46e1bb0eec1a33a917b8d4477e706b330bbb2a7c87af92f194b9975967f95d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "adopted-cost-replaced-by-nominal-under-old-fingerprint",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "41a110983fe0d4b1f2fdd8468ec1005b936f8c968c9a8eb383a61564db22237e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "repeated-indenture-test-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "3f2a6fbc73f10d85642e8b0e84f787ec4b809dc3486b5f8f16fe7f55cddc8da6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "repeated-policy-test-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d6069003b00272c8da50405e63b01d8c1816c855425fdabbb69d4fe908f377e0",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "repeated-lender-test-date",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "ff29fa5974fd56025d4bee61032b04150100c2f82f27a51acff2598753343c46",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "tax-rate-above-one",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "acc77416c7b58d26e4c2eb946eb1fc698e40f7f3a33d7c84d3e0c5478a7f6c90",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "tax-rate-just-above-one",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "c9d86233bf919dbaa236089797461d108b0aa54222efb290c572e05e3f1b9b6b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "covenant-test-in-an-undeclared-scenario",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "4a95832bb559b624bc11f90889230fee260a48526ef10a33867954b2d3e0eb1d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "basket-read-as-empty-under-the-bradesco-assignment",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "dde2c2f5ab7f936faa97823242905c1a417d1598a2f2c09b7ee646c44635b343",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "restricted-receivables-counted-as-free",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "052007b8386fadc985ae5c1109fbaf12af2f17e22797b5a907057a81afd3b047",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "free-bucket-placed-in-the-basket",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "cad08bf21733ef801d37f81843baffc12fbb01f7e4aa77d65f786f7d7291698e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "assignment-without-holder",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a3c0b6b33f73e2150cecec3d40dfe7be813d41fb9a0772cc789b3c90fe922303",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "indexer-other-than-cdi",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "691513e965b777aaaf22716c6960662e13394764313f160e2cce08d39eb61774",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "covenant-test-off-the-calendar",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "10365f326b2182766d9439c4fb49ce4f226da9fa0bd5899df4c84e3f95e8b777",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "reading-after-the-draw",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "687d5a85d5336e7a41c5adb9e90abf6d5084256952198c912d4c4f765263e18e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "parallel-lists-of-different-length",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "cd5d3bd3230f0a5d8e6c2085212328adc084c6dac0686b1877390261a25fb30b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "bullet-with-many-installments",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9ef13d6ace88332c294105d5d66a4be66ebb438f9fef7394cf71f3d646121448",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "market-range-out-of-order",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b9901f54451086b774dadde2d955dd7c5d0c67fcf443b7c4098740112a6a9007",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "alternative-for-a-use-not-in-the-analysis",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b904798417edff38ab04554b0b646c97c0ac4a563f757fc40dbf0f9ca196724d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "figure-read-in-another-scenario",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "c8122d3d688ee62ada61b5c5b917f05ecdca6405fad5e373a91fcf668116ce06",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "c83d2a00f6d6485ddf83f8008a45372513c57f12c3ea9f64930661df10613ec2",
+  "notes": "Synthetic deterministic execution calibrated on ficha 1 with the corrections of C32, A05 and C09; review r1 to r5 findings on covenant coverage by limit, indexer origin, net cost convention per structure life, tax rate domain and fingerprint integrity. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
+}

@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "organize-document-folder-2026-10-27-v1-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "openai",
+    "model": "gpt-6",
+    "effort": "high",
+    "tool": "codex-cli"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "organize-document-folder",
+    "version": "2026.10.27-v1",
+    "fingerprint": "0714fa12b9562be8b1fe7072996a2f63a1cba06637b6cac867e8cf6ed44891a4"
+  },
+  "run": {
+    "id": "c09-r21-3a5d9fa",
+    "startedAt": "2026-10-27T16:36:16Z",
+    "finishedAt": "2026-10-27T16:39:50Z",
+    "commit": "3a5d9fa016d3fab721c19386878a92b122bf5d96"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os 12 arquivos fixados correspondem aos SHA-256 da base e aos bytes do commit indicado. Os três arquivos externos do oráculo também conferem.",
+      "source": "packages/credit-playbook/knowledge/reviews/evidence/organize-document-folder-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
+      "result": "confirmed",
+      "note": "A base é um arquivo não rastreado. Os testes usaram uma cópia externa do commit. Procedimento, núcleo, leitor adotado, vínculo contextual, premissas, compositor, pacote e contratos foram revisitados. Os hashes foram reconferidos antes da exclusão da cópia."
+    },
+    {
+      "claim": "As 30 linhas coincidem diretamente com o JSON externo em arquivo, tipo, entidade, período, versão, situação, grupo e existência de achado. As contagens são 30 arquivos, 1 duplicado, 2 leituras incompletas, 3 superados, 2 no cofre e 21 com achado.",
+      "source": "/Users/olpi/Desktop/Offroad Capital/outputs/fichas-ensaio-2026-10/C09/inventario_gabarito.json",
+      "anchor": "Confronto próprio pelo compositor e executor",
+      "result": "confirmed",
+      "note": "O gerador Python foi executado em diretório temporário e reproduziu o JSON byte a byte."
+    },
+    {
+      "claim": "A condição da rodada 20 está corrigida na raiz: a comparação orçamentária passa pela guarda comum das duas versões e propaga seu pior estado.",
+      "source": "packages/financial-model/src/document-folder-inventory.ts",
+      "anchor": "Ramo budget, effect budget e guard sobre rev e approved",
+      "result": "confirmed",
+      "note": "Os testes próprios cobriram 25 combinações de known, future, unread, missing_source e conflict, além de ataques separados ao aprovado e à revisão. Nos estados desconhecidos, ambas as versões permaneceram lado a lado, sem vencedor, sem comparação afirmativa com valores e com a causa declarada. O controle nominal manteve 55,5 contra 58 milhões."
+    },
+    {
+      "claim": "O achado orçamentário recebe knowledge da guarda. Achados genéricos sem qualificação explícita recebem o pior estado dos documentos citados, em vez de conservar um known inicial.",
+      "source": "packages/financial-model/src/document-folder-inventory.ts",
+      "anchor": "add; guarded; preenchimento final de knowledge",
+      "result": "confirmed",
+      "note": "A inspeção confirmou a remoção do known fixo do ramo orçamentário. Um ataque próprio combinando data futura e página ilegível em observação genérica produziu unread. O rastreamento da comparação nominal identificou f13 e f14 entre as dependências guardadas."
+    },
+    {
+      "claim": "Os sete achados de decisão aparecem na ordem esperada, com documentos de origem e valores corretos.",
+      "source": "packages/financial-model/src/document-folder-inventory.ts",
+      "anchor": "decisionFindings produzidos pelo compositor e executor",
+      "result": "confirmed",
+      "note": "Confirmados: aditamento de 2,75x para 3,0x e exceção de R$ 15 milhões, política de 2,5x, cessão da rede A com 32% da carteira, aviso até 2 de outubro, dívida de 130 contra 140 milhões, minuta de 54,8 contra auditada de 52 milhões e caixa da controlada de 4,1 milhões. A comparação da política com todos os covenants aguarda a página 7 da CCB."
+    },
+    {
+      "claim": "As duas identidades permitidas foram recalculadas independentemente: dívida utilizada de R$ 130 milhões e EBITDA semestral de R$ 27 milhões.",
+      "source": "packages/financial-model/src/document-folder-inventory.test-support.ts",
+      "anchor": "f16; f06, f07, s02, f08, f10 e f11",
+      "result": "confirmed",
+      "note": "Dívida: 60 + 40 + 30 + 0 = 130. EBITDA: 4,3 + 4,4 + 4,5 + 4,6 + 4,4 + 4,8 = 27. A distribuição mensal é uma calibração sintética declarada; a ficha fornece o total semestral. Não observei índice calculado, projeção ou recomendação financeira produzida pelo executor."
+    },
+    {
+      "claim": "O turno 2 atualiza f20, acrescenta s02 e preserva byte a byte as outras 29 linhas. A página recuperada, a identidade semestral e o fato informado mantêm suas origens.",
+      "source": "packages/financial-model/src/document-folder-inventory-packet.ts",
+      "anchor": "readings.update e confronto próprio das linhas",
+      "result": "confirmed",
+      "note": "A cláusula recuperada cita s01, página 7. O semestre retorna matches, reported e recomposed iguais a 27000000. O fato informado registra Controller da Aurora e 2026-09-02. Matrícula e projeção atualizada permanecem pendentes."
+    },
+    {
+      "claim": "A suíte solicitada passou com 1.369 testes em cinco arquivos, com Node 24.19.0. As corridas registradas reproduziram integralmente casos e fingerprints.",
+      "source": "packages/financial-model/src/document-folder-inventory-runs.test.ts",
+      "anchor": "npx vitest run src/document-folder-inventory",
+      "result": "confirmed",
+      "note": "Foram reproduzidos 90 casos gold, 45 adversariais e seis de consistência. A bateria independente adicional passou com 57 testes pelo compositor, executor e rastreamento do núcleo."
+    },
+    {
+      "claim": "Duplicidade por hash, precedência da auditada, versão superior, posição recente e conflitos sem vencedor resistiram aos ataques verificados, preservando o histórico.",
+      "source": "packages/financial-model/src/document-folder-inventory.ts",
+      "anchor": "resolveVersions; semanticReading; famílias e texto vigente",
+      "result": "confirmed",
+      "note": "Renomear todos os arquivos e inverter a chegada preservou contagens, achados de decisão e identidades. Leituras divergentes do mesmo hash suspenderam ambas as cópias. Minuta posterior não venceu a auditada. Aditamentos empatados com termos diferentes ficaram sem texto vigente. Original ilegível bloqueou o efeito do aditamento. Instrumentos convertidos em minuta perderam seus efeitos."
+    },
+    {
+      "claim": "As correções anteriores amostradas permanecem eficazes: mês sobreposto não é somado, matrícula antiga não fecha a lacuna e ausência de leitura adotada impede o inventário.",
+      "source": "packages/financial-model/src/document-folder-inventory.ts",
+      "anchor": "Seleção mensal por slot; current; validação das leituras",
+      "result": "confirmed",
+      "note": "A sobreposição mensal retornou not_run inclusive contra gerencial inflado para 31,3 milhões. Omitir a seleção do aditamento foi recusado. Foram recusados índice, recomendação e validação em observação, conteúdo na página 7 ilegível e conteúdo inventado na foto."
+    },
+    {
+      "claim": "As quatro variações comportam-se conforme o procedimento. O texto profissional é factual, em português, com citações, leitura do efeito e solicitações separadas, sem slogans ou crítica à companhia.",
+      "source": "packages/credit-playbook/knowledge/procedures/capital/organize-document-folder.md",
+      "anchor": "N2, N4, R3 e variações executadas",
+      "result": "confirmed",
+      "note": "Organizar só omite a seção de decisões. Discussão da dívida coloca dívida no topo e destaca os instrumentos. Cofre vazio sem decisões usa relevância geral. Empresa fora do cadastro recebe pergunta de perímetro e separação pertinente. A regra documentada para controladora e controlada do mesmo grupo foi respeitada. O prazo é registrado sem agendamento."
+    }
+  ],
+  "result": "pass",
+  "conditions": [],
+  "notes": "A condição técnica da rodada 20 foi atendida. Não encontrei divergência do inventário contra o oráculo, precedência errada ou análise produzida nos percursos verificados. A revisão avalia o método determinístico sobre leituras tipadas; não comprova extração dos arquivos reais, aceitação pela interface, aprovação profissional, publicação ou ativação. Nenhum arquivo rastreado foi alterado. A primeira execução escreveu incidentalmente um cache do Vitest em node_modules por um vínculo de dependências; o cache foi removido e as execuções seguintes tiveram cache isolado fora do repositório. A cópia temporária, os testes próprios e seus resultados foram excluídos antes da conclusão."
+}
