@@ -5,15 +5,15 @@
   "id": "prepare-board-capital-discussion",
   "version": "2026.10.27-v1"
  },
- "commit": "4a67c2f2fe0e6b23d4ff196d75eea6070cba80fb",
+ "commit": "c70e7c67260c722807f11dbf24be292134640c79",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/prepare-board-capital-discussion.md",
-   "sha256": "62834076ab3b19075f71b9fa59a4c506ce9f8d93501be6874dce2ae62e821b63"
+   "sha256": "952620163e1999f277756bf24da899dcaeed7c4a51aa49dbcae54f2ad916f210"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion.ts",
-   "sha256": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+   "sha256": "e50645aa3495a7cc380df35eab8235d1c83c773424faf347ad86f6db4a224a35"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -45,11 +45,11 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-   "sha256": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+   "sha256": "862d5bb447fd0787ac3784987c31461b6c5951b5a15e4fd7dec39bbf539963a6"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-   "sha256": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+   "sha256": "1bd99b9c54b115f15bb34ef6c5173cd833909c7dfbeff23bd1ff412a8cfab5ec"
   },
   {
    "path": "packages/financial-model/src/adopted-analysis-binding.ts",
@@ -57,7 +57,7 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-   "sha256": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+   "sha256": "d04efb436a666aa933efb3a2ca860b1d368501588361885e468a2db0f469ba69"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-scale.test.ts",
@@ -65,7 +65,7 @@
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion-roles.test.ts",
-   "sha256": ""
+   "sha256": "bd6f4be294def8c774da1ac589e1a1591544625e12efabf06782ee2149f10be9"
   }
  ],
  "externalOracle": [
