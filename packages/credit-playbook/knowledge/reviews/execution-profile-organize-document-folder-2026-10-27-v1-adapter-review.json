@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "organize-document-folder-2026.10.27-v1",
+    "artifactHash": "464cbab8bb3ee9ccbf98b1800b66987601867ad0a110c5d53151887136b26f02",
+    "profileFingerprint": "bdee6a08a71ac7e028ae53be94945cfff0e17fa90790223d0a30c599a57d93ee"
+  },
+  "subjectCommit": "476332feaf270b686fc6c007578e8a48e69fea1f",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-28T19:11:15Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "4378d63bf0b7465838fefe7e3463dbc755cd6c022803a60ac7fe32d368f75248",
+    "manifestFileHash": "195fd8b81affc2ae0012f99b69b75157f68f042c4f664756e10ce34bdf73ccdf",
+    "canonicalProfileTextSha256": "005e33f44b7a28a2abb9afc407c0984ed598ab4cd35209bd29836151a84bc64c",
+    "canonicalProfileTextBytes": 1457,
+    "reviewedWorktreeHead": "476332feaf270b686fc6c007578e8a48e69fea1f",
+    "originMainHead": "ee5ca744ff3c45461425e295d1b9d5314ef85dd6",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou sourceCommit ee5ca744ff3c45461425e295d1b9d5314ef85dd6 como ancestral de HEAD 476332feaf270b686fc6c007578e8a48e69fea1f.",
+      "SHA-256 dos bytes do snapshot: 9cf84d41d7b9cbbdc9532041967a06ce0a4a4264f748429db5f8488df02f9d24, igual ao snapshotHash do lock; sourceCommit do snapshot também confere.",
+      "SHA-256 do manifesto no sourceCommit e no worktree: 195fd8b81affc2ae0012f99b69b75157f68f042c4f664756e10ce34bdf73ccdf. Todos os 450 executorSources conferem com git show no sourceCommit e com os bytes do snapshot; também conferidos 9 pins do compilador, 5 de evidências e 2 parseOnlySources.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs passou em Node 24.19.0. Segunda execução de buildReleasedExecutors e reconstrução adicional em memória produziram bytes idênticos: 1771097 bytes, SHA-256 464cbab8bb3ee9ccbf98b1800b66987601867ad0a110c5d53151887136b26f02, igual ao artifactHash do lock.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada da release com methodId organize-document-folder, methodVersion 2026.10.27-v1, manifestHash e artifactHash corretos. Manifesto empacotado idêntico ao manifesto fonte.",
+      "deriveExecutionProfile e executionCanonicalText executados a partir das fontes em HEAD. Comparação byte a byte com /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote4-2026-10-27/perfil/profile-organize-document-folder.txt passou: 1457 bytes, SHA-256 005e33f44b7a28a2abb9afc407c0984ed598ab4cd35209bd29836151a84bc64c.",
+      "Fingerprint interno recalculado sobre o perfil sem fingerprint: bdee6a08a71ac7e028ae53be94945cfff0e17fa90790223d0a30c599a57d93ee, igual ao lock. A derivação validou manifestHash e hashes de componentes, compilador e executor.",
+      "Política confirmada: grantsExecution=false; maxModelCalls=0; maxCostMicrousd=0; orçamento original com custo e chamadas zero; allowedEffects=[read_only]; tools=[]; allowedTools=[]; maximumEffect=none. Exatamente um executor, @offroad/financial-model#prepareDocumentFolderInventoryPacket, versão 2026.10.27-v1; selectedComponentId=document-folder-inventory.packet.",
+      "Em apps/document-worker: npx vitest run src/released-lote4-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts. Exit 0: 4 arquivos passaram, 24 testes passaram, duração 37.13 s; transporte de banco simulado.",
+      "Leitura estática de supabase/migrations/20261028120400_lote4_payload_provenance.sql confirmou organize-document-folder vinculado à versão 2026.10.27-v1, manifestHash 4378d63bf0b7465838fefe7e3463dbc755cd6c022803a60ac7fe32d368f75248 e schema document-folder-inventory-packet-input.v1; methodId nulo retorna false antes dos ramos. Arquivo com 18823 bytes, sem newline final, MD5 49a67c3d64dcd53dff32ea12be4b6073.",
+      "Comparação independente com 20261027010426_lote3_quarter_update_priors.sql: remover as 28 linhas marcadas lote 4 e os quatro novos métodos da lista restitui o corpo anterior byte por byte. Ramos de capital, investimento e lotes 1, 2 e 3 preservados. Em packages/execution-request, npx vitest run src/lote4-payload-provenance-regression.test.ts passou: 1 arquivo, 3 testes.",
+      "Blobs, SHA-256 do adaptador e último commit do helper obtidos diretamente do Git em HEAD; fontes locais idênticas aos blobs. origin/main registrado sem atualização remota. git status --short vazio, git diff e git diff --cached sem alterações após build e testes. Nenhum arquivo rastreado modificado; nenhum banco acessado.",
+      "JSON final validado em packages/credit-playbook com adapterReviewSchema.parse por node --input-type=module; schema estrito, sem chaves adicionais."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo técnico solicitado. Identidades, hashes, reconstrução determinística, perfil canônico e política conferem. Passaram os 24 testes solicitados e 3 testes de regressão da migration. O SQL vincula corretamente o método e preserva os ramos anteriores. Revisão estática do SQL, sem acesso a banco de dados; registro, aplicação e ativação em produção não foram verificados."
+}

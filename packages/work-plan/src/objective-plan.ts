@@ -656,9 +656,9 @@ function lote4Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceOb
   return lote4Vetoed(text, "document_folder") ? existing : documentFolderRoute(text, existing);
 }
 
-/** The lote 4 vetoes, in one place: the lote 3 vetoes (a request to understand, a refused need) and the structural
- * condition of lote4-request.ts (C47, C01 and C09 are chosen only on a request for their action on their object that no
- * negation, refusal or request for guidance precedes in its clause). C32 and the enumerated ficha phrasings are whole
+/** The lote 4 vetoes, in one place: the lote 3 vetoes (a request to understand, a refused need) and the conservative
+ * condition of lote4-request.ts (C47, C01 and C09 are chosen only on a request for their action on their object, in a
+ * message with no negation, refusal or request for guidance anywhere). C32 and the enumerated ficha phrasings are whole
  * constructions and take only the lote 3 vetoes. */
 type Lote4Kind = "financing_paths" | Lote4RequestKind;
 function lote4Vetoed(text: string, kind: Lote4Kind): boolean {

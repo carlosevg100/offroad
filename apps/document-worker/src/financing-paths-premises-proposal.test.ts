@@ -189,7 +189,12 @@ describe("financing paths premises from the ficha C32 conversation", {timeout: 9
     expect(Number(path("debenture-com-linha").netDebtAtHorizon) - Number(path("sem-linha-debenture").netDebtAtHorizon)).toBeGreaterThan(22);
     expect([path("bradesco-sem-linha").minimumCash.periodId, path("bradesco-sem-linha").shortfallVsPolicyMinimum.slice(0, 5)]).toEqual(["2028-06-30", "18.23"]);
     expect(proposal.summary.items.every((x) => summaryGroups.includes(x.group) && summaryOrigins.includes(x.origin))).toBe(true);
-    expect(proposal.summary.items.filter((x) => x.origin === "house").map((x) => x.labelKey)).toEqual(["taxLossTreatment", "stressCase", "issueQuantum", "withoutProject", "statusQuoPath"]);
+    const houseRows = proposal.summary.items.filter((x) => x.origin === "house").map((x) => x.labelKey);
+    expect(houseRows.filter((k) => !k!.startsWith("coupon"))).toEqual(["availableForService", "taxLossTreatment", "stressCase", "issueQuantum", "policyOnIndentureDefinition",
+      "withoutProject", "statusQuoPath"]);
+    // One coupon row per instrument, the house's; the calibration's monthly amortization reads interest on the average balance.
+    expect(houseRows.filter((k) => k!.startsWith("coupon"))).toHaveLength(c.facts.instruments.length);
+    expect(houseRows.some((k) => k!.endsWith("OnAverage"))).toBe(true);
     // Independent review, round 1: the rate comes from a document; the loss treatment is the house convention, with its own origin.
     const reason = (end: string) => proposal.hypotheses.find((h) => h.fieldPath.endsWith(end))!.reason;
     expect(reason(".tax.rate")).toMatch(/^Origem: documento\./);
@@ -197,8 +202,55 @@ describe("financing paths premises from the ficha C32 conversation", {timeout: 9
     expect(proposal.summary.items.find((x) => x.labelKey === "taxRate")).toMatchObject({origin: "document"});
     expect(proposal.summary.items.find((x) => x.labelKey === "taxLossTreatment")).toMatchObject({origin: "house"});
     expect(proposal.summary.items.find((x) => x.labelKey === "taxRate")!.source).not.toMatch(/conven/);
+    // Independent review, round 5: the board policy keeps the board's origin; its measure on the indenture definition is
+    // the house's, in its own hypothesis and its own row. No row with a stated origin cites a house convention.
+    expect(reason(".covenant.policyLimit")).toMatch(/^Origem: (documento|informado)\./);
+    expect(reason(".covenant.policyDefinition")).toMatch(/^Origem: premissa da casa\./);
+    expect(proposal.summary.items.find((x) => x.labelKey === "policyOnIndentureDefinition")).toMatchObject({origin: "house"});
+    expect(proposal.summary.items.filter((x) => x.origin !== "house").every((x) => !/conven|premissa da casa/i.test(x.source))).toBe(true);
+    expect(houseConventionLeaks(c.facts, proposal.hypotheses)).toEqual([]);
     expect(proposal.hypotheses.every((h) => /^capital_paths\.[0-9a-f-]{36}\.[A-Za-z0-9_.-]{1,200}$/.test(h.fieldPath))).toBe(true);
     expect(proposal).toMatchObject({methodId: "evaluate-financing-paths", methodVersion: "2026.10.27-v1", summary: {situationId: "refinancing", referenceDate: "2026-06-30"}});
+  });
+});
+
+/** Every value a constant of the bridge sets (the house conventions, and the facts of origin house) found in a hypothesis
+ * whose reason gives it a stated origin: none may leave as document or informed. */
+const bridgeConstants = ["indenture_definition", "no_cash_benefit", "operating_cash_before_project_investment", "accrued_until_paid", "cash_paid", "average_principal",
+  "opening_principal"];
+function houseConventionLeaks(facts: CapitalPathsFacts, hypotheses: {fieldPath: string; value: unknown; reason: string}[]): string[] {
+  const houseIds = [...facts.variants, ...facts.paths].filter((x) => x.origin === "house").map((x) => x.value.id);
+  return hypotheses.filter((h) => {
+    const text = JSON.stringify(h.value);
+    const constant = bridgeConstants.some((k) => text.includes(`"${k}"`)) || houseIds.some((id) => h.fieldPath.includes(`.${id}.`))
+      || (facts.stress.origin === "house" && h.fieldPath.includes(".stress.")) || (facts.demandQuantum.origin === "house" && h.fieldPath.endsWith(".demandQuantum"));
+    return constant && (/^Origem: (documento|informado)\./.test(h.reason) || !h.reason.includes("premissa da casa"));
+  }).map((h) => h.fieldPath.replace(/^capital_paths\.[0-9a-f-]{36}\./, ""));
+}
+
+describe("financing paths premises: house conventions never take a stated origin (independent review, round 5)", () => {
+  it("names the board policy definition and each coupon convention as the house's, whatever the origin of the limit and the instrument", () => {
+    const k = support.auroraCapitalPathsKernel(), e = auroraExtraction(k);
+    // The board's limit read from minutes (a document) and every instrument stated by the person.
+    e.boardPolicy = {...e.boardPolicy, origin: "document", source: "Ata do conselho de março"};
+    e.instruments = e.instruments.map((i) => ({...i, origin: "informed" as const, source: "Dito pela pessoa"}));
+    const c = complete(e), proposal = buildFinancingPathsPremiseProposal(c.facts);
+    expect(houseConventionLeaks(c.facts, proposal.hypotheses)).toEqual([]);
+    const reason = (end: string) => proposal.hypotheses.find((h) => h.fieldPath.endsWith(end))!.reason;
+    expect(reason(".covenant.policyLimit")).toMatch(/^Origem: documento\. Ata do conselho de março/);
+    expect(reason(".covenant.policyDefinition")).toMatch(/^Origem: premissa da casa\./);
+    expect(proposal.summary.items.find((x) => x.labelKey === "boardPolicy")).toMatchObject({origin: "document"});
+    expect(proposal.summary.items.find((x) => x.labelKey === "boardPolicy")!.source).not.toMatch(/conven|defini/);
+    for (const i of c.facts.instruments) {
+      const terms = proposal.hypotheses.find((h) => h.fieldPath.endsWith(`.instrument.${i.value.id}.terms`))!.reason;
+      expect(terms).toMatch(/^Origem: termos escritos do instrumento, informado \(/);
+      expect(terms).toMatch(/tratamento e base do cupom, premissa da casa/);
+      const rows = proposal.summary.items.filter((x) => x.label === i.value.label && x.group === "instrument");
+      expect(rows.map((x) => x.origin)).toEqual(["informed", "house"]);
+    }
+    // A monthly amortization reads interest on the average balance: the house's, never the instrument's document.
+    const monthly = c.facts.instruments.find((i) => i.value.couponBase === "average_principal")!;
+    expect(proposal.summary.items.find((x) => x.label === monthly.value.label && x.origin === "house")).toMatchObject({labelKey: expect.stringMatching(/^coupon(Paid|Accrued)OnAverage$/)});
   });
 });
 

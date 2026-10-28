@@ -30,6 +30,36 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Preparar a discussão da dívida para o conselho não é o que eu quero",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Preparar a discussão da dívida para o conselho não é o que eu quero",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco não é o que eu pedi",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco não é o que eu pedi",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar a discussão da dívida para o conselho",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar a discussão da dívida para o conselho",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
   "message": "Não prepare a discussão da dívida para o conselho.",
   "hasAttachments": false,
   "kind": "board_decision"
@@ -248,6 +278,116 @@
   "message": "Quero saber como preparar a discussão da dívida para o conselho?",
   "hasAttachments": true,
   "kind": "board_decision"
+ },
+ {
+  "message": "Preparar a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Preparar a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Preparar a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Preparar a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Preparar a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Preparar a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare, quer dizer, não prepare ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare, quer dizer, não prepare ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei preparar a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei preparar a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Prepare, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Prepare, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não prepare o material do conselho sobre a estrutura de capital.",
@@ -470,6 +610,116 @@
   "kind": "material_preparation"
  },
  {
+  "message": "Preparar o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não prepare o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não prepare o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare, quer dizer, não prepare ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare, quer dizer, não prepare ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei preparar o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei preparar o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Prepare, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não prepare o deck do conselho sobre o financiamento.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -688,6 +938,116 @@
   "message": "Quero saber como preparar o deck do conselho sobre o financiamento?",
   "hasAttachments": true,
   "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Preparar o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não prepare o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não prepare o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare, quer dizer, não prepare ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare, quer dizer, não prepare ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei preparar o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei preparar o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Prepare, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Prepare, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não monte a discussão da dívida para o conselho.",
@@ -910,6 +1270,116 @@
   "kind": "board_decision"
  },
  {
+  "message": "Montar a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Montar a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Montar a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Montar a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Montar a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Montar a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não monte a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não monte a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte, quer dizer, não monte ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte, quer dizer, não monte ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei montar a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei montar a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Monte, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Monte, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não monte o material do conselho sobre a estrutura de capital.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -1128,6 +1598,116 @@
   "message": "Quero saber como montar o material do conselho sobre a estrutura de capital?",
   "hasAttachments": true,
   "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não monte o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não monte o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte, quer dizer, não monte ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte, quer dizer, não monte ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei montar o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei montar o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Monte, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não monte o deck do conselho sobre o financiamento.",
@@ -1350,6 +1930,116 @@
   "kind": "material_preparation"
  },
  {
+  "message": "Montar o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Montar o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não monte o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não monte o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte, quer dizer, não monte ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte, quer dizer, não monte ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei montar o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei montar o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Monte, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Monte, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não elabore a discussão da dívida para o conselho.",
   "hasAttachments": false,
   "kind": "board_decision"
@@ -1568,6 +2258,116 @@
   "message": "Quero saber como elaborar a discussão da dívida para o conselho?",
   "hasAttachments": true,
   "kind": "board_decision"
+ },
+ {
+  "message": "Elaborar a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elaborar a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elaborar a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elaborar a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elaborar a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elaborar a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não elabore a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não elabore a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore, quer dizer, não elabore ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore, quer dizer, não elabore ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei elaborar a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei elaborar a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Elabore, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Elabore, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não elabore o material do conselho sobre a estrutura de capital.",
@@ -1790,6 +2590,116 @@
   "kind": "material_preparation"
  },
  {
+  "message": "Elaborar o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não elabore o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não elabore o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore, quer dizer, não elabore ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore, quer dizer, não elabore ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei elaborar o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei elaborar o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Elabore, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não elabore o deck do conselho sobre o financiamento.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -2008,6 +2918,116 @@
   "message": "Quero saber como elaborar o deck do conselho sobre o financiamento?",
   "hasAttachments": true,
   "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elaborar o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não elabore o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não elabore o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore, quer dizer, não elabore ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore, quer dizer, não elabore ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei elaborar o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei elaborar o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Elabore, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Elabore, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não faça a discussão da dívida para o conselho.",
@@ -2230,6 +3250,116 @@
   "kind": "board_decision"
  },
  {
+  "message": "Fazer a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Fazer a discussão da dívida para o conselho não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Fazer a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Fazer a discussão da dívida para o conselho não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça a discussão da dívida para o conselho, mas não agora.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça a discussão da dívida para o conselho? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Fazer a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Fazer a discussão da dívida para o conselho: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça a discussão da dívida para o conselho só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é necessário, por enquanto, fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não faça a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Por enquanto, não faça a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça, quer dizer, não faça ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça, quer dizer, não faça ainda, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei fazer a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Eu sei fazer a discussão da dívida para o conselho, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Faça, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Faça, sem pressa e sem análise, a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não faça o material do conselho sobre a estrutura de capital.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -2448,6 +3578,116 @@
   "message": "Quero saber como fazer o material do conselho sobre a estrutura de capital?",
   "hasAttachments": true,
   "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o material do conselho sobre a estrutura de capital não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o material do conselho sobre a estrutura de capital não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o material do conselho sobre a estrutura de capital, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o material do conselho sobre a estrutura de capital? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o material do conselho sobre a estrutura de capital: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o material do conselho sobre a estrutura de capital só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não faça o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não faça o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça, quer dizer, não faça ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça, quer dizer, não faça ainda, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei fazer o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei fazer o material do conselho sobre a estrutura de capital, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Faça, sem pressa e sem análise, o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não faça o deck do conselho sobre o financiamento.",
@@ -2670,6 +3910,116 @@
   "kind": "material_preparation"
  },
  {
+  "message": "Fazer o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o deck do conselho sobre o financiamento não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o deck do conselho sobre o financiamento não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o deck do conselho sobre o financiamento, mas não agora.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o deck do conselho sobre o financiamento? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Fazer o deck do conselho sobre o financiamento: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça o deck do conselho sobre o financiamento só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é necessário, por enquanto, fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não faça o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Por enquanto, não faça o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça, quer dizer, não faça ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça, quer dizer, não faça ainda, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei fazer o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Eu sei fazer o deck do conselho sobre o financiamento, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Faça, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Faça, sem pressa e sem análise, o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não avalie essa proposta de crédito do banco.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -2878,6 +4228,116 @@
   "message": "Quero saber como avaliar essa proposta de crédito do banco?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie essa proposta de crédito do banco, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie essa proposta de crédito do banco, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie essa proposta de crédito do banco? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Avalie essa proposta de crédito do banco? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar essa proposta de crédito do banco: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie essa proposta de crédito do banco só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie essa proposta de crédito do banco só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não avalie essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não avalie essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie, quer dizer, não avalie ainda, essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie, quer dizer, não avalie ainda, essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei avaliar essa proposta de crédito do banco, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei avaliar essa proposta de crédito do banco, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie, sem pressa e sem análise, essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Avalie, sem pressa e sem análise, essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não avalie a proposta de CCB que o Itaú mandou.",
@@ -3100,6 +4560,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Avaliar a proposta de CCB que o Itaú mandou não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar a proposta de CCB que o Itaú mandou não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar a proposta de CCB que o Itaú mandou não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar a proposta de CCB que o Itaú mandou não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie a proposta de CCB que o Itaú mandou, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie a proposta de CCB que o Itaú mandou, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie a proposta de CCB que o Itaú mandou? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Avalie a proposta de CCB que o Itaú mandou? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar a proposta de CCB que o Itaú mandou: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar a proposta de CCB que o Itaú mandou: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie a proposta de CCB que o Itaú mandou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie a proposta de CCB que o Itaú mandou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não avalie a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não avalie a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie, quer dizer, não avalie ainda, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie, quer dizer, não avalie ainda, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei avaliar a proposta de CCB que o Itaú mandou, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei avaliar a proposta de CCB que o Itaú mandou, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie, sem pressa e sem análise, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Avalie, sem pressa e sem análise, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não avalie o term sheet que o Bradesco enviou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -3318,6 +4888,116 @@
   "message": "Quero saber como avaliar o term sheet que o Bradesco enviou?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar o term sheet que o Bradesco enviou não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar o term sheet que o Bradesco enviou não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar o term sheet que o Bradesco enviou não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar o term sheet que o Bradesco enviou não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie o term sheet que o Bradesco enviou, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie o term sheet que o Bradesco enviou, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie o term sheet que o Bradesco enviou? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Avalie o term sheet que o Bradesco enviou? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avaliar o term sheet que o Bradesco enviou: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avaliar o term sheet que o Bradesco enviou: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie o term sheet que o Bradesco enviou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie o term sheet que o Bradesco enviou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não avalie o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não avalie o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie, quer dizer, não avalie ainda, o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Avalie, quer dizer, não avalie ainda, o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei avaliar o term sheet que o Bradesco enviou, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei avaliar o term sheet que o Bradesco enviou, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Avalie, sem pressa e sem análise, o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Avalie, sem pressa e sem análise, o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não analise essa proposta de crédito do banco.",
@@ -3540,6 +5220,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Analisar essa proposta de crédito do banco não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar essa proposta de crédito do banco não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analisar essa proposta de crédito do banco não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar essa proposta de crédito do banco não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise essa proposta de crédito do banco, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise essa proposta de crédito do banco, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise essa proposta de crédito do banco? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Analise essa proposta de crédito do banco? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analisar essa proposta de crédito do banco: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar essa proposta de crédito do banco: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise essa proposta de crédito do banco só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise essa proposta de crédito do banco só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não analise essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não analise essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise, quer dizer, não analise ainda, essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise, quer dizer, não analise ainda, essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei analisar essa proposta de crédito do banco, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei analisar essa proposta de crédito do banco, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise, sem pressa e sem análise, essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Analise, sem pressa e sem análise, essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não analise a proposta de CCB que o Itaú mandou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -3758,6 +5548,116 @@
   "message": "Quero saber como analisar a proposta de CCB que o Itaú mandou?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Analisar a proposta de CCB que o Itaú mandou não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar a proposta de CCB que o Itaú mandou não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analisar a proposta de CCB que o Itaú mandou não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar a proposta de CCB que o Itaú mandou não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise a proposta de CCB que o Itaú mandou, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise a proposta de CCB que o Itaú mandou, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise a proposta de CCB que o Itaú mandou? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Analise a proposta de CCB que o Itaú mandou? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analisar a proposta de CCB que o Itaú mandou: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar a proposta de CCB que o Itaú mandou: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise a proposta de CCB que o Itaú mandou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise a proposta de CCB que o Itaú mandou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não analise a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não analise a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise, quer dizer, não analise ainda, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise, quer dizer, não analise ainda, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei analisar a proposta de CCB que o Itaú mandou, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei analisar a proposta de CCB que o Itaú mandou, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise, sem pressa e sem análise, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Analise, sem pressa e sem análise, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não analise o term sheet que o Bradesco enviou.",
@@ -3980,6 +5880,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Analisar o term sheet que o Bradesco enviou não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar o term sheet que o Bradesco enviou não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analisar o term sheet que o Bradesco enviou não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar o term sheet que o Bradesco enviou não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise o term sheet que o Bradesco enviou, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise o term sheet que o Bradesco enviou, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise o term sheet que o Bradesco enviou? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Analise o term sheet que o Bradesco enviou? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analisar o term sheet que o Bradesco enviou: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analisar o term sheet que o Bradesco enviou: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise o term sheet que o Bradesco enviou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise o term sheet que o Bradesco enviou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não analise o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não analise o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise, quer dizer, não analise ainda, o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Analise, quer dizer, não analise ainda, o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei analisar o term sheet que o Bradesco enviou, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei analisar o term sheet que o Bradesco enviou, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Analise, sem pressa e sem análise, o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Analise, sem pressa e sem análise, o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não olhe essa proposta de crédito do banco.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -4198,6 +6208,116 @@
   "message": "Quero saber como olhar essa proposta de crédito do banco?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhar essa proposta de crédito do banco não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar essa proposta de crédito do banco não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhar essa proposta de crédito do banco não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar essa proposta de crédito do banco não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe essa proposta de crédito do banco, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe essa proposta de crédito do banco, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe essa proposta de crédito do banco? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Olhe essa proposta de crédito do banco? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhar essa proposta de crédito do banco: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar essa proposta de crédito do banco: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe essa proposta de crédito do banco só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe essa proposta de crédito do banco só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não olhe essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não olhe essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe, quer dizer, não olhe ainda, essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe, quer dizer, não olhe ainda, essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei olhar essa proposta de crédito do banco, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei olhar essa proposta de crédito do banco, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe, sem pressa e sem análise, essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Olhe, sem pressa e sem análise, essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não olhe a proposta de CCB que o Itaú mandou.",
@@ -4420,6 +6540,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Olhar a proposta de CCB que o Itaú mandou não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar a proposta de CCB que o Itaú mandou não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhar a proposta de CCB que o Itaú mandou não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar a proposta de CCB que o Itaú mandou não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe a proposta de CCB que o Itaú mandou, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe a proposta de CCB que o Itaú mandou, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe a proposta de CCB que o Itaú mandou? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Olhe a proposta de CCB que o Itaú mandou? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhar a proposta de CCB que o Itaú mandou: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar a proposta de CCB que o Itaú mandou: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe a proposta de CCB que o Itaú mandou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe a proposta de CCB que o Itaú mandou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não olhe a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não olhe a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe, quer dizer, não olhe ainda, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe, quer dizer, não olhe ainda, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei olhar a proposta de CCB que o Itaú mandou, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei olhar a proposta de CCB que o Itaú mandou, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe, sem pressa e sem análise, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Olhe, sem pressa e sem análise, a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não olhe o term sheet que o Bradesco enviou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -4640,6 +6870,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Olhar o term sheet que o Bradesco enviou não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar o term sheet que o Bradesco enviou não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhar o term sheet que o Bradesco enviou não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar o term sheet que o Bradesco enviou não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe o term sheet que o Bradesco enviou, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe o term sheet que o Bradesco enviou, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe o term sheet que o Bradesco enviou? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Olhe o term sheet que o Bradesco enviou? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhar o term sheet que o Bradesco enviou: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhar o term sheet que o Bradesco enviou: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe o term sheet que o Bradesco enviou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe o term sheet que o Bradesco enviou só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não olhe o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não olhe o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe, quer dizer, não olhe ainda, o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Olhe, quer dizer, não olhe ainda, o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei olhar o term sheet que o Bradesco enviou, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei olhar o term sheet que o Bradesco enviou, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Olhe, sem pressa e sem análise, o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Olhe, sem pressa e sem análise, o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não organize a pasta de documentos.",
   "hasAttachments": false,
   "kind": "information_organization"
@@ -4856,6 +7196,116 @@
  },
  {
   "message": "Quero saber como organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar a pasta de documentos não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar a pasta de documentos não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar a pasta de documentos não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar a pasta de documentos não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize a pasta de documentos, mas não agora.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize a pasta de documentos, mas não agora.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize a pasta de documentos? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize a pasta de documentos? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar a pasta de documentos: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar a pasta de documentos: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize a pasta de documentos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize a pasta de documentos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é necessário, por enquanto, organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é necessário, por enquanto, organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Por enquanto, não organize a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Por enquanto, não organize a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, quer dizer, não organize ainda, a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, quer dizer, não organize ainda, a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Eu sei organizar a pasta de documentos, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Eu sei organizar a pasta de documentos, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, sem pressa e sem análise, a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, sem pressa e sem análise, a pasta de documentos.",
   "hasAttachments": true,
   "kind": "information_organization"
  },
@@ -5080,6 +7530,116 @@
   "kind": "information_organization"
  },
  {
+  "message": "Organizar os arquivos que subimos não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar os arquivos que subimos não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar os arquivos que subimos não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar os arquivos que subimos não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize os arquivos que subimos, mas não agora.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize os arquivos que subimos, mas não agora.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize os arquivos que subimos? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize os arquivos que subimos? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar os arquivos que subimos: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organizar os arquivos que subimos: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize os arquivos que subimos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize os arquivos que subimos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é necessário, por enquanto, organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é necessário, por enquanto, organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Por enquanto, não organize os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Por enquanto, não organize os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, quer dizer, não organize ainda, os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, quer dizer, não organize ainda, os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Eu sei organizar os arquivos que subimos, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Eu sei organizar os arquivos que subimos, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, sem pressa e sem análise, os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, sem pressa e sem análise, os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não organize o material que joguei aqui.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -5298,6 +7858,116 @@
   "message": "Quero saber como organizar o material que joguei aqui?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Organizar o material que joguei aqui não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Organizar o material que joguei aqui não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Organizar o material que joguei aqui não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Organizar o material que joguei aqui não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Organize o material que joguei aqui, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Organize o material que joguei aqui, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Organize o material que joguei aqui? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Organize o material que joguei aqui? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Organizar o material que joguei aqui: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Organizar o material que joguei aqui: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Organize o material que joguei aqui só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Organize o material que joguei aqui só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não organize o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não organize o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Organize, quer dizer, não organize ainda, o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Organize, quer dizer, não organize ainda, o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei organizar o material que joguei aqui, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei organizar o material que joguei aqui, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Organize, sem pressa e sem análise, o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Organize, sem pressa e sem análise, o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não arrume a pasta de documentos.",
@@ -5520,6 +8190,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Arrumar a pasta de documentos não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar a pasta de documentos não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrumar a pasta de documentos não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar a pasta de documentos não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume a pasta de documentos, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume a pasta de documentos, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume a pasta de documentos? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Arrume a pasta de documentos? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrumar a pasta de documentos: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar a pasta de documentos: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume a pasta de documentos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume a pasta de documentos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não arrume a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não arrume a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume, quer dizer, não arrume ainda, a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume, quer dizer, não arrume ainda, a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei arrumar a pasta de documentos, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei arrumar a pasta de documentos, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume, sem pressa e sem análise, a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Arrume, sem pressa e sem análise, a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não arrume os arquivos que subimos.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -5738,6 +8518,116 @@
   "message": "Quero saber como arrumar os arquivos que subimos?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrumar os arquivos que subimos não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar os arquivos que subimos não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrumar os arquivos que subimos não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar os arquivos que subimos não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume os arquivos que subimos, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume os arquivos que subimos, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume os arquivos que subimos? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Arrume os arquivos que subimos? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrumar os arquivos que subimos: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar os arquivos que subimos: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume os arquivos que subimos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume os arquivos que subimos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não arrume os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não arrume os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume, quer dizer, não arrume ainda, os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume, quer dizer, não arrume ainda, os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei arrumar os arquivos que subimos, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei arrumar os arquivos que subimos, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume, sem pressa e sem análise, os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Arrume, sem pressa e sem análise, os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não arrume o material que joguei aqui.",
@@ -5960,6 +8850,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Arrumar o material que joguei aqui não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar o material que joguei aqui não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrumar o material que joguei aqui não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar o material que joguei aqui não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume o material que joguei aqui, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume o material que joguei aqui, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume o material que joguei aqui? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Arrume o material que joguei aqui? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrumar o material que joguei aqui: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrumar o material que joguei aqui: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume o material que joguei aqui só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume o material que joguei aqui só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não arrume o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não arrume o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume, quer dizer, não arrume ainda, o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Arrume, quer dizer, não arrume ainda, o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei arrumar o material que joguei aqui, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei arrumar o material que joguei aqui, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Arrume, sem pressa e sem análise, o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Arrume, sem pressa e sem análise, o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não separe a pasta de documentos.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -6178,6 +9178,116 @@
   "message": "Quero saber como separar a pasta de documentos?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar a pasta de documentos não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar a pasta de documentos não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar a pasta de documentos não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar a pasta de documentos não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe a pasta de documentos, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe a pasta de documentos, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe a pasta de documentos? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Separe a pasta de documentos? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar a pasta de documentos: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar a pasta de documentos: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe a pasta de documentos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe a pasta de documentos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não separe a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não separe a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe, quer dizer, não separe ainda, a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe, quer dizer, não separe ainda, a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei separar a pasta de documentos, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei separar a pasta de documentos, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe, sem pressa e sem análise, a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Separe, sem pressa e sem análise, a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  },
  {
   "message": "Não separe os arquivos que subimos.",
@@ -6400,6 +9510,116 @@
   "kind": "documents_to_case"
  },
  {
+  "message": "Separar os arquivos que subimos não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar os arquivos que subimos não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar os arquivos que subimos não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar os arquivos que subimos não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe os arquivos que subimos, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe os arquivos que subimos, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe os arquivos que subimos? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Separe os arquivos que subimos? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar os arquivos que subimos: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar os arquivos que subimos: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe os arquivos que subimos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe os arquivos que subimos só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não separe os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não separe os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe, quer dizer, não separe ainda, os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe, quer dizer, não separe ainda, os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei separar os arquivos que subimos, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei separar os arquivos que subimos, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe, sem pressa e sem análise, os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Separe, sem pressa e sem análise, os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não separe o material que joguei aqui.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -6618,5 +9838,115 @@
   "message": "Quero saber como separar o material que joguei aqui?",
   "hasAttachments": true,
   "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar o material que joguei aqui não é o que eu quero.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar o material que joguei aqui não é o que eu quero.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar o material que joguei aqui não é o que eu pedi.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar o material que joguei aqui não é o que eu pedi.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe o material que joguei aqui, mas não agora.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe o material que joguei aqui, mas não agora.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe o material que joguei aqui? Não, ainda não.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Separe o material que joguei aqui? Não, ainda não.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separar o material que joguei aqui: dispenso por enquanto.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separar o material que joguei aqui: dispenso por enquanto.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe o material que joguei aqui só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe o material que joguei aqui só se eu pedir; por ora, nem precisa.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é necessário, por enquanto, separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é necessário, por enquanto, separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Por enquanto, não separe o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Por enquanto, não separe o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe, quer dizer, não separe ainda, o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Separe, quer dizer, não separe ainda, o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Eu sei separar o material que joguei aqui, me diga só como você faria.",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Eu sei separar o material que joguei aqui, me diga só como você faria.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Separe, sem pressa e sem análise, o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Separe, sem pressa e sem análise, o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "information_organization"
  }
 ]

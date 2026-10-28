@@ -8922,7 +8922,13 @@
       "issueQuantum": "Resolução da emissão mínima",
       "indentureCovenant": "Covenant da escritura",
       "withoutProject": "Sem o projeto de investimento",
-      "statusQuoPath": "Manter e rolar no vencimento"
+      "statusQuoPath": "Manter e rolar no vencimento",
+      "availableForService": "Caixa disponível antes do investimento do projeto",
+      "policyOnIndentureDefinition": "Política do conselho medida na definição da escritura",
+      "couponPaidOnOpening": "{label}: juros pagos quando apurados, sobre o saldo de abertura",
+      "couponPaidOnAverage": "{label}: juros pagos quando apurados, sobre o saldo médio pela amortização mensal",
+      "couponAccruedOnOpening": "{label}: juros semestrais acumulados até junho e dezembro, sobre o saldo de abertura",
+      "couponAccruedOnAverage": "{label}: juros semestrais acumulados até junho e dezembro, sobre o saldo médio pela amortização mensal"
     }
   }
 }

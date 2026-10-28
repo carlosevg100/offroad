@@ -8922,7 +8922,13 @@
       "issueQuantum": "Minimum issue resolution",
       "indentureCovenant": "Indenture covenant",
       "withoutProject": "Without the investment project",
-      "statusQuoPath": "Keep and roll over at maturity"
+      "statusQuoPath": "Keep and roll over at maturity",
+      "availableForService": "Cash available before the project's investment",
+      "policyOnIndentureDefinition": "Board policy measured on the indenture definition",
+      "couponPaidOnOpening": "{label}: interest paid as it accrues, on the opening balance",
+      "couponPaidOnAverage": "{label}: interest paid as it accrues, on the average balance for monthly amortization",
+      "couponAccruedOnOpening": "{label}: semiannual interest accrued until June and December, on the opening balance",
+      "couponAccruedOnAverage": "{label}: semiannual interest accrued until June and December, on the average balance for monthly amortization"
     }
   }
 }

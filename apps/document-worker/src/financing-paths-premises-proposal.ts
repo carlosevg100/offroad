@@ -307,8 +307,10 @@ export function completeFinancingPathsFacts(input: {extraction: Ex; ids: {capita
     if (bp.measurementMonths && ends.length && !decembers(bp.measurementMonths).length) missing.push("boardPolicy.measurementMonths");
     if (bp.limit !== null && bp.comparator !== null && bp.measurementMonths !== null && bp.origin !== null && bp.ownDefinition === null) {
       const source = citedSource(bp.origin, bp.source);
+      // The limit, comparator and dates are the board's (their origin); the definition is the house's, named apart
+      // (financingPathsHouseConventions).
       policy = {value: {limit: bp.limit, comparator: bp.comparator, measurementPeriodEnds: decembers(bp.measurementMonths), definition: "indenture_definition", source},
-        origin: bp.origin, source: `${source}; medida na definição da escritura até o conselho escrever a sua (convenção do método)`};
+        origin: bp.origin, source};
       used.push("policyOnIndentureDefinition");
     }
   }
@@ -536,40 +538,79 @@ export function financingPathsReaderGaps(facts: CapitalPathsFacts, run: (b: Boun
   return [...gaps];
 }
 
+/** The house conventions the bridge writes into the facts, each with its own origin and its own card row, never the
+ * origin of the instrument or the limit it sits in: the cash available before the project's investment, no cash
+ * benefit from a tax loss, the board policy measured on the indenture definition, and each instrument's coupon
+ * treatment and coupon base. The bank's stress, the issue resolution, the status quo path and the variant without the
+ * project are facts of their own with origin house already. Every value a constant of the bridge sets is listed here. */
+export const financingPathsHouseConventions = {
+  availableForService: {origin: "house" as const, source: "Caixa disponível para o serviço da dívida antes do investimento do projeto: convenção da casa para o método"},
+  lossTreatment: {origin: "house" as const, source: "Base negativa sem benefício de caixa: convenção da casa para o método, independente da origem da alíquota"},
+  policyDefinition: {origin: "house" as const,
+    source: "Política do conselho medida na definição da escritura até o conselho escrever a sua: convenção da casa para o método, independente da origem do limite"},
+  coupon: {
+    cash_paid: "juros trimestrais pagos quando apurados",
+    accrued_until_paid: "juros semestrais acumulados até junho e dezembro",
+    opening_principal: "juros sobre o saldo de abertura do período",
+    average_principal: "juros sobre o saldo médio do período, pela amortização mensal",
+  } as const,
+};
+/** Kept for the readers of the loss treatment row. */
+export const financingPathsHouseLossTreatment = financingPathsHouseConventions.lossTreatment;
+const couponSource = (i: Instrument) => `Tratamento e base do cupom (${financingPathsHouseConventions.coupon[i.couponTreatment]}; `
+  + `${financingPathsHouseConventions.coupon[i.couponBase]}): convenção da casa para o método, independente da origem dos termos do instrumento`;
+const couponKey = (i: Instrument) => `coupon${i.couponTreatment === "accrued_until_paid" ? "Accrued" : "Paid"}${i.couponBase === "average_principal" ? "OnAverage" : "OnOpening"}`;
+
 /** The card: the company and its projection, the limits, each instrument, each variant, each path and each
- * sensitivity, every row with its origin; house rows carry a key the card translates. */
+ * sensitivity, every row with its origin; house rows carry a key the card translates, and every house convention
+ * has its own row. */
 export function financingPathsSummary(facts: CapitalPathsFacts): Lote2Summary {
   // The bridge never adopts a reviewed result of another method: its facts carry no "analysis" origin.
   const row = (group: Parameters<typeof summaryRow>[0], label: string, x: {origin: string; source: string}, key: string | null = null) =>
     summaryRow(group, label, {origin: x.origin as Lote2Origin, source: x.source}, key);
   const houseVariant = (v: CapitalPathsFacts["variants"][number]) => v.origin === "house" ? "withoutProject" : null;
+  const h = financingPathsHouseConventions;
   return {situationId: financingPathsSituation, referenceDate: facts.openingDate, items: [
     row("premise", "Caixa e projeção por período", facts.company, "quarterlyProjection"),
+    row("premise", "Caixa disponível antes do investimento do projeto", h.availableForService, "availableForService"),
     row("premise", "Caixa mínimo de política", facts.minimumCash, "minimumCash"),
     row("premise", "Curva do CDI", facts.index, "diCurve"),
     row("premise", "Alíquota de imposto", facts.tax, "taxRate"),
-    row("premise", "Base negativa sem benefício de caixa", financingPathsHouseLossTreatment, "taxLossTreatment"),
+    row("premise", "Base negativa sem benefício de caixa", h.lossTreatment, "taxLossTreatment"),
     row("premise", facts.stress.value.label, facts.stress, "stressCase"),
     row("premise", "Base anual depois do horizonte", facts.postHorizon, "postHorizonBase"),
     row("premise", "Gatilho e datas da sondagem", facts.plan, "soundingPlan"),
     row("premise", "Resolução da emissão mínima", facts.demandQuantum, "issueQuantum"),
     row("limit", "Covenant da escritura", facts.indenture, "indentureCovenant"),
-    ...facts.policy ? [row("limit", "Política do conselho", facts.policy, "boardPolicy")] : [],
+    ...facts.policy ? [row("limit", "Política do conselho", facts.policy, "boardPolicy"),
+      row("limit", "Política do conselho medida na definição da escritura", h.policyDefinition, "policyOnIndentureDefinition")] : [],
     ...facts.basket ? [row("limit", "Exceção da escritura para garantia nova", facts.basket, "indentureBasket")] : [],
-    ...facts.instruments.map((i) => row("instrument", i.value.label, i)),
+    ...facts.instruments.flatMap((i) => [row("instrument", i.value.label, i),
+      row("instrument", i.value.label, {origin: "house", source: couponSource(i.value)}, couponKey(i.value))]),
     ...facts.variants.map((v) => row("case", v.value.label, v, houseVariant(v))),
     ...facts.paths.map((p) => row("option", p.value.label, p, p.origin === "house" ? "statusQuoPath" : null)),
     ...facts.sensitivities.map((s) => row("scenario", s.value.label, s)),
   ]};
 }
 
-/** The loss treatment of the tax: a house convention of the method (a tax loss gives no cash benefit), named with its own origin. */
-export const financingPathsHouseLossTreatment = {origin: "house" as const,
-  source: "Base negativa sem benefício de caixa: convenção da casa para o método, independente da origem da alíquota"};
+/** The hypotheses, with every house convention named as the house's: a hypothesis wholly set by the bridge has origin
+ * house; an instrument's terms (written terms and the two coupon conventions, one list the published method reads)
+ * cite each part with its own origin. */
+export function financingPathsHypotheses(facts: CapitalPathsFacts): ReturnType<typeof proposeCapitalPathsHypotheses> {
+  const h = financingPathsHouseConventions, house = (source: string) => `Origem: premissa da casa. ${source}`;
+  const originName = {document: "documento", informed: "informado", house: "premissa da casa"} as Record<string, string>;
+  return proposeCapitalPathsHypotheses(facts).map((x) => {
+    if (x.fieldPath.endsWith(".tax.lossTreatment")) return {...x, reason: house(h.lossTreatment.source)};
+    if (x.fieldPath.endsWith(".covenant.policyDefinition")) return {...x, reason: house(h.policyDefinition.source)};
+    if (x.fieldPath.endsWith(".company.availableForService")) return {...x, reason: house(h.availableForService.source)};
+    const terms = /\.instrument\.([^.]+)\.terms$/.exec(x.fieldPath);
+    const i = terms ? facts.instruments.find((y) => y.value.id === terms[1]) : undefined;
+    if (i) return {...x, reason: `Origem: termos escritos do instrumento, ${originName[i.origin] ?? i.origin} (${i.source}); tratamento e base do cupom, premissa da casa (${couponSource(i.value)}).`};
+    return x;
+  });
+}
 export function buildFinancingPathsPremiseProposal(facts: CapitalPathsFacts) {
-  const hypotheses = proposeCapitalPathsHypotheses(facts).map((h) => h.fieldPath.endsWith(".tax.lossTreatment")
-    ? {...h, reason: `Origem: premissa da casa. ${financingPathsHouseLossTreatment.source}`} : h);
-  return fingerprintedProposal(financingPathsPremiseMethod, facts, hypotheses, financingPathsSummary(facts));
+  return fingerprintedProposal(financingPathsPremiseMethod, facts, financingPathsHypotheses(facts), financingPathsSummary(facts));
 }
 
 export async function proposeFinancingPathsPremisesForTurn(input: {
