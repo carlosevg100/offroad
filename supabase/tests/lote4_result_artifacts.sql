@@ -52,7 +52,8 @@ begin
  if got->0->'claims'<>'[]'::jsonb or got->1->'claims'<>'[]'::jsonb or got->2->'content'->'rows'<>'[]'::jsonb or got->3->'content'->'rows'<>'[]'::jsonb then
   raise exception 'financing paths without readings mapped wrongly'; end if;
  got:=private.execution_result_board_material_blocks_v1(jsonb_set(jsonb_set(current_setting('test.bm.packet')::jsonb,'{readings}','null'),'{result,discussion}','null'));
- if got->0->'content'->'stage'<>'null'::jsonb or got->1->'content'->'rows'<>'[]'::jsonb or got->7->'claims'<>'[]'::jsonb or got->11->'content'->'rows'='[]'::jsonb then
+ if got->0->'content'->'stage'<>'null'::jsonb or got->1->'content'->'rows'<>'[]'::jsonb or got->7->'claims'<>'[]'::jsonb or got->10->>'blockKey'<>'links' or got->10->'content'->'rows'<>'[]'::jsonb
+  or got->12->'content'->'rows'='[]'::jsonb then
   raise exception 'board discussion without discussion mapped wrongly'; end if;
  raise notice 'PASS: a framed packet maps without numbers';
 end $$;

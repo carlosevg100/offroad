@@ -57,6 +57,9 @@ export const boardMaterialExtractionSchema = z.strictObject({
   deadlines: z.array(z.strictObject({...item, action, date: z.iso.date()})).max(8),
   omissions: z.array(z.strictObject({...item, target: z.enum(["recommendation", "page", "deadline"]), topic: topic.nullable(), action: action.nullable(),
     requestedBy: z.enum(["chair", "cfo", "ceo"]).nullable()})).max(8),
+  /** A proposed identity of a plan instrument and a debt-table row the person said is not the same contract, by the name
+   * the person used (the creditor or the instrument). Absent from older extractions: none rejected. */
+  linkRejections: z.array(z.strictObject({...item, label: z.string().trim().min(2).max(120)})).max(8).optional(),
 });
 export type BoardMaterialExtraction = z.infer<typeof boardMaterialExtractionSchema>;
 
@@ -70,6 +73,7 @@ export const boardMaterialExtractionContract = {
     "seen diz se o conselho já viu cada tema (linha-embalagem: revisão do projeto da linha de embalagem; safra: financiamento do capital de giro da safra; vencimentos: vencimentos e plano de financiamento; politica: política de endividamento).",
     "reasons são motivos dados por alguém para um tema, com o autor (chair: presidente do conselho; cfo; ceo) e o código do dicionário fechado: reduce_single_supplier_dependence (depender menos de um único fornecedor do insumo principal), diversify_suppliers, own_capacity, reduce_operational_risk, serve_customer_contract; outside_dictionary quando o motivo dito não é nenhum desses. Gostar de um projeto não é motivo.",
     "deadlines são prazos de ações ditos na conversa ou em documento: supplier_notice (aviso ao fornecedor para renegociar o contrato), join_programs (adesão aos programas de antecipação), finish_sounding (concluir a sondagem), decide_route (decidir a rota dos vencimentos).",
+    "linkRejections são as identificações propostas no cartão que a pessoa recusou (\"a CCB do plano não é a do Bradesco\"): label é o nome que a pessoa usou, do credor ou do instrumento. Lista vazia quando ninguém recusou.",
     "omissions são pedidos de retirar algo do material: recommendation quando pedem para tirar a recomendação de um tema, page quando pedem para tirar uma página ou um fato, deadline quando pedem para tirar um prazo (action); topic é o tema; requestedBy é quem pediu (o pedido feito em nome do presidente é chair).",
     "origin é informed quando a pessoa disse, document quando veio de um documento. source cita em poucas palavras de onde veio.",
     turnIntentInstruction,
@@ -102,6 +106,7 @@ export function boardMaterialConversation(e: BoardMaterialExtraction): {conversa
     seen: once(e.seen, (x) => x.topic, (x) => String(x.seen), "seen"),
     reasons: once(e.reasons, (x) => `${x.topic}:${x.author}`, (x) => x.code, "reasons"),
     deadlines: once(e.deadlines, (x) => x.action, (x) => x.date, "deadlines"),
+    linkRejections: (e.linkRejections ?? []).map((x) => ({label: x.label, origin: x.origin, source: x.source})),
     omissions: e.omissions.flatMap((o, k) => {
       // Only the chair and the CFO have a reviewed phrase as requester; anyone else is asked.
       if (o.requestedBy === null || o.requestedBy === "ceo") {missing.push(`omissions.${k + 1}.requestedBy`); return [];}
@@ -149,7 +154,13 @@ export function boardOmittedReason(reason: string): string {
   const at = reason.indexOf(":"), code = at < 0 ? reason : reason.slice(0, at), detail = at < 0 ? "" : reason.slice(at + 1);
   const named: Record<string, string> = {
     template_not_applicable: "o texto da biblioteca não se sustenta nestes resultados",
-    library_fixed_record: "o modelo da biblioteca do método lê este registro por um identificador fixo que o resultado não traz; só uma nova versão do método o lê pelo que ele é",
+    role_absent: "nenhum registro do resultado tem o papel que o texto lê",
+    role_ambiguous: "mais de um registro do resultado tem o papel que o texto lê; nenhum é escolhido pela ordem",
+    role_refused_status_quo_path: "o caminho do status quo não tem papel de linha no quadro",
+    role_refused_existing_debt: "o caminho altera a dívida existente sem identificação confirmada",
+    link_absent: "qual linha da tabela de dívida é este instrumento do plano? Sem a identificação confirmada, o texto que nomeia o credor fica de fora",
+    link_mismatch: "a identificação proposta diverge num termo registrado nas duas fontes; confirme qual linha da tabela é este instrumento do plano",
+    link_ambiguous: "a mesma linha ou o mesmo instrumento aparece em mais de uma identificação; diga qual vale",
     record_not_identified: "o registro não é identificado de forma única nos resultados",
     path_set_incomplete: "o quadro precisa mostrar todos os caminhos avaliados e algum não pode ser lido",
     path_without_library_row: "o resultado avalia um caminho sem linha na biblioteca do método",
@@ -177,6 +188,8 @@ export function boardMaterialSummary(facts: BoardCapitalDiscussionFacts, pins: r
     ...facts.topics.map((t) => row("premise", t.value.id, said(t), `boardTopicSeen.${t.value.seen === null ? "unknown" : t.value.seen ? "yes" : "no"}`)),
     ...facts.informed.map((x) => row("premise", x.value.code, said(x), "boardInformedReason")),
     ...facts.omissions.map((o) => row("item", o.value.targetId, said(o), `boardOmission.${o.value.target}`)),
+    // One row per identity the bridge proposes: the person confirms the card with it or rejects it in the conversation.
+    ...facts.links.map((l) => row("premise", `${l.value.rowId} = ${l.value.instrumentId}`, said(l), "boardInstrumentLink")),
     ...omitted.map((o) => row("item", o.item, {origin: "house", source: boardOmittedReason(o.reason)}, "boardOmitted")),
   ]};
 }

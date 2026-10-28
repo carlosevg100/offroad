@@ -47,6 +47,9 @@ describe("board material result (C47)", () => {
       b.identity, b.columns.path, b.pending, "Condições dos programas de antecipação indicativas", b.omissions, b.outcomes.applied, b.notSent, b.sources["plano-2027"],
       b.exclusions.credit_approval, "Seguir em etapas"]) expect(html).toContain(text);
     expect(html).toContain("2 versões do material preservadas");
+    // The identity of the plan's CCB and the Bradesco row of the debt table the material adopted, as the result publishes it.
+    expect(html).toContain(b.links);
+    expect(html).toContain(`A linha ccb-bradesco de ${b.sources["tabela-divida"]} é o instrumento ccb-bradesco de ${b.sources["plano-2027"]}`);
     expect(html).not.toMatch(unresolved); expect(html).not.toMatch(noDash);
   });
   it("before the material shows the outline and only the questions that change it", async () => {

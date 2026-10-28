@@ -442,8 +442,11 @@ Rules:
   each with its origin; sources not run or not released are named as left out. Give the reading first: the agenda of
   deliberations in order of deadline, that every number comes from a completed analysis and is checked against it,
   and that the material comes after the user confirms. Never state a number the analyses do not hold. When its status
-  is missing because no source is released, say which completed analyses the material needs first; for other missing
-  items, ask in one short list, each with the reason.
+  is missing because no source is released, say which completed analyses the material needs first; a missing item
+  instrumentLink.<instrument> asks which row of the debt table that instrument of the financing plan is (the same
+  contract), as a question, never as an error; for other missing items, ask in one short list, each with the reason.
+  A card row of an identity proposed by the bridge is a proposal: say the person confirms it with the card or tells you
+  it is not the same contract.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */

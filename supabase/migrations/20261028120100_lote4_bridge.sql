@@ -322,6 +322,10 @@ begin
    'sources',coalesce(nullif(d#>'{pending,sources}','null'::jsonb),'[]'::jsonb),'authority',coalesce(nullif(d#>'{pending,authority}','null'::jsonb),'[]'::jsonb),
    'template',coalesce(d#>'{pending,template}','null'::jsonb),'figures',coalesce(nullif(d->'pendingFigures','null'::jsonb),'[]'::jsonb))),
   jsonb_build_object('blockKey','omissions','kind','table','claims','[]'::jsonb,'content',jsonb_build_object('rows',coalesce(nullif(d->'omissions','null'::jsonb),'[]'::jsonb))),
+  -- The adopted identities of a plan instrument and a debt-table row the material read (link.<id> of the discussion's basis).
+  jsonb_build_object('blockKey','links','kind','table','claims','[]'::jsonb,'content',jsonb_build_object('rows',coalesce((select jsonb_agg(jsonb_build_object('id',l.v->'id',
+    'planSourceId',l.v->'planSourceId','instrumentId',l.v->'instrumentId','tableSourceId',l.v->'tableSourceId','rowId',l.v->'rowId') order by l.n)
+    from jsonb_array_elements(coalesce(nullif(d->'links','null'::jsonb),'[]'::jsonb)) with ordinality l(v,n)),'[]'::jsonb))),
   jsonb_build_object('blockKey','versions','kind','table','claims','[]'::jsonb,'content',jsonb_build_object('rows',coalesce((select jsonb_agg(jsonb_build_object('version',v.v->'version',
     'fingerprint',v.v->'fingerprint','mainPages',v.v#>'{agenda,mainPages}') order by v.n) from jsonb_array_elements(vs) with ordinality v(v,n)),'[]'::jsonb))),
   jsonb_build_object('blockKey','sources','kind','table','claims','[]'::jsonb,'content',jsonb_build_object('rows',coalesce((select jsonb_agg(jsonb_build_object('id',s.v->'id',

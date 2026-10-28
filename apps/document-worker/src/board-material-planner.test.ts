@@ -3,7 +3,7 @@ import {beforeAll, describe, expect, it} from "vitest";
 import {boardReleasedSources, composeBoundBoardCapitalDiscussion, prepareBoardCapitalDiscussionPacket, prepareCapitalPathsPacket, proposeBoardCapitalDiscussionHypotheses,
   type BoardCapitalDiscussionFacts, type BoardSourceMethodId} from "@offroad/financial-model";
 import {boardMaterialCheck, boardMaterialConversation, boardMaterialPriorsByMethod, boardOmittedReason} from "./board-material-premises-proposal";
-import {boardLibraryFixedRecords, planBoardMaterial, type BoardMaterialPlanned, type BoardMaterialPrior} from "./board-material-planner";
+import {boardMaterialPathRows, boardMaterialRecordRoles, planBoardMaterial, type BoardMaterialPlanned, type BoardMaterialPrior} from "./board-material-planner";
 import {inMemoryBasis} from "./lote3-reader-check";
 import {itemKeys} from "./lote2-premises";
 import {houseStatusQuoLabel} from "./financing-paths-premises-proposal";
@@ -41,12 +41,13 @@ const conversation = boardMaterialConversation({turnIntent: "answers_pending", a
   seen: [{topic: "linha-embalagem", seen: false, origin: "informed", source: "não viu"}],
   reasons: [{topic: "linha-embalagem", author: "chair", code: "reduce_single_supplier_dependence", origin: "informed", source: "presidente"}],
   deadlines: [{action: "supplier_notice", date: "2026-10-02", origin: "document", source: "contrato"}], omissions: []}).conversation;
+const priorsOf = (with_: Source[]) => boardMaterialPriorsByMethod({priors: with_.map((s, n) => ({methodId: s.methodId, executionId: hex(700 + n), resultFingerprint: s.packet.fingerprint as string,
+  released: true, moneyScale: s.moneyScale, packet: s.packet} satisfies BoardMaterialPrior))});
+const checkOf = (priors: ReturnType<typeof priorsOf>) => (facts: BoardCapitalDiscussionFacts) => boardMaterialCheck(priors, facts.sources.map((x) => ({role: x.value.id as never,
+  methodId: x.value.methodId as never, executionId: hex(1), resultFingerprint: x.value.packetFingerprint, moneyScale: x.value.moneyScale})))(facts);
 function plan(with_: Source[]): BoardMaterialPlanned {
-  const priors = boardMaterialPriorsByMethod({priors: with_.map((s, n) => ({methodId: s.methodId, executionId: hex(700 + n), resultFingerprint: s.packet.fingerprint as string,
-    released: true, moneyScale: s.moneyScale, packet: s.packet} satisfies BoardMaterialPrior))});
-  return planBoardMaterial({ids: {discussionId: hex(9), definitionVersionId: hex(9)}, today: "2026-09-28", perimeter: "standalone", currency: "BRL", priors, conversation,
-    check: (facts) => boardMaterialCheck(priors, facts.sources.map((x) => ({role: x.value.id as never, methodId: x.value.methodId as never, executionId: hex(1), resultFingerprint: x.value.packetFingerprint,
-      moneyScale: x.value.moneyScale})))(facts)});
+  const priors = priorsOf(with_);
+  return planBoardMaterial({ids: {discussionId: hex(9), definitionVersionId: hex(9)}, today: "2026-09-28", perimeter: "standalone", currency: "BRL", priors, conversation, check: checkOf(priors)});
 }
 /** The material the method prepares from planned facts over these results: every page, line, option, question and the summary. */
 function material(facts: BoardCapitalDiscussionFacts, with_: Source[]) {
@@ -91,32 +92,38 @@ describe("board material planner: records read by what the results register, nev
     expect(silentLosses(mine.facts, mine.omitted)).toEqual([]);
   }, 240_000);
 
-  it("with the plan of 2027 the C32 bridge produces (paths keyed by label), names every path the library cannot read and loses nothing in silence", () => {
+  it("with the plan of 2027 the C32 bridge produces (paths keyed by label), binds every path by its moves and prepares the calibration's material", () => {
     const withBridge = sources.map((s) => s.id === "plano-2027" ? {...s, packet: bridgePlan} : s);
-    const planned = plan(withBridge);
-    expect(planned.status).toBe("complete");
-    if (planned.status !== "complete") return;
-    const pages = planned.facts.pages.map((p) => p.value.id);
-    // The two pages of paths, the cash page (the status quo is read by the library as "manter") and the two answers bound to
-    // fixed paths are left out and named; every other page of the calibration stays.
-    expect(pages).toEqual(["decisoes", "divida", "escritura", "linha", "safra", "recomendacao", "alavancagem", "politica", "mudaria", "passos"]);
-    const reasons = (item: string) => planned.omitted.filter((o) => o.item === item).map((o) => o.reason);
-    expect(reasons("page.caminhos")).toEqual(["path_set_incomplete"]);
-    expect(reasons("page.caminhos.paths")).toEqual(expect.arrayContaining(["library_fixed_record:sem-linha-debenture", "library_fixed_record:manter",
-      "path_without_library_row:manter-e-rolar-no-vencimento"]));
-    expect(reasons("page.caixa")).toEqual(["library_fixed_record:manter"]);
-    expect(reasons("question.bradesco")).toEqual(["library_fixed_record:bradesco-sem-linha"]);
-    expect(reasons("question.prazo")).toEqual(["library_fixed_record:sem-linha-debenture"]);
-    expect(boardOmittedReason("library_fixed_record:manter")).toMatch(/identificador fixo.*\(manter\)$/);
-    expect(silentLosses(planned.facts, planned.omitted)).toEqual([]);
-    // What stays is the calibration's own text, number for number.
-    const mine = material(planned.facts, withBridge), base = material((plan(sources) as {facts: BoardCapitalDiscussionFacts}).facts, sources);
-    expect(mine.allFiguresMatch).toBe(true);
-    for (const p of mine.pages) expect(base.pages).toContainEqual(p);
-    expect(mine.summary).toBe(base.summary);
+    const planned = plan(withBridge), base = plan(sources);
+    expect([planned.status, base.status]).toEqual(["complete", "complete"]);
+    if (planned.status !== "complete" || base.status !== "complete") return;
+    // No path, case, limit or scenario is read by the calibration's ids: every page of the calibration stays, over paths
+    // whose ids are the C32 bridge's labels.
+    expect(planned.facts.pages.map((p) => p.value.id)).toEqual(base.facts.pages.map((p) => p.value.id));
+    expect(planned.omitted).toEqual(base.omitted);
+    expect(JSON.stringify(planned.facts.figures)).not.toMatch(/\[id=(?:manter|sem-linha-debenture|bradesco-sem-linha)\]/);
+    // The same material, page for page and number for number (the references name the bridge's own path ids).
+    expect(material(planned.facts, withBridge)).toEqual(material(base.facts, sources));
   }, 240_000);
 
-  it("names the fixed records of the library it checks, per source", () => {
-    expect(Object.keys(boardLibraryFixedRecords).sort()).toEqual(["caixa-semanal", "covenant", "linha-embalagem", "plano-2027", "projecao"]);
+  it("without a confirmed identity of the bank instrument, asks which row of the debt table it is, never shows the refusal", () => {
+    // The person rejected the proposed identity of the Bradesco CCB: no link for it, the rest of the material stays.
+    const planned = planBoardMaterial({ids: {discussionId: hex(9), definitionVersionId: hex(9)}, today: "2026-09-28", perimeter: "standalone", currency: "BRL",
+      priors: priorsOf(sources), conversation: {...conversation, linkRejections: [{label: "Bradesco", origin: "informed", source: "não é a mesma CCB"}]}, check: checkOf(priorsOf(sources))});
+    // The method refuses the material without the alternative it recommends, which names the bank creditor: the person is
+    // asked which row of the debt table the plan's CCB is, never shown the refusal; each text left out names the question.
+    expect(planned.status === "missing" ? planned.missing : planned.status).toEqual(["instrumentLink.ccb-bradesco"]);
+    const asked = planned.omitted.filter((o) => o.reason.startsWith("link_absent:"));
+    expect(asked.length).toBeGreaterThan(0);
+    expect(asked.filter((o) => o.reason !== "link_absent:CCB Bradesco")).toEqual([]);
+    expect(boardOmittedReason("link_absent:CCB Bradesco")).toMatch(/^qual linha da tabela de dívida é este instrumento do plano\?.*\(CCB Bradesco\)$/);
+  }, 240_000);
+
+  it("binds every record by the role the method binds it by: the planner's roles are the library's own", async () => {
+    // The roles are copied in the planner (the package exports no template); each must equal the role its template declares.
+    const lib = (await import(/* @vite-ignore */ new URL("../../../packages/financial-model/src/board-capital-discussion-templates.ts", import.meta.url).href)) as
+      {boardTemplates: Record<string, {roles?: {bind: string}[]}>};
+    for (const {row, role} of boardMaterialPathRows) expect(lib.boardTemplates[`alternatives.row.${row}`]!.roles, row).toEqual([role]);
+    for (const [key, x] of Object.entries(boardMaterialRecordRoles)) expect(lib.boardTemplates[x.template]!.roles!.find((r) => r.bind === key), key).toEqual(x.role);
   });
 });

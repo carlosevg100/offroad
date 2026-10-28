@@ -4049,6 +4049,8 @@
         "questions": "Perguntas prováveis e respostas",
         "appendix": "Apêndice",
         "identity": "Conferência dos números",
+        "links": "Identificações adotadas",
+        "link": "A linha {row} de {table} é o instrumento {instrument} de {plan}, identificação confirmada no cartão",
         "identityMatches": "Os {count} números do material foram conferidos contra as análises revisadas e batem; os {facts} fatos materiais aparecem no texto final.",
         "identityPartial": "{count} números conferidos contra as análises revisadas.",
         "columns": {
@@ -8884,6 +8886,7 @@
         "deadline": "Retirar o prazo: {label}"
       },
       "boardOmitted": "Fora do material: {label}",
+      "boardInstrumentLink": "Identificação proposta do mesmo contrato: {label}",
       "receivedProposal": "Proposta de {label}",
       "indexer": "Indexador",
       "drawDate": "Data do desembolso",

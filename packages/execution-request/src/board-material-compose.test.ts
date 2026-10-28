@@ -49,6 +49,15 @@ describe("board material over the stored results of the work (C47)", () => {
     const packet = prepareBoardCapitalDiscussionPacket(input);
     expect(packet.readings?.stage).toBe("material_prepared");
     expect(packet.readings?.material?.allFiguresMatch).toBe(true);
+    // The identity the basis adopts (link.<id>) travels into the packet and the result publishes it; without it the
+    // texts that bind the plan instrument of a debt-table row are refused by name, never matched by coincidence.
+    expect(packet.result.discussion!.links).toEqual(facts.links.map((l) => l.value));
+    const unlinked = {...facts, links: []};
+    const withoutLinks = (): ExecutionContractBasis => {
+      const saved = facts; facts = unlinked as BoardCapitalDiscussionFacts;
+      try { return basis(); } finally { facts = saved; }
+    };
+    expect(() => prepareBoardCapitalDiscussionPacket(composeBoardMaterialPacket(withoutLinks(), ask, priors(), refs))).toThrow(/^board_capital_record_link_absent:/);
   }, 120_000);
   it("pins the discussion's sources first and then each prior source it does not pin, once", () => {
     const refs = boardMaterialPriorResults(basis(), priors())!;

@@ -66,7 +66,16 @@ describe("board material: ficha C47 through the conversation", () => {
     expect(result?.forAdvisor.status).toBe("proposed");
     const facts = result!.proposal!.facts as BoardCapitalDiscussionFacts, expected = gold(turn);
     const rename = new Map([[projectAnalysis, boardCapitalDiscussionAnalysisId(expected.discussionId)]]);
-    expect(comparableHypotheses(proposeBoardCapitalDiscussionHypotheses(facts), rename)).toEqual(asGold(expected));
+    // Every fact is the calibration's, except the identities: the calibration adopts the Bradesco CCB of the plan as the
+    // Bradesco row of the debt table from the analysis of both results; the bridge proposes it, origin house, with the
+    // other pair whose registered terms agree (the 2021 debenture), for the person to confirm or reject on the card.
+    const noLinks = (xs: ReturnType<typeof comparableHypotheses>) => xs.filter((h) => !/(?:^|\.)link\./.test(JSON.stringify(h)));
+    expect(noLinks(comparableHypotheses(proposeBoardCapitalDiscussionHypotheses(facts), rename))).toEqual(noLinks(asGold(expected)));
+    expect(facts.links.map((l) => [l.value, l.origin])).toEqual([
+      [{id: "debenture-1", planSourceId: "plano-2027", instrumentId: "debenture-2021", tableSourceId: "tabela-divida", rowId: "debenture-1"}, "house"],
+      [{id: "ccb-bradesco", planSourceId: "plano-2027", instrumentId: "ccb-bradesco", tableSourceId: "tabela-divida", rowId: "ccb-bradesco"}, "house"]]);
+    expect(facts.links.every((l) => /^Identificação proposta do mesmo contrato: .* confirme ou recuse$/.test(l.source))).toBe(true);
+    expect(expected.links.map((l) => l.value)).toContainEqual(facts.links[1]!.value);
     // The confirmed card (in memory) and the calibration give the same material.
     const run = (f: BoardCapitalDiscussionFacts) => {
       const packet = prepareBoardCapitalDiscussionPacket(composeBoundBoardCapitalDiscussion({discussion: inMemoryBasis(proposeBoardCapitalDiscussionHypotheses(f)), question: "C47",
@@ -81,6 +90,10 @@ describe("board material: ficha C47 through the conversation", () => {
     const summary = result!.proposal!.summary as unknown as {boardSources: {role: string; executionId: string}[]; items: {labelKey: string | null}[]};
     expect(summary.boardSources.map((p) => p.role)).toEqual(Object.values(boardMaterialSourceIds));
     expect(summary.items.some((i) => i.labelKey === "boardOmitted")).toBe(false);
+    // One card row per proposed identity, origin house, saying it is a proposed identification of the same contract.
+    const links = (summary.items as {labelKey: string | null; origin: string; source: string; label: string}[]).filter((i) => i.labelKey === "boardInstrumentLink");
+    expect(links.map((i) => [i.label, i.origin])).toEqual([["debenture-1 = debenture-2021", "house"], ["ccb-bradesco = ccb-bradesco", "house"]]);
+    expect(links.every((i) => i.source.startsWith("Identificação proposta do mesmo contrato:"))).toBe(true);
   }, 120_000);
 
   it("proposes nothing when the turn does not answer, and nothing without a completed released result", async () => {

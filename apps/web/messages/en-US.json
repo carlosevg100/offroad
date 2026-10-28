@@ -4049,6 +4049,8 @@
         "questions": "Likely questions and answers",
         "appendix": "Appendix",
         "identity": "Figure check",
+        "links": "Adopted identifications",
+        "link": "Row {row} of {table} is instrument {instrument} of {plan}, an identification confirmed on the card",
         "identityMatches": "The {count} figures of the material were checked against the reviewed analyses and match; the {facts} material facts appear in the final text.",
         "identityPartial": "{count} figures checked against the reviewed analyses.",
         "columns": {
@@ -8884,6 +8886,7 @@
         "deadline": "Remove the deadline: {label}"
       },
       "boardOmitted": "Left out of the material: {label}",
+      "boardInstrumentLink": "Proposed identification of the same contract: {label}",
       "receivedProposal": "Proposal from {label}",
       "indexer": "Index",
       "drawDate": "Draw date",

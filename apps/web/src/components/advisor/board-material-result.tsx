@@ -6,7 +6,8 @@ import {formatIsoDate} from "@/lib/execution/format";
  * urgency order with deadline and authority, the narrative and only the questions that change the material. With the
  * material: the deliberations, the pages with each title a conclusion, the summary for prior reading, the likely
  * questions with answers, the appendix, the identity check of every number against the reviewed result it is read
- * from, what is pending, each omission request and its outcome, and the versions kept. Every text is the method's own;
+ * from, the identities of a plan instrument and a debt-table row the material adopted, what is pending, each omission
+ * request and its outcome, and the versions kept. Every text is the method's own;
  * this page writes no number. Nothing was presented or sent to anyone. */
 export async function BoardMaterialResult({locale, view}: {locale: string; view: BoardMaterialResultBlocksView}) {
   const t = await getTranslations({locale, namespace: "App.workExecutions.boardMaterial"});
@@ -72,6 +73,11 @@ export async function BoardMaterialResult({locale, view}: {locale: string; view:
           <tbody>{view.identity.map((r) => <tr key={r.figureId}><th scope="row">{r.display}</th><td>{known("sources", r.sourceId)}</td><td><code>{r.path}</code></td></tr>)}</tbody>
         </table>
       </div>
+    </> : null}
+
+    {view.links.length ? <>
+      <h3>{t("links")}</h3>
+      <ul>{view.links.map((l) => <li key={l.id}>{t("link", {row: l.rowId, table: known("sources", l.tableSourceId), instrument: l.instrumentId, plan: known("sources", l.planSourceId)})}</li>)}</ul>
     </> : null}
 
     {view.pending.indicative.length || view.pending.figures.length || view.pending.sources.length || view.pending.template ? <>

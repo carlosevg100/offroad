@@ -45210,7 +45210,7 @@
         },
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 337,
+          "line": 341,
           "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
           "mechanism": "direct_ddl"
         }
@@ -320781,7 +320781,7 @@
         },
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 465,
+          "line": 469,
           "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }

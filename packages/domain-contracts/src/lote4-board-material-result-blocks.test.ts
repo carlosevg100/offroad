@@ -28,6 +28,9 @@ describe("the shared board material result fixture (C47)", () => {
     expect(view.identity.find((r) => r.figureId === "divida-total")).toMatchObject({display: "R$ 130 milhões", matches: true});
     expect(view.sources).toHaveLength(9);
     expect(readBoardMaterialPacketBlocks(without(blocks, "identity"))).toBeNull();
+    // The adopted identity of the plan's CCB and the Bradesco row of the debt table, as the result publishes it.
+    expect(view.links).toEqual([{id: "ccb-bradesco", planSourceId: "plano-2027", instrumentId: "ccb-bradesco", tableSourceId: "tabela-divida", rowId: "ccb-bradesco"}]);
+    expect(readBoardMaterialPacketBlocks(without(blocks, "links"))).toBeNull();
     const tampered = blocks.map((b) => b.blockKey === "identity" ? {...b, claims: b.claims.map((c, n) => n === 0 ? {...c, value: "1"} : c)} : b);
     expect(readBoardMaterialPacketBlocks(tampered)).toBeNull();
     expect(readBoardMaterialPacketBlocks([...blocks, blocks[0]!])).toBeNull();

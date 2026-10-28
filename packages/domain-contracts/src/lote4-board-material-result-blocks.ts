@@ -40,6 +40,8 @@ export type BoardMaterialPacketLike = {
         readonly sources: readonly {readonly sourceId: string; readonly methodId: string; readonly status: string; readonly reasons: readonly string[]}[];
         readonly authority: readonly string[]; readonly template: string};
       readonly pendingFigures: readonly {readonly figureId: string; readonly methodId: string; readonly path: string; readonly reason: string}[];
+      /** The adopted identities of a plan instrument and a debt-table row (absent from packets before the C47 role fix). */
+      readonly links?: readonly {readonly id: string; readonly planSourceId: string; readonly instrumentId: string; readonly tableSourceId: string; readonly rowId: string}[];
       readonly priorVersionsKept: boolean; readonly sentToThirdParties: boolean; readonly presented: boolean;
     }};
   readonly readings: null | {readonly material: null | {readonly allFiguresMatch: boolean; readonly materialFacts: number; readonly materialFactsShown: boolean; readonly verifiedNumbers: number}};
@@ -90,6 +92,8 @@ export function boardMaterialPacketBlocks(packet: BoardMaterialPacketLike): read
     {blockKey: "pending", kind: "section", claims: [], content: {indicative: copy(d?.pending.indicative ?? []), sources: copy(d?.pending.sources ?? []), authority: copy(d?.pending.authority ?? []),
       template: d?.pending.template ?? null, figures: copy(d?.pendingFigures ?? [])}},
     {blockKey: "omissions", kind: "table", claims: [], content: {rows: copy(d?.omissions ?? [])}},
+    {blockKey: "links", kind: "table", claims: [], content: {rows: (d?.links ?? []).map((l) => ({id: l.id, planSourceId: l.planSourceId, instrumentId: l.instrumentId,
+      tableSourceId: l.tableSourceId, rowId: l.rowId}))}},
     {blockKey: "versions", kind: "table", claims: [], content: {rows: (d?.versions ?? []).map((v) => ({version: v.version, fingerprint: v.fingerprint, mainPages: v.agenda.mainPages}))}},
     {blockKey: "sources", kind: "table", claims: [], content: {rows: packet.result.sources.map((s) => ({id: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, status: s.status}))}},
     {blockKey: "information-gaps", kind: "table", claims: [], content: {rows: packet.gaps.map((g) => ({operand: g.operand, reason: g.reason}))}},
@@ -121,6 +125,7 @@ const spec = {
     template: z.enum(["not_supplied", "supplied_not_applied"]).nullable(), figures: z.array(z.strictObject({figureId: z.string(), methodId: z.string(), path: z.string(), reason: z.string()}))})},
   omissions: {kind: "table" as const, claims: noClaims, content: rows(z.strictObject({id: z.string(), target: z.enum(["recommendation", "page", "figure", "deadline"]), targetId: z.string(),
     requestedBy: z.string(), outcome: z.enum(["applied", "refused"]), reason: z.string(), keptFigureIds: z.array(z.string())}))},
+  links: {kind: "table" as const, claims: noClaims, content: rows(z.strictObject({id: z.string(), planSourceId: z.string(), instrumentId: z.string(), tableSourceId: z.string(), rowId: z.string()}))},
   versions: {kind: "table" as const, claims: noClaims, content: rows(z.strictObject({version: z.number().int(), fingerprint: hash, mainPages: z.number().int()}))},
   sources: {kind: "table" as const, claims: noClaims, content: rows(z.strictObject({id: z.string(), methodId: z.string(), methodVersion: z.string(), packetFingerprint: hash, status: z.string()}))},
   "information-gaps": {kind: "table" as const, claims: noClaims, content: rows(z.strictObject({operand: z.string(), reason: z.string()}))},
@@ -131,7 +136,7 @@ type Content<K extends keyof Spec> = z.infer<Spec[K]["content"]>;
 export type BoardMaterialResultBlocksView = {
   readonly framing: Content<"framing">; readonly deliberations: Content<"deliberations">["rows"]; readonly outline: Content<"outline">;
   readonly pages: Content<"pages">["rows"]; readonly summary: string | null; readonly questions: Content<"questions">["rows"]; readonly appendix: Content<"appendix">["rows"];
-  readonly identity: Content<"identity">["rows"]; readonly pending: Content<"pending">; readonly omissions: Content<"omissions">["rows"];
+  readonly identity: Content<"identity">["rows"]; readonly pending: Content<"pending">; readonly omissions: Content<"omissions">["rows"]; readonly links: Content<"links">["rows"];
   readonly versions: Content<"versions">["rows"]; readonly sources: Content<"sources">["rows"]; readonly informationGaps: readonly Gap[]; readonly exclusions: readonly string[];
 };
 
@@ -155,6 +160,6 @@ export function readBoardMaterialPacketBlocks(blocks: readonly BlockLike[]): Boa
   if (JSON.stringify(got) !== JSON.stringify(expected)) return null;
   const c = <K extends keyof Spec>(k: K) => out[k]!.content as Content<K>;
   return freezeArtifactValue({framing: c("framing"), deliberations: c("deliberations").rows, outline: c("outline"), pages: c("pages").rows, summary: c("summary").text,
-    questions: c("questions").rows, appendix: c("appendix").rows, identity, pending: c("pending"), omissions: c("omissions").rows, versions: c("versions").rows,
+    questions: c("questions").rows, appendix: c("appendix").rows, identity, pending: c("pending"), omissions: c("omissions").rows, links: c("links").rows, versions: c("versions").rows,
     sources: c("sources").rows, informationGaps: c("information-gaps").rows, exclusions: c("exclusions").items}) as BoardMaterialResultBlocksView;
 }

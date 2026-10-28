@@ -1,4 +1,5 @@
-import {boardCapitalDiscussionFactsSchema, boardEffectiveScale, boardFieldOf, boardReleasedSources, formatBoardReading, readBoardSourcePath, verifyBoardSource, type BoardCapitalDiscussionFacts} from "@offroad/financial-model";
+import {boardCapitalDiscussionFactsSchema, boardEffectiveScale, boardFieldOf, boardLinkedInstrument, boardReleasedSources, boardRoleRecords, formatBoardReading, readBoardSourcePath,
+  verifyBoardSource, type BoardCapitalDiscussionFacts, type BoardSourceReading} from "@offroad/financial-model";
 
 /** The deterministic planner of a board discussion (ficha C47, prepare-board-capital-discussion 2026.10.27-v1).
  * Pages, deliberations, numbers and questions never come from a model: the plan below is the closed library's own
@@ -43,6 +44,9 @@ export type BoardMaterialConversation = {
   reasons: {topic: BoardMaterialTopic; author: "chair" | "cfo" | "ceo"; code: (typeof boardMaterialReasonCodes)[number]; origin: Said; source: string}[];
   deadlines: {action: BoardMaterialAction; date: string; origin: Said; source: string}[];
   omissions: {target: "recommendation" | "page" | "deadline"; topic: BoardMaterialTopic | null; action: BoardMaterialAction | null; requestedBy: "chair" | "cfo"; origin: Said; source: string}[];
+  /** Proposed identities of a plan instrument and a debt-table row the person said are not the same contract, by the name
+   * of either (the creditor, the instrument). */
+  linkRejections?: {label: string; origin: Said; source: string}[];
 };
 
 type Reading = [string, string, string];
@@ -50,10 +54,40 @@ type Plan = ReturnType<typeof boardPlanFor>;
 type Page = Plan["pages"][number];
 type Deliberation = Plan["deliberations"][number];
 
-/** The seven paths the plan of 2027 evaluates and the library row of each, by rank. */
-const pathRows: [string, string][] = [["sem-linha-debenture", "no_line_debenture"], ["adiar-linha", "defer_line"], ["debenture-com-linha", "debenture_with_line"],
-  ["manter", "keep_and_roll"], ["ccb-tres-anos", "short_bank_loan"], ["alongar-com-banco", "extend_with_bank"], ["alongar-bradesco", "extend_bradesco"]];
-const bankMoves = new Set(["sem-linha-debenture", "debenture-com-linha", "alongar-com-banco", "alongar-bradesco"]);
+type RoleSpec = Parameters<typeof boardRoleRecords>[0];
+const bankUnscheduled = "bancario_sem_amortizacao_programada", bankScheduled = "bancario_programado";
+const moves = (m: {added?: string[]; removed?: string[]; prepaid?: string[]; charges?: string[]; variant: "same" | "other"}) =>
+  ({added: m.added ?? [], removed: m.removed ?? [], prepaid: m.prepaid ?? [], charges: m.charges ?? [], variant: m.variant});
+/** The library row of each path the plan of 2027 evaluates, in rank, with the role the method binds it by (the path whose
+ * complete moves are the row's, or the status quo the plan registers). Copied from the method's closed library
+ * (packages/financial-model/src/board-capital-discussion-templates.ts, the roles of alternatives.row.*); a test checks
+ * each equals the template's own, so the planner and the method never bind a row differently. No record id is read. */
+export const boardMaterialPathRows: readonly {row: string; role: RoleSpec}[] = [
+  {row: "no_line_debenture", role: {bind: "p", role: "path_with_moves", moves: moves({added: [bankUnscheduled, "debenture_nova"], prepaid: ["debenture_atual", "divida_atual"], variant: "other"})}},
+  {row: "defer_line", role: {bind: "p", role: "path_with_moves", moves: moves({added: [bankUnscheduled], variant: "other"})}},
+  {row: "debenture_with_line", role: {bind: "p", role: "path_with_moves", moves: moves({added: [bankUnscheduled, "fomento", "debenture_nova"], prepaid: ["debenture_atual", "divida_atual"], variant: "same"})}},
+  {row: "keep_and_roll", role: {bind: "p", role: "status_quo_path"}},
+  {row: "short_bank_loan", role: {bind: "p", role: "path_with_moves", moves: moves({added: [bankScheduled], variant: "same"})}},
+  {row: "extend_with_bank", role: {bind: "p", role: "path_with_moves", moves: moves({added: [bankUnscheduled, "fomento", bankScheduled], prepaid: ["divida_atual"], charges: ["waiver|debenture_atual"], variant: "same"})}},
+  {row: "extend_bradesco", role: {bind: "p", role: "path_with_moves", moves: moves({added: [bankUnscheduled, "fomento", "aditamento"], removed: ["divida_atual"], variant: "same"})}},
+];
+/** The other records the library reads, each with the role it is bound by and a template that declares it (for the test). */
+export const boardMaterialRecordRoles = {
+  q: {template: "situation.cash_shortfall", role: {bind: "q", role: "status_quo_path"}},
+  b: {template: "a.roll_bank", role: {bind: "b", role: "path_with_moves", moves: moves({added: [bankUnscheduled, "aditamento"], removed: ["$i"], variant: "other"})}},
+  cb: {template: "topic.project_return", role: {bind: "cb", role: "investment_case", caseRole: "base"}},
+  cr: {template: "delib.packaging_line.wait", role: {bind: "cr", role: "investment_case", caseRole: "deferral"}},
+  cg: {template: "option.staged", role: {bind: "cg", role: "investment_case", caseRole: "staged"}},
+  ce: {template: "topic.project_sensitivities", role: {bind: "ce", role: "sensitivity_case", changes: ["project.annualAvoidedOperatingCost", "project.annualVariableOperatingCost",
+    "project.annualFixedOperatingCost"], reference: "refe"}},
+  cc: {template: "topic.project_sensitivities", role: {bind: "cc", role: "sensitivity_case", changes: ["project.growthCapexPaid", "project.annualDepreciation"], reference: "refc"}},
+  cs: {template: "topic.project_sensitivities", role: {bind: "cs", role: "sensitivity_case", changes: ["project.ramp.operationStartMonth"], reference: "refs"}},
+  lp: {template: "constraint.covenant_policy", role: {bind: "lp", role: "limit", kind: "board_policy"}},
+  lk: {template: "constraint.covenant_policy", role: {bind: "lk", role: "limit", kind: "contractual"}},
+  w: {template: "situation.cash_without_line", role: {bind: "w", role: "lowest_cash_alternative_case"}},
+} as const satisfies Record<string, {template: string; role: RoleSpec}>;
+/** The rows whose line of moves names the bank creditor of the debt table. */
+const bankRows = new Set(["no_line_debenture", "debenture_with_line", "extend_with_bank", "extend_bradesco"]);
 
 /** The anchors read from the results before planning: the year of largest maturity, the crop year (the tightest
  * week), the plan's horizon year, the plan target year of the challenged projection, and the first two programs of
@@ -64,15 +98,29 @@ type Anchors = {Y: string | null; C: string | null; H: string | null; P: string 
   MH: string | null; ME: string | null; MA: string | null; MG: string | null;
   /** Debt table records by what the results register: the row the plan's alternative prepays, the holder of the basket
    * that row occupies, and the one credit line with a free limit. */
-  I: string | null; HB: string | null; CL: string | null};
+  I: string | null; HB: string | null; CL: string | null;
+  /** The first year the tested shorter amortization profile of the recommended path falls short. */
+  T: string | null;
+  /** Records bound by the role their result registers (resolveRoles), and why a role did not bind one. */
+  R: RoleRecords};
+type RoleRecords = {vars: Record<string, string | null>; rows: Record<string, string | null>; issues: Record<string, string>};
+/** A record by its role, or a placeholder naming the role that did not bind one ("_q"): the reading does not resolve and
+ * its reason names the role. */
+const rec = (a: Anchors, v: string) => a.R.vars[v] ?? `_${v}`;
+const rowPath = (a: Anchors, row: string) => a.R.rows[row] ?? null;
+/** The figure ids of a path's readings: the path's own id, or the library row when no path binds it. */
+const pathFigure = (a: Anchors, row: string) => rowPath(a, row) ?? row;
 
 /** The readings the plan may bind, in the order the basis lists them: [source, path, decimals or date format]. */
 function readingsFor(a: Anchors): [string, Reading][] {
   const y = (v: string | null) => v ?? "_";
   const at = (id: string) => `readings.paths[id=${id}].`;
-  const paths = pathRows.flatMap(([id]): [string, Reading][] => [[`${id}-cash`, ["plano-2027", at(id) + "minimumCash.amount", "0"]], [`${id}-lev`, ["plano-2027", at(id) + "worstLeverage", "2"]],
-    [`${id}-cost`, ["plano-2027", at(id) + "horizonFinancingCost", "0"]], [`${id}-net`, ["plano-2027", at(id) + "netDebtAtHorizon", "0"]],
-    [`${id}-ok`, ["plano-2027", at(id) + "eligible", "-"]], [`${id}-consent`, ["plano-2027", at(id) + "consentRequired", "-"]]]);
+  const paths = boardMaterialPathRows.flatMap(({row}): [string, Reading][] => {
+    const id = pathFigure(a, row), path = rowPath(a, row) ?? `_${row}`;
+    return [[`${id}-cash`, ["plano-2027", at(path) + "minimumCash.amount", "0"]], [`${id}-lev`, ["plano-2027", at(path) + "worstLeverage", "2"]],
+      [`${id}-cost`, ["plano-2027", at(path) + "horizonFinancingCost", "0"]], [`${id}-net`, ["plano-2027", at(path) + "netDebtAtHorizon", "0"]],
+      [`${id}-ok`, ["plano-2027", at(path) + "eligible", "-"]], [`${id}-consent`, ["plano-2027", at(path) + "consentRequired", "-"]]];
+  });
   const year = (v: string | null): [string, Reading] => [`year-${y(v)}`, ["tabela-divida", `result.table.profile.scheduleByYear[year=${y(v)}].year`, "year"]];
   return [
     ["divida-total", ["tabela-divida", "result.table.reconciliation.principal", "0"]],
@@ -80,38 +128,38 @@ function readingsFor(a: Anchors): [string, Reading][] {
     ["share-12m", ["tabela-divida", "result.table.profile.dueWithinTwelveMonthsShare", "0"]],
     ["wal", ["tabela-divida", "result.table.profile.weightedAverageLifeYears", "1"]],
     ["largest-creditor", ["tabela-divida", "result.table.profile.largestCreditor.creditor", "-"]],
-    ["bradesco-creditor", ["tabela-divida", `result.table.rows[id=${y(a.I)}].creditor`, "-"]],
+    ["bradesco-creditor", ["tabela-divida", `result.table.rows[id=${a.I ?? "_i"}].creditor`, "-"]],
     ["largest-share", ["tabela-divida", "result.table.profile.largestCreditor.share", "0"]],
     ["basket", ["tabela-divida", `result.table.negativePledgeBaskets[holderId=${y(a.HB)}].basket`, "0"]],
     ["basket-used", ["tabela-divida", `result.table.negativePledgeBaskets[holderId=${y(a.HB)}].occupied`, "0"]],
     ["basket-free", ["tabela-divida", `result.table.negativePledgeBaskets[holderId=${y(a.HB)}].remaining`, "0"]],
-    ["bradesco-maturity", ["tabela-divida", `result.table.rows[id=${y(a.I)}].finalPayment`, "month_long"]],
-    ["cov-limit", ["covenant", "result.headroom.limits[id=aditamento].maximumRatio", "1"]],
-    ["policy-limit", ["covenant", "result.headroom.limits[id=politica].maximumRatio", "1"]],
+    ["bradesco-maturity", ["tabela-divida", `result.table.rows[id=${a.I ?? "_i"}].finalPayment`, "month_long"]],
+    ["cov-limit", ["covenant", `result.headroom.limits[id=${rec(a, "lk")}].maximumRatio`, "1"]],
+    ["policy-limit", ["covenant", `result.headroom.limits[id=${rec(a, "lp")}].maximumRatio`, "1"]],
     ["lev-dez26", ["covenant", `result.headroom.measurements[id=${y(a.MH)}].ratio`, "1"]],
     ["lev-dez27", ["covenant", `result.headroom.measurements[id=${y(a.ME)}].ratio`, "2"]],
     ["lev-adv27", ["covenant", `result.headroom.measurements[id=${y(a.MA)}].ratio`, "2"]],
     ["ebitda-adv27", ["covenant", `result.headroom.measurements[id=${y(a.MA)}].reportedEbitda`, "1"]],
     ["lev-ger-dez26", ["covenant", `result.headroom.measurements[id=${y(a.MG)}].ratio`, "1"]],
     ["min-cash", ["caixa-semanal", "result.weekly.minimumCash", "0"]],
-    ["sem-linha-min", ["caixa-semanal", "readings.sensitivities[caseId=sem-linha].minimum", "1"]],
-    ["sem-linha-week", ["caixa-semanal", "readings.sensitivities[caseId=sem-linha].weekStart", "day_long"]],
+    ["sem-linha-min", ["caixa-semanal", `readings.sensitivities[caseId=${rec(a, "w")}].minimum`, "1"]],
+    ["sem-linha-week", ["caixa-semanal", `readings.sensitivities[caseId=${rec(a, "w")}].weekStart`, "day_long"]],
     ["tight-week", ["caixa-semanal", "readings.tightestWeek.weekStart", "day_long"]],
-    ["irr", ["linha-embalagem", "comparison.metrics[caseId=base].annualIrr", "0"]],
-    ["wacc", ["linha-embalagem", "comparison.metrics[caseId=base].discountRate", "0"]],
-    ["npv", ["linha-embalagem", "comparison.metrics[caseId=base].netPresentValue", "1"]],
-    ["payback", ["linha-embalagem", "comparison.metrics[caseId=base].paybackYears", "0"]],
-    ["peak-need", ["linha-embalagem", "comparison.metrics[caseId=base].peakCumulativeCashNeed.amount", "1"]],
-    ["peak-date", ["linha-embalagem", "comparison.metrics[caseId=base].peakCumulativeCashNeed.periodEndDate", "month_long"]],
-    ["npv-economy", ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1"]],
-    ["npv-capex", ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1"]],
-    ["npv-slow", ["linha-embalagem", "comparison.metrics[caseId=slower-start].netPresentValue", "1"]],
-    ["npv-defer", ["linha-embalagem", "comparison.metrics[caseId=defer-12].netPresentValue", "1"]],
-    ["irr-defer", ["linha-embalagem", "comparison.metrics[caseId=defer-12].annualIrr", "0"]],
-    ["wheat-shock", ["projecao", "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate", "0"]],
-    ["wheat-lag", ["projecao", "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", "0"]],
-    ["ebitda-wheat", ["projecao", `readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=${y(a.Y)}-12-31].ebitda`, "1"]],
-    ["wc-60", ["projecao", `readings.projected.scenarios[id=prazo-60].rows[periodId=${y(a.C)}-12-31].effects.changeInWorkingCapital`, "0"]],
+    ["irr", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cb")}].annualIrr`, "0"]],
+    ["wacc", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cb")}].discountRate`, "0"]],
+    ["npv", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cb")}].netPresentValue`, "1"]],
+    ["payback", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cb")}].paybackYears`, "0"]],
+    ["peak-need", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cb")}].peakCumulativeCashNeed.amount`, "1"]],
+    ["peak-date", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cb")}].peakCumulativeCashNeed.periodEndDate`, "month_long"]],
+    ["npv-economy", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "ce")}].netPresentValue`, "1"]],
+    ["npv-capex", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cc")}].netPresentValue`, "1"]],
+    ["npv-slow", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cs")}].netPresentValue`, "1"]],
+    ["npv-defer", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cr")}].netPresentValue`, "1"]],
+    ["irr-defer", ["linha-embalagem", `comparison.metrics[caseId=${rec(a, "cr")}].annualIrr`, "0"]],
+    ["wheat-shock", ["projecao", `result.projection.projection.scenarios[id=${rec(a, "sw")}].inputCostShock.rate`, "0"]],
+    ["wheat-lag", ["projecao", `result.projection.projection.scenarios[id=${rec(a, "sw")}].inputCostShock.passThroughLagMonths`, "0"]],
+    ["ebitda-wheat", ["projecao", `readings.projected.scenarios[id=${rec(a, "sw")}].rows[periodId=${y(a.Y)}-12-31].ebitda`, "1"]],
+    ["wc-60", ["projecao", `readings.projected.scenarios[id=${rec(a, "sr")}].rows[periodId=${y(a.C)}-12-31].effects.changeInWorkingCapital`, "0"]],
     ["fpa-2028", ["plano-fpa", "readings.gap.plan.ebitda", "0"]],
     ["ref-2028", ["plano-fpa", "readings.gap.reference.ebitda", "0"]],
     ["programs", ["recebiveis", `readings.plan[optionId=${y(a.O2)}].cumulative`, "1"]],
@@ -131,12 +179,12 @@ function readingsFor(a: Anchors): [string, Reading][] {
     ["cl-unused", ["tabela-divida", `result.table.creditLines[id=${y(a.CL)}].unused`, "0"]],
     ["debenture-creditor", ["tabela-divida", `result.table.rows[id=${y(a.HB)}].creditor`, "-"]],
     ["rede-a-label", ["recebiveis", `result.funding.portfolio.items[itemId=${y(a.D)}].label`, "-"]],
-    ["project-label", ["linha-embalagem", "cases[id=base].label", "-"]],
-    ["wheat-label", ["projecao", "result.projection.projection.scenarios[id=informado-trigo-4m].label", "-"]],
+    ["project-label", ["linha-embalagem", `cases[id=${rec(a, "cb")}].label`, "-"]],
+    ["wheat-label", ["projecao", `result.projection.projection.scenarios[id=${rec(a, "sw")}].label`, "-"]],
     ["crop-question", ["recebiveis", "question", "-"]],
-    [`cash-end-${y(a.Y)}`, ["plano-2027", `result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=${y(a.Y)}-12-31].closingAvailable`, "0"]],
-    [`service-${y(a.Y)}`, ["plano-2027", `result.evaluation.paths[id=manter].debtServiceByYear[year=${y(a.Y)}].service`, "0"]],
-    [`available-${y(a.Y)}`, ["plano-2027", `result.evaluation.paths[id=manter].debtServiceByYear[year=${y(a.Y)}].availableForService`, "0"]],
+    [`cash-end-${y(a.Y)}`, ["plano-2027", `result.evaluation.paths[id=${rec(a, "q")}].closingAvailableByPeriod[periodId=${y(a.Y)}-12-31].closingAvailable`, "0"]],
+    [`service-${y(a.Y)}`, ["plano-2027", `result.evaluation.paths[id=${rec(a, "q")}].debtServiceByYear[year=${y(a.Y)}].service`, "0"]],
+    [`available-${y(a.Y)}`, ["plano-2027", `result.evaluation.paths[id=${rec(a, "q")}].debtServiceByYear[year=${y(a.Y)}].availableForService`, "0"]],
     ["n-paths", ["plano-2027", "readings.horizon.candidatePaths", "0"]],
     ["debenture-amount", ["plano-2027", "readings.recommendation.longInstrument.issueTarget", "0"]],
     ["issue-floor", ["plano-2027", "readings.recommendation.longInstrument.issueFloorInsideGates", "2"]],
@@ -145,9 +193,9 @@ function readingsFor(a: Anchors): [string, Reading][] {
     ["deb-cost-high", ["plano-2027", "readings.recommendation.longInstrument.equivalentSpreadAtCondition", "2"]],
     ["amort-first", ["plano-2027", "readings.recommendation.longInstrument.firstAmortizationYear", "year"]],
     ["amort-last", ["plano-2027", "readings.recommendation.longInstrument.lastAmortizationYear", "year"]],
-    ["bradesco-gap", ["plano-2027", "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", "0"]],
-    ["five-year-amort", ["plano-2027", "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=2029].scheduledAmortization", "0"]],
-    ["five-year-available", ["plano-2027", "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=2029].availableAfterInterest", "0"]],
+    ["bradesco-gap", ["plano-2027", `result.evaluation.paths[id=${rec(a, "b")}].shortfallVsPolicyMinimum`, "0"]],
+    ["five-year-amort", ["plano-2027", `result.evaluation.paths[id=${rec(a, "pr")}].amortizationTests[profileId=${rec(a, "t")}].years[year=${y(a.T)}].scheduledAmortization`, "0"]],
+    ["five-year-available", ["plano-2027", `result.evaluation.paths[id=${rec(a, "pr")}].amortizationTests[profileId=${rec(a, "t")}].years[year=${y(a.T)}].availableAfterInterest`, "0"]],
     ["alt-amount", ["plano-2027", "readings.alternative.issueTarget", "0"]],
     ["cost-2028", ["plano-2027", "readings.recommendation.horizonFinancingCost", "0"]],
     ["net-debt-2028", ["plano-2027", "readings.recommendation.netDebtAtHorizon", "0"]],
@@ -160,17 +208,10 @@ function readingsFor(a: Anchors): [string, Reading][] {
 }
 /** Readings that, when the result does not register them, stand as pending with the library's reason. */
 const pendingReadingsFor = (a: Anchors): [string, Reading, string, string][] => [
-  ["stages-npv", ["linha-embalagem", "comparison.metrics[caseId=staged].netPresentValue", "1"], "analyze-investment-project", "note.case_not_reviewed"],
+  // When the analysis registers no staged case, the role's own name stands for the record in the pending reading.
+  ["stages-npv", ["linha-embalagem", `comparison.metrics[caseId=${a.R.vars.cg ?? "staged"}].netPresentValue`, "1"], "analyze-investment-project", "note.case_not_reviewed"],
   ["cl-terms", ["tabela-divida", `result.table.creditLines[id=${a.CL ?? "_"}].terms`, "-"], "build-company-debt-table", "note.credit_line_terms_not_registered"],
 ];
-/** Record ids the method's closed library writes literally in its templates (slots and conditions): a result whose record
- * carries another id cannot be shown by that template, whatever the record is. The planner never renames a result; such a
- * text is left out and named, and only a new version of the method can read the record by what it is. */
-export const boardLibraryFixedRecords: Readonly<Record<string, readonly string[]>> = {
-  "plano-2027": ["sem-linha-debenture", "adiar-linha", "debenture-com-linha", "manter", "ccb-tres-anos", "alongar-com-banco", "alongar-bradesco", "bradesco-sem-linha", "cinco-anos"],
-  "linha-embalagem": ["base", "economy-4", "capex-120", "slower-start", "defer-12", "staged"],
-  projecao: ["informado-trigo-4m", "prazo-60"], covenant: ["politica", "aditamento"], "caixa-semanal": ["sem-linha"],
-};
 /** Readings listed whether or not a text binds them (the question the receivables result answers, kept for reference). */
 const contextReadings = new Set(["crop-question"]);
 /** The material facts the plan marks on top of every economic reading. */
@@ -207,9 +248,10 @@ function boardPlanFor(a: Anchors) {
       {id: "safra", role: "topic", topicId: "safra", title: "topic.crop_programs|valor=programs|pico=need-peak", recommendation: null, options: [],
         lines: ["topic.crop_program_cost|taxa_b=spread-b|taxa_a=spread-a", "topic.crop_overdraft|credor=cl-creditor|livre=cl-unused|termos=cl-terms"]},
       {id: "caminhos", role: "alternatives", topicId: "vencimentos", title: `alternatives.count|caminhos=n-paths|ano=year-${Y}`, recommendation: null, options: [],
-        lines: pathRows.map(([id, row]) => `alternatives.row.${row}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-${H}|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`)},
+        lines: boardMaterialPathRows.map(({row}) => {const id = pathFigure(a, row);
+          return `alternatives.row.${row}|caixa=${id}-cash|alavancagem=${id}-lev|custo=${id}-cost|ano=year-${H}|divida=${id}-net|criterios=${id}-ok|anuencia=${id}-consent`;})},
       {id: "movimentos", role: "alternatives", topicId: "vencimentos", title: "alternatives.moves.title|caminhos=n-paths", recommendation: null, options: [],
-        lines: pathRows.map(([id, row]) => `alternatives.moves.${row}|projeto=project-label${bankMoves.has(id) ? "|credor=bradesco-creditor" : ""}`)},
+        lines: boardMaterialPathRows.map(({row}) => `alternatives.moves.${row}|projeto=project-label${bankRows.has(row) ? "|credor=bradesco-creditor" : ""}`)},
       {id: "recomendacao", role: "recommendation", topicId: "vencimentos", title: "recommendation.debenture|valor=debenture-amount|prazo=debenture-term", recommendation: null, options: [],
         lines: ["recommendation.debenture_cost|credor=bradesco-creditor|baixo=deb-cost-low|alto=deb-cost-high", "recommendation.amortization|inicio=amort-first|fim=amort-last",
           "recommendation.alternative|credor=bradesco-creditor|prazo=deadline:vencimentos.rota|projeto=project-label"]},
@@ -260,7 +302,107 @@ const templateOf = (ref: string) => ref.split("|")[0]!;
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 const text = (v: unknown) => typeof v === "string" ? v : null;
 /** The anchors, each read from its result; an anchor the result does not determine stays null. */
-function readAnchors(packets: Map<string, Record<string, unknown>>): Anchors {
+/** A proposed identity of an existing instrument of the plan and a row of the debt table: the same contract, proposed by
+ * the bridge from the terms both results register and never adopted until the person confirms it on the card. */
+export type BoardMaterialLink = {id: string; instrumentId: string; rowId: string; creditor: string; instrumentLabel: string; terms: string[]};
+type Contribution = {fieldPath?: unknown; value?: {value?: unknown}};
+const contributionsOf = (packet: Record<string, unknown> | undefined): Contribution[] => {
+  const c = (packet?.result as {contributions?: unknown} | undefined)?.contributions;
+  return Array.isArray(c) ? c.filter(isRecord) as Contribution[] : [];
+};
+const termOf = (cs: Contribution[], suffix: string): unknown => {
+  const hits = cs.filter((c) => typeof c.fieldPath === "string" && c.fieldPath.endsWith(`.${suffix}`));
+  return hits.length === 1 ? hits[0]!.value?.value : undefined;
+};
+const linkKey = /^[a-z0-9][a-z0-9-]{0,39}$/;
+/** A source reading for the method's own role and identity checks, built from a verified result. */
+function sourceReader(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>) {
+  return (methodId: string): BoardSourceReading => {
+    const id = [...methods].find(([, m]) => m === methodId)?.[0];
+    if (!id) throw new Error(`source_absent:${methodId}`);
+    return {id, methodId, packet: packets.get(id)!} as unknown as BoardSourceReading;
+  };
+}
+/** The identities the bridge can propose: an existing instrument of the plan and a row of the debt table whose contractual
+ * terms registered in both results agree on at least one term (final payment date, or spread or fixed rate) and differ on
+ * none, by the method's own check (boardLinkedInstrument); only a pair where each side has exactly one such counterpart,
+ * and none the person rejected. Terms agreeing do not prove the identity: the person confirms or rejects it on the card. */
+export function proposeBoardMaterialLinks(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>,
+  rejected: readonly string[] = []): BoardMaterialLink[] {
+  const plan = packets.get("plano-2027"), table = packets.get("tabela-divida");
+  if (!plan || !table) return [];
+  const sourceOf = sourceReader(packets, methods), plans = contributionsOf(plan);
+  const instruments = [...new Set(plans.flatMap((c) => {const m = typeof c.fieldPath === "string" ? /\.instrument\.([a-z0-9-]+)\.terms$/.exec(c.fieldPath) : null;
+    return m && Array.isArray(c.value?.value) && c.value.value[0] === "existing" ? [m[1]!] : [];}))];
+  const rows = (() => {const r = readBoardSourcePath(table, "result.table.rows"); return Array.isArray(r) ? r.filter(isRecord) : [];})();
+  const fold = (x: string) => x.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const refused = rejected.map(fold).filter((x) => x.length > 1);
+  const pairs: {instrumentId: string; row: Record<string, unknown>; terms: string[]}[] = [];
+  for (const instrumentId of instruments) for (const row of rows) {
+    const rowId = text(row.id);
+    if (rowId === null) continue;
+    try {
+      boardLinkedInstrument("bridge", {bind: "j", role: "plan_instrument_of_row", row: "i"},
+        [{id: "proposed", planSourceId: "plano-2027", instrumentId, tableSourceId: "tabela-divida", rowId}], sourceOf, {i: rowId});
+    } catch { continue; }
+    const terms: string[] = [];
+    const final = termOf(plans, `instrument.${instrumentId}.finalPaymentDate`);
+    if (typeof final === "string" && final === row.finalPayment) terms.push(`vencimento final ${final}`);
+    const rates = termOf(plans, `instrument.${instrumentId}.rates`), rate = Array.isArray(rates) ? rates[0] : undefined;
+    if (typeof rate === "string" && typeof row.spread === "string" && Number(rate) === Number(row.spread)) terms.push(`taxa ou spread ${row.spread}`);
+    if (terms.length) pairs.push({instrumentId, row, terms});
+  }
+  const count = (f: (p: (typeof pairs)[number]) => string) => (p: (typeof pairs)[number]) => pairs.filter((x) => f(x) === f(p)).length;
+  const byInstrument = count((p) => p.instrumentId), byRow = count((p) => String(p.row.id));
+  return pairs.filter((p) => byInstrument(p) === 1 && byRow(p) === 1).flatMap((p, n) => {
+    const rowId = String(p.row.id), creditor = text(p.row.creditor) ?? rowId;
+    const label = text(termOf(plans, `instrument.${p.instrumentId}.label`)) ?? p.instrumentId;
+    if (refused.some((r) => [creditor, label, rowId, p.instrumentId].some((x) => fold(x).includes(r) || r.includes(fold(x))))) return [];
+    return [{id: linkKey.test(rowId) ? rowId : `vinculo-${n + 1}`, instrumentId: p.instrumentId, rowId, creditor, instrumentLabel: label, terms: p.terms}];
+  });
+}
+/** The records the library reads, each bound by the role its result registers, as the method binds them (boardRoleRecords);
+ * the plan's path of each library row; the recommended path's tested shorter profile; the scenarios the projection
+ * defines by exactly one driver. A role that binds none or more than one record is named, never chosen by order. */
+function resolveRoles(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>, named: {i: string | null; j: string | null}): RoleRecords {
+  const sourceOf = sourceReader(packets, methods), vars: Record<string, string | null> = {}, rows: Record<string, string | null> = {}, issues: Record<string, string> = {};
+  const bound = {...named.i ? {i: named.i} : {}, ...named.j ? {j: named.j} : {}};
+  // As the method binds them: a role whose moves name the instrument "$i" reads it under the confirmed identity (the
+  // template binds $j first); every other role reads the plan's existing debt as such.
+  const one = (key: string, role: RoleSpec): string | null => {
+    let got: ReturnType<typeof boardRoleRecords>;
+    const named = JSON.stringify(role).includes('"$i"');
+    if (named && !bound.j) {issues[key] = "link_absent"; return null;}
+    try { got = boardRoleRecords(role, sourceOf, named ? bound : {}); } catch { issues[key] = "source_unavailable"; return null; }
+    if (typeof got === "string") {issues[key] = `role_refused_${got}`; return null;}
+    if (got.length !== 1) {issues[key] = got.length ? "role_ambiguous" : "role_absent"; return null;}
+    return got[0]!.id;
+  };
+  for (const [k, x] of Object.entries(boardMaterialRecordRoles)) vars[k] = one(k, x.role as RoleSpec);
+  for (const {row, role} of boardMaterialPathRows) rows[row] = one(row, role);
+  const plan = packets.get("plano-2027"), projection = packets.get("projecao");
+  // The recommended path (registered by the plan) and its tested profile that falls short while the adopted one passes.
+  vars.pr = plan ? text(readBoardSourcePath(plan, "readings.recommendation.pathId")) : null;
+  if (vars.pr === null) issues.pr = "role_absent";
+  const tests = plan && vars.pr ? readBoardSourcePath(plan, `result.evaluation.paths[id=${vars.pr}].amortizationTests`) : undefined;
+  const shorter = (Array.isArray(tests) ? tests.filter(isRecord) : []).filter((t) => t.profileId !== "adopted" && t.passes === false);
+  vars.t = shorter.length === 1 ? text(shorter[0]!.profileId) : null;
+  if (vars.t === null) issues.t = shorter.length ? "role_ambiguous" : "role_absent";
+  // The scenarios the projection defines against the one each derives from by exactly one driver: the input cost shock
+  // (the one the person informed, when several do) and the receivable days.
+  const scenarios = projection ? readBoardSourcePath(projection, "result.projection.projection.scenarios") : undefined;
+  const drivers = (x: Record<string, unknown>) => [...x.volumeGrowthRate != null ? ["volumeGrowthRate"] : [], ...x.volumeFactor != null ? ["volumeFactor"] : [],
+    ...Array.isArray(x.overriddenDrivers) ? x.overriddenDrivers.map(String) : [], ...x.inputCostShock != null ? ["inputCostShock"] : []];
+  const defining = (driver: string) => (Array.isArray(scenarios) ? scenarios.filter(isRecord) : []).filter((x) => {const d = drivers(x); return d.length === 1 && d[0] === driver;});
+  const pick = (key: string, xs: Record<string, unknown>[]) => {
+    const informed = xs.filter((x) => x.role === "informed"), chosen = informed.length ? informed : xs;
+    vars[key] = chosen.length === 1 ? text(chosen[0]!.id) : null;
+    if (vars[key] === null) issues[key] = chosen.length ? "role_ambiguous" : "role_absent";
+  };
+  pick("sw", defining("inputCostShock")); pick("sr", defining("receivableDays"));
+  return {vars, rows, issues};
+}
+function readAnchors(packets: Map<string, Record<string, unknown>>, methods: Map<string, string> = new Map(), links: readonly BoardMaterialLink[] = []): Anchors {
   const get = (id: string, path: string) => {const p = packets.get(id); return p ? readBoardSourcePath(p, path) : undefined;};
   const schedule = get("tabela-divida", "result.table.profile.scheduleByYear");
   let Y: string | null = null;
@@ -296,25 +438,39 @@ function readAnchors(packets: Map<string, Record<string, unknown>>): Anchors {
   const MA = end === null ? null : one(ms.filter((m) => m.role === "test" && m.scenario === "adverse" && m.date === end && both(m)).map((m) => m.id));
   const MG = headline === null ? null : one(ms.filter((m) => m.role === "test" && m.scenario === "base" && m.date === headline.date && m.id !== MH
     && m.kinds.length > 0 && m.kinds.every((k) => k === "board_policy")).map((m) => m.id));
-  // The row the plan's alternative prepays, by the instrument id both results register; the basket it occupies; the free line.
-  const rows = get("tabela-divida", "result.table.rows"), rowIds = new Set((Array.isArray(rows) ? rows.filter(isRecord) : []).map((r) => String(r.id)));
+  // The row of the instrument the plan's alternative prepays, by the identity proposed for the two records (never by a
+  // shared id); the basket it occupies; the free line.
   const alt = text(get("plano-2027", "readings.alternative.pathId"));
   const prepaid = alt === null ? undefined : get("plano-2027", `result.evaluation.paths[id=${alt}].prepayments`);
-  const I = one((Array.isArray(prepaid) ? prepaid.filter(isRecord) : []).map((x) => text(x.instrumentId)).filter((x) => x !== null && rowIds.has(x)));
+  const prepaidIds = new Set((Array.isArray(prepaid) ? prepaid.filter(isRecord) : []).map((x) => text(x.instrumentId)));
+  const I = one(links.filter((l) => prepaidIds.has(l.instrumentId)).map((l) => l.rowId));
+  const J = I === null ? null : links.find((l) => l.rowId === I)!.instrumentId;
   const baskets = get("tabela-divida", "result.table.negativePledgeBaskets");
   const HB = I === null ? null : one((Array.isArray(baskets) ? baskets.filter(isRecord) : []).filter((b) => Array.isArray(b.usedBy) && b.usedBy.includes(I)).map((b) => text(b.holderId)));
   const lines = get("tabela-divida", "result.table.creditLines");
   const CL = one((Array.isArray(lines) ? lines.filter(isRecord) : []).filter((l) => Number(l.unused) > 0).map((l) => text(l.id)));
+  const R = resolveRoles(packets, methods, {i: I, j: J});
+  // The row of the prepaid instrument is known only by an identity the person confirms: without one, the texts that name
+  // its creditor ask which row of the debt table that instrument is.
+  if (I === null) {
+    const plans = contributionsOf(packets.get("plano-2027")), existing = [...prepaidIds].filter((x): x is string => x !== null
+      && (termOf(plans, `instrument.${x}.terms`) as unknown[] | undefined)?.[0] === "existing");
+    R.issues.i = existing.length === 1 ? `link_absent:${text(termOf(plans, `instrument.${existing[0]}.label`)) ?? existing[0]}` : "record_not_identified";
+  }
+  // Every role that reads that instrument names the same question.
+  for (const [k, v] of Object.entries(R.issues)) if (v === "link_absent") R.issues[k] = R.issues.i?.startsWith("link_absent:") ? R.issues.i : "record_not_identified";
+  const shortfall = R.vars.pr && R.vars.t ? get("plano-2027", `result.evaluation.paths[id=${R.vars.pr}].amortizationTests[profileId=${R.vars.t}].firstShortfallYear`) : null;
+  const T = typeof shortfall === "number" ? String(shortfall) : typeof shortfall === "string" && /^\d{4}$/.test(shortfall) ? shortfall : null;
   return {Y, C: yearOf(get("caixa-semanal", "readings.tightestWeek.weekStart")), H: yearOf(get("plano-2027", "readings.horizon.lastPeriodEnd")),
     P: (() => {const v = get("plano-fpa", "readings.gap.targetPeriodId"); return typeof v === "string" && /^\d{4}/.test(v) ? v.slice(0, 4) : typeof v === "number" ? String(v) : null;})(), O1, O2, D,
-    MH: headline ? MH : null, ME, MA, MG, I, HB, CL};
+    MH: headline ? MH : null, ME, MA, MG, I, HB, CL, T, R};
 }
 
 /** One reading resolved in its result: the value stated is the result's own, rounded as the plan presents it. */
 function resolveReading(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>, scales: Map<string, "reais" | "millions">,
   [source, path, presentation]: Reading): string[] | null {
   const packet = packets.get(source), methodId = methods.get(source), moneyScale = scales.get(source);
-  if (!packet || !methodId || !moneyScale || path.includes("[year=_]") || path.includes("=_]") || path.includes("_-12-31")) return null;
+  if (!packet || !methodId || !moneyScale || /=_[a-z_]*\]|_-12-31/.test(path)) return null;
   const spec = boardFieldOf(methodId, path);
   if (!spec) return null;
   const raw = readBoardSourcePath(packet, path);
@@ -365,18 +521,18 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   if (missing.length) return {status: "missing", missing: [...new Set(missing)], omitted};
 
   // 2. The readings each text may bind, resolved in the results.
-  const anchors = readAnchors(packets);
+  // The identities of a plan instrument and a debt-table row the bridge can propose (the person confirms them on the card).
+  const links = proposeBoardMaterialLinks(packets, methods, (conv.linkRejections ?? []).map((x) => x.label));
+  const anchors = readAnchors(packets, methods, links);
   const declared = new Map<string, {reading: string[]} | {pending: [string, string, string]}>();
-  // Why a reading did not resolve, named for the card: its result is absent, the record it needs is not identified in
-  // the results, the method's library fixes a record id the result does not carry, or the result does not register it.
+  // Why a reading did not resolve, named for the card: its result is absent, the role its record is bound by binds none
+  // or several records (named with the role), the record is not identified in the results, or the result does not register it.
   const unresolved = new Map<string, string>();
   const reasonOf = ([source, path]: Reading) => {
     if (!packets.has(source)) return `source_unavailable:${source}`;
+    const role = /=_([a-z_]+)\]/.exec(path)?.[1];
+    if (role) {const issue = anchors.R.issues[role] ?? "record_not_identified"; return issue.includes(":") ? issue : `${issue}:${role}`;}
     if (/=_\]|_-12-31/.test(path)) return "record_not_identified";
-    for (const v of boardLibraryFixedRecords[source] ?? []) {
-      const at = path.indexOf(`=${v}]`);
-      if (at >= 0 && readBoardSourcePath(packets.get(source)!, path.slice(0, at + v.length + 2)) === undefined) return `library_fixed_record:${v}`;
-    }
     return "reading_unavailable";
   };
   for (const [id, r] of readingsFor(anchors)) if (!declared.has(id) && !unresolved.has(id)) {
@@ -425,7 +581,7 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   const why = (ref: string, scope: {deliberations: Map<string, {dates: {id: string}[]}>}): string | null => {
     const b = boardRefBindings(ref);
     const figure = b.figures.find((id) => !declared.has(id));
-    if (figure !== undefined) {const r = unresolved.get(figure) ?? "reading_unavailable"; return r.startsWith("library_fixed_record:") || r.startsWith("source_unavailable:") ? r : `${r}:${figure}`;}
+    if (figure !== undefined) {const r = unresolved.get(figure) ?? "reading_unavailable"; return /^(?:role_|link_|source_unavailable:|source_absent|record_not_identified:)/.test(r) ? r : `${r}:${figure}`;}
     if (!b.informed.every((id) => informed.some((x) => x.value.id === id))) return "reason_not_informed";
     if (!b.deadlines.every((x) => {const [d, t] = x.split("."); return scope.deliberations.get(d!)?.dates.some((y) => y.id === t) ?? false;})) return "date_not_stated";
     return null;
@@ -442,14 +598,15 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   if (!deliberations.size) return {status: "missing", missing: ["deliberations"], omitted};
   const scope = {deliberations};
   const pages: Page[] = [];
-  // The two pages of paths present the whole set the plan evaluates: each row and each line of moves is bound by the
-  // library to one path id, so the pages are planned only when the result's candidate paths are exactly those ids, and a
-  // line of moves only with its path's row. Otherwise both pages are left out, each path named.
-  const plannedPaths = pathRows.map(([id]) => id), candidates = (() => {
+  // The two pages of paths present the whole set the plan evaluates: each library row binds the one path whose complete
+  // moves are its own (or the status quo the plan registers), so the pages are planned only when every row binds a path
+  // and the result's candidate paths are exactly those, and a line of moves only with its path's row. Otherwise both
+  // pages are left out, each row and each path named.
+  const plannedPaths = boardMaterialPathRows.flatMap(({row}) => anchors.R.rows[row] ? [anchors.R.rows[row]!] : []), candidates = (() => {
     const p = packets.get("plano-2027"), all = p ? readBoardSourcePath(p, "result.evaluation.paths") : undefined;
     return Array.isArray(all) ? all.filter(isRecord).filter((x) => x.role !== "companion").map((x) => String(x.id)) : null;
   })();
-  const pathSetIssue = candidates === null ? null : [...plannedPaths.filter((id) => !candidates.includes(id)).map((id) => `library_fixed_record:${id}`),
+  const pathSetIssue = candidates === null ? null : [...boardMaterialPathRows.filter(({row}) => !anchors.R.rows[row]).map(({row}) => `${anchors.R.issues[row] ?? "role_absent"}:${row}`),
     ...candidates.filter((id) => !plannedPaths.includes(id)).map((id) => `path_without_library_row:${id}`)];
   for (const p of plan.pages) {
     if (p.role === "decisions") {pages.push({...p}); continue;}
@@ -507,6 +664,7 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   // library cannot state over these results is left out and named; any other refusal is named and nothing is proposed.
   const askedOn = conv.askedOn ?? (house.push("askedOn"), {value: input.today, origin: "house" as const, source: "Data desta conversa"});
   house.push("leadDays", "minutesPerPage", "plan", "materialFacts");
+  if (links.length) house.push("instrumentLink");
   const build = () => {
     const texts = [...[...deliberations.values()].flatMap((d) => [d.title, d.subject, ...d.recommendation ? [d.recommendation] : [], ...d.dates.map((x) => x.action)]),
       ...pages.flatMap((p) => [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : [], ...p.options]), plan.summary.opening, plan.summary.closing,
@@ -544,6 +702,9 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
       appendix: appendix.map((a) => ({value: {...a}, origin: "house", source: "Apêndice consultável"})),
       questions: questions.map((q) => ({value: {...q}, origin: "house", source: "Perguntas prováveis do conselho"})),
       omissions, informed,
+      // Each identity proposed by the bridge, one card row each: never adopted unless the person confirms the card.
+      links: links.map((l) => ({value: {id: l.id, planSourceId: "plano-2027", instrumentId: l.instrumentId, tableSourceId: "tabela-divida", rowId: l.rowId}, origin: "house",
+        source: `Identificação proposta do mesmo contrato: ${l.creditor} na tabela de dívida é ${l.instrumentLabel} no plano (${l.terms.join("; ")} nas duas fontes); confirme ou recuse`})),
     };
   };
   for (let round = 0; ; round++) {
@@ -551,23 +712,59 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
     if (!parsed.success) return {status: "missing", missing: [...new Set(parsed.error.issues.map((i) => i.path.filter((x) => x !== "value").map((x) => typeof x === "number" ? String(x + 1) : String(x)).join(".") || "facts"))], omitted};
     const refusal = input.check?.(parsed.data) ?? null;
     if (refusal === null) return {status: "complete", facts: parsed.data, housePremiseKeys: [...new Set(house)], omitted, pins};
-    const failed = /^board_capital_template_condition_(?:failed|undefined):([a-z0-9_.]+):/.exec(refusal)?.[1] ?? null;
+    const creditorOf = (rowId: string) => {const t = packets.get("tabela-divida"), c = t ? readBoardSourcePath(t, `result.table.rows[id=${rowId}].creditor`) : null;
+      return typeof c === "string" ? c : rowId;};
+    const condition = /^board_capital_template_condition_(?:failed|undefined):([a-z0-9_.]+):/.exec(refusal)?.[1] ?? null;
+    // A record the method binds by role or by an adopted identity that it cannot bind: the texts of that template are left
+    // out and named. A missing identity is named as a question to the person (which plan instrument the row is), never as
+    // an error; the card carries the identities the bridge could propose.
+    const binding = /^board_capital_record_(link|role)_(absent|mismatch|ambiguous):([a-z0-9_.]+):([a-z_]+)(?::(.*))?$/.exec(refusal);
+    const failed = condition ?? binding?.[3] ?? null;
+    const reason = binding ? (binding[1] === "link" ? `link_${binding[2]}:${anchors.I ? creditorOf(anchors.I) : binding[5] ?? binding[4]}` : `role_${binding[2]}:${binding[5] ?? binding[4]}`)
+      : `template_not_applicable:${failed}`;
     const answerless = /^board_capital_answer_without_number:([a-z0-9-]+)$/.exec(refusal)?.[1] ?? null;
     let dropped = false;
-    if (round < 16 && (failed || answerless)) {
+    if (round < 32 && binding && failed) {
+      // Lines and titles too: a page whose title cannot be bound is left out, and so are both pages of paths when one of
+      // their lines is (the board sees every path or none).
+      const uses = (ref: string | null) => ref !== null && templateOf(ref) === failed;
+      const pathsPages = new Set(["caminhos", "movimentos"]);
+      for (let k = pages.length - 1; k >= 0; k--) {
+        const p = pages[k]!;
+        if (uses(p.title) || (pathsPages.has(p.id) && p.lines.some(uses))) {
+          for (const id of pathsPages.has(p.id) && !uses(p.title) ? [...pathsPages] : [p.id]) {
+            const at = pages.findIndex((x) => x.id === id);
+            if (at >= 0) {pages.splice(at, 1); drop(`page.${id}`, reason); dropped = true;}
+          }
+          k = Math.min(k, pages.length);
+          continue;
+        }
+        const kept = p.lines.filter((l) => !uses(l));
+        if (kept.length !== p.lines.length) {p.lines.forEach((l, j) => {if (uses(l)) drop(`page.${p.id}.line.${j + 1}`, reason);}); p.lines = kept; dropped = true;}
+      }
+    }
+    if (round < 32 && (failed || answerless)) {
       const uses = (ref: string | null) => ref !== null && failed !== null && templateOf(ref) === failed;
-      for (const d of deliberations.values()) if (uses(d.recommendation)) {d.recommendation = null; drop(`deliberation.${d.id}.recommendation`, `template_not_applicable:${failed}`); dropped = true;}
+      for (const d of deliberations.values()) if (uses(d.recommendation)) {d.recommendation = null; drop(`deliberation.${d.id}.recommendation`, reason); dropped = true;}
       for (const p of pages) {
-        if (uses(p.recommendation)) {p.recommendation = null; drop(`page.${p.id}.recommendation`, `template_not_applicable:${failed}`); dropped = true;}
+        if (uses(p.recommendation)) {p.recommendation = null; drop(`page.${p.id}.recommendation`, reason); dropped = true;}
         const kept = p.options.filter((o) => !uses(o));
-        if (kept.length !== p.options.length) {p.options = kept; drop(`page.${p.id}.options.${failed}`, `template_not_applicable:${failed}`); dropped = true;}
+        if (kept.length !== p.options.length) {p.options = kept; drop(`page.${p.id}.options.${failed}`, reason); dropped = true;}
       }
       for (let k = questions.length - 1; k >= 0; k--) {
         const q = questions[k]!;
-        if (uses(q.question) || uses(q.answer) || q.id === answerless) {questions.splice(k, 1); drop(`question.${q.id}`, failed ? `template_not_applicable:${failed}` : "answer_without_number"); dropped = true;}
+        if (uses(q.question) || uses(q.answer) || q.id === answerless) {questions.splice(k, 1); drop(`question.${q.id}`, failed ? reason : "answer_without_number"); dropped = true;}
       }
-      for (let k = appendix.length - 1; k >= 0; k--) if (uses(appendix[k]!.label)) {drop(`appendix.${appendix[k]!.id}`, `template_not_applicable:${failed}`); appendix.splice(k, 1); dropped = true;}
+      for (let k = appendix.length - 1; k >= 0; k--) if (uses(appendix[k]!.label)) {drop(`appendix.${appendix[k]!.id}`, reason); appendix.splice(k, 1); dropped = true;}
     }
-    if (!dropped) return {status: "missing", missing: [`readerRefused.${refusal.toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "unknown"}`], omitted};
+    if (!dropped) {
+      // Without a confirmed identity of the instrument the plan's alternative prepays, the material the method can still
+      // prepare is refused for that reason: the person is asked which row of the debt table the instrument is (or to
+      // confirm the proposed identity), never shown the refusal as an error.
+      const link = anchors.R.issues.i;
+      if (link?.startsWith("link_absent:")) return {status: "missing", missing: [`instrumentLink.${link.slice("link_absent:".length).normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "instrument"}`], omitted};
+      return {status: "missing", missing: [`readerRefused.${refusal.toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "unknown"}`], omitted};
+    }
   }
 }

@@ -3053,6 +3053,22 @@
   "claims": []
  },
  {
+  "blockKey": "links",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "ccb-bradesco",
+     "planSourceId": "plano-2027",
+     "instrumentId": "ccb-bradesco",
+     "tableSourceId": "tabela-divida",
+     "rowId": "ccb-bradesco"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
   "blockKey": "versions",
   "kind": "table",
   "content": {

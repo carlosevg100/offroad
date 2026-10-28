@@ -3,7 +3,7 @@
  "executorVersion": "2026.10.27-v1",
  "financialCoreVersion": "2026.10.07-v29",
  "question": "Conselho na quarta. Prepara a discussão de estrutura de capital.",
- "basisFingerprint": "eeea3ee84c144070f8c7705885197b34a0600d5cb9fe6864d04f310399a6789e",
+ "basisFingerprint": "5210760bfde3d270e61f5e77d510c60ac0954eee0243ea57f667b25377b60bec",
  "scope": {
   "workId": "ac400000-0000-4000-9000-000000000007",
   "purpose": "synthetic adopted financial analysis",
@@ -20,7 +20,7 @@
   },
   "entityId": "ac400000-0000-4000-9000-000000000001",
   "currency": "BRL",
-  "basisFingerprint": "eeea3ee84c144070f8c7705885197b34a0600d5cb9fe6864d04f310399a6789e",
+  "basisFingerprint": "5210760bfde3d270e61f5e77d510c60ac0954eee0243ea57f667b25377b60bec",
   "status": "partial_composition",
   "gaps": [],
   "bindings": [],
@@ -30,7 +30,7 @@
   "classification": "working_hypothesis",
   "grantsExecution": false,
   "grantsPublication": false,
-  "fingerprint": "b261b8d1f595fa2096d85dd1d9e689e0908fc50565a50e454a76692255a24773",
+  "fingerprint": "483809be00fa16435091a9fc4c5dbc1f88b7091bb824df1e1f82bf5618489bef",
   "schemaVersion": "adopted-board-capital-discussion.v1",
   "analysisId": "ac400000-0000-4000-9000-000000000095",
   "perimeter": "standalone",
@@ -3824,6 +3824,15 @@
      "code": "reduce_single_supplier_dependence"
     }
    ],
+   "links": [
+    {
+     "id": "ccb-bradesco",
+     "planSourceId": "plano-2027",
+     "instrumentId": "ccb-bradesco",
+     "tableSourceId": "tabela-divida",
+     "rowId": "ccb-bradesco"
+    }
+   ],
    "priorVersionsKept": true,
    "sentToThirdParties": false,
    "presented": false
@@ -4032,5 +4041,5 @@
  ],
  "grantsExecution": false,
  "grantsPublication": false,
- "fingerprint": "60223f042631164b8a118cd2f3a5f93310580fa53b9f2e310f460fc390c814e6"
+ "fingerprint": "48ad125cd6248f817cdb31adecf43f19b3b89f19b0faf520d588802a963fd914"
 }
