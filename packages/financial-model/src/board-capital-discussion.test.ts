@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {boardFreeTextIssue, boardNumberTokens, formatBoardReading, renderBoardRef, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
   type BoardDeliberation, type BoardFigureDisplay, type BoardPage, type BoardSourceReading} from "./board-capital-discussion";
@@ -136,7 +137,7 @@ describe("board discussion core", () => {
           .map(([f, v], k) => ({decisionId: `${id}-${k}`, slotKey: `${id}-${k}`, fieldPath: `investment.ac400000-0000-4000-9000-000000001004.${f}`, dimensions: {scenario: id, unit: "x"},
             value: {type: Array.isArray(v) ? "list" : "text", value: v}}));
         return {id, role: id === "base" ? "base" : "sensitivity", result: {inheritedScenario: id === "base" ? null : "base", contributions,
-          project: {operands: {periods: operands}, rows: periods.map((periodId, k) => ({periodId, incrementalEbitda: "1", operands: operands[k]}))},
+          project: {operands: {periods: operands}, rows: periods.map((periodId, k) => ({periodId, incrementalEbitda: new Decimal(avoided[k]!).minus(costs[k]!).minus(fixed[k]!).toFixed(), growthCapex: capex[k], incrementalDepreciation: dep[k], operands: operands[k]}))},
           startupCapital: {operands: {}}, ramp: [{operands: {operationStartMonth: o.start ?? "2027-05-01"}, activeMonths: o.start ? 2 : 8, activeYearFraction: active[1], loadEquivalentYearFraction: load[1]}]}};
       };
       return [make("base", {}), make("economy-4", {avoided: ["0", "20", "20"]}), make("capex-120", {capex: ["12", "9.6", "0"], dep: ["2.16", "2.16", "2.16"]}),

@@ -423,6 +423,17 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     };
     if (/economia menor/.test(t) && changed("economy-4") !== "project.annualAvoidedOperatingCost,project.annualFixedOperatingCost,project.annualVariableOperatingCost") bad.push(`scenario_economy:${t.slice(0, 60)}`);
     if (/capex e depreciação maiores/.test(t) && changed("capex-120") !== "project.annualDepreciation,project.growthCapexPaid") bad.push(`scenario_capex:${t.slice(0, 60)}`);
+    // "Economia menor", the oracle's own reading of the quantity named: the net operating economy of each period (avoided
+    // cost less the project's variable and fixed costs, from the row's annual operands), never above the reference's in
+    // any period of the horizon and below it in some; a smaller start and a larger end is a redistribution, not "menor".
+    if (/economia menor/.test(t)) {
+      type Row = {periodId: string; operands: Record<string, string>};
+      const rowsOf = (id: string | undefined) => ((cases.find((x) => x.id === id)?.result.project as {rows?: Row[]} | undefined)?.rows ?? []);
+      const net = (r: Row) => new D(r.operands.annualAvoidedOperatingCost!).minus(r.operands.annualVariableOperatingCost!).minus(r.operands.annualFixedOperatingCost!);
+      const mine = rowsOf("economy-4"), ref = new Map(rowsOf(cases.find((x) => x.id === "economy-4")?.result.inheritedScenario as string | undefined).map((r) => [r.periodId, r]));
+      const pairs = mine.map((r) => [net(r), ref.get(r.periodId) ? net(ref.get(r.periodId)!) : null] as const);
+      if (!pairs.length || pairs.some(([, y]) => y === null) || pairs.some(([x, y]) => x.gt(y!)) || !pairs.some(([x, y]) => x.lt(y!))) bad.push(`scenario_economy_net:${t.slice(0, 60)}`);
+    }
     if (/partida mais lenta/.test(t) && changed("slower-start") !== "project.ramp.operationStartMonth") bad.push(`scenario_start:${t.slice(0, 60)}`);
     // A deferral named by its exact definition: the oracle's own uniform shift, written apart from the method's. Every
     // series of the horizon's length moves by k periods with its own neutral value before; dates of the project and the
@@ -1786,5 +1797,35 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       expect(forge((t) => t.startsWith("Recomendamos sondar"), "de até R$ 80", "de até R$ 81").some((x) => x.startsWith("boundary_up_to_set:")), `${turn}`).toBe(true);
       expect(oracle(calibrated).bad.filter((x) => x.startsWith("boundary_")), `${turn}`).toEqual([]);
     }
+  });
+  it("regression r38: 'economia menor' is the net operating economy, dominated in every period (full path, turns 2 and 3, oracle not vacuous)", () => {
+    // The reviewer's case: net economy zero through 2032 and 22 million a year after, negative NPV, larger than the base at the end.
+    const later = auroraInvestmentPacket({economyLaterLarger: true}) as unknown as Record<string, unknown>;
+    type Row = {periodId: string; incrementalEbitda: string};
+    const rows = (p: Record<string, unknown>, id: string) => ((p.cases as {id: string; result: {project: {rows: Row[]}}}[]).find((c) => c.id === id)!.result.project.rows);
+    const pairs = rows(later, "economy-4").map((r, i) => [new Decimal(r.incrementalEbitda), new Decimal(rows(later, "base")[i]!.incrementalEbitda)] as const);
+    expect(pairs.some(([x, y]) => x.lt(y)) && pairs.some(([x, y]) => x.gt(y))).toBe(true);
+    const metrics = (later.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics;
+    expect(new Decimal(metrics.find((m) => m.caseId === "economy-4")!.netPresentValue).lt(0)).toBe(true);
+    for (const turn of [2, 3] as const) {
+      expect(() => withBoardSource("linha-embalagem", later, () => full(turn, (c) => {
+        c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(later, "economy-4")];})), `${turn}`)
+        .toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+      // Control: the calibration's economy smaller in every year passes, and the oracle reads it clean.
+      const calibrated = full(turn, () => undefined);
+      expect(boardShownTexts(calibrated).some((x) => x.includes("com economia menor,")), `${turn}`).toBe(true);
+      expect(oracle(calibrated), `${turn}`).toEqual({bad: [], missing: []});
+      // Not vacuous: the calibrated text read against the later-larger result (same fingerprint) is flagged on the net economy.
+      const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!;
+      const forged = {...later, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
+      expect(oracle(calibrated, [{packet: forged}, ...auroraBoardSources().filter((x) => x !== original)]).bad.some((x) => x.startsWith("scenario_economy_net:")), `${turn}`).toBe(true);
+    }
+    // The library: the economy proven by the gross avoided cost alone is refused.
+    const sens = boardTemplates["topic.project_sensitivities"]!;
+    boardTemplates["topic.project_sensitivities"] = {...sens, when: sens.when.map((c) => "dominates" in c && JSON.stringify(c).includes("incrementalEbitda")
+      ? {...c, dominates: c.dominates.map((d) => "list" in d ? {...d, field: "operands.annualAvoidedOperatingCost"} : d) as unknown as typeof c.dominates} : c)};
+    try {expect(checkBoardTemplateLibrary()).toContain("topic.project_sensitivities:qualifier_unproved:menor");}
+    finally {boardTemplates["topic.project_sensitivities"] = sens;}
+    expect(checkBoardTemplateLibrary()).toEqual([]);
   });
 });

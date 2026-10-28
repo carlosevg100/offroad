@@ -778,6 +778,12 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r38: "economia menor" is the net operating economy in every period; smaller first and larger later is refused.
+    ["economy-smaller-first-and-larger-later", () => {
+      const packet = auroraInvestmentPacket({economyLaterLarger: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("linha-embalagem", packet, () => build(2, (c) => {
+        c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}));
+    }, "board_capital_template_condition_failed:topic.project_sensitivities"],
     // Review r37: a boundary shown at a precision that moves it to a value the source rejects is refused, naming the reading.
     ...([["0", "74"], ["1", "74.4"]] as const).map(([places, stated]) => [`demand-floor-shown-with-${places === "0" ? "no-decimals" : "one-decimal"}`, () => {
       const packet = auroraPlanPacket() as unknown as Record<string, unknown>;

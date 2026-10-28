@@ -122,13 +122,13 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string; advers
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */
 export function auroraInvestmentPacket(variant: {economyCaseWithLargerCapexOnly?: true; capexFrontLoadedSmallerTotal?: true; baseLabel?: string;
   economyCaseDiscountRate?: {rate: string; withEconomy: boolean}; deferralHorizonYears?: number; deferralLastPeriodEnd?: string;
-  exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"; discountRate?: string; economyCaseFactor?: string} = {}) {
+  exactDeferral?: "control" | "lastPeriodEconomy" | "adoptedTimes" | "startupCapital"; discountRate?: string; economyCaseFactor?: string; economyLaterLarger?: true} = {}) {
   const calibration = variant.economyCaseWithLargerCapexOnly ? c32WithMislabelledEconomy() : variant.capexFrontLoadedSmallerTotal ? c32WithFrontLoadedCapex()
     : variant.economyCaseDiscountRate ? c32WithEconomyAtRate(variant.economyCaseDiscountRate.rate, variant.economyCaseDiscountRate.withEconomy)
     : variant.deferralHorizonYears !== undefined ? c32WithDeferralHorizon(variant.deferralHorizonYears)
     : variant.deferralLastPeriodEnd !== undefined ? c32WithDeferralLastPeriod(variant.deferralLastPeriodEnd)
     : variant.exactDeferral !== undefined ? c32WithExactDeferral(variant.exactDeferral)
-    : variant.economyCaseFactor !== undefined ? c32WithEconomyFactor(variant.economyCaseFactor) : c32PacketInput(), from = id(1001);
+    : variant.economyCaseFactor !== undefined ? c32WithEconomyFactor(variant.economyCaseFactor) : variant.economyLaterLarger ? c32WithEconomyLaterLarger() : c32PacketInput(), from = id(1001);
   // Regressions only: every case discounted at another cost of capital.
   if (variant.discountRate) for (const e of calibration.basis.entries) if (e.fieldPath.endsWith(".valuation.discountRate")) e.value = {...e.value, value: variant.discountRate} as typeof e.value;
   // The same analysis registered for another project: only the base case's label changes.
@@ -201,6 +201,22 @@ function c32WithDeferralLastPeriod(end: string) {
   return f;
 }
 /** The C32 cases with economy-4's three operating series scaled by another factor (regressions only; 4/6 is the calibration). */
+/** Regressions only (review r38): economy-4 with the avoided cost at 90% of the base, a fixed cost of 1 million and a
+ * variable cost equal to the avoided cost less 1 million less E, E zero through 2032 and 22 million after: a net operating
+ * economy of zero in the first years and 22 million a year later, larger than the base's at the end. */
+function c32WithEconomyLaterLarger() {
+  const f = c32PacketInput(), b = f.basis, base = f.input.cases[0]!.analysis;
+  const P = Decimal.clone({precision: 60}), growth = (y: number) => new P("1.04").pow(Math.max(0, y - 2027));
+  const series = (years: number[], g: (y: number) => Decimal) => ({type: "list" as const, value: years.map((y) => {const v = g(y); return v.eq(0) ? "0" : new P(v).times(1000000).toDecimalPlaces(8).toFixed();})});
+  const avoided = (y: number) => growth(y).times(30).times("0.9"), extra = (y: number) => new P(y > 2032 ? 22 : 0);
+  const economy = b.overlay(base, "economy-4-later-larger", (c, i, years) => {
+    i.project.money.annualAvoidedOperatingCost = c("project.annualAvoidedOperatingCost", "currency", series(years, avoided));
+    i.project.money.annualVariableOperatingCost = c("project.annualVariableOperatingCost", "currency", series(years, (y) => avoided(y).minus(1).minus(extra(y))));
+    i.project.money.annualFixedOperatingCost = c("project.annualFixedOperatingCost", "currency", series(years, () => new P(1)));
+  });
+  f.input.cases[1] = {...f.input.cases[1]!, analysis: economy};
+  return f;
+}
 function c32WithEconomyFactor(factor: string) {
   const f = c32PacketInput(), b = f.basis, base = f.input.cases[0]!.analysis;
   const P = Decimal.clone({precision: 60}), growth = (y: number) => new P("1.04").pow(Math.max(0, y - 2027)), k = new P(factor);

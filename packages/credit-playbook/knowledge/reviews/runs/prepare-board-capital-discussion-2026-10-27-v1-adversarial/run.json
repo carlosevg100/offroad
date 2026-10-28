@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T06:11:26.184Z",
-    "finishedAt": "2026-10-28T06:15:03.281Z"
+    "startedAt": "2026-10-28T06:38:15.528Z",
+    "finishedAt": "2026-10-28T06:41:52.951Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -1318,6 +1318,14 @@
       "passed": true
     },
     {
+      "id": "economy-smaller-first-and-larger-later",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9aa289403bd7a56d307f72be029bc5c75d44edf6c3282cb787bc21d4795c9639",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "demand-floor-shown-with-no-decimals",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1495,6 +1503,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "51e8457cb039f654705d6d27cb6f3166dfa037db44cf4c6347bb5e8bc8531308",
+  "evidenceFingerprint": "f08fb885d27f100131eb6f69e55ba9eab3c143c86ed2114d5813ef163135240a",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
