@@ -94,6 +94,14 @@ export const boardRatingReadings = (packet: Record<string, unknown>) => (c: Case
     c.extraReadings[id] = ["custo-relativo", `levers[role=rating&scenario=${scenario}].netOfKnownCosts`, "2", new Decimal(lever(scenario)).div(1000000).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2)];
 };
 /** Every reading of one source restated from another execution of its method, at the same presentation (test side only). */
+/** The plan with the recommended debenture issued at another amount (the demand), its readings restated, the amount shown with two decimals. */
+export const boardDemandAt = (amount: string, build: (turn: BoardTurn, edit: (c: CaseData) => void) => unknown = boardPacketInput) => {
+  const packet = auroraPlanPacket({longIssueAmount: amount}) as unknown as Record<string, unknown>;
+  return withBoardSource("plano-2027", packet, () => build(2, (c) => {
+    boardRestateSource("plano-2027", "evaluate-financing-paths", packet)(c);
+    c.extraReadings["debenture-amount"] = ["plano-2027", "readings.recommendation.longInstrument.issueTarget", "2", amount];
+  }));
+};
 export const boardRestateSource = (sourceId: string, methodId: string, packet: Record<string, unknown>) => (c: CaseData) => {
   for (const [id, r] of Object.entries({...auroraBoardReadings, ...c.extraReadings} as Record<string, [string, string, string, string?]>)) {
     if (r[0] !== sourceId || r[3] === undefined) continue;
@@ -198,7 +206,7 @@ function goldCases(): Case[] {
       (p) => p.readings!.material!.titles.slice(0, 4).map((t) => t.title)),
     reuse("titles-pages-5-to-8-conclusion-and-number", p2, t2, ["A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano", "Os programas dos clientes antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões, sem dívida bancária nova", "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios", "Os 7 caminhos combinam estes movimentos da dívida e do projeto"],
       (p) => p.readings!.material!.titles.slice(4, 8).map((t) => t.title)),
-    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos", "A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda acima de R$ 74,44 milhões"],
+    reuse("titles-pages-9-to-12-conclusion-and-number", p2, t2, ["Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos", "A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura", "A política de 2,5x precisa de uma definição de EBITDA", "A recomendação depende de demanda a partir de R$ 74,44 milhões"],
       (p) => p.readings!.material!.titles.slice(8, 12).map((t) => t.title)),
     reuse("every-page-carries-a-number", p2, t2, true, (p) => current(p).pages.every((x) => x.figureIds.length + x.pendingFigureIds.length + x.deadlineIds.length > 0)),
     reuse("numbers-checked-against-the-analyses-debt-covenant-and-cash", p2, t2, {
@@ -349,6 +357,9 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r36: the demand floor is inclusive; at the floor and one quantum above, the floor is said "a partir de".
+    ...(["74.44", "74.45"] as const).map((amount) => observe(`demand-${amount === "74.44" ? "exactly-at" : "one-quantum-above"}-the-floor-said-from-the-floor`, boardDemandAt(amount) as BoardCapitalDiscussionPacketInput,
+      {title: "A recomendação depende de demanda a partir de R$ 74,44 milhões"}, (p) => ({title: boardShownTexts(p).find((t) => t.startsWith("A recomendação depende de demanda"))}))),
     // Review r35: "de curto prazo" only with a registered effective term of up to twelve months (0,5, 1,25 and 2,25 anos).
     ...([[2, "six"], [5, "fifteen"], [9, "twenty-seven"]] as const).map(([period, months]) => observe(`bank-credit-of-${months}-months-${period === 2 ? "called-short-term" : "described-without-short-term"}`, (() => {
       const packet = auroraPlanPacket({giroPaidInPeriod: period}) as unknown as Record<string, unknown>;
@@ -767,6 +778,8 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r36: one quantum below the floor the plan has no recommendation; nothing about the demand is written.
+    ["demand-one-quantum-below-the-floor", () => boardDemandAt("74.43", build), "board_capital_figure_without_origin:debenture-amount"],
     // Review r14: the debt kept as it is takes no new loan; a deferral starts operating later; a path's moves are its complete set.
     ["kept-debt-with-a-new-working-capital-loan", () => {
       const packet = auroraPlanPacket({keptDebtWithNewLoan: true}) as unknown as Record<string, unknown>;

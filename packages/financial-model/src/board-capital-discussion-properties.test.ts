@@ -7,7 +7,7 @@ import {boardShownTexts, boardConceptAttempts, boardDeferralReadings, boardRatin
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
 import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, debtTableWithPrincipal, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
-import {boardConditionSlots} from "./board-capital-discussion";
+import {boardCanonicalJson, boardConditionSlots, boardVersionFingerprint} from "./board-capital-discussion";
 
 type CaseData = Parameters<NonNullable<Parameters<typeof boardPacketInput>[1]>>[0];
 /** A fixed-seed generator (mulberry32), so every property run is the same run. */
@@ -186,7 +186,7 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
   "topic.project_return": (v) => v.retorno!.gt(v.custo!), "topic.project_sensitivities": (v) => [v.vpl_economia, v.vpl_capex, v.vpl_partida].every((x) => x!.lt(0)),
   "recommendation.debenture_cost": (v) => v.baixo!.lte(v.alto!), "recommendation.amortization": (v) => v.inicio!.lte(v.fim!),
   "risk.leverage_path": (v) => v.fim!.lt(v.inicio!), "risk.leverage_adverse": (v) => v.adverso!.lt(v.politica!), "risk.leverage": (v) => v.adverso!.lt(v.politica!),
-  "what_changes.demand": (v) => v.piso!.lt(v.alvo!), "what_changes.receivable_days": (v) => v.giro!.gt(0), "what_changes.wheat": (v) => v.choque!.gt(0),
+  "what_changes.demand": (v) => v.piso!.lte(v.alvo!), "what_changes.title": (v) => v.piso!.gt(0), "what_changes.receivable_days": (v) => v.giro!.gt(0), "what_changes.wheat": (v) => v.choque!.gt(0),
   "a.roll_bank": (v) => v.falta!.gt(0), "a.term": (v) => v.amortizacao!.gt(v.disponivel!), "a.peer": (v) => v.data!.lte(v.total!), "a.rating": (v) => v.baixo!.lte(v.alto!), "a.rating_known_costs": (v) => v.baixo!.lte(v.alto!),
   "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "a.anchor_shared": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
 };
@@ -502,6 +502,18 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     };
     for (const [label, [id, want]] of Object.entries(expected)) if (t.startsWith(`${label} `) && !/caixa mínimo/.test(t) && JSON.stringify(pathMoves(id)) !== JSON.stringify(want)) bad.push(`path_moves:${label}`);
     if (/mantida a dívida como está/.test(t) && JSON.stringify(pathMoves("manter")) !== JSON.stringify(expected["Caminho D:"]![1])) bad.push(`path_kept:${t.slice(0, 60)}`);
+    // Demand boundary, the oracle's own reading: the plan's floor is inclusive (the smallest amount on its registered
+    // quantum that passes every gate), so a sentence may put demand "de pelo menos" or "a partir de" the floor, or "abaixo de"
+    // it on the failing side; "acima de", "mais de" or "até" the floor misstates which side the floor itself is on.
+    const demandBoundary = /[Dd]emanda (?:[\p{L}]+ ){0,3}?(de pelo menos|a partir de|acima de|mais de|abaixo de|até|menos de) R\$ ([\d.]+(?:,\d+)?) milh/u.exec(t);
+    if (demandBoundary) {
+      const fp = sourceOf("evaluate-financing-paths") as {readings?: {recommendation?: {longInstrument?: {issueFloorInsideGates?: string}}}; result?: {evaluation?: {recommendation?: {demand?: {quantum?: string; issueFloorInsideGates?: string}}}}} | undefined;
+      const floor = fp?.readings?.recommendation?.longInstrument?.issueFloorInsideGates, demand = fp?.result?.evaluation?.recommendation?.demand;
+      const shownFloor = new D(demandBoundary[2]!.replace(/\./g, "").replace(",", ".")), places = (demandBoundary[2]!.split(",")[1] ?? "").length;
+      if (!floor || !demand?.quantum || !new D(demand.quantum).gt(0) || demand.issueFloorInsideGates !== floor || !new D(floor).toDecimalPlaces(places, D.ROUND_HALF_UP).eq(shownFloor))
+        bad.push(`boundary_demand_value:${t.slice(0, 60)}`);
+      if (["acima de", "mais de", "até"].includes(demandBoundary[1]!)) bad.push(`boundary_demand:${demandBoundary[1]}`);
+    }
     // "De curto prazo" for bank credit, the oracle's own reading: the path the sentence names; each of its new bank
     // instruments without a scheduled amortization after the horizon runs, from the start of its first draw period to
     // its final payment, at most twelve months by the dates, and its registered termYears agrees with the dates.
@@ -1670,5 +1682,62 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     try {expect(checkBoardTemplateLibrary()).toEqual(["delib.action.supplier_notice:qualifier_unproved:atual"]);}
     finally {boardTemplates["delib.action.supplier_notice"] = supplier;}
     expect(checkBoardTemplateLibrary()).toEqual([]);
+  });
+  it("regression r36: the demand floor is inclusive; version fingerprints are canonical (full path, turns 2 and 3, oracle not vacuous)", () => {
+    // The method's own runs: the floor passes every gate and one quantum below does not.
+    const plan = (amount: string) => auroraPlanPacket({longIssueAmount: amount}) as unknown as Record<string, unknown>;
+    const eligible = (p: Record<string, unknown>) => (p as {readings: {paths: {id: string; eligible: boolean}[]}}).readings.paths.find((x) => x.id === "sem-linha-debenture")!.eligible;
+    const below = plan("74.43"), at = plan("74.44"), above = plan("74.45");
+    expect([eligible(below), eligible(at), eligible(above)]).toEqual([false, true, true]);
+    const material = (p: Record<string, unknown>, amount: string, turn: 2 | 3) => withBoardSource("plano-2027", p, () => full(turn, (c) => {
+      boardRestateSource("plano-2027", "evaluate-financing-paths", p)(c);
+      c.extraReadings["debenture-amount"] = ["plano-2027", "readings.recommendation.longInstrument.issueTarget", "2", amount];
+    }));
+    for (const turn of [2, 3] as const) {
+      // Below the floor the source has no recommendation: nothing about the demand is written.
+      expect(() => material(below, "74.43", turn)).toThrow(refusal);
+      for (const [p, amount] of [[at, "74,44"], [above, "74,45"]] as const) {
+        const out = material(p, amount.replace(",", "."), turn), texts = boardShownTexts(out);
+        expect(texts, `${amount}:${turn}`).toContain("A recomendação depende de demanda a partir de R$ 74,44 milhões");
+        expect(texts, `${amount}:${turn}`).toContain(`Demanda da debênture abaixo de R$ 74,44 milhões, o mínimo que mantém a emissão de R$ ${amount} milhões dentro dos critérios.`);
+        expect(oracle(out, [{packet: p}, ...auroraBoardSources().filter((x) => x.id !== "plano-2027")]), `${amount}:${turn}`).toEqual({bad: [], missing: []});
+      }
+      // Not vacuous: the strict and the capped wordings, and another number, are flagged by the oracle.
+      const calibrated = packet(turn, () => undefined);
+      for (const [from, to, flag] of [["a partir de", "acima de", "boundary_demand:acima de"], ["a partir de", "até", "boundary_demand:até"], ["74,44", "74,43", "boundary_demand_value:"]] as const) {
+        const forged = structuredClone(calibrated), page = forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.title.startsWith("A recomendação depende de demanda"))!;
+        page.title = page.title.replace(from, to);
+        expect(oracle(forged).bad.some((x) => x.startsWith(flag)), `${turn}:${to}`).toBe(true);
+      }
+    }
+    // The library refuses a boundary without its proof: the strict wording, and the floor without its registered inclusion.
+    const title = boardTemplates["what_changes.title"]!;
+    boardTemplates["what_changes.title"] = {...title, text: title.text.replace("a partir de", "acima de")};
+    try {expect(checkBoardTemplateLibrary()).toContain("what_changes.title:boundary_unproved:acima d");}
+    finally {boardTemplates["what_changes.title"] = title;}
+    const demand = boardTemplates["what_changes.demand"]!;
+    boardTemplates["what_changes.demand"] = {...demand, when: demand.when.filter((c) => !("boundary" in c))};
+    try {expect(checkBoardTemplateLibrary()).toEqual(expect.arrayContaining(["what_changes.demand:boundary_unproved:abaixo d", "what_changes.demand:qualifier_unproved:abaixo"]));}
+    finally {boardTemplates["what_changes.demand"] = demand;}
+    expect(checkBoardTemplateLibrary()).toEqual([]);
+    // Canonical fingerprints: every version and the result, recomputed from the published object after a JSON round trip
+    // and a random reordering of keys at every level, reproduce the published fingerprint.
+    const rnd = random(36);
+    const shuffle = (v: unknown): unknown => Array.isArray(v) ? v.map(shuffle) : v && typeof v === "object"
+      ? Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [rnd(), k, shuffle(x)] as const).sort((a, b) => a[0] - b[0]).map(([, k, x]) => [k, x])) : v;
+    for (const turn of [2, 3] as const) {
+      const published = JSON.parse(JSON.stringify(packet(turn, (c) => {c.omissions = [{id: "sem-recomendacao", target: "page", targetId: "recomendacao", requestedBy: "requester.chair"}];})));
+      const versions = published.result.discussion.versions as Record<string, unknown>[];
+      expect(versions.length).toBeGreaterThan(0);
+      for (const v of versions) for (let n = 0; n < 5; n++) {
+        const reordered = shuffle(v) as Record<string, unknown>;
+        expect(boardVersionFingerprint(reordered)).toBe(v.fingerprint);
+      }
+      const {fingerprint, ...body} = shuffle(published.result) as Record<string, unknown>;
+      expect(createHash("sha256").update(boardCanonicalJson(body)).digest("hex")).toBe(fingerprint);
+      // Not vacuous: one changed value changes the fingerprint.
+      const changed = structuredClone(versions[0]!) as {summary: string}; changed.summary += " ";
+      expect(boardVersionFingerprint(changed)).not.toBe(versions[0]!.fingerprint);
+    }
   });
 });

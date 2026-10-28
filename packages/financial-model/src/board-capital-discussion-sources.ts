@@ -77,7 +77,10 @@ export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" 
   /** The economic concept of the field where a method holds several of the same kind that must never stand for one another. */
   concept?: string;
   /** For money: a balance (a position at a date), a flow (a change or an amount over a period) or a value (a present value or an amount to issue). */
-  nature?: "balance" | "flow" | "value"};
+  nature?: "balance" | "flow" | "value";
+  /** For a field that is a limit: which side it bounds and whether the limit value itself is admitted, as the source
+   * method defines it (a sentence that states a relation to the limit must state this inclusion). */
+  boundary?: {side: "minimum" | "maximum"; inclusive: boolean; rule: string}};
 /** A lever's benefit is the nominal benefit over its action's exposure: the horizon is the sum of the registered year
  * fractions of that action's exposure, in months (an integer number of months, or nothing). */
 function leverHorizonMonths(packet: unknown, path: string): string | null {
@@ -120,12 +123,12 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.table.profile.largestCreditor.creditor": plain("label"), "result.table.creditLines[*].creditor": plain("label"), "result.table.creditLines[*].unused": {...money("millions"), nature: "balance"}, "result.table.rows[*].creditor": plain("label"), "result.table.profile.largestCreditor.share": rate("none"),
     "result.table.negativePledgeBaskets[*].basket": {...money("millions"), nature: "balance"}, "result.table.negativePledgeBaskets[*].occupied": {...money("millions"), nature: "balance"},
     "result.table.negativePledgeBaskets[*].remaining": {...money("millions"), nature: "balance"}, "result.table.rows[*].finalPayment": date("month_year", "month_long", "year"),
-    "result.table.profile.twelveMonthHorizon": date("month_year", "month_long")},
+    "result.table.profile.twelveMonthHorizon": {...date("month_year", "month_long"), boundary: {side: "maximum", inclusive: true, rule: "vencimentos com data até o horizonte, inclusive (data menor ou igual)"}}},
   "measure-covenant-headroom": {
-    "result.headroom.limits[*].maximumRatio": plain("multiple"), "result.headroom.measurements[*].ratio": plain("multiple"),
+    "result.headroom.limits[*].maximumRatio": {...plain("multiple"), boundary: {side: "maximum", inclusive: true, rule: "teste violado só com índice acima do máximo; o próprio máximo cumpre"}}, "result.headroom.measurements[*].ratio": plain("multiple"),
     "result.headroom.measurements[*].reportedEbitda": {...money("millions"), nature: "flow"}, "result.headroom.measurements[*].date": date("month_year", "month_long", "year")},
   "project-weekly-cash": {
-    "result.weekly.minimumCash": {...money("millions"), nature: "balance"}, "readings.sensitivities[*].minimum": {...money("millions"), nature: "balance"},
+    "result.weekly.minimumCash": {...money("millions"), nature: "balance", boundary: {side: "minimum", inclusive: true, rule: "semana abaixo do mínimo só com saldo menor que o mínimo; o próprio mínimo cumpre"}}, "readings.sensitivities[*].minimum": {...money("millions"), nature: "balance"},
     "readings.sensitivities[*].weekStart": date("day_month", "day_long"), "readings.tightestWeek.weekStart": date("day_month", "day_long")},
   "analyze-investment-project": {
     "cases[*].label": plain("label"), "question": plain("label"),
@@ -159,7 +162,8 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.evaluation.paths[*].closingAvailableByPeriod[*].closingAvailable": {...money("millions"), nature: "balance"},
     "result.evaluation.paths[*].debtServiceByYear[*].service": {...money("millions"), nature: "flow"}, "result.evaluation.paths[*].debtServiceByYear[*].availableForService": {...money("millions"), nature: "flow"},
     "readings.horizon.candidatePaths": plain("count"), "readings.horizon.lastPeriodEnd": date("year", "month_year"),
-    "readings.recommendation.longInstrument.issueTarget": {...money("millions"), nature: "value"}, "readings.recommendation.longInstrument.issueFloorInsideGates": {...money("millions"), nature: "value"},
+    "readings.recommendation.longInstrument.issueTarget": {...money("millions"), nature: "value", boundary: {side: "maximum", inclusive: true, rule: "montante inteiro avaliado do instrumento; a sondagem vai até ele, inclusive"}},
+    "readings.recommendation.longInstrument.issueFloorInsideGates": {...money("millions"), nature: "value", boundary: {side: "minimum", inclusive: true, rule: "menor montante, no quantum adotado, que mantém o caminho dentro de todos os critérios: o próprio piso passa, um quantum abaixo não"}},
     "readings.recommendation.longInstrument.termYears": plain("years"), "readings.recommendation.longInstrument.equivalentSpread": rate("annual"),
     "readings.recommendation.longInstrument.equivalentSpreadAtCondition": rate("annual"),
     "readings.recommendation.longInstrument.firstAmortizationYear": {kind: "calendar", scale: "native", period: "none", formats: ["year"]},

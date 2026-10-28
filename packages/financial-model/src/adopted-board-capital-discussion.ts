@@ -4,7 +4,7 @@ import {financialCoreVersion} from "@offroad/financial-core";
 import {adoptedValueSelectionSchema as selection} from "./adopted-debt-inputs";
 import {adoptedAnalysisContextSchema, createAnalysisBinding} from "./adopted-analysis-binding";
 import {boardAuthorities, boardOmissionTargets, boardPageRoles, prepareBoardCapitalDiscussion,
-  type BoardDiscussion, type BoardFigure, type BoardSourceReading} from "./board-capital-discussion";
+  type BoardDiscussion, type BoardFigure, type BoardSourceReading, boardCanonicalJson} from "./board-capital-discussion";
 import {boardTextRefPattern} from "./board-capital-discussion-templates";
 import {boardSourceMethodIds, boardSourcePacketSchema, parseBoardSourceText, verifyBoardSource} from "./board-capital-discussion-sources";
 import {boardCapitalDiscussionExclusions} from "./board-capital-discussion-results";
@@ -137,5 +137,6 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
     derivedDependencies: [{result: "board_capital_discussion", decisionIds: [...b.used.keys()]}],
     classification: [...b.used.values()].some((e) => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,
     exclusions: boardCapitalDiscussionExclusions, grantsExecution: false as const, grantsPublication: false as const};
-  return {...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
+  // Internal fingerprint: canonical serialization (keys sorted), so it is recomputed from the published object.
+  return {...payload, fingerprint: createHash("sha256").update(boardCanonicalJson(payload)).digest("hex")};
 }

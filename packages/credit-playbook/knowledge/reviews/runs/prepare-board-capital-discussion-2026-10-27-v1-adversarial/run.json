@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T04:57:45.050Z",
-    "finishedAt": "2026-10-28T05:00:48.240Z"
+    "startedAt": "2026-10-28T05:41:24.075Z",
+    "finishedAt": "2026-10-28T05:44:48.704Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -1318,6 +1318,14 @@
       "passed": true
     },
     {
+      "id": "demand-one-quantum-below-the-floor",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "9ae1808c3da4e9da6277544c38010da0d154fbea16263730615698e4e4457e41",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "kept-debt-with-a-new-working-capital-loan",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1463,6 +1471,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "5dfce9ba904b9f227944aae2a5a09255084895213bb9a8b403128d137581536d",
+  "evidenceFingerprint": "423f3a8365e7b5cef4d258995d0500d545aba98ed4632630d4d83515024834dd",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

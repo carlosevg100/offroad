@@ -289,7 +289,7 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
 export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
   amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string;
-  deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true; giroPaidInPeriod?: number} = {}) {
+  deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true; giroPaidInPeriod?: number; longIssueAmount?: string} = {}) {
   const k = auroraCapitalPathsKernel();
   // Regressions only: the horizon after the plan reaches 2034 and the tested alternative profile pays its last third in 2034.
   if (variant.alternativeEndingIn2034) {
@@ -320,6 +320,13 @@ export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; 
     later.effects = {...later.effects, depreciation: goOn.effects.depreciation!, maintenanceCapex: goOn.effects.maintenanceCapex!, startupWorkingCapitalCashFlow: goOn.effects.startupWorkingCapitalCashFlow!};
   }
   const path = (id: string) => (k as unknown as {paths: {id: string; instrumentIds: string[]; prepayments: {instrumentId: string; periodEnd: string}[]}[]}).paths.find((x) => x.id === id)!;
+  // Regressions only: the recommended debenture issued at another amount (the demand), draws and issue fee in proportion.
+  if (variant.longIssueAmount !== undefined) {
+    const long = instrument("debenture-80") as {draws: string[]; charges: {amount: string}[]};
+    const scale = new Decimal(variant.longIssueAmount).div(80);
+    long.draws = long.draws.map((x) => new Decimal(x).times(scale).toFixed());
+    long.charges = long.charges.map((c) => ({...c, amount: new Decimal(c.amount).times(scale).toFixed()}));
+  }
   // Regressions only: the 17 million crop loan repaid in another quarter (its registered term changes; index 2 is the calibration).
   if (variant.giroPaidInPeriod !== undefined) Object.assign(instrument("giro-4t26-17"), {principal: Array.from({length: 10}, (_, i) => i === variant.giroPaidInPeriod ? "17" : "0")});
   if (variant.keptDebtWithNewLoan) path("manter").instrumentIds = [...path("manter").instrumentIds, "giro-4t26-17"];

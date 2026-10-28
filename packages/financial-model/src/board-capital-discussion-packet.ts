@@ -3,6 +3,7 @@ import {z} from "zod";
 import {financialCoreVersion} from "@offroad/financial-core";
 import {boardCapitalDiscussionAnalysesSchema, calculateAdoptedBoardCapitalDiscussion} from "./adopted-board-capital-discussion";
 import {adoptedBoardCapitalDiscussionOutputSchema} from "./board-capital-discussion-results";
+import {boardCanonicalJson, boardVersionFingerprint} from "./board-capital-discussion";
 
 export const boardCapitalDiscussionPacketVersion = "2026.10.27-v1";
 const text = z.string().trim().min(1).max(4000), key = z.string().trim().min(1).max(160), hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -77,5 +78,10 @@ export function prepareBoardCapitalDiscussionPacket(raw: unknown): BoardCapitalD
   const payload = {schemaVersion: "board-capital-discussion-packet.v1" as const, executorVersion: boardCapitalDiscussionPacketVersion, financialCoreVersion,
     question: input.question, basisFingerprint: result.basisFingerprint, scope: result.scope, entityId: result.entityId, currency: result.currency,
     result, readings, gaps, status, exclusions: packetExclusions, grantsExecution: false as const, grantsPublication: false as const};
-  return boardCapitalDiscussionPacketOutputSchema.parse({...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")});
+  const packet = boardCapitalDiscussionPacketOutputSchema.parse({...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")});
+  // Every version's fingerprint recomputed canonically on the object the schema validated: it must reproduce.
+  const {fingerprint: resultFingerprint, ...resultBody} = packet.result;
+  if (createHash("sha256").update(boardCanonicalJson(resultBody)).digest("hex") !== resultFingerprint) throw new Error("board_capital_result_fingerprint_mismatch");
+  for (const v of packet.result.discussion?.versions ?? []) if (boardVersionFingerprint(v) !== v.fingerprint) throw new Error(`board_capital_version_fingerprint_mismatch:${v.version}`);
+  return packet;
 }

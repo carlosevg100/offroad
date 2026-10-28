@@ -56,7 +56,21 @@ const feminine = ["zero", "uma", "duas", "três", "quatro", "cinco", "seis", "se
 /** Marks a number the material needs and no reviewed result supplies yet. */
 export const boardPendingMark = "[pendente]";
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
-const fingerprintOf = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+/** Canonical serialization for every internal fingerprint: object keys sorted at every level, arrays in order, values as
+ * JSON writes them (undefined members omitted). The same object gives the same bytes whatever order its keys were built
+ * or parsed in, so a published version's fingerprint is recomputed from the published object itself. */
+export function boardCanonicalJson(value: unknown): string {
+  const canonical = (v: unknown): unknown => Array.isArray(v) ? v.map((x) => x === undefined ? null : canonical(x))
+    : v && typeof v === "object" ? Object.fromEntries(Object.keys(v as Record<string, unknown>).filter((k) => (v as Record<string, unknown>)[k] !== undefined).sort()
+      .map((k) => [k, canonical((v as Record<string, unknown>)[k])])) : v;
+  return JSON.stringify(canonical(value));
+}
+const fingerprintOf = (value: unknown) => createHash("sha256").update(boardCanonicalJson(value)).digest("hex");
+/** The fingerprint of a material version: the canonical serialization of the version without its fingerprint field. */
+export function boardVersionFingerprint(version: Record<string, unknown>) {
+  const {fingerprint: _f, ...body} = version;
+  return fingerprintOf(body);
+}
 
 /** Reads one value of a reviewed result by path: dotted keys, `[n]` for a position and `[field=value]`
  * for the one element whose field equals the value. Anything else, or a selector matching zero or
@@ -670,6 +684,12 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         if (!x || !y || JSON.stringify(x) !== JSON.stringify(y)) return false;
       }
       return true;
+    }
+    if ("boundary" in c) {
+      const f = context.figures.get(bindings[c.boundary[0]]!);
+      if (!f || "pending" in f || !f.origin) throw indefinite(`slot_${c.boundary[0]}`);
+      const b = boardFieldOf(f.origin.methodId, f.origin.path)?.boundary;
+      return b !== undefined && b.side === c.boundary[1] && b.inclusive === c.boundary[2];
     }
     if ("coversYear" in c) {
       const f = context.figures.get(bindings[c.coversYear[0]]!), year = values[c.coversYear[1]];
