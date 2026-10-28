@@ -227,7 +227,8 @@ export type BoardSlotSpec = {type: BoardSlotType; from?: readonly (readonly [str
 /** An operand of a condition: a bound slot's source value, a literal (variables written as `$name` substituted), a
  * shared variable or a field of the source (`at`: [method, path], variables substituted); `year` compares the first
  * four characters. */
-export type BoardOperand = {slot: string; year?: true} | {value: string} | {var: string} | {at: readonly [string, string]; year?: true}
+/** A constant compared with money declares its scale (a zero needs none). */
+export type BoardOperand = {slot: string; year?: true} | {value: string; scale?: "reais" | "millions"} | {var: string} | {at: readonly [string, string]; year?: true}
   /** An adopted term the result records among its contributions, by the end of its field path (a contract clause). */
   | {contributed: readonly [string, string]}
   /** In a schedule (a list of the source, by key), the key of the first or last effective payment (field not zero), or

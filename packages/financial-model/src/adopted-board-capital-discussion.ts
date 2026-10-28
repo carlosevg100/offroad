@@ -21,7 +21,7 @@ export const adoptedBoardCapitalDiscussionInputSchema = adoptedAnalysisContextSc
   analysisId: z.uuid(), scenario: z.string().trim().min(1).max(160),
   meeting: z.strictObject({date: selection, askedOn: selection, leadDays: selection, minutesPerPage: selection, agendaMinutes: selection.nullable(),
     nextMeetingDate: selection.nullable(), template: selection.nullable(), outlineConfirmed: selection}),
-  /** Each reviewed result by [method, packet fingerprint]. */
+  /** Each reviewed result by [method, packet fingerprint, money scale its basis was adopted in]. */
   sources: z.array(z.strictObject({id: key, reading: selection})).min(1).max(16),
   topics: z.array(z.strictObject({id: key, label: selection, seen: selection.nullable()})).max(12),
   deliberations: z.array(z.strictObject({id: key, title: selection, subject: selection, recommendation: selection.nullable(),
@@ -78,8 +78,8 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
   const template = m.template === null ? null : need(read(m.template, "meeting.template", "text", "text", words));
   const outlineConfirmed = need(read(m.outlineConfirmed, "meeting.outlineConfirmed", "convention", "boolean", z.boolean()));
   const named = input.sources.map((s) => {
-    const r = list(s.reading, `source.${s.id}`, z.tuple([z.enum(boardSourceMethodIds), hash]));
-    return r === null ? null : {id: s.id, methodId: r[0]!, packetFingerprint: r[1]!};
+    const r = list(s.reading, `source.${s.id}`, z.tuple([z.enum(boardSourceMethodIds), hash, z.enum(["reais", "millions"])]));
+    return r === null ? null : {id: s.id, methodId: r[0]!, packetFingerprint: r[1]!, moneyScale: r[2] as "reais" | "millions"};
   });
   const topics = input.topics.map((t) => ({id: t.id, label: need(read(t.label, `topic.${t.id}.label`, "text", "text", textRef)),
     seen: t.seen === null ? null : need(read(t.seen, `topic.${t.id}.seen`, "convention", "boolean", z.boolean()))}));

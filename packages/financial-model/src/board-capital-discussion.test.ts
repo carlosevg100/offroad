@@ -130,7 +130,8 @@ describe("board discussion core", () => {
       ["p", {pending: true, methodId: IP, path: "comparison.metrics[caseId=staged].netPresentValue"}],
       ["pw", {pending: true, methodId: IP, path: "comparison.metrics[caseId=base].discountRate"}],
       ["pl", {display: "Linha de embalagem, cronograma original", unit: "label", origin: origin(IP, "cases[id=base].label", "Linha de embalagem, cronograma original")}]]);
-    const source = (id: string, methodId: string, packet: unknown) => ({id, methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f", status: "s", gaps: [], packet}) as BoardSourceReading;
+    const source = (id: string, methodId: string, packet: unknown) => ({id, methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f",
+      moneyScale: methodId === IP ? "reais" : "millions", status: "s", gaps: [], packet}) as BoardSourceReading;
     const sources = [source("t", DT, {result: {table: {profile: {scheduleByYear: [{year: 2026, principal: "18"}, {year: 2027, principal: "77"}]}}}}), source("l", IP, {cases: (() => {
       const periods = ["2026-12-31", "2027-12-31", "2028-12-31"];
       const make = (id: string, o: {avoided?: string[]; capex?: string[]; dep?: string[]; active?: string[]; load?: string[]; start?: string}) => {
@@ -212,14 +213,14 @@ describe("board discussion core", () => {
   it("property: every kind of order or sign condition holds on the exact values and on the values as shown, or the sentence does not come out", () => {
     const DT = "build-company-debt-table";
     const packet = {result: {table: {reconciliation: {principal: "2.5"}, profile: {scheduleByYear: [{year: 2026, principal: "2.459"}, {year: 2027, principal: "1"}]}}}};
-    const sources = [{id: "t", methodId: DT, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f", status: "s", gaps: [], packet}] as unknown as BoardSourceReading[];
+    const sources = [{id: "t", methodId: DT, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v", packetFingerprint: "f", moneyScale: "millions", status: "s", gaps: [], packet}] as unknown as BoardSourceReading[];
     const money = (path: string, nature: "balance" | "flow" = "balance") => ({type: "money" as const, from: [[DT, path]] as [string, string][], nature});
     const fig = (path: string, value: string, display: string): BoardFigureDisplay => ({display, unit: "money", origin: {sourceId: "t", methodId: DT, path, value}});
     const kinds: [string, BoardCondition][] = [
       ["slot below slot", {compare: [{slot: "x"}, "lt", {slot: "y"}], claim: "x abaixo de y"}],
       ["slot above slot", {compare: [{slot: "y"}, "gt", {slot: "x"}], claim: "y acima de x"}],
       ["slot below a source field", {compare: [{slot: "x"}, "lt", {at: [DT, "result.table.reconciliation.principal"]}], claim: "x abaixo do campo"}],
-      ["slot below a constant", {compare: [{slot: "x"}, "lt", {value: "2.5"}], claim: "x abaixo da constante"}],
+      ["slot below a constant", {compare: [{slot: "x"}, "lt", {value: "2.5", scale: "millions"}], claim: "x abaixo da constante"}],
       ["negative sign", {compare: [{slot: "z"}, "lt", {value: "0"}], claim: "z negativo"}],
       ["positive sign", {compare: [{slot: "w"}, "gt", {value: "0"}], claim: "w positivo"}],
       ["every member below a slot", {every: [DT, "result.table.profile.scheduleByYear", "principal"], op: "lt", than: {slot: "y"}, claim: "todos abaixo de y"}],
