@@ -1,10 +1,12 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
+import {formatBoardReading} from "./board-capital-discussion";
+import {boardFieldOf} from "./board-capital-discussion-sources";
 import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type DeterministicMethodRunCase} from "@offroad/credit-playbook";
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardBasis, auroraBoardFacts, auroraBoardPending, debtTableWithPrincipal, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
 import {analysisTestId} from "./adopted-analysis.test-support";
@@ -90,6 +92,15 @@ export const boardRatingReadings = (packet: Record<string, unknown>) => (c: Case
   const lever = (scenario: string) => (packet.levers as {role: string; scenario: string; netOfKnownCosts: string}[]).find((l) => l.role === "rating" && l.scenario === scenario)!.netOfKnownCosts;
   for (const [id, scenario] of [["rating-low", "low"], ["rating-high", "high"]] as const)
     c.extraReadings[id] = ["custo-relativo", `levers[role=rating&scenario=${scenario}].netOfKnownCosts`, "2", new Decimal(lever(scenario)).div(1000000).toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2)];
+};
+/** Every reading of one source restated from another execution of its method, at the same presentation (test side only). */
+export const boardRestateSource = (sourceId: string, methodId: string, packet: Record<string, unknown>) => (c: CaseData) => {
+  for (const [id, r] of Object.entries({...auroraBoardReadings, ...c.extraReadings} as Record<string, [string, string, string, string?]>)) {
+    if (r[0] !== sourceId || r[3] === undefined) continue;
+    const spec = boardFieldOf(methodId, r[1]), raw = readBoardSourcePath(packet, r[1]);
+    const shown = spec ? formatBoardReading(raw, spec, r[2], null, "BRL", spec.horizonMonths?.(packet, r[1]) ?? null) : null;
+    if (shown) c.extraReadings[id] = [r[0], r[1], r[2], shown.rounded];
+  }
 };
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
@@ -338,6 +349,15 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Audit after r33: the rating benefit net of the known costs, said as such, and a unique largest creditor.
+    observe("rating-benefit-net-of-known-costs-with-incomplete-coverage", withBoardSource("custo-relativo", auroraRelativeCostPacket({ratingCostCoverage: "incomplete"}),
+      () => boardPacketInput(2, (c) => {const q = c.questions.find((x) => x.id === "rating")!; q.answer = q.answer.replace("a.rating|", "a.rating_known_costs|");})),
+      {qualified: true}, (p) => ({qualified: current(p).questions.find((q) => q.id === "rating")!.answer.includes("o ganho líquido dos custos conhecidos fica entre")})),
+    observe("largest-creditor-unique-with-another-principal", (() => {
+      const packet = debtTableWithPrincipal("ccb-bradesco", "50");
+      return withBoardSource("tabela-divida", packet, () => boardPacketInput(2, boardRestateSource("tabela-divida", "build-company-debt-table", packet)));
+    })(), {line: "Prazo médio de 1,5 anos; maior credor: Debenturistas, com 43% da dívida."},
+      (p) => ({line: current(p).pages.flatMap((x) => x.lines).find((l) => l.startsWith("Prazo médio"))})),
     // Review r32: the period of a lever's benefit is the horizon its source registers.
     ...([3, 6, 12] as const).map((months) => observe(`rating-benefit-over-${months}-months`, (() => {
       const packet = auroraRelativeCostPacket({ratingHorizonMonths: [months, months]});
@@ -589,6 +609,23 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r33 and the audit of every claim: the whole plan, the cost coverage, the program count, the alternative
+    // presented and a unique largest creditor.
+    ...([2, 3] as const).flatMap((turn) => [
+      ...(["25", "40"] as const).map((peak) => [`bank-discount-after-the-programs-peak-${peak}-turn-${turn}`, () => withBoardSource("recebiveis",
+        auroraReceivablesPacket({needPeak: peak, cheapBankDiscount: true}) as unknown as Record<string, unknown>,
+        () => build(turn, (c) => {c.extraReadings["need-peak"] = ["recebiveis", "result.funding.need.peak", "0", peak];})), "board_capital_template_condition_failed:delib.crop.programs:8"]),
+      [`third-program-in-the-plan-turn-${turn}`, () => withBoardSource("recebiveis", auroraReceivablesPacket({thirdProgram: true}) as unknown as Record<string, unknown>, () => build(turn, () => undefined)),
+        "board_capital_template_condition_failed:topic.crop_programs:7"],
+      [`rating-net-gain-with-incomplete-cost-coverage-turn-${turn}`, () => withBoardSource("custo-relativo", auroraRelativeCostPacket({ratingCostCoverage: "incomplete"}), () => build(turn, () => undefined)),
+        "board_capital_template_condition_failed:a.rating:3"],
+      [`alternative-plan-said-presented-and-absent-turn-${turn}`, () => build(turn, (c) => {for (const pg of c.pages) pg.lines = pg.lines.filter((l) => !l.startsWith("recommendation.alternative"));
+        c.questions = c.questions.filter((x) => !x.answer.startsWith("a.demand"));}), "board_capital_alternative_not_presented"],
+    ] as [string, () => unknown, string][]),
+    ["largest-creditor-tied-with-another", () => {
+      const packet = debtTableWithPrincipal("ccb-bradesco", "60");
+      return withBoardSource("tabela-divida", packet, () => build(2, boardRestateSource("tabela-divida", "build-company-debt-table", packet)));
+    }, "board_capital_template_condition_failed:situation.debt_profile:0"],
     // Review r32: a range whose ends cover different horizons is refused.
     ...([2, 3] as const).map((turn) => [`rating-range-of-three-and-twelve-months-turn-${turn}`, () => {
       const packet = auroraRelativeCostPacket({ratingHorizonMonths: [3, 12]});

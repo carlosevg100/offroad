@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T02:44:22.687Z",
-    "finishedAt": "2026-10-28T02:47:02.791Z"
+    "startedAt": "2026-10-28T03:20:27.609Z",
+    "finishedAt": "2026-10-28T03:23:07.831Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,94 @@
       "passed": true
     },
     {
+      "id": "bank-discount-after-the-programs-peak-25-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "dbf13b67c895e9f9b9d4bd21ca9d1cf6ddc89e2e7bafbb01e10d9e08b3aa5b3a",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "bank-discount-after-the-programs-peak-40-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "ccf2e2f7294e850bc99ddfb272c7c3da0c22c2cbca3773a58bd3a00e3a60fca6",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "third-program-in-the-plan-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "d7af2bc23f2e84b4ddbde2f1f40efed379f4e3b763e9c227f004a83bfa165b6a",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "rating-net-gain-with-incomplete-cost-coverage-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "209bd34a18080396315cbb8f92a778df3d746e08c7181c5cfb4e1d65a90688bc",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "alternative-plan-said-presented-and-absent-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "27bf2aad694345b1655e6f3182eb49bf7daa7f561a9fba1a433febfbe292f328",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "bank-discount-after-the-programs-peak-25-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "268de6fef8abd342e03810768ab8b56f6e3337f31d6e425fe96bc65fe739353e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "bank-discount-after-the-programs-peak-40-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "658d62a16661742d3828bf0d150bdd632bea81c238d477fe6f543fe9955740bb",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "third-program-in-the-plan-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "47b98c5ba721b38e12b5ab31b4221847dabf637d32dcfeacb2a6ceebfd350dda",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "rating-net-gain-with-incomplete-cost-coverage-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "8af5caebe3457200a49bb79d570195eda30b8b492716ff093ddfa20d2e60bdb8",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "alternative-plan-said-presented-and-absent-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7764a6286ed38b84573d530a2f88925bdbe7a688eb5ef0b1e4e0c7881f8eb111",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "largest-creditor-tied-with-another",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "f52c15720efea9f9c09d6f8adfe285c324793942c5c79eee9905e85a70980f5f",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "rating-range-of-three-and-twelve-months-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1327,6 +1415,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "55959f26849d77cfd8f00e031d51b87ac46ce420b964897e11554813c83fb3de",
+  "evidenceFingerprint": "ad50bbc91531b107cf0f6c1213b4e9aa2c50cb2577a5682e02438b05553b117a",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -3,9 +3,9 @@ import {createHash} from "node:crypto";
 import {boardReleasedSources} from "./board-capital-discussion-sources";
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket} from "./board-capital-discussion-packet";
-import {boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
+import {boardConceptAttempts, boardDeferralReadings, boardRatingReadings, boardRestateSource, boardStrictDeferral, boardInformedProse, boardRestateKeptDebt, boardRestatePath, boardRestated, boardWorkingCapital2027, boardStatedMillions, boardWeeklyVariant, boardWeeklyVariantCase, boardWorkingCapitalReading, boardSublimitCase, boardSublimitExpected, boardOffDictionaryExpected, boardOffDictionaryNames, boardOffDictionaryReading, boardPacketInput, boardPacketViaPremises, boardRegisteredCreditorExpected,
   boardRegisteredCreditorReading} from "./board-capital-discussion-runs.test-support";
-import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
+import {auroraBoardPending, auroraBoardReadings, auroraBoardSources, auroraRelativeCostPacket, debtTableWithPrincipal, covenantWithAdverseDebt, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, debtTableWithCreditor, withBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {boardTemplates, checkBoardTemplateLibrary, parseBoardTextRef} from "./board-capital-discussion-templates";
 import {boardConditionSlots} from "./board-capital-discussion";
 
@@ -142,6 +142,7 @@ const meaning: Record<string, Record<string, string>> = {
   "a.peer": {total: RC + "decomposition.grossBps", ajustes: RC + "result.bridge.knownAdjustmentsBps", data: RC + "result.bridge.steps[family=pricing_date].bps",
     resto: RC + "result.bridge.unexplainedAfterKnownAdjustmentsBps"},
   "a.rating": {baixo: RC + "levers[role=rating&scenario=low].netOfKnownCosts", alto: RC + "levers[role=rating&scenario=high].netOfKnownCosts"},
+  "a.rating_known_costs": {baixo: RC + "levers[role=rating&scenario=low].netOfKnownCosts", alto: RC + "levers[role=rating&scenario=high].netOfKnownCosts"},
   "a.strategic": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
   "a.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
     defasagem: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", ano: "year",
@@ -186,7 +187,7 @@ const claims: Record<string, (v: Record<string, Decimal>) => boolean> = {
   "recommendation.debenture_cost": (v) => v.baixo!.lte(v.alto!), "recommendation.amortization": (v) => v.inicio!.lte(v.fim!),
   "risk.leverage_path": (v) => v.fim!.lt(v.inicio!), "risk.leverage_adverse": (v) => v.adverso!.lt(v.politica!), "risk.leverage": (v) => v.adverso!.lt(v.politica!),
   "what_changes.demand": (v) => v.piso!.lt(v.alvo!), "what_changes.receivable_days": (v) => v.giro!.gt(0), "what_changes.wheat": (v) => v.choque!.gt(0),
-  "a.roll_bank": (v) => v.falta!.gt(0), "a.term": (v) => v.amortizacao!.gt(v.disponivel!), "a.peer": (v) => v.data!.lte(v.total!), "a.rating": (v) => v.baixo!.lte(v.alto!),
+  "a.roll_bank": (v) => v.falta!.gt(0), "a.term": (v) => v.amortizacao!.gt(v.disponivel!), "a.peer": (v) => v.data!.lte(v.total!), "a.rating": (v) => v.baixo!.lte(v.alto!), "a.rating_known_costs": (v) => v.baixo!.lte(v.alto!),
   "a.strategic": (v) => v.retorno!.gt(v.custo!), "a.wheat": (v) => v.alavancagem!.lt(v.covenant!), "a.anchor": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "a.anchor_shared": (v) => v.saldo!.lte(v.carteira!) && v.volume!.lte(v.saldo!), "q.plan_vs_base": (v) => v.plano!.gt(v.base!),
 };
 
@@ -596,6 +597,21 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       const key = `${x.packetFingerprint}|${field}`, set = byField.get(key) ?? new Set<string>(); set.add(`${x.presentation}`); byField.set(key, set);
     }
     for (const [key, set] of byField) if (set.size > 1) bad.push(`presentation_conflict:${key.split("|")[1]}`);
+  }
+  // Audit after r33, the oracle's own reading of the whole plan and of the cost coverage: "sem dívida bancária nova" and
+  // "com a linha bancária só como reserva" hold over every step; "os programas" means exactly two program steps; a
+  // "ganho líquido" without qualification needs complete cost coverage; the alternative plan said presented is shown.
+  {
+    const rfPacket = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "monetize-receivables-for-working-capital")?.packetFingerprint)?.packet as
+      {result?: {funding?: {plan?: {steps?: {optionId: string}[]}; options?: {id: string; kind: string}[]}}} | undefined;
+    const steps = rfPacket?.result?.funding?.plan?.steps ?? [], kindOf = (id: string) => rfPacket?.result?.funding?.options?.find((o) => o.id === id)?.kind;
+    if (texts.some((t) => /sem dívida bancária nova|linha bancária só como reserva/.test(t)) && steps.some((x) => ["bank_discount", "bank_line"].includes(kindOf(x.optionId) ?? ""))) bad.push("plan_bank_step");
+    if (texts.some((t) => /Os programas dos clientes antecipam|Custo indicativo dos programas/.test(t)) && steps.filter((x) => kindOf(x.optionId) === "anchor_program").length !== 2) bad.push("plan_program_count");
+    const rcPacket = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "analyze-relative-debt-cost")?.packetFingerprint)?.packet as
+      {levers?: {role: string; actionId: string}[]; result?: {actions?: {actionId: string; result: {operands: {costCoverage: string}}}[]}} | undefined;
+    const coverage = (rcPacket?.levers ?? []).filter((l) => l.role === "rating").map((l) => rcPacket?.result?.actions?.find((a) => a.actionId === l.actionId)?.result.operands.costCoverage);
+    if (texts.some((t) => /o ganho líquido fica entre/.test(t)) && coverage.some((c) => c !== "complete_for_stated_horizon")) bad.push("rating_coverage");
+    if (texts.some((t) => /plano alternativo apresentado no material/.test(t)) && !texts.some((t) => /^Plano alternativo:/.test(t))) bad.push("alternative_not_presented");
   }
   // Coherence across fields: a text that puts every measurement below the policy holds for every measurement shown
   // anywhere in the material, at its one presentation.
@@ -1423,6 +1439,45 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     }
     const mixed = auroraRelativeCostPacket({ratingHorizonMonths: [3, 12]});
     for (const turn of [2, 3] as const) expect(() => withBoardSource("custo-relativo", mixed, () => full(turn, boardRatingReadings(mixed)))).toThrow("board_capital_template_condition_failed:a.rating:0");
+  });
+  it("regression r33 and the audit: whole-plan bank steps, cost coverage, program count and the alternative presented (full path, oracle not vacuous)", () => {
+    const answer = (p: Packet, id: string) => p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === id)!.answer;
+    for (const turn of [2, 3] as const) {
+      // A bank discount after the two programs (peaks of 25 and 40): "sem dívida bancária nova" and "só como reserva" refused.
+      for (const peak of ["25", "40"]) {
+        const packet = auroraReceivablesPacket({needPeak: peak, cheapBankDiscount: true}) as unknown as Record<string, unknown>;
+        expect(() => withBoardSource("recebiveis", packet, () => full(turn, (c) => {c.extraReadings["need-peak"] = ["recebiveis", "result.funding.need.peak", "0", peak];})), peak)
+          .toThrow("board_capital_template_condition_failed:delib.crop.programs:8");
+        const forged = {...packet, fingerprint: (auroraBoardSources().find((x) => x.id === "recebiveis")!.packet as {fingerprint: string}).fingerprint};
+        expect(oracle(full(turn, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.id !== "recebiveis")]).bad).toContain("plan_bank_step");
+      }
+      // A third program in the plan: "os programas" and "no primeiro e no segundo" refused.
+      const third = auroraReceivablesPacket({thirdProgram: true}) as unknown as Record<string, unknown>;
+      expect(() => withBoardSource("recebiveis", third, () => full(turn, () => undefined))).toThrow("board_capital_template_condition_failed:topic.crop_programs:7");
+      const forgedThird = {...third, fingerprint: (auroraBoardSources().find((x) => x.id === "recebiveis")!.packet as {fingerprint: string}).fingerprint};
+      expect(oracle(full(turn, () => undefined), [{packet: forgedThird}, ...auroraBoardSources().filter((x) => x.id !== "recebiveis")]).bad).toContain("plan_program_count");
+      // Incomplete cost coverage: the plain "ganho líquido" refused; the qualified sentence accepted.
+      const incomplete = auroraRelativeCostPacket({ratingCostCoverage: "incomplete"});
+      expect(() => withBoardSource("custo-relativo", incomplete, () => full(turn, () => undefined))).toThrow("board_capital_template_condition_failed:a.rating:3");
+      const p = withBoardSource("custo-relativo", incomplete, () => full(turn, (c) => {const q = c.questions.find((x) => x.id === "rating")!; q.answer = q.answer.replace("a.rating|", "a.rating_known_costs|");}));
+      expect(answer(p, "rating")).toContain("o ganho líquido dos custos conhecidos fica entre R$ -0,17 milhão por ano e R$ 0,03 milhão por ano, com custos ainda não levantados");
+      expect(oracle(p, [{packet: incomplete}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      const forgedRating = structuredClone(p), q = forgedRating.result.discussion!.versions.at(-1)!.questions.find((x) => x.id === "rating")!;
+      q.answer = q.answer.replace("o ganho líquido dos custos conhecidos fica entre", "o ganho líquido fica entre");
+      expect(oracle(forgedRating, [{packet: incomplete}, ...auroraBoardSources()]).bad).toContain("rating_coverage");
+      // The alternative plan said presented, absent from the material: refused.
+      expect(() => full(turn, (c) => {for (const pg of c.pages) pg.lines = pg.lines.filter((l) => !l.startsWith("recommendation.alternative"));
+        c.questions = c.questions.filter((x) => !x.answer.startsWith("a.demand"));})).toThrow("board_capital_alternative_not_presented");
+    }
+    // A tie for the largest creditor (60 and 60): "maior credor" refused; with 50 it is unique and accepted.
+    const tied = debtTableWithPrincipal("ccb-bradesco", "60");
+    expect(() => withBoardSource("tabela-divida", tied, () => full(2, boardRestateSource("tabela-divida", "build-company-debt-table", tied)))).toThrow("board_capital_template_condition_failed:situation.debt_profile:0");
+    const unique = debtTableWithPrincipal("ccb-bradesco", "50");
+    const pu = withBoardSource("tabela-divida", unique, () => full(2, boardRestateSource("tabela-divida", "build-company-debt-table", unique)));
+    expect(pu.result.discussion!.versions.at(-1)!.pages.flatMap((x) => x.lines)).toContain("Prazo médio de 1,5 anos; maior credor: Debenturistas, com 43% da dívida.");
+    const forgedAlternative = structuredClone(full(2, () => undefined));
+    for (const v of forgedAlternative.result.discussion!.versions) {for (const pg of v.pages) pg.lines = pg.lines.filter((l) => !l.startsWith("Plano alternativo:")); v.questions = v.questions.filter((x) => !x.answer.startsWith("Plano alternativo:"));}
+    expect(oracle(forgedAlternative).bad).toContain("alternative_not_presented");
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};

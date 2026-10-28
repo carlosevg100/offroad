@@ -671,6 +671,26 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       }
       return true;
     }
+    if ("largestGroup" in c) {
+      const [method, listPath, group, field] = c.largestGroup, xs = read(method, listPath), equals = operand(c.equals);
+      if (!Array.isArray(xs) || !xs.length) throw indefinite("list_absent");
+      const totals = new Map<string, InstanceType<typeof Exact>>();
+      for (const x of xs as Record<string, unknown>[]) totals.set(String(x[group]), (totals.get(String(x[group])) ?? new Exact(0)).plus(scalar(x[field], field)));
+      const top = [...totals.values()].reduce((a, b) => a.gt(b) ? a : b);
+      const leaders = [...totals].filter(([, v]) => v.eq(top)).map(([k]) => k);
+      return leaders.length === 1 && leaders[0] === equals;
+    }
+    if ("joinedCount" in c) {
+      const [method, listPath, key, targetPath, field, values] = c.joinedCount;
+      const xs = read(method, listPath), targets = read(method, targetPath);
+      if (!Array.isArray(xs) || !Array.isArray(targets)) throw indefinite("list_absent");
+      const matches = (xs as Record<string, unknown>[]).filter((x) => {
+        const target = (targets as Record<string, unknown>[]).filter((t) => t.id === x[key]);
+        if (target.length !== 1) throw indefinite(`target_${String(x[key])}_absent`);
+        return values.includes(String(target[0]![field]));
+      });
+      return matches.length === c.count;
+    }
     if ("samePeriod" in c) {
       const period = (slot: string) => {const f = context.figures.get(bindings[slot]!); if (!f || "pending" in f || !f.origin) throw indefinite(`slot_${slot}`); return f.origin.periodMonths ?? "fixed";};
       return period(c.samePeriod[0]) === period(c.samePeriod[1]);
@@ -1134,6 +1154,11 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   if (d.pages.filter((p) => p.role === "decisions").length !== 1) throw new Error("board_capital_material_without_decisions");
   const unique = (xs: string[], code: string) => {if (new Set(xs).size !== xs.length) throw new Error(code);};
   unique(d.deliberations.map((x) => x.id), "board_capital_duplicate_deliberation");
+  // A text that says the alternative plan is presented in the material holds only when the material presents it.
+  const refs = [...d.pages.flatMap((p) => [p.title, ...p.lines, p.recommendation ?? "", ...p.options]), ...d.questions.map((q) => q.answer)].filter(Boolean);
+  const templateOf = (ref: string) => {try {return parseBoardTextRef(ref).templateId;} catch {return "";}};
+  if (d.deliberations.some((x) => x.recommendation && templateOf(x.recommendation) === "delib.maturities.sounding")
+    && !refs.some((r) => ["recommendation.alternative", "a.demand"].includes(templateOf(r)))) throw new Error("board_capital_alternative_not_presented");
   unique(d.pages.map((x) => x.id), "board_capital_duplicate_page");
   unique(d.figures.map((x) => x.id), "board_capital_duplicate_figure");
   unique(d.questions.map((x) => x.id), "board_capital_duplicate_question");

@@ -13,7 +13,7 @@ describe("board capital discussion packet (ficha C47)", {timeout: 120000}, () =>
     expect(p.result.discussion!.versions).toEqual([]);
     expect(p.readings!.deliberations.map((d) => d.text)).toEqual([
       "não emitir o pedido de compra até as cotações firmes, e enviar ao fornecedor atual o aviso para renegociar o contrato até 2/out",
-      "financiar o capital de giro sazonal pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out",
+      "financiar o capital de giro sazonal começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out",
       "autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, com o plano alternativo apresentado no material, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
       "definir qual EBITDA mede o limite de 2,5x"]);
     expect(p.result.discussion!.outline.narrative).toEqual(["decisions", "situation", "constraint", "topic", "alternatives", "recommendation", "risk", "what_changes", "next_steps"]);

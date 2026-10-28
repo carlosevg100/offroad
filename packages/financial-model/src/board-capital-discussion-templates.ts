@@ -270,6 +270,10 @@ type BoardConditionBody =
    * registered as a test of that very limit, not breached; and no test of that limit at the same date and scenario is
    * registered as breached. */
   | {testsLimit: readonly [string, string | null, string]}
+  /** Over every element of a list (not the first N), the number joining a target whose field takes one of the given values. */
+  | {joinedCount: readonly [string, string, string, string, string, readonly string[]]; count: number}
+  /** Grouped over every element of a list, the group with the largest total is unique and is the one given. */
+  | {largestGroup: readonly [string, string, string, string]; equals: BoardOperand}
   /** The two shown figures cover the same period: the period the method fixes, or the same horizon the source registers. */
   | {samePeriod: readonly [string, string]}
   /** A plan variant is the reference variant moved uniformly by k periods within the plan's fixed horizon. */
@@ -410,6 +414,14 @@ const programsFirst = claim("o plano começa por dois programas de antecipação
     cmp(at(RF, `readings.options[id=${o}].measuredDebtAdded`), "eq", {value: "0"})]));
 const bankReserve = claim("a linha bancária fica só como reserva", cmp(at(RF, "result.funding.plan.reserve"), "eq", at(RF, "result.funding.bankLine")),
   lacks(RF, "result.funding.plan.steps", "optionId", at(RF, "result.funding.bankLine")));
+/** "Sem dívida bancária nova": no step of the whole plan (not only the first two) uses a bank option. */
+/** The cost coverage the source registers for both rating actions. */
+const ratingCoverage = (coverage: string) => claim(coverage === "incomplete" ? "a cobertura de custos registrada das duas ações está incompleta" : "a cobertura de custos registrada das duas ações está completa no horizonte",
+  ...(["low", "high"] as const).flatMap((sc) => [{bind: `a${sc}`, to: at(RC, `levers[role=rating&scenario=${sc}].actionId`)} as BoardCondition,
+    cmp(at(RC, `result.actions[actionId=$a${sc}].result.operands.costCoverage`), "eq", {value: coverage})]));
+const noBankStep = claim("nenhum passo do plano inteiro usa opção bancária", {joinedCount: [RF, "result.funding.plan.steps", "optionId", "result.funding.options", "kind", ["bank_discount", "bank_line"]], count: 0});
+/** "Os programas", "no primeiro e no segundo": the whole plan has exactly two steps of anchor programs. */
+const twoProgramsOnly = claim("o plano inteiro tem exatamente dois passos de programas dos clientes", {joinedCount: [RF, "result.funding.plan.steps", "optionId", "result.funding.options", "kind", ["anchor_program"]], count: 2});
 const L = "readings.recommendation.longInstrument.";
 const issue = s("money", FP, L + "issueTarget", "value"), term = s("years", FP, L + "termYears");
 const policy = s("multiple", CV, "result.headroom.limits[id=politica].maximumRatio"), covenant = s("multiple", CV, "result.headroom.limits[id=aditamento].maximumRatio");
@@ -471,12 +483,13 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "delib.packaging_line": t("delib.title", "{projeto}", {projeto: project("Nome")}),
   "delib.packaging_line.subject": t("delib.subject", "decidir o caminho {projeto}", {projeto: project("de")}, {of: "delib.packaging_line"}),
   "delib.packaging_line.wait": t("delib.recommendation", "não emitir o pedido de compra até as cotações firmes", {}, {of: "delib.packaging_line",
-    when: claim("o caso que a análise registra como adiamento tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue")))}),
+    when: [...claim("o caso que a análise registra como adiamento tem VPL maior que seguir agora", cmp(at(IP, "comparison.metrics[caseId=defer-12].netPresentValue"), "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))),
+      ...registeredDeferral]}),
   "delib.crop": t("delib.title", "Capital de giro sazonal {de:ano}", {ano: yr("$y")}, {when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
   "delib.crop.subject": t("delib.subject", "decidir o financiamento do capital de giro sazonal {de:ano}", {ano: yr("$y")},
     {of: "delib.crop", when: claim("o ano é o do aperto de caixa da safra", cmp("ano", "eq", at(WC, "readings.tightestWeek.weekStart", true)))}),
-  "delib.crop.programs": t("delib.recommendation", "financiar o capital de giro sazonal pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva",
-    {}, {of: "delib.crop", when: [...programsFirst, ...bankReserve]}),
+  "delib.crop.programs": t("delib.recommendation", "financiar o capital de giro sazonal começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva",
+    {}, {of: "delib.crop", when: [...programsFirst, ...bankReserve, ...noBankStep]}),
   "delib.maturities": t("delib.title", "Vencimentos {de:ano}", {ano: yr("$y")}, {when: [maturityYear]}),
   "delib.maturities.subject": t("delib.subject", "decidir a rota para os vencimentos {de:ano}", {ano: yr("$y")}, {of: "delib.maturities", when: [maturityYear]}),
   "delib.maturities.sounding": t("delib.recommendation", "autorizar a sondagem de {species:um:long} de até {valor}, com prazo de {prazo}, com o plano alternativo apresentado no material",
@@ -495,7 +508,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
       horizonte: s("date", DT, "result.table.profile.twelveMonthHorizon")}),
   "situation.debt_profile": t("page.line", "Prazo médio de {prazo}; maior credor: {credor}, com {participacao} da dívida.",
     {prazo: s("years", DT, "result.table.profile.weightedAverageLifeYears"), credor: {type: "label", from: [[DT, "result.table.profile.largestCreditor.creditor"]], generic: "sem nome confirmado"},
-      participacao: s("rate", DT, "result.table.profile.largestCreditor.share")}),
+      participacao: s("rate", DT, "result.table.profile.largestCreditor.share")},
+    {when: claim("o maior credor é único: nenhum outro credor tem o mesmo principal somado", {largestGroup: [DT, "result.table.rows", "creditor", "principal"], equals: at(DT, "result.table.profile.largestCreditor.creditor")})}),
   "situation.cash_shortfall": t("page.title", "O caixa fica abaixo do mínimo {em:semana} e, mantida a dívida como está, chega a {saldo} {fim:ano}",
     {semana: tightWeek, saldo: s("money", FP, "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=$y-12-31].closingAvailable", "balance"), ano: yr("$y")},
     {when: [tightBelowMinimum, ...keptDebt]}),
@@ -508,7 +522,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "situation.debt_service": t("page.line", "Serviço da dívida {em:ano}: {servico}, contra {disponivel} de caixa disponível.",
     {ano: yr("$y"), servico: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].service", "flow"),
       disponivel: s("money", FP, "result.evaluation.paths[id=manter].debtServiceByYear[year=$y].availableForService", "flow")},
-    {when: claim("o serviço supera o caixa disponível", cmp("servico", "gt", "disponivel"))}),
+    {when: [...claim("o serviço supera o caixa disponível", cmp("servico", "gt", "disponivel")),
+      ...claim("o caminho lido é o status quo registrado do plano", {contributedHas: [FP, "path.manter.terms"], value: {value: "status_quo"}})]}),
   // The basket is the one of the holder's contract, named by the holder row's creditor; the identifier only links its readings.
   "constraint.indenture_basket": t("page.title", "O contrato da dívida com {titular} tem só {saldo} livres na exceção para garantias de nova dívida",
     {titular: {type: "label", from: [[DT, "result.table.rows[id=$h].creditor"]], generic: "o credor sem nome confirmado"},
@@ -549,13 +564,13 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "topic.crop_programs": t("page.title", "Os programas dos clientes antecipam {valor} contra o pico sazonal de {pico}, sem dívida bancária nova",
     {valor: rf("money", "readings.plan[optionId=$o].cumulative", "volume_antecipavel_acumulado_no_plano", "balance"),
       pico: rf("money", "result.funding.need.peak", "pico_da_necessidade_de_caixa", "balance")},
-    {when: [...programsFirst, ...claim("o valor é o acumulado do plano até o segundo programa", cmp("$o", "eq", {var: "osecond"}))]}),
+    {when: [...programsFirst, ...noBankStep, ...twoProgramsOnly, ...claim("o valor é o acumulado do plano até o segundo programa", cmp("$o", "eq", {var: "osecond"}))]}),
   "topic.crop_program_cost": t("page.line", "Custo indicativo dos programas de antecipação: CDI mais {taxa_b} no primeiro e CDI mais {taxa_a} no segundo.",
     {taxa_b: rf("rate", "readings.options[id=$ob].spreadOverDi", "spread_sobre_cdi_do_programa"), taxa_a: rf("rate", "readings.options[id=$oa].spreadOverDi", "spread_sobre_cdi_do_programa")},
-    {when: claim("as condições dos dois programas são indicativas e sobre o CDI, e são os dois primeiros programas do plano",
+    {when: [...twoProgramsOnly, ...claim("as condições dos dois programas são indicativas e sobre o CDI, e são os dois primeiros programas do plano",
       cmp("$ob", "eq", at(RF, "result.funding.plan.steps[0].optionId")), cmp("$oa", "eq", at(RF, "result.funding.plan.steps[1].optionId")), ...["$oa", "$ob"].flatMap((x) => [
       cmp(at(RF, `result.funding.options[id=${x}].kind`), "eq", {value: "anchor_program"}),
-      cmp(at(RF, `result.funding.options[id=${x}].indicative`), "eq", {value: "true"}), cmp(at(RF, `result.funding.options[id=${x}].rates.basis`), "eq", {value: "di_plus"})]))}),
+      cmp(at(RF, `result.funding.options[id=${x}].indicative`), "eq", {value: "true"}), cmp(at(RF, `result.funding.options[id=${x}].rates.basis`), "eq", {value: "di_plus"})]))]}),
   // The source records no modality nor purpose for a credit line: the line is named generically and its terms stay pending.
   "topic.crop_overdraft": t("page.line", "Linha de crédito registrada com {credor}, com limite livre de {livre}; modalidade e finalidade: {termos}.",
     {credor: {type: "label", from: [[DT, "result.table.creditLines[id=$c].creditor"]], generic: "credor sem nome confirmado"},
@@ -688,7 +703,12 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "a.rating": t("answer", "Pelo spread, o ganho líquido fica entre {baixo} e {alto}; a decisão depende do acesso a investidores {species:de:long}. Sugerimos avaliação preliminar não publicada.",
     {baixo: s("money", RC, "levers[role=rating&scenario=low].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[role=rating&scenario=high].netOfKnownCosts", "flow")},
     {answers: "q.rating", when: [...claim("os dois extremos da faixa cobrem o mesmo horizonte registrado", {samePeriod: ["baixo", "alto"]}),
-      ...claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto"))]}),
+      ...claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto")), ...ratingCoverage("complete_for_stated_horizon")]}),
+  // With incomplete cost coverage the benefit is net of the known costs only, and the sentence says the costs are pending.
+  "a.rating_known_costs": t("answer", "Pelo spread, o ganho líquido dos custos conhecidos fica entre {baixo} e {alto}, com custos ainda não levantados; a decisão depende do acesso a investidores {species:de:long}. Sugerimos avaliação preliminar não publicada.",
+    {baixo: s("money", RC, "levers[role=rating&scenario=low].netOfKnownCosts", "flow"), alto: s("money", RC, "levers[role=rating&scenario=high].netOfKnownCosts", "flow")},
+    {answers: "q.rating", when: [...claim("os dois extremos da faixa cobrem o mesmo horizonte registrado", {samePeriod: ["baixo", "alto"]}),
+      ...claim("a faixa vai do menor ao maior ganho", cmp("baixo", "le", "alto")), ...ratingCoverage("incomplete")]}),
   "q.strategic": t("question", "{projeto} não é um investimento estratégico?", {projeto: project("O")}),
   "a.strategic": t("answer", "O retorno de {retorno} fica acima do custo de capital de {custo}, mas o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. Cotações firmes decidem.",
     {retorno: metric("rate", "base", "annualIrr"), custo: metric("rate", "base", "discountRate")},
@@ -729,8 +749,8 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "topic.packaging_review": t("topic", "revisão do projeto de investimento"),
   "topic.crop_financing": t("topic", "financiamento do capital de giro sazonal"),
   "note.program_indicative": t("note", "Condições dos programas de antecipação indicativas até a confirmação do banco de cada programa",
-    {}, {when: claim("as condições dos dois primeiros programas do plano são indicativas", {bind: "ofirst", to: at(RF, "result.funding.plan.steps[0].optionId")},
-      {bind: "osecond", to: at(RF, "result.funding.plan.steps[1].optionId")}, ...["$ofirst", "$osecond"].map((o) => cmp(at(RF, `result.funding.options[id=${o}].indicative`), "eq", {value: "true"})))}),
+    {}, {when: [...twoProgramsOnly, ...claim("as condições dos dois primeiros programas do plano são indicativas", {bind: "ofirst", to: at(RF, "result.funding.plan.steps[0].optionId")},
+      {bind: "osecond", to: at(RF, "result.funding.plan.steps[1].optionId")}, ...["$ofirst", "$osecond"].map((o) => cmp(at(RF, `result.funding.options[id=${o}].indicative`), "eq", {value: "true"})))]}),
   "note.credit_line_terms_not_registered": t("note", "A tabela de dívida não registra modalidade nem finalidade da linha de crédito"),
   "note.case_not_reviewed": t("note", "A opção não está entre os casos revisados da análise do projeto", {}, {when: claim("a opção em etapas não é caso revisado", lacks(IP, "comparison.metrics", "caseId", "staged"))}),
   "requester.chair": t("requester", "Presidente do conselho"),
@@ -767,6 +787,8 @@ export function boardTemplateClaims() {
     : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
     : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}; ignorados: ${boardInputIgnored.join(", ")}`
+    : "largestGroup" in c ? `agrupando todos os elementos de ${c.largestGroup[0]} ${c.largestGroup[1]} por ${c.largestGroup[2]}, o maior total de ${c.largestGroup[3]} é único e é ${describe(c.equals)}`
+    : "joinedCount" in c ? `exatamente ${c.count} elementos de ${c.joinedCount[0]} ${c.joinedCount[1]} (todos, não só os primeiros) apontam, por ${c.joinedCount[2]}, para ${c.joinedCount[3]} com ${c.joinedCount[4]} em [${c.joinedCount[5].join(", ")}]`
     : "samePeriod" in c ? `as posições ${c.samePeriod[0]} e ${c.samePeriod[1]} cobrem o mesmo período registrado`
     : "testsLimit" in c ? (c.testsLimit[1] === null ? `nenhum teste registrado do limite ${c.testsLimit[2]} em ${c.testsLimit[0]} está violado` : `a medição ${c.testsLimit[1]} de ${c.testsLimit[0]} é teste registrado do limite ${c.testsLimit[2]}, não violado, e nenhum teste desse limite na mesma data e cenário está violado`)
     : "planDeferred" in c ? `variante ${c.planDeferred[1]} de ${c.planDeferred[0]} é a variante ${c.planDeferred[2]} deslocada uniformemente em k períodos dentro do horizonte do plano (k ao menos um), série a série pelas regras declaradas, sem mudança de magnitude; o resto igual, rótulo à parte`
@@ -881,11 +903,11 @@ export function checkBoardTemplateLibrary() {
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
     const operands: BoardOperand[] = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
-      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "testsLimit" in c || "samePeriod" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
+      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "testsLimit" in c || "samePeriod" in c || "joinedCount" in c || "largestGroup" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
       : "atKey" in c ? [c.key] : [c.equals]);
     const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
       : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
-      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]] : "testsLimit" in c ? ["result.headroom.measurements"] : "samePeriod" in c ? []
+      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]] : "testsLimit" in c ? ["result.headroom.measurements"] : "samePeriod" in c ? [] : "joinedCount" in c ? [c.joinedCount[1], c.joinedCount[3]] : "largestGroup" in c ? [c.largestGroup[1]]
       : "atKey" in c ? c.atKey.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
       : "startsLater" in c ? c.startsLater.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);

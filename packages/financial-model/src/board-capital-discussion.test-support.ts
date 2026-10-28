@@ -39,8 +39,10 @@ function rebind<T>(value: T, from: string, to: string): T {
 
 /** The C03 relative cost rebound to the shared company; regressions only: the rating actions' exposure set to other
  * horizons (months), the method recomputing the nominal benefits over them. */
-export function auroraRelativeCostPacket(variant: {ratingHorizonMonths?: readonly [number, number]} = {}) {
+export function auroraRelativeCostPacket(variant: {ratingHorizonMonths?: readonly [number, number]; ratingCostCoverage?: "incomplete"} = {}) {
   const relative = c03PacketInput();
+  if (variant.ratingCostCoverage) for (const actionId of [relative.ids.ratingLow, relative.ids.ratingHigh]) for (const e of relative.entries)
+    if (e.fieldPath.endsWith(`action.${actionId}.costCoverage`)) e.value = {type: "text", value: variant.ratingCostCoverage};
   if (variant.ratingHorizonMonths) {
     const [low, high] = variant.ratingHorizonMonths;
     for (const [actionId, months] of [[relative.ids.ratingLow, low], [relative.ids.ratingHigh, high]] as const) for (const e of relative.entries) {
@@ -326,11 +328,18 @@ export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; 
 }
 /** C35 with retailer A's own program (turn two of C35). Variants for the regressions only: a sublimit of the program per
  * debtor below the chain's balance, or the chain's contract registered as assignable. */
-export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"; debtorRenamed?: true; jointProgram?: true} = {}) {
+export function auroraReceivablesPacket(variant: {sublimitA?: string; contractA?: "assignable" | "prohibited_without_consent"; debtorRenamed?: true; jointProgram?: true;
+  needPeak?: string; cheapBankDiscount?: true; thirdProgram?: true} = {}) {
   const k = auroraReceivablesFunding(), anchor = k.options[0]!;
+  // Regressions only: a larger seasonal peak, and a bank discount cheap enough that the plan uses it after the programs.
+  if (variant.needPeak) (k as {needPeak: string}).needPeak = variant.needPeak;
+  if (variant.cheapBankDiscount) Object.assign(k.options.find((o) => o.id === "desconto-bancario")!, {rate: {basis: "di_plus", rate: "0.016"}, iofDaily: "0", iofAdditional: "0"});
   // Regressions only: the second program is linked to rede A and rede B together (a joint program, not rede A's own).
   const anchored = variant.jointProgram ? ["rede-a", "rede-b"] : ["rede-a"];
-  const basis = auroraReceivablesFundingBasis({...k, items: k.items.map((i) => i.id === "rede-a" ? {...i, anchorProgram: "active" as const, ...variant.contractA ? {contract: variant.contractA} : {}} : i),
+  // Regressions only: rede E with its own program, after the two programs of the calibration.
+  if (variant.thirdProgram) (k.options as unknown[]).push({...anchor, id: "risco-sacado-e", label: "Risco sacado da rede E", indicative: false,
+    eligibility: {...anchor.eligibility!, anchorItemIds: ["rede-e"]}, rate: {basis: "di_plus" as const, rate: "0.016"}, leadDaysMin: null, leadDaysMax: null});
+  const basis = auroraReceivablesFundingBasis({...k, items: k.items.map((i) => i.id === "rede-a" || (variant.thirdProgram && i.id === "rede-e") ? {...i, anchorProgram: "active" as const, ...i.id === "rede-a" && variant.contractA ? {contract: variant.contractA} : {}} : i),
       options: [...k.options, {...anchor, id: "risco-sacado-a", label: variant.jointProgram ? "Risco sacado das redes A e B" : "Risco sacado da rede A",
         eligibility: {...anchor.eligibility!, anchorItemIds: anchored, ...variant.sublimitA ? {sublimitPerDebtor: variant.sublimitA} : {}},
         rate: {basis: "di_plus" as const, rate: "0.015"}, leadDaysMin: null, leadDaysMax: null}]});
@@ -384,6 +393,13 @@ export function debtTableWithCreditor(name: string, registered = "Debenturistas"
   const entry = b.entries.find((e) => e.fieldPath.endsWith(".creditor") && (e.value as {value?: unknown}).value === registered);
   if (!entry) throw new Error("creditor entry not found");
   entry.value = {type: "text", value: name};
+  return prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: b.seal()}) as unknown as Record<string, unknown>;
+}
+
+/** The debt table with one instrument's principal changed (regressions only; the method recomputes everything else). */
+export function debtTableWithPrincipal(instrumentId: string, principal: string) {
+  const b = auroraDebtTableBasis();
+  for (const e of b.entries) if (e.fieldPath.endsWith(`instrument.${instrumentId}.principal`)) e.value = {type: "number", value: principal};
   return prepareDebtTablePacket({schemaVersion: "debt-table-packet-input.v1", question: "Monta a tabela de dívida com tudo que temos.", analysis: b.seal()}) as unknown as Record<string, unknown>;
 }
 
