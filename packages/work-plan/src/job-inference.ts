@@ -41,7 +41,8 @@ export function inferCapitalProjectJob(input: {
   // company view merely because the word "diagnose" appears in the prompt.
   const objective = compileObjectiveToPlan(input);
   const specificFinancial = ["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash",
-    "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"].includes(objective.objectiveKind);
+    "operating_projection", "projection_challenge", "receivables_funding", "quarter_update",
+    "document_folder", "received_proposal", "financing_paths", "board_capital_discussion"].includes(objective.objectiveKind);
   if (input.explicitHint && !specificFinancial) {
     return {job: input.explicitHint, reason: "explicit_hint"};
   }
@@ -50,14 +51,15 @@ export function inferCapitalProjectJob(input: {
   // distinction first; this adapter then selects the nearest released project rail. Objectives
   // that require an existing project (materials and matching) deliberately stay on the legacy
   // fallback until the continuation router can bind them to an existing snapshot.
-  if (objective.objectiveKind === "proposal_comparison" || objective.objectiveKind === "operation_review" || objective.objectiveKind === "risk_matrix") {
+  if (objective.objectiveKind === "proposal_comparison" || objective.objectiveKind === "operation_review" || objective.objectiveKind === "risk_matrix"
+    || objective.objectiveKind === "received_proposal") {
     return {job: "review_existing_operation", reason: "existing_transaction"};
   }
   if (objective.objectiveKind === "meeting_preparation") {
     return {job: "origination_thesis", reason: "meeting_or_origination"};
   }
   if (objective.objectiveKind === "debt_capacity" || objective.objectiveKind === "board_decision" || objective.objectiveKind === "capital_strategy"
-    || objective.objectiveKind === "receivables_funding") {
+    || objective.objectiveKind === "receivables_funding" || objective.objectiveKind === "financing_paths" || objective.objectiveKind === "board_capital_discussion") {
     return {job: "capital_planning", reason: "capital_need"};
   }
   if (objective.objectiveKind === "company_analysis" || objective.objectiveKind === "relative_debt_cost"
@@ -65,7 +67,7 @@ export function inferCapitalProjectJob(input: {
     || objective.objectiveKind === "operating_projection" || objective.objectiveKind === "projection_challenge" || objective.objectiveKind === "quarter_update") {
     return {job: "company_debt_view", reason: "company_analysis"};
   }
-  if (objective.objectiveKind === "documents_to_case") {
+  if (objective.objectiveKind === "documents_to_case" || objective.objectiveKind === "document_folder") {
     return {job: "structure_from_documents", reason: "documents_only"};
   }
 

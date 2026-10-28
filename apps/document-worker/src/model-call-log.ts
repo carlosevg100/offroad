@@ -13,6 +13,7 @@ const tasks = new Set([
   "extract_semantic_objects", "investment_fact_extraction", "financing_comparison_extraction", "debt_capacity_extraction",
   "debt_table_extraction", "covenant_headroom_extraction", "weekly_cash_extraction",
   "operating_projection_extraction", "projection_challenge_extraction", "receivables_funding_extraction", "quarter_update_extraction",
+  "received_proposal_extraction", "document_folder_reading", "document_folder_extraction", "financing_paths_extraction", "board_material_extraction",
   "preview_synthesis", "baseline_generalist",
 ]);
 const models = new Set(Object.values(allowedModels).flat());

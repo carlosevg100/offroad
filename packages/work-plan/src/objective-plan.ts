@@ -2,6 +2,10 @@ import {createHash} from "node:crypto";
 
 import {z} from "zod";
 
+import {boardMaterialFichaException, boardMaterialRoute} from "./board-material-route";
+import {documentFolderFichaExceptions, documentFolderRoute} from "./document-folder-route";
+import {financingPathsCues, financingPathsRoute} from "./financing-paths-route";
+import {receivedProposalRoute} from "./received-proposal-route";
 import {
   capitalProjectJobSchema,
   compileTaskGraph,
@@ -29,6 +33,10 @@ export const workspaceObjectiveKindSchema = z.enum([
   "projection_challenge",
   "receivables_funding",
   "quarter_update",
+  "document_folder",
+  "received_proposal",
+  "financing_paths",
+  "board_capital_discussion",
   "company_analysis",
   "capital_strategy",
   "material_preparation",
@@ -298,6 +306,30 @@ const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRec
     sourcePlan: ["project_context", "provided_documents", "house_method"],
     analysisPlan: ["Comparar o realizado com o projetado linha a linha", "Explicar cada desvio por causa e separar o pontual do que continua", "Propagar só para as análises que dependem do dado, preservando as versões anteriores", "Dizer qual decisão muda, a ação dentro do aprovado e o que não mudou"],
     proposedDeliverable: "Realizado contra projetado com ponte por causa, análises dependentes atualizadas, efeito nas decisões e ação proposta",
+  },
+  document_folder: {
+    objectiveKind: "document_folder", entryJob: "structure_from_documents", outputTerminal: "source_index", targetTaskIds: [],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Ler cada arquivo e dizer o que é, de quando é e de quem é", "Resolver versões e dizer qual vale para cada uso", "Apontar o que na pasta muda uma decisão em curso", "Listar o que falta por finalidade e o que não foi lido"],
+    proposedDeliverable: "Inventário da pasta com versões resolvidas, achados que importam e lacunas por finalidade, sem cálculo nem opinião sobre a companhia",
+  },
+  received_proposal: {
+    objectiveKind: "received_proposal", entryJob: "review_existing_operation", outputTerminal: "operation_review", targetTaskIds: ["S10"],
+    sourcePlan: ["project_context", "provided_documents", "public_market", "house_method"],
+    analysisPlan: ["Entender o uso dos recursos e se a proposta cabe nele", "Ler a proposta contra o caixa, a escritura, o covenant e as garantias", "Levar o preço a uma base comparável, com IOF e custos", "Dizer o que pedir, as alternativas e a recomendação condicionada"],
+    proposedDeliverable: "Leitura da proposta recebida com encaixe no uso, efeito no caixa e nos limites, preço equivalente, pedidos e alternativas",
+  },
+  financing_paths: {
+    objectiveKind: "financing_paths", entryJob: "capital_planning", outputTerminal: "capital_alternative_map", targetTaskIds: ["S11"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Ler sem ação quando o caixa fica abaixo do mínimo e o ano em que o serviço concentra", "Recalcular cada caminho na mesma base, com imposto, juros acumulados, escritura e exceção", "Ordenar por critérios, depois custo e dívida líquida, com a amortização depois do horizonte", "Recomendar com condição, plano alternativo datado e o que mudaria"],
+    proposedDeliverable: "Caminhos de financiamento na mesma base, com o recomendado pelos critérios, condição e plano alternativo datado",
+  },
+  board_capital_discussion: {
+    objectiveKind: "board_capital_discussion", entryJob: "capital_planning", outputTerminal: "board_decision_pack", targetTaskIds: ["A02"],
+    sourcePlan: ["project_context", "provided_documents", "house_method"],
+    analysisPlan: ["Propor o roteiro das deliberações a partir das análises concluídas, com os prazos de cada uma", "Montar as páginas com números lidos das análises, cada um com a fonte", "Conferir cada número contra a análise de origem antes de entregar", "Preparar perguntas prováveis com respostas e o apêndice"],
+    proposedDeliverable: "Material do conselho com deliberações, síntese, apêndice e perguntas com respostas, cada número conferido na análise de origem",
   },
   company_analysis: {
     objectiveKind: "company_analysis", entryJob: "company_debt_view", outputTerminal: "capital_alternative_map", targetTaskIds: ["C11"],
@@ -592,10 +624,35 @@ export function canonicalObjectiveRecipeTargetTaskIds(plan: ObjectiveToPlanDecis
 }
 
 /** The route: the existing routes of lotes 1 and 2 decide first, unchanged; lote 3 may only upgrade a message
- * they leave ambiguous or as documents to a case, or take one of the enumerated ficha phrasings they misroute. */
+ * they leave ambiguous or as documents to a case, or take one of the enumerated ficha phrasings they misroute.
+ * Lote 4 runs after them all, each method only from the kinds it declares, with its ficha exceptions enumerated. */
 function inferObjectiveKind(message: string, hasAttachments: boolean): WorkspaceObjectiveKind {
-  const existing = inferExistingObjectiveKind(message, hasAttachments);
-  return lote3Route(financialRoutingText(message), existing);
+  const text = financialRoutingText(message);
+  return lote4Route(text, lote3Route(text, inferExistingObjectiveKind(message, hasAttachments)));
+}
+
+/** The lote 4 ficha phrasings that take a specific kind origin/main gives them, each the whole ficha construction:
+ * the five C32 openings (capital strategy), two C09 paraphrases (a factual question and capital strategy) and the
+ * C47 board material on capital structure, financing or debt (material preparation, decision 6). The other lote 4
+ * promotions take only the kinds each method declares: C01 from ambiguous, documents to a case or a factual
+ * question; C09 from ambiguous or documents to a case; C47 from a board decision. */
+export const lote4FichaExceptions: ReadonlyArray<{ficha: string; from: WorkspaceObjectiveKind; to: WorkspaceObjectiveKind; pattern: RegExp}> = [
+  ...financingPathsCues.map((pattern) => ({ficha: "C32", from: "capital_strategy" as const, to: "financing_paths" as const, pattern})),
+  ...documentFolderFichaExceptions.map((e) => ({ficha: "C09", from: e.from, to: "document_folder" as const, pattern: e.pattern})),
+  {ficha: "C47", from: boardMaterialFichaException.from, to: "board_capital_discussion", pattern: boardMaterialFichaException.pattern},
+];
+
+/** Lote 4: the 2027 financing paths (C32, five whole ficha constructions from capital strategy), the board's capital
+ * discussion (C47, from a board decision, and one ficha exception from material preparation), the received proposal
+ * (C01) and the document folder (C09), each from its own promotable kinds only. */
+function lote4Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceObjectiveKind {
+  const paths = financingPathsRoute(text, existing);
+  if (paths !== existing) return paths;
+  const board = boardMaterialRoute(text, existing);
+  if (board !== existing) return board;
+  const proposal = receivedProposalRoute(text, existing);
+  if (proposal !== existing) return proposal;
+  return documentFolderRoute(text, existing);
 }
 
 /** The routes of lotes 1 and 2, byte for byte as on origin/main. */
@@ -633,7 +690,8 @@ function financialRoutingText(message: string): string {
 function isSpecificFinancialObjective(kind: WorkspaceObjectiveKind): boolean {
   return kind === "proposal_comparison" || kind === "relative_debt_cost" || kind === "debt_capacity"
     || kind === "debt_table" || kind === "covenant_headroom" || kind === "weekly_cash"
-    || kind === "operating_projection" || kind === "projection_challenge" || kind === "receivables_funding" || kind === "quarter_update";
+    || kind === "operating_projection" || kind === "projection_challenge" || kind === "receivables_funding" || kind === "quarter_update"
+    || kind === "document_folder" || kind === "received_proposal" || kind === "financing_paths" || kind === "board_capital_discussion";
 }
 
 /** Interpret action/object pairs before broad audience and attachment heuristics. No case names,

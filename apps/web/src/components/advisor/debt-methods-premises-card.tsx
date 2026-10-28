@@ -9,7 +9,7 @@ import {z} from "zod";
 import {confirmPremiseProposal} from "@/app/[locale]/app/projects/[projectId]/executions/actions";
 import {CompanyRegistration} from "./company-registration";
 
-/** The premise methods of lote 2 and lote 3 that share this card, by the key of their copy. */
+/** The premise methods of lotes 2, 3 and 4 that share this card, by the key of their copy. */
 export const debtPremiseMethods = {
   "build-company-debt-table": "debtTable",
   "measure-covenant-headroom": "covenantHeadroom",
@@ -18,12 +18,18 @@ export const debtPremiseMethods = {
   "challenge-financial-projection": "projectionChallenge",
   "monetize-receivables-for-working-capital": "receivablesFunding",
   "update-after-quarter-close": "quarterUpdate",
+  "organize-document-folder": "documentFolder",
+  "evaluate-received-proposal": "receivedProposal",
+  "evaluate-financing-paths": "financingPaths",
+  "prepare-board-capital-discussion": "boardMaterial",
 } as const;
 export type DebtPremiseMethodId = keyof typeof debtPremiseMethods;
 export const isDebtPremiseMethod = (id: string | undefined | null): id is DebtPremiseMethodId => typeof id === "string" && Object.hasOwn(debtPremiseMethods, id);
 
 const groups = ["instrument", "credit_line", "obligation", "view", "limit", "measurement", "stream", "action",
-  "driver", "scenario", "version", "assumption", "item", "option", "line", "cause", "facility", "dependent", "case", "premise"] as const;
+  "driver", "scenario", "version", "assumption", "item", "option", "line", "cause", "facility", "dependent", "case", "premise",
+  // The folder (C09): each file, the registry, the open decisions, the vault and the person's answers.
+  "file", "entity", "decision", "vault", "informed"] as const;
 /** The summary the worker writes for these methods; anything else is not read. */
 const summarySchema = z.object({
   situationId: z.string(),
@@ -77,7 +83,7 @@ export function DebtMethodsPremisesCard({locale, projectId, methodId, proposal}:
       {groups.map((group) => {
         const items = summary.items.filter((item) => item.group === group);
         return items.length ? <div className="investment-premises-card__group" key={group}>
-          <small>{t(`groups.${group}`)}</small>
+          <small>{t.has(`methods.${method}.groups.${group}`) ? t(`methods.${method}.groups.${group}`) : t(`groups.${group}`)}</small>
           <dl>{items.map((item, n) => <div key={`${item.label}:${n}`}><dt>{label(item)}</dt><dd>{t(`origins.${item.origin}`)}{item.source ? <span>{item.source}</span> : null}</dd></div>)}</dl>
         </div> : null;
       })}

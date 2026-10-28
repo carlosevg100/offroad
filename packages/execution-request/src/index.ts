@@ -6,4 +6,6 @@
 export * from "./contract";
 export * from "./gates";
 export * from "./compose";
+export * from "./board-material-compose";
+export * from "./document-folder-compose";
 export type {ExecutionGateRefusal} from "./refusal";

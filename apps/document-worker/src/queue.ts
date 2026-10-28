@@ -410,6 +410,13 @@ export type QueueClient = {
   loadPremiseEvidence?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The latest prior completed weekly cash and covenant results of the turn's work, for the quarter close. */
   loadQuarterUpdatePriors?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The work's folder for ficha C09: the dossier's registry, the company's open works, the vault by hash and each file
+   * of the work in arrival order with its stored layer (read from document-layers), or null when it has none. */
+  loadDocumentFolder?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The latest completed folder inventory of the work, with its stored input and packet, for an update. */
+  loadDocumentFolderPrior?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The latest completed result of each source method of the board material, with its release state. */
+  loadBoardMaterialPriors?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The turn's reply and its premise proposal, in one transaction; only a person's confirmation adopts them. */
   recordAgentResponseWithPremises?(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, premises: unknown): Promise<void>;
   recordAgentResponse(
@@ -498,6 +505,11 @@ export type ArtifactRevisionWritten = {artifactId: string; revisionId: string; r
 export class InstitutionalCaptureRetryError extends Error {
   constructor() {super("institutional_capture_retry");this.name="InstitutionalCaptureRetryError";}
 }
+
+/** The folder evidence row of worker_document_folder_evidence_v1: each file names its stored layer (object path and sha256), read afterwards. */
+const documentFolderEvidenceRowSchema = z.looseObject({
+  files: z.array(z.looseObject({layerObjectPath: z.string().min(1).max(1024).nullable(), layerSha256: z.string().regex(/^[a-f0-9]{64}$/).nullable()})).max(1000),
+});
 
 export function createQueueClient(
   supabase: SupabaseClient,
@@ -1260,6 +1272,30 @@ export function createQueueClient(
 
     async loadQuarterUpdatePriors(job) {
       return call("worker_quarter_update_priors_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async loadDocumentFolder(job) {
+      const raw = await call("worker_document_folder_evidence_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+      const read = documentFolderEvidenceRowSchema.parse(raw);
+      // Each stored layer is read under the job's own storage authority; one that cannot be read is a file without a layer.
+      const files = await Promise.all(read.files.map(async ({layerObjectPath, layerSha256, ...file}) => {
+        if (!layerObjectPath || !layerSha256) return {...file, layer: null};
+        const stored = await supabase.storage.from("document-layers").download(layerObjectPath);
+        if (stored.error || !stored.data) return {...file, layer: null};
+        // Only the bytes the database recorded for the layer are read; anything else is a file without a layer.
+        const bytes = new Uint8Array(await stored.data.arrayBuffer());
+        if (createHash("sha256").update(bytes).digest("hex") !== layerSha256) return {...file, layer: null};
+        try { return {...file, layer: JSON.parse(new TextDecoder().decode(bytes)) as unknown}; } catch { return {...file, layer: null}; }
+      }));
+      return {...read, files};
+    },
+
+    async loadDocumentFolderPrior(job) {
+      return call("worker_document_folder_prior_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async loadBoardMaterialPriors(job) {
+      return call("worker_board_material_priors_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
 
     async recordAgentResponseWithPremises(job, assistantMessageId, response, premises) {

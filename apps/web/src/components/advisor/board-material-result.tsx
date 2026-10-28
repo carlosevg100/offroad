@@ -1,5 +1,5 @@
 import {getTranslations} from "next-intl/server";
-import type {BoardMaterialResultBlocksView} from "../../../../../packages/domain-contracts/src/lote4-board-material-result-blocks";
+import type {BoardMaterialResultBlocksView} from "@offroad/domain-contracts";
 import {formatIsoDate} from "@/lib/execution/format";
 
 /** The board discussion of a capital decision (C47), as the blocks carry it. Before the material: the deliberations in

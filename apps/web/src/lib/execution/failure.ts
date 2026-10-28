@@ -22,6 +22,15 @@ export function executionRequestFailure(error: {code?: string; message?: string}
   if (named("quarter_update_prior_fingerprint_mismatch", "quarter_update_prior_input_mismatch")) return "stale";
   if (named("quarter_update_prior_not_found", "quarter_update_prior_method_mismatch", "quarter_update_prior_not_completed")) return "prior_invalid";
   if (named("quarter_update_priors_invalid", "quarter_update_priors_method_denied")) return "invalid";
+  // Lote 4: the board material's reviewed results and the folder update's prior inventory, named the same way.
+  if (named("board_material_prior_rights_denied", "board_material_prior_source_unpinned", "document_folder_prior_rights_denied", "document_folder_prior_source_unpinned"))
+    return "provenance_denied";
+  if (named("board_material_prior_fingerprint_mismatch", "board_material_prior_input_mismatch", "board_material_prior_scale_mismatch",
+    "document_folder_prior_fingerprint_mismatch", "document_folder_prior_input_mismatch")) return "stale";
+  if (named("board_material_prior_not_found", "board_material_prior_method_mismatch", "board_material_prior_not_completed", "board_material_prior_not_released",
+    "board_material_prior_scale_unknown", "document_folder_prior_not_found", "document_folder_prior_method_mismatch", "document_folder_prior_not_completed",
+    "document_folder_prior_not_released")) return "prior_invalid";
+  if (named("board_material_priors_invalid", "board_material_prior_scale_invalid", "document_folder_priors_invalid")) return "invalid";
   if (named("execution_producer_denied")) return "producer_denied";
   if (named("execution_method_unavailable", "execution_profile_ambiguous")) return "method_unavailable";
   if (named("execution_gates_invalid")) return "gates_invalid";

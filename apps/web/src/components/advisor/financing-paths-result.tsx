@@ -1,5 +1,5 @@
 import {getTranslations} from "next-intl/server";
-import type {FinancingPathsResultBlocksView} from "../../../../../packages/domain-contracts/src/lote4-financing-paths-result-blocks";
+import type {FinancingPathsResultBlocksView} from "@offroad/domain-contracts";
 import {formatIsoDate, formatRounded, shiftDecimal} from "@/lib/execution/format";
 
 /** The financing paths of one decision, as the blocks carry them, in the order of the method's template: what

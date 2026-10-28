@@ -140,12 +140,14 @@ describe("board material: ficha C47 through the conversation", () => {
 
   it("routes the ficha's phrases and keeps the neighbours out", () => {
     for (const m of ["Conselho na quarta. Prepara a discussão de estrutura de capital.", "Faz uma página para o conselho com o plano de financiamento.",
-      "Prepara a discussão de estrutura de capital para o conselho de quarta"]) expect(boardMaterialEntry(m, false, [])).toBe("cue");
+      "Prepara a discussão de estrutura de capital para o conselho de quarta",
+      // Decision 6: board material or deck on capital structure, financing or debt is this method's, by ficha exception.
+      "Monta o material do conselho sobre a estrutura de capital.", "Monta o deck do conselho com o plano de financiamento."]) expect(boardMaterialEntry(m, false, [])).toBe("cue");
     for (const m of ["Preciso levar ao conselho uma decisão sobre estrutura de capital e alternativas.", "Prepara o memorando do trimestre para o conselho.",
       "Tenho conselho na quarta e vão me perguntar por que pagamos mais que a Serra Verde. Me ajuda a pensar a resposta.", "Preciso do endividamento atualizado para o conselho.",
       "Prepara a resposta para o conselho sobre por que pagamos mais que a Serra Verde.",
-      // Material for the board compiles to material preparation today and stays there (limit, see the report).
-      "Monta o material do conselho sobre a estrutura de capital."]) expect(boardMaterialEntry(m, false, [])).toBeNull();
+      // Board material without the capital topic, or on another topic, stays material preparation.
+      "Monta o material do conselho.", "Monta o material do conselho sobre a safra."]) expect(boardMaterialEntry(m, false, [])).toBeNull();
     expect(boardMaterialEntry(turns[2].message, true, turns[2].earlier)).toBe("continuation");
     expect(boardMaterialEntry(turns[3].message, false, turns[3].earlier)).toBe("continuation");
     expect(boardMaterialEntry("O que é uma debênture?", false, turns[3].earlier)).toBeNull();

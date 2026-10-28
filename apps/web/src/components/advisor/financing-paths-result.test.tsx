@@ -1,25 +1,20 @@
 import {renderToStaticMarkup} from "react-dom/server";
 import {describe, expect, it, vi} from "vitest";
-import {readFinancingPathsPacketBlocks} from "../../../../../packages/domain-contracts/src/lote4-financing-paths-result-blocks";
+import {readFinancingPathsPacketBlocks} from "@offroad/domain-contracts";
 
 import en from "../../../messages/en-US.json";
 import pt from "../../../messages/pt-BR.json";
 import blocks from "../../../../../packages/domain-contracts/src/fixtures/financing-paths-result-blocks.json";
 import packet from "../../../../../packages/domain-contracts/src/fixtures/financing-paths-result-packet.json";
-import own from "./financing-paths-result.messages.json";
 import {readFinancingPathsResult} from "@/lib/execution/financing-paths-read";
 import {FinancingPathsResult} from "./financing-paths-result";
 
 type Catalog = Record<string, unknown>;
 const resolve = (catalog: Catalog, key: string): unknown => key.split(".")
   .reduce<unknown>((node, part) => (node && typeof node === "object" ? (node as Catalog)[part] : undefined), catalog);
-// This method's copy travels with the component until it joins App.workExecutions.financingPaths in the catalogs.
-const withOwn = (catalog: Catalog, locale: "pt-BR" | "en-US") => {
-  const c = structuredClone(catalog) as {App: {workExecutions: Catalog}};
-  c.App.workExecutions.financingPaths = own[locale];
-  return c as unknown as Catalog;
-};
-const catalogs = {"pt-BR": withOwn(pt as Catalog, "pt-BR"), "en-US": withOwn(en as Catalog, "en-US")};
+// This page's keys in the shared catalogs, under App.workExecutions.financingPaths.
+const catalogs = {"pt-BR": pt as Catalog, "en-US": en as Catalog};
+const own = {"pt-BR": pt.App.workExecutions.financingPaths, "en-US": (en as typeof pt).App.workExecutions.financingPaths};
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async ({locale, namespace}: {locale: "pt-BR" | "en-US"; namespace: string}) => {

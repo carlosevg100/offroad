@@ -13,7 +13,6 @@ export const documentFolderFichaPhrases = [
   "O que tem nesses arquivos?",
   "Organiza o material para discutirmos a dívida.",
   "Subi tudo que o financeiro tinha. Dá uma olhada e me fala o que falta.",
-  "Organiza a pasta de documentos",
 ];
 /** Neighbours that keep their own route. */
 export const documentFolderNeighbours = [
@@ -22,6 +21,8 @@ export const documentFolderNeighbours = [
   "Organiza a apresentação para o banco", "Não precisa organizar a pasta", "O que é um inventário de documentos?", "Organiza os e-mails da semana",
   "Segue a página 7 legível e o balancete de março. A minuta não foi para nenhum banco.",
   "Recebi essa proposta do Itaú de CCB, é boa?", "Como fica o caixa semana a semana até dezembro?",
+  // A source index keeps information organization (lote 4 never takes a specific route outside its ficha exceptions).
+  "Organiza a pasta de documentos", "Organiza esses arquivos da Aurora por tipo e período",
 ];
 
 describe("ficha C09 route", () => {

@@ -1,20 +1,22 @@
 import {renderToStaticMarkup} from "react-dom/server";
 import {describe, expect, it, vi} from "vitest";
-import {readBoardMaterialPacketBlocks} from "../../../../../packages/domain-contracts/src/lote4-board-material-result-blocks";
+import {readBoardMaterialPacketBlocks} from "@offroad/domain-contracts";
 
 import en from "../../../messages/en-US.json";
 import pt from "../../../messages/pt-BR.json";
-import own from "./board-material-result.messages.json";
 import blocks from "../../../../../packages/domain-contracts/src/fixtures/board-material-result-blocks.json";
 import {BoardMaterialResult} from "./board-material-result";
 
 type Catalog = Record<string, unknown>;
 const resolve = (catalog: Catalog, key: string): unknown => key.split(".")
   .reduce<unknown>((node, part) => (node && typeof node === "object" ? (node as Catalog)[part] : undefined), catalog);
-/** The shared catalogs with this page's keys added, as the integration adds them to messages/*.json. */
-const merge = (a: Catalog, b: Catalog): Catalog => Object.fromEntries([...new Set([...Object.keys(a), ...Object.keys(b)])].map((k) =>
-  [k, a[k] && b[k] && typeof a[k] === "object" && typeof b[k] === "object" ? merge(a[k] as Catalog, b[k] as Catalog) : b[k] ?? a[k]]));
-const catalogs = {"pt-BR": merge(pt as Catalog, own["pt-BR"] as Catalog), "en-US": merge(en as Catalog, own["en-US"] as Catalog)};
+// This page's keys in the shared catalogs: the page under App.workExecutions.boardMaterial, the card's method and house labels.
+const catalogs = {"pt-BR": pt as Catalog, "en-US": en as Catalog};
+const boardHouseLabels = (c: typeof pt) => Object.fromEntries(Object.entries(c.DebtMethodsPremisesCard.houseLabels).filter(([k]) => k.startsWith("board")));
+const own = Object.fromEntries((["pt-BR", "en-US"] as const).map((l) => {const c = (l === "pt-BR" ? pt : en) as typeof pt;
+  return [l, {App: {workExecutions: {boardMaterial: c.App.workExecutions.boardMaterial}},
+    DebtMethodsPremisesCard: {methods: {boardMaterial: c.DebtMethodsPremisesCard.methods.boardMaterial}, houseLabels: boardHouseLabels(c)}}];})) as
+  Record<"pt-BR" | "en-US", {App: {workExecutions: {boardMaterial: typeof pt.App.workExecutions.boardMaterial}}; DebtMethodsPremisesCard: unknown}>;
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async ({locale, namespace}: {locale: "pt-BR" | "en-US"; namespace: string}) => {

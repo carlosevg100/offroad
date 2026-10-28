@@ -73,8 +73,13 @@ export const productionModelCeilingsUsd = {
    * The lote 3 extractions (operating projection, projection challenge, receivables funding) share the
    * 10k bound of covenant headroom, so the 16k extractions still set the ceiling and it stays 2.4. The quarter
    * close extraction shares the 16k bound of weekly cash, and the ceiling stays 2.4.
+   * Lote 4: the received proposal shares the 16k bound; the folder's turn and the board material extract 4k. The
+   * 2027 financing paths carry every instrument and path (24k output): about 0.33 per request and 0.72 through the
+   * Terra fallback, x1.10 = 0.79 on top of 1.8443: 2.64, so the ceiling is 2.7. The folder reads each file alone
+   * (16k each, up to 200 files): a whole folder does not fit this turn's ceiling, and the files whose reading the
+   * ceiling refuses are named as unread, never guessed.
    */
-  agentOperationBrief: 2.4,
+  agentOperationBrief: 2.7,
   /**
    * Database: 0.25 and 1 call (`private.enqueue_work_turn_v1`, and a literal of the worker's job
    * schema). Largest request 0.1867 (Sonnet 5, 0.0886 old); x1.10 = 0.2054. The value stays.

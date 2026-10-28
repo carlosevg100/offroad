@@ -1,6 +1,6 @@
 import {capitalPathsPacketOutputSchema} from "@offroad/financial-model";
 import {financingPathsPacketBlocks, readFinancingPathsPacketBlocks, type FinancingPathsPacketLike, type FinancingPathsResultBlocksView}
-  from "../../../../../packages/domain-contracts/src/lote4-financing-paths-result-blocks";
+  from "@offroad/domain-contracts";
 
 /** The committed bytes of a financing paths evaluation, read through the same blocks its revision carries. */
 export function readFinancingPathsResult(canonicalResult: string): FinancingPathsResultBlocksView | null {

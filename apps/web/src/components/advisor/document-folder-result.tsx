@@ -1,6 +1,5 @@
 import {getTranslations} from "next-intl/server";
-// Until domain-contracts exports the lote 4 blocks from its index, the view type is read from its own file.
-import type {DocumentFolderResultBlocksView} from "../../../../../packages/domain-contracts/src/lote4-document-folder-result-blocks";
+import type {DocumentFolderResultBlocksView} from "@offroad/domain-contracts";
 import {formatIsoDate, formatRounded, shiftDecimal} from "@/lib/execution/format";
 
 /** The folder organized, as the blocks carry it, in the order the ficha answers: the size and how it was organized,

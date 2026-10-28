@@ -45195,6 +45195,12 @@
           "line": 224,
           "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 337,
+          "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -75730,6 +75736,12 @@
           "line": 505,
           "anchor": "create function private.worker_can_access_document_storage_v1(p_bucket text,p_object_path text,p_write boolean)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 526,
+          "anchor": "create or replace function private.worker_can_access_document_storage_v1(p_bucket text, p_object_path text, p_write boolean)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -96233,6 +96245,12 @@
         {
           "path": "supabase/migrations/20261027010222_lote3_financial_objectives.sql",
           "line": 18,
+          "anchor": "create or replace function private.worker_record_objective_plan_preflight_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261028120000_lote4_financial_objectives.sql",
+          "line": 19,
           "anchor": "create or replace function private.worker_record_objective_plan_preflight_v1(",
           "mechanism": "direct_ddl"
         }
@@ -319608,6 +319626,12 @@
           "line": 27,
           "anchor": "create or replace function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 32,
+          "anchor": "create or replace function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -320728,6 +320752,12 @@
         {
           "path": "supabase/migrations/20261027010322_lote3_bridge.sql",
           "line": 344,
+          "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 465,
           "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -343847,6 +343877,1908 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.board_material_latest_priors_v1(p_org uuid, p_work uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_latest_priors_v1(p_org uuid, p_work uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "board_material_latest_priors_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.board_material_latest_priors_v1(p_org uuid, p_work uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "board_material_latest_priors_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Último resultado concluído de cada papel da discussão do conselho, na ordem da biblioteca.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 338,
+          "anchor": "create function private.board_material_latest_priors_v1(p_org uuid,p_work uuid,p_subject uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.board_material_prior_content_v1(p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_canonical_result text, p_result jsonb, p_released boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_prior_content_v1(p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_canonical_result text, p_result jsonb, p_released boolean)",
+          "kind": "function",
+          "name": "board_material_prior_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_canonical_result text, p_result jsonb, p_released boolean",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.board_material_prior_content_v1(p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_canonical_result text, p_result jsonb, p_released boolean)",
+          "kind": "function",
+          "name": "board_material_prior_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_canonical_result text, p_result jsonb, p_released boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Conteúdo de uma fonte do conselho: método e versão do papel, liberação, impressão, texto guardado byte a byte, fontes fixadas de novo e escala monetária declarada contra a do método.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 115,
+          "anchor": "create function private.board_material_prior_content_v1(p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.board_material_prior_method_v1(p_role text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_prior_method_v1(p_role text)",
+          "kind": "function",
+          "name": "board_material_prior_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_role text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.board_material_prior_method_v1(p_role text)",
+          "kind": "function",
+          "name": "board_material_prior_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_role text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Método, versão liberada e esquema de pacote que cada papel da discussão do conselho lê.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 29,
+          "anchor": "create function private.board_material_prior_method_v1(p_role text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.board_material_prior_results_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_prior_results_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "board_material_prior_results_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.board_material_prior_results_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "board_material_prior_results_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pela pessoa que confirma o cartão do conselho, dos resultados anteriores com o texto guardado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 351,
+          "anchor": "create function private.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.board_material_prior_roles_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_prior_roles_v1()",
+          "kind": "function",
+          "name": "board_material_prior_roles_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.board_material_prior_roles_v1()",
+          "kind": "function",
+          "name": "board_material_prior_roles_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Os nove papéis da discussão do conselho, na ordem da biblioteca.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 44,
+          "anchor": "create function private.board_material_prior_roles_v1() returns text[]",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.board_material_prior_scale_v1(p_declared text, p_method text, p_version text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_prior_scale_v1(p_declared text, p_method text, p_version text)",
+          "kind": "function",
+          "name": "board_material_prior_scale_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_declared text, p_method text, p_version text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.board_material_prior_scale_v1(p_declared text, p_method text, p_version text)",
+          "kind": "function",
+          "name": "board_material_prior_scale_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_declared text, p_method text, p_version text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Recusa pelo nome a escala monetária declarada por uma fonte do conselho quando falta, é desconhecida ou difere da escala de adoção do método.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 82,
+          "anchor": "create function private.board_material_prior_scale_v1(p_declared text,p_method text,p_version text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.board_material_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.board_material_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
+          "kind": "function",
+          "name": "board_material_priors_recorded_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract jsonb, p_payload jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.board_material_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
+          "kind": "function",
+          "name": "board_material_priors_recorded_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract jsonb, p_payload jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Conferência que o ramo de proveniência da discussão do conselho chama: a execução carrega os anteriores que o produtor v4 gravou.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 184,
+          "anchor": "create function private.board_material_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_decision_kind_v1(p_objective text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_decision_kind_v1(p_objective text)",
+          "kind": "function",
+          "name": "document_folder_decision_kind_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_objective text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.document_folder_decision_kind_v1(p_objective text)",
+          "kind": "function",
+          "name": "document_folder_decision_kind_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_objective text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Tipo de decisão em curso derivado do último objetivo de cada trabalho aberto da companhia.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 433,
+          "anchor": "create function private.document_folder_decision_kind_v1(p_objective text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_prior_content_v1(p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb, p_released boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_prior_content_v1(p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb, p_released boolean)",
+          "kind": "function",
+          "name": "document_folder_prior_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb, p_released boolean",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.document_folder_prior_content_v1(p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb, p_released boolean)",
+          "kind": "function",
+          "name": "document_folder_prior_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb, p_released boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Conteúdo do inventário anterior da pasta: método e versão, liberação, impressão, base igual à guardada e fontes fixadas de novo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 135,
+          "anchor": "create function private.document_folder_prior_content_v1(p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,p_prior_snapshot jsonb,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_prior_method_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_prior_method_v1()",
+          "kind": "function",
+          "name": "document_folder_prior_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.document_folder_prior_method_v1()",
+          "kind": "function",
+          "name": "document_folder_prior_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Método, versão e esquema de pacote do inventário anterior da pasta.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 50,
+          "anchor": "create function private.document_folder_prior_method_v1() returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_prior_recorded_v1(p_contract jsonb, p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_prior_recorded_v1(p_contract jsonb, p_payload jsonb)",
+          "kind": "function",
+          "name": "document_folder_prior_recorded_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract jsonb, p_payload jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.document_folder_prior_recorded_v1(p_contract jsonb, p_payload jsonb)",
+          "kind": "function",
+          "name": "document_folder_prior_recorded_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract jsonb, p_payload jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Conferência que o ramo de proveniência da pasta chama: inventário inicial sem anterior, atualização com o anterior gravado pelo produtor v4.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 214,
+          "anchor": "create function private.document_folder_prior_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_prior_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_prior_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.document_folder_prior_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pela pessoa que confirma a atualização da pasta, do último inventário concluído.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 390,
+          "anchor": "create function private.document_folder_prior_v1(p_work_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.document_folder_work_dossiers_v1(p_org uuid, p_work uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.document_folder_work_dossiers_v1(p_org uuid, p_work uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "document_folder_work_dossiers_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.document_folder_work_dossiers_v1(p_org uuid, p_work uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "document_folder_work_dossiers_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Dossiês de um trabalho que o sujeito pode ler: os próprios, os das sessões e os vinculados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 442,
+          "anchor": "create function private.document_folder_work_dossiers_v1(p_org uuid,p_work uuid,p_subject uuid) returns uuid[]",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_result_board_material_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_board_material_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_board_material_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_board_material_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_board_material_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 274,
+          "anchor": "create function private.execution_result_board_material_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_result_document_folder_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_document_folder_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_document_folder_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_document_folder_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_document_folder_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 164,
+          "anchor": "create function private.execution_result_document_folder_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_result_financing_paths_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_financing_paths_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_financing_paths_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_financing_paths_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_financing_paths_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 217,
+          "anchor": "create function private.execution_result_financing_paths_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_result_received_proposal_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_received_proposal_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_received_proposal_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_received_proposal_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_received_proposal_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (ponte da conversa)",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
+      "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 101,
+          "anchor": "create function private.execution_result_received_proposal_blocks_v1(p_packet jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.lote4_latest_prior_v1(p_org uuid, p_work uuid, p_expected jsonb, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lote4_latest_prior_v1(p_org uuid, p_work uuid, p_expected jsonb, p_subject uuid)",
+          "kind": "function",
+          "name": "lote4_latest_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_expected jsonb, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lote4_latest_prior_v1(p_org uuid, p_work uuid, p_expected jsonb, p_subject uuid)",
+          "kind": "function",
+          "name": "lote4_latest_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_expected jsonb, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Última execução concluída de um método e versão no trabalho, determinística, ausente quando o fechamento não pode ser lido.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 312,
+          "anchor": "create function private.lote4_latest_prior_v1(p_org uuid,p_work uuid,p_expected jsonb,p_subject uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.lote4_prior_identity_v1(p_kind text, p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lote4_prior_identity_v1(p_kind text, p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text)",
+          "kind": "function",
+          "name": "lote4_prior_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.lote4_prior_identity_v1(p_kind text, p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text)",
+          "kind": "function",
+          "name": "lote4_prior_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Veredito de identidade dos anteriores do lote 4: outra organização ou outro trabalho é não encontrado; sem resultado concluído é recusado pelo nome.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 93,
+          "anchor": "create function private.lote4_prior_identity_v1(p_kind text,p_org uuid,p_work uuid,p_found boolean,p_exec_org uuid,p_exec_work uuid,p_outcome text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.lote4_prior_resolve_v1(p_kind text, p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lote4_prior_resolve_v1(p_kind text, p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid)",
+          "kind": "function",
+          "name": "lote4_prior_resolve_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lote4_prior_resolve_v1(p_kind text, p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid)",
+          "kind": "function",
+          "name": "lote4_prior_resolve_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Resolve uma referência do lote 4 contra as linhas guardadas, com o fechamento de fontes do anterior pelo mecanismo normal de direitos; recusa cada falha pelo nome.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 154,
+          "anchor": "create function private.lote4_prior_resolve_v1(p_kind text,p_org uuid,p_work uuid,p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_subject uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.prior_method_money_scale_v1(p_method text, p_version text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.prior_method_money_scale_v1(p_method text, p_version text)",
+          "kind": "function",
+          "name": "prior_method_money_scale_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method text, p_version text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.prior_method_money_scale_v1(p_method text, p_version text)",
+          "kind": "function",
+          "name": "prior_method_money_scale_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method text, p_version text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Escala de adoção de cada método liberado, fixada pela construção da ponte daquele método.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 70,
+          "anchor": "create function private.prior_method_money_scale_v1(p_method text,p_version text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.prior_method_released_v1(p_method text, p_version text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.prior_method_released_v1(p_method text, p_version text)",
+          "kind": "function",
+          "name": "prior_method_released_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method text, p_version text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.prior_method_released_v1(p_method text, p_version text)",
+          "kind": "function",
+          "name": "prior_method_released_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method text, p_version text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Se a versão de um método está liberada para todas as organizações, como o perfil de execução exige.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 58,
+          "anchor": "create function private.prior_method_released_v1(p_method text,p_version text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.prior_sources_pinned_v1(p_prior_contract jsonb, p_contract_sources jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.prior_sources_pinned_v1(p_prior_contract jsonb, p_contract_sources jsonb)",
+          "kind": "function",
+          "name": "prior_sources_pinned_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_prior_contract jsonb, p_contract_sources jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.prior_sources_pinned_v1(p_prior_contract jsonb, p_contract_sources jsonb)",
+          "kind": "function",
+          "name": "prior_sources_pinned_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_prior_contract jsonb, p_contract_sources jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Toda fonte que o anterior fixou é fixada de novo pelo contrato, com a mesma versão, bytes e recurso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 103,
+          "anchor": "create function private.prior_sources_pinned_v1(p_prior_contract jsonb,p_contract_sources jsonb) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.request_work_execution_producer_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_execution_producer_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+          "kind": "function",
+          "name": "request_work_execution_producer_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_execution_producer_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+          "kind": "function",
+          "name": "request_work_execution_producer_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Produtor v4, só para a discussão do conselho e a atualização da pasta: resolve e grava os anteriores e chama o produtor v2 sem mudança.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 242,
+          "anchor": "create function private.request_work_execution_producer_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_board_material_priors_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_board_material_priors_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pelo worker com a capacidade do job, dos anteriores da discussão do conselho.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 371,
+          "anchor": "create function private.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pelo worker com a capacidade do job, da pasta do trabalho, do cadastro, dos trabalhos abertos e do cofre da companhia.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 452,
+          "anchor": "create function private.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pelo worker com a capacidade do job, do último inventário concluído da pasta.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 410,
+          "anchor": "create function private.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.board_material_prior_results_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.board_material_prior_results_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "board_material_prior_results_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.board_material_prior_results_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "board_material_prior_results_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pela pessoa que confirma o cartão do conselho, dos resultados anteriores com o texto guardado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 364,
+          "anchor": "create function public.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.document_folder_prior_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.document_folder_prior_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.document_folder_prior_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pela pessoa que confirma a atualização da pasta, do último inventário concluído.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 404,
+          "anchor": "create function public.document_folder_prior_v1(p_work_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.request_work_execution_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.request_work_execution_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+          "kind": "function",
+          "name": "request_work_execution_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.request_work_execution_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+          "kind": "function",
+          "name": "request_work_execution_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Porta autenticada do produtor v4, invocador.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 303,
+          "anchor": "create function public.request_work_execution_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_board_material_priors_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_board_material_priors_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pelo worker com a capacidade do job, dos anteriores da discussão do conselho.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 384,
+          "anchor": "create function public.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_evidence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pelo worker com a capacidade do job, da pasta do trabalho, do cadastro, dos trabalhos abertos e do cofre da companhia.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 519,
+          "anchor": "create function public.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_document_folder_prior_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (resultados anteriores)",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Leitura, pelo worker com a capacidade do job, do último inventário concluído da pasta.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "line": 423,
+          "anchor": "create function public.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -351770,6 +353702,27 @@
       "decision": "preservar",
       "stage": "base de mercado M2 parte 4, atos de produção",
       "reason": "M2 parte 4: a evidência do calendário do Copom admite o JSON do normativo do Banco Central, único meio em que o Comunicado nº 43.383 é publicado."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261028120000_lote4_financial_objectives.sql",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, roteador",
+      "reason": "Tipos de objetivo do lote 4 (pasta de documentos, proposta recebida, caminhos de financiamento, discussão de capital no conselho) na restrição e no corpo do preflight."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
+      "reason": "Ponte da conversa do lote 4: cartões de premissas em contexto próprio, blocos de resultado, projetor e resposta citada."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+      "decision": "preservar",
+      "stage": "fichas C47 e C09, resultados anteriores",
+      "reason": "Resultados anteriores da discussão do conselho (C47) e da atualização da pasta (C09), produtor v4, evidência da pasta e porta de leitura das camadas."
     }
   ],
   "staging_archive": [

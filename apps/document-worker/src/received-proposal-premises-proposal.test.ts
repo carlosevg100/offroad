@@ -1,6 +1,6 @@
 import {beforeAll, describe, expect, it} from "vitest";
 import {proposeReceivedProposalHypotheses, type ReceivedProposalFacts} from "@offroad/financial-model";
-import {buildReceivedProposalPremiseProposal, completeReceivedProposalFacts, proposeReceivedProposalPremisesForTurn, receivedProposalContradictions, receivedProposalReader,
+import {buildReceivedProposalPremiseProposal, houseCreditTax, completeReceivedProposalFacts, proposeReceivedProposalPremisesForTurn, receivedProposalContradictions, receivedProposalReader,
   receivedProposalReaderGaps, shouldProposeReceivedProposalPremises, receivedProposalEntry, type ReceivedProposalExtraction} from "./received-proposal-premises-proposal";
 import {itemKeys} from "./lote2-premises";
 import {inMemoryBasis} from "./lote3-reader-check";
@@ -130,10 +130,11 @@ describe("received proposal premises proposed from a turn (ficha C01)", {timeout
     // Turn 2: term sheet and uses; the clauses in force, the portfolio and the company calendar remain.
     const m2 = missingOf(t.t2, f);
     expect(m2.filter((k) => k.startsWith("proposal") || k === "uses" || k === "indexer")).toEqual([]);
-    expect(m2).toEqual(["portfolio", "basket", "calendar", "indenture", "measurements", "creditTax", "indexCurve", "collateralReference"]);
+    // The credit IOF is the house convention when nobody states it (decision 1): never asked.
+    expect(m2).toEqual(["portfolio", "basket", "calendar", "indenture", "measurements", "indexCurve", "collateralReference"]);
     expect((await turn(turn2, [turn1], t.t2, true)).result?.forAdvisor).toEqual({status: "missing", missing: m2});
-    // Turn 3: indenture and aging; what the ficha built itself (projection, IOF, curve, reference) is asked by name.
-    expect(missingOf(t.t3, f)).toEqual(["calendar", "measurements", "creditTax", "indexCurve", "collateralReference"]);
+    // Turn 3: indenture and aging; what the ficha built itself (projection, curve, reference) is asked by name.
+    expect(missingOf(t.t3, f)).toEqual(["calendar", "measurements", "indexCurve", "collateralReference"]);
     // Turn 3b: the card.
     const card = await turn(turn3b, [turn1, turn2, turn3], t.t3b, true);
     expect(card.result?.forAdvisor.status).toBe("proposed");
@@ -159,6 +160,26 @@ describe("received proposal premises proposed from a turn (ficha C01)", {timeout
     expect([Number(r.price.equivalentSpread).toFixed(4), Number(r.price.equivalentSpreadNet).toFixed(4), r.collateral.assignable, r.negativePledge.remaining])
       .toEqual(["0.0490", "0.0324", "25.41", "3"]);
     expect(receivedProposalReaderGaps(c.facts)).toEqual([]);
+  });
+  it("uses the house credit IOF only when nobody states it, named with its source and date, and a stated rule prevails", () => {
+    const f = aurora(), t = auroraTurns(f);
+    const unstated = structuredClone(t.t5);
+    unstated.creditTax = {value: null, origin: null, source: null};
+    const c = completed(unstated, f);
+    expect(c.housePremiseKeys).toContain("creditTax");
+    expect(c.facts.creditTax).toEqual(houseCreditTax);
+    expect(c.facts.creditTax.origin).toBe("house");
+    expect(c.facts.creditTax.source).toMatch(/Decreto 12\.499\/2025/);
+    expect(c.facts.creditTax.source).toMatch(/27\/10\/2026/);
+    // The house rule is the calibration's: the packet is the same.
+    expect(JSON.stringify(packetOf(c.facts).readings)).toBe(JSON.stringify(packetOf(completed(t.t5, f).facts).readings));
+    // Stated by the person or a document, it prevails; stated in part, the missing field is asked by name.
+    const stated = completed(t.t5, f);
+    expect(stated.housePremiseKeys).not.toContain("creditTax");
+    expect(stated.facts.creditTax.origin).toBe("document");
+    const partial = structuredClone(t.t5);
+    partial.creditTax = {...partial.creditTax, value: {...partial.creditTax.value!, dailyRate: null}};
+    expect(missingOf(partial, f)).toEqual(["creditTax.dailyRate"]);
   });
   it("names every house premise and keeps the reasons' origins", () => {
     const f = aurora(), c = completed(auroraTurns(f).t5, f);

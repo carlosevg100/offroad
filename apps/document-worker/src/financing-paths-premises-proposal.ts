@@ -3,7 +3,7 @@ import Decimal from "decimal.js";
 import {z} from "zod";
 import {capitalPathsFactsSchema, capitalPathsKernelFromFacts, composeBoundCapitalPaths, prepareCapitalPathsPacket, proposeCapitalPathsHypotheses,
   type CapitalPathsFacts} from "@offroad/financial-model";
-import {compileObjectiveToPlan} from "@offroad/work-plan";
+import {asksForFinancingPaths, compileObjectiveToPlan, financingPathsCues} from "@offroad/work-plan";
 import {canonicalJson, citedSource, extractedOrigin, factsOrGaps, fingerprintedProposal, itemKeys, itemLabel, itemSource, labelKey, proposeLote2PremisesForTurn,
   sourced, stated, summaryRow, unsourcedFields, withRecordIdentity, type Lote2Completion, type Lote2Origin, type Lote2Summary, type Lote2TurnPremises} from "./lote2-premises";
 import {asksOrExplains, foldCue, premiseCueKind, turnIntentInstruction, turnIntents} from "./premise-cue";
@@ -13,30 +13,18 @@ import {readerGaps, type BoundBasis} from "./lote3-reader-check";
  * (prepare-capital-structure-decision), which keeps its own route. */
 export const financingPathsPremiseMethod = {methodId: "evaluate-financing-paths", methodVersion: "2026.10.27-v1"} as const;
 
-/** The ficha C32 phrasings, each the whole construction (folded, anchored at both ends, only the final
- * punctuation free). The router's lote 4 exceptions copy these patterns; the worker reads them before the
- * router knows the kind, so the two never disagree. */
-export const financingPathsCues: readonly RegExp[] = [
-  // "Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?"
-  /^(?:precisamos|preciso|queremos|quero|temos que|tenho que) financiar (?:a|o|uma|um) (?:linha nova|nova linha|expansao|investimento|projeto|capex|fabrica nova|nova fabrica)(?: de [a-z ]{1,40})? e (?:reduzir|aliviar|resolver) (?:a pressao d[oa]s |os )?vencimentos(?: d[oa]s [a-z0-9 ]{1,40})?(?:[.,;]? (?:que|quais) caminhos (?:fazem sentido|existem|temos))?[?.!]*$/,
-  // "Vence muita coisa ano que vem e ainda quero fazer o investimento. O que eu faço?"
-  /^vencem? muita coisa (?:no )?ano que vem e (?:ainda )?(?:quero|queremos|preciso|precisamos) fazer o (?:investimento|capex|projeto)[.,;]? (?:o que (?:eu |a gente )?(?:faco|fazemos)|por onde (?:comeco|comecamos))[?.!]*$/,
-  // "Como financio a expansão sem apertar o caixa?"
-  /^como (?:financio|financiamos|financiar) (?:a expansao|o investimento|o capex|o projeto|a linha nova|a nova linha) sem apertar o caixa[?.!]*$/,
-  // "Quero alongar a dívida e fazer o capex. Por onde começo?"
-  /^(?:quero|queremos|preciso|precisamos) alongar a divida e fazer o (?:capex|investimento|projeto)[.,;]? (?:por onde (?:comeco|comecamos)|o que (?:eu )?faco)[?.!]*$/,
-  // "Não quero recomendação ainda, só me mostre os caminhos para a dívida de 2027."
-  /^nao quero recomendacao ainda[,;.]? (?:so )?me mostre os caminhos para a divida de \d{4}[.!]*$/,
-];
+/** The ficha C32 phrasings, each the whole construction, are the router's own (packages/work-plan/src/financing-paths-route.ts):
+ * the worker reads them before the router knows the kind, so the two never disagree. */
+export {financingPathsCues};
 /** A what-if on a path of the analysis already open ("E se eu só alongar o Bradesco com ele mesmo, por mais dois anos?",
  * ficha C32 turn 4): a continuation candidate even as a question, never a cue on its own. */
 export const financingPathsWhatIf = /^(?:(?:uma|um|a|o) [^.?!]{1,80}[.!]\s*)?e se (?:eu |a gente |nos |a companhia )?(?:so |apenas )?(?:alongar|alongarmos|estender|estendermos|prorrogar|prorrogarmos) (?:o|a|os|as) [a-z0-9 ]{1,40}?(?: com (?:ele|ela|eles|elas) (?:mesmo|mesma|mesmos|mesmas))?(?:,? por mais (?:um|dois|tres|quatro|cinco|\d{1,2}) anos?)?[?.!]*$/;
 const routingText = (message: string) => foldCue(message).replace(/\s+/g, " ").trim();
-export const financingPathsCue = (message: string) => financingPathsCues.some((p) => p.test(routingText(message)));
+export const financingPathsCue = (message: string) => asksForFinancingPaths(routingText(message));
 
 /** The objectives of the other premise methods: a message that compiles to one of them is that method's. */
 const otherPremiseKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash",
-  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
+  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update", "document_folder", "received_proposal", "board_capital_discussion"]);
 
 /** How a turn enters this step: by the ficha's own phrasing, or as a continuation candidate when the latest earlier
  * premise question among the recent messages is this one's, the message is not a question nor a request for

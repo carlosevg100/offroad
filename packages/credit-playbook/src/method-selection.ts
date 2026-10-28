@@ -40,6 +40,15 @@ export const projectionChallengeMethodId = "challenge-financial-projection";
 export const receivablesFundingMethodId = "monetize-receivables-for-working-capital";
 /** The quarter close carried forward (ficha C54): actual against projected, by cause, into the weekly cash and the covenant test. */
 export const quarterUpdateMethodId = "update-after-quarter-close";
+/** The folder inventory (ficha C09): what a company's folder holds and which version counts, the base when its numbers
+ * diverge across versions and before a refinancing is discussed. */
+export const documentFolderMethodId = "organize-document-folder";
+/** A financing proposal the company received (ficha C01), read against the use, the cash, the limits and the price. */
+export const receivedProposalMethodId = "evaluate-received-proposal";
+/** The financing paths on one basis (the 2027 plan of ficha C32): the route and order for needs of different nature. */
+export const financingPathsMethodId = "evaluate-financing-paths";
+/** The board's capital structure discussion (ficha C47), read from the completed analyses of the plan it carries. */
+export const boardCapitalDiscussionMethodId = "prepare-board-capital-discussion";
 /** The receivables method behind task R01 (`underwrite-receivables-pool`, bound to `taskIds: ["R01"]` in the runtime manifest). */
 export const receivablesPoolMethodId = "underwrite-receivables-pool";
 
@@ -57,9 +66,9 @@ export type StructuringSituation = {
 };
 
 export const structuringSituations = [
-  {situationId: "seasonal-working-capital", label: "Giro sazonal", structuringMethods: "Fluxo direto de 13 semanas, extensão mensal, ciclo financeiro, NCG/Fleuriet e cobertura no pior período.", misleadingAlone: "EBITDA ou DSCR anual que esconde o mês de falta de caixa.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, weeklyCashMethodId, receivablesFundingMethodId, quarterUpdateMethodId]},
-  {situationId: "structural-working-capital", label: "Giro estrutural", structuringMethods: "Fleuriet em série, NCG/receita, ciclo de conversão e fluxo indireto; carteira quando relevante.", misleadingAlone: "Fluxo curto sem explicar a necessidade permanente.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, debtCapacityMethodId, operatingProjectionMethodId, projectionChallengeMethodId, receivablesFundingMethodId]},
-  {situationId: "capex-infrastructure", label: "Capex/infraestrutura", structuringMethods: "Manutenção separada de expansão, construção e maturação; DSCR por período e, em projeto, LLCR/PLCR.", misleadingAlone: "EBITDA corrente durante construção.", servedBy: [capitalStructureMethodId, investmentProjectMethodId, financingComparisonMethodId, debtCapacityMethodId, operatingProjectionMethodId, projectionChallengeMethodId]},
+  {situationId: "seasonal-working-capital", label: "Giro sazonal", structuringMethods: "Fluxo direto de 13 semanas, extensão mensal, ciclo financeiro, NCG/Fleuriet e cobertura no pior período.", misleadingAlone: "EBITDA ou DSCR anual que esconde o mês de falta de caixa.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, weeklyCashMethodId, receivablesFundingMethodId, quarterUpdateMethodId, receivedProposalMethodId, financingPathsMethodId, boardCapitalDiscussionMethodId]},
+  {situationId: "structural-working-capital", label: "Giro estrutural", structuringMethods: "Fleuriet em série, NCG/receita, ciclo de conversão e fluxo indireto; carteira quando relevante.", misleadingAlone: "Fluxo curto sem explicar a necessidade permanente.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, debtCapacityMethodId, operatingProjectionMethodId, projectionChallengeMethodId, receivablesFundingMethodId, receivedProposalMethodId]},
+  {situationId: "capex-infrastructure", label: "Capex/infraestrutura", structuringMethods: "Manutenção separada de expansão, construção e maturação; DSCR por período e, em projeto, LLCR/PLCR.", misleadingAlone: "EBITDA corrente durante construção.", servedBy: [capitalStructureMethodId, investmentProjectMethodId, financingComparisonMethodId, debtCapacityMethodId, operatingProjectionMethodId, projectionChallengeMethodId, receivedProposalMethodId, financingPathsMethodId, boardCapitalDiscussionMethodId]},
   {situationId: "stable-business-high-conversion", label: "Negócio estável com alta conversão", structuringMethods: "Cadeia EBITDA a caixa, FCF/dívida, cobertura e alavancagem nas definições pertinentes.", misleadingAlone: "Métrica de projeto aplicada sem finalidade.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, debtCapacityMethodId, operatingProjectionMethodId, projectionChallengeMethodId]},
   {situationId: "near-covenant", label: "Próxima de covenant", structuringMethods: "Curva por contrato/data/caso, teste reverso, liquidez 12/24 meses e refinanciamento.", misleadingAlone: "Preço como critério principal.", servedBy: [capitalStructureMethodId, financingComparisonMethodId, debtCapacityMethodId, debtTableMethodId, covenantHeadroomMethodId, quarterUpdateMethodId]},
   {situationId: "growth-without-ebitda", label: "Crescimento sem EBITDA", structuringMethods: "Queima, pista de caixa, unit economics, compromissos e próxima rodada sob atraso.", misleadingAlone: "Múltiplo de EBITDA, DSCR ou régua de agência sem aplicabilidade.", servedBy: [capitalStructureMethodId]},
@@ -67,8 +76,8 @@ export const structuringSituations = [
   {situationId: "receivables", label: "Recebíveis", structuringMethods: "Aging, concentração, diluição, roll-rate, elegibilidade, avanço, subordinação e custo do veículo.", misleadingAlone: "Tratar carteira como companhia ou garantia nominal como caixa.", servedBy: [receivablesPoolMethodId]},
   {situationId: "restructuring", label: "Reestruturação", structuringMethods: "Fluxo direto, prioridades de credores, garantias, liquidez e alongamentos suportáveis.", misleadingAlone: "Referência normal de mercado como condição disponível.", servedBy: [capitalStructureMethodId, debtTableMethodId]},
   {situationId: "acquisition-bridge", label: "Aquisição/ponte", structuringMethods: "Fontes e usos, combinado, cláusulas, capacidade e certeza do take-out, inclusive atraso.", misleadingAlone: "Sinergias integrais sem evidência ou balanço isolado da adquirente.", servedBy: [capitalStructureMethodId]},
-  {situationId: "refinancing", label: "Refinanciamento", structuringMethods: "Torre, caixa, custo e prazo da substituição, liberação de garantias e condições.", misleadingAlone: "Comparar apenas spread.", servedBy: [capitalStructureMethodId, debtTableMethodId]},
-  {situationId: "unaudited-divergent-numbers", label: "Números não auditados/divergentes", structuringMethods: "Conciliação gerencial-contábil, conversão em caixa, sanidade do giro e histórico bancário disponível.", misleadingAlone: "EBITDA gerencial sem reconciliação.", servedBy: [capitalStructureMethodId]},
+  {situationId: "refinancing", label: "Refinanciamento", structuringMethods: "Torre, caixa, custo e prazo da substituição, liberação de garantias e condições.", misleadingAlone: "Comparar apenas spread.", servedBy: [capitalStructureMethodId, debtTableMethodId, documentFolderMethodId, receivedProposalMethodId, financingPathsMethodId, boardCapitalDiscussionMethodId]},
+  {situationId: "unaudited-divergent-numbers", label: "Números não auditados/divergentes", structuringMethods: "Conciliação gerencial-contábil, conversão em caixa, sanidade do giro e histórico bancário disponível.", misleadingAlone: "EBITDA gerencial sem reconciliação.", servedBy: [capitalStructureMethodId, documentFolderMethodId]},
 ] as const satisfies readonly StructuringSituation[];
 
 export type StructuringSituationId = (typeof structuringSituations)[number]["situationId"];

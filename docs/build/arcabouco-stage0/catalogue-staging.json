@@ -110013,6 +110013,660 @@
       "enabled": "O",
       "function": "private.guard_platform_ledger_truncate_v1()",
       "definition": "CREATE TRIGGER execution_prior_results_truncate_guard BEFORE TRUNCATE ON private.execution_prior_results FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "function:private.board_material_latest_priors_v1(p_org uuid, p_work uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "board_material_latest_priors_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.board_material_prior_content_v1(p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_canonical_result text, p_result jsonb, p_released boolean)",
+      "kind": "function",
+      "name": "board_material_prior_content_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_canonical_result text, p_result jsonb, p_released boolean",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.board_material_prior_method_v1(p_role text)",
+      "kind": "function",
+      "name": "board_material_prior_method_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_role text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.board_material_prior_results_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "board_material_prior_results_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.board_material_prior_roles_v1()",
+      "kind": "function",
+      "name": "board_material_prior_roles_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.board_material_prior_scale_v1(p_declared text, p_method text, p_version text)",
+      "kind": "function",
+      "name": "board_material_prior_scale_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_declared text, p_method text, p_version text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.board_material_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
+      "kind": "function",
+      "name": "board_material_priors_recorded_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract jsonb, p_payload jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.document_folder_decision_kind_v1(p_objective text)",
+      "kind": "function",
+      "name": "document_folder_decision_kind_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_objective text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.document_folder_prior_content_v1(p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb, p_released boolean)",
+      "kind": "function",
+      "name": "document_folder_prior_content_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_prior_contract jsonb, p_prior_snapshot jsonb, p_result jsonb, p_released boolean",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.document_folder_prior_method_v1()",
+      "kind": "function",
+      "name": "document_folder_prior_method_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.document_folder_prior_recorded_v1(p_contract jsonb, p_payload jsonb)",
+      "kind": "function",
+      "name": "document_folder_prior_recorded_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract jsonb, p_payload jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.document_folder_prior_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "document_folder_prior_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.document_folder_work_dossiers_v1(p_org uuid, p_work uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "document_folder_work_dossiers_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_result_board_material_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_board_material_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.execution_result_document_folder_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_document_folder_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.execution_result_financing_paths_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_financing_paths_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.execution_result_received_proposal_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_received_proposal_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.lote4_latest_prior_v1(p_org uuid, p_work uuid, p_expected jsonb, p_subject uuid)",
+      "kind": "function",
+      "name": "lote4_latest_prior_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_expected jsonb, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lote4_prior_identity_v1(p_kind text, p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text)",
+      "kind": "function",
+      "name": "lote4_prior_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_kind text, p_org uuid, p_work uuid, p_found boolean, p_exec_org uuid, p_exec_work uuid, p_outcome text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.lote4_prior_resolve_v1(p_kind text, p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid)",
+      "kind": "function",
+      "name": "lote4_prior_resolve_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_kind text, p_org uuid, p_work uuid, p_role text, p_ref jsonb, p_embedded jsonb, p_contract_sources jsonb, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.prior_method_money_scale_v1(p_method text, p_version text)",
+      "kind": "function",
+      "name": "prior_method_money_scale_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_method text, p_version text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.prior_method_released_v1(p_method text, p_version text)",
+      "kind": "function",
+      "name": "prior_method_released_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_method text, p_version text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.prior_sources_pinned_v1(p_prior_contract jsonb, p_contract_sources jsonb)",
+      "kind": "function",
+      "name": "prior_sources_pinned_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_prior_contract jsonb, p_contract_sources jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.request_work_execution_producer_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+      "kind": "function",
+      "name": "request_work_execution_producer_v4",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_board_material_priors_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_document_folder_evidence_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_document_folder_prior_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.board_material_prior_results_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "board_material_prior_results_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.document_folder_prior_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "document_folder_prior_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.request_work_execution_v4(p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb)",
+      "kind": "function",
+      "name": "request_work_execution_v4",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text, p_prior_results jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_board_material_priors_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_board_material_priors_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_document_folder_evidence_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_document_folder_evidence_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_document_folder_prior_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_document_folder_prior_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
     }
   ],
   "captured_at": "2026-10-06T17:27:10.04562+00:00"

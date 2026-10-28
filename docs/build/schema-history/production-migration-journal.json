@@ -2739,6 +2739,21 @@
       "name": "lote3_quarter_update_priors",
       "version": "20261027010426",
       "statements_md5": "019a1ddd83a416f31fdc97effc0d525f"
+    },
+    {
+      "name": "lote4_financial_objectives",
+      "version": "20261028120000",
+      "statements_md5": "1c3c090548300b3165d353e17fa04dc3"
+    },
+    {
+      "name": "lote4_bridge",
+      "version": "20261028120100",
+      "statements_md5": "1e3c265dd1cd99c5387dea26ea52fbbf"
+    },
+    {
+      "name": "lote4_priors",
+      "version": "20261028120200",
+      "statements_md5": "e22d11807588e6620415cdd4be3d7da7"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",

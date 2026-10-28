@@ -21,7 +21,9 @@ const ids = {analysisId: uuidV5("offroad:investment-analysis:30000000-0000-4000-
 
 describe("investment premises proposed from a turn", () => {
   it("recognizes a capital question about an identifiable investment, and only that", () => {
-    expect(shouldProposeInvestmentPremises("Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?")).toBe(true);
+    expect(shouldProposeInvestmentPremises("Precisamos financiar a linha nova de embalagem. Que caminhos fazem sentido?")).toBe(true);
+    // The C32 opening is the 2027 financing paths' own phrasing since lote 4 (evaluate-financing-paths).
+    expect(shouldProposeInvestmentPremises("Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?")).toBe(false);
     expect(shouldProposeInvestmentPremises("Revisa a proposta do Itaú")).toBe(false);
     expect(shouldProposeInvestmentPremises("Quanto vence em 2027?")).toBe(false);
   });

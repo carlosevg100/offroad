@@ -5,20 +5,15 @@ import en from "../../../messages/en-US.json";
 import pt from "../../../messages/pt-BR.json";
 import folderBlocks from "../../../../../packages/domain-contracts/src/fixtures/document-folder-result-blocks.json";
 import updateBlocks from "../../../../../packages/domain-contracts/src/fixtures/document-folder-update-result-blocks.json";
-import {readDocumentFolderPacketBlocks} from "../../../../../packages/domain-contracts/src/lote4-document-folder-result-blocks";
-import own from "./document-folder-result.messages.json";
+import {readDocumentFolderPacketBlocks} from "@offroad/domain-contracts";
 import {DocumentFolderResult} from "./document-folder-result";
 
 type Catalog = Record<string, unknown>;
 const resolve = (catalog: Catalog, key: string): unknown => key.split(".")
   .reduce<unknown>((node, part) => (node && typeof node === "object" ? (node as Catalog)[part] : undefined), catalog);
-// The catalogs with this page's keys under App.workExecutions.documentFolder, as the integration adds them.
-const withOwn = (base: Catalog, locale: "pt-BR" | "en-US") => {
-  const c = structuredClone(base) as {App: {workExecutions: Record<string, unknown>}};
-  c.App.workExecutions.documentFolder = own[locale];
-  return c as Catalog;
-};
-const catalogs = {"pt-BR": withOwn(pt as Catalog, "pt-BR"), "en-US": withOwn(en as Catalog, "en-US")};
+// This page's keys in the shared catalogs, under App.workExecutions.documentFolder.
+const catalogs = {"pt-BR": pt as Catalog, "en-US": en as Catalog};
+const own = {"pt-BR": pt.App.workExecutions.documentFolder, "en-US": (en as typeof pt).App.workExecutions.documentFolder};
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async ({locale, namespace}: {locale: "pt-BR" | "en-US"; namespace: string}) => {

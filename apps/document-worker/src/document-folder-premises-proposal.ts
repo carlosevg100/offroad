@@ -28,7 +28,7 @@ export type DocumentFolderRequestTest = (message: string, hasAttachments: boolea
 const routedHere: DocumentFolderRequestTest = (message, hasAttachments) => (compileObjectiveToPlan({message, hasAttachments}).objectiveKind as string) === "document_folder";
 /** The premise methods' own objectives: an answer that compiles to one of them is that method's. */
 const otherPremiseKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash",
-  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
+  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update", "received_proposal", "financing_paths", "board_capital_discussion"]);
 
 /** How a turn enters the folder step: by its own request, or as a continuation candidate when the latest earlier
  * premise request among the recent messages is this one, the message is not a question nor a request for

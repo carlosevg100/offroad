@@ -3624,6 +3624,506 @@
           "credit_approval": "It is not a credit approval."
         },
         "topUpLate": "The need fits within the {limit} limit of the {facility}, but the recorded draw does not cover the tightest week: even with the whole limit, it closes at {closing} in the week of {week}, below the minimum."
+      },
+      "receivedProposal": {
+        "title": "Received proposal",
+        "lender": "Proposal from {lender}",
+        "status": "Status",
+        "question": "Question",
+        "gaps": "Information gaps",
+        "noGaps": "No information gaps.",
+        "exclusionsTitle": "What this analysis does not do",
+        "yes": "Yes",
+        "no": "No",
+        "units": "Amounts in millions of {currency}; spreads and costs in percent a year over CDI; covenant in times EBITDA.",
+        "noReading": "Premises are missing to read the proposal; what is missing is in the gaps.",
+        "openQuestions": {
+          "indexer_confirmation": "Before any number, the proposal's indexer must be confirmed by the term sheet or by the company."
+        },
+        "firmness": {
+          "indicative": "Indicative proposal, subject to credit approval, valid until {date}.",
+          "committed": "Committed proposal, valid until {date}."
+        },
+        "sawIndenture": "The bank has seen the indenture.",
+        "didNotSeeIndenture": "The bank has not seen the indenture.",
+        "diligence": "In diligence, the indenture's lien restriction is likely to surface, and credit is likely to reopen the structure.",
+        "liquidityTitle": "Payment calendar",
+        "liquidity": "In {year}, existing debt service is {existing} against {available} of cash available to meet it; the proposal adds {proposal}, for a total of {total}.",
+        "peakQuarter": "The heaviest pressure falls in the quarter ending {date}.",
+        "minimumWith": "With the proposal, the lowest cash in the horizon is {amount}, on {date}.",
+        "belowPolicy": "With the proposal, cash falls below the minimum from {with}; without it, from {without}.",
+        "belowPolicyWithOnly": "With the proposal, cash falls below the minimum from {with}.",
+        "fitTitle": "Term against the use of the money",
+        "fit": "{share} of the amount funds a seasonal use. Average life of {life} years, last payment on {date}.",
+        "useReadings": {
+          "longer_than_use": "the proposal's term exceeds the term of the use",
+          "shorter_than_use": "the proposal's term is shorter than the term of the use",
+          "within_use": "the proposal's term fits the term of the use"
+        },
+        "use": "{label} ({amount}): {reading}.",
+        "covenantTitle": "Covenant with the proposal",
+        "scenarios": {
+          "base": "Company case",
+          "bank": "Bank case"
+        },
+        "limits": {
+          "indenture": "Indenture",
+          "proposal": "Lender",
+          "board-policy": "Board policy"
+        },
+        "notTested": "not tested",
+        "breached": "above the limit",
+        "testsPerYear": "The lender tests {lender} times a year; the indenture, {indenture}.",
+        "anyBreachUnknown": "Without every required test, there is no compliance conclusion.",
+        "anyBreachYes": "There is a date and case where a limit goes above what is allowed with the proposal.",
+        "anyBreachNo": "On every required date and case, the limits stay within what is allowed with the proposal.",
+        "missingTests": "Required tests that are missing: {list}.",
+        "untestedLimits": "Limits with no test at all, not tested: {list}.",
+        "lenderBeforeDraw": "Lender test dates before the draw, as contrast only: {list}.",
+        "collateralTitle": "Collateral and indenture",
+        "collateral": "Coverage of {coverage}% asks for {required} of receivables. Of the {free} nominally free, {assignable} can be assigned.",
+        "shortfall": "The assignable portfolio is {shortfall} short of the request.",
+        "leftAfter": "After the assignment, {left} remains assignable, against a seasonal peak of {peak}.",
+        "restrictedAccount": "The bank asks for a restricted account.",
+        "reference": "Reference coverage from {low}% to {high}%.",
+        "atTop": "The requested coverage is at or above the top of the reference.",
+        "reasons": {
+          "assigned_to_other_creditor": "already assigned to another creditor",
+          "assignment_prohibited_without_debtor_consent": "contract forbids assignment without the debtor's consent",
+          "past_due": "past due"
+        },
+        "pledge": "The indenture's basket for new liens is {limit} ({basis}), with {occupied} already used; {remaining} remains.",
+        "bases": {
+          "aggregate": "aggregate amount",
+          "per_operation": "per operation"
+        },
+        "consent": "The requested collateral exceeds the basket by {excess} and depends on the debenture holders' consent.",
+        "consentWindow": "Calling the meeting now, consent comes by {by}; the money is needed on {need} ({slack} days of slack).",
+        "noConsent": "The requested collateral fits in the indenture's basket.",
+        "priceTitle": "Price and cost",
+        "price": "Nominal spread of CDI plus {nominal}. Effective cost over the life of CDI plus {gross} gross.",
+        "net": "Net of tax, CDI plus {net}, under the simplified full-deduction convention in lucro real.",
+        "netConventions": {
+          "not_all_periods_taxable": "There is a period without taxable profit in the proposal's life; the net cost is not stated.",
+          "life_beyond_fiscal_calendar": "The proposal runs beyond the adopted fiscal calendar; without a hypothesis for those years, the net cost is not stated.",
+          "no_deduction_presumido": "Under lucro presumido, the net cost equals the gross cost.",
+          "regime_unknown": "Tax regime not reported; net cost not computed."
+        },
+        "upfront": "Fee and IOF withheld at the draw add up to {upfront}% of the amount, of which {iof}% is IOF.",
+        "positions": {
+          "below_range": "below the range",
+          "at_or_below_median": "within the range, up to the median",
+          "above_median_within_range": "within the range, above the median",
+          "above_range": "above the range"
+        },
+        "market": "The nominal spread is {position} of comparables, from {low}% to {high}% with a median of {median}% ({sample} comparables, {confidence} confidence, on {date}).",
+        "confidences": {
+          "high": "high",
+          "moderate": "moderate",
+          "low": "low"
+        },
+        "history": "Against the {peer} ({date}): observed difference of {observed} basis points, expected {expected}, residual {residual}.",
+        "historyNoResidual": "Against the {peer} ({date}): observed difference of {observed} basis points, expected {expected}.",
+        "families": {
+          "pricing_date": "market on the date",
+          "tenor": "tenor",
+          "guarantee": "collateral",
+          "instrument_distribution": "instrument",
+          "scale": "size",
+          "other": "risk and other"
+        },
+        "step": "{family}: {bps} basis points",
+        "asksTitle": "What each ask to the bank buys",
+        "alternativesTitle": "The company's alternatives on the same basis",
+        "columns": {
+          "year": "Year",
+          "existingService": "Existing service",
+          "proposalService": "From the proposal",
+          "totalService": "Total",
+          "available": "Available for service",
+          "shortfallWith": "Shortfall with the proposal",
+          "date": "Date",
+          "scenario": "Case",
+          "ratio": "Net debt to EBITDA",
+          "bucket": "Portfolio group",
+          "amount": "Amount",
+          "holder": "With whom",
+          "reasons": "Why it is left out",
+          "ask": "Ask",
+          "serviceDelta": "Service in the peak year",
+          "costDelta": "Effective cost (basis points)",
+          "collateralDelta": "Collateral asked",
+          "consent": "Still needs consent",
+          "account": "Restricted account",
+          "route": "Route",
+          "uses": "Uses covered",
+          "allIn": "All-in cost over CDI",
+          "difference": "Difference against the proposal (basis points)",
+          "guarantee": "Collateral",
+          "months": "Months to the money"
+        },
+        "monthsRange": "{min} to {max}",
+        "notComparable": "not comparable",
+        "assessmentTitle": "Reading",
+        "factsTitle": "Facts",
+        "readingsTitle": "Reading",
+        "recommendationsTitle": "What I would ask for",
+        "wouldChangeTitle": "What would change the conclusion",
+        "questionsTitle": "Questions for the bank and the company",
+        "facts": {
+          "proposal_indicative": "The proposal is indicative and depends on credit approval.",
+          "collateral_exceeds_assignable_portfolio": "The requested collateral exceeds the portfolio that can be assigned.",
+          "assignment_prohibited_receivables_excluded": "Receivables of a customer that forbids assignment are left out.",
+          "indenture_consent_required": "The requested collateral exceeds the indenture's basket and depends on the debenture holders' consent.",
+          "peak_year_service_exceeds_available_cash": "In the peak year, debt service exceeds the cash available to meet it.",
+          "cash_below_minimum_with_proposal": "With the proposal, cash falls below the minimum in some quarter.",
+          "board_policy_breached_in_a_case": "In some case, leverage exceeds the board policy limit.",
+          "lender_tests_more_often_than_indenture": "The lender tests the covenant more often than the indenture.",
+          "restricted_account_requested": "The bank asks for a restricted account.",
+          "coverage_at_top_of_reference": "The requested coverage is at or above the top of the reference."
+        },
+        "readings": {
+          "term_longer_than_seasonal_use": "The term is longer than the seasonal use it funds.",
+          "term_shorter_than_capex_use": "The term is shorter than the life of the investment it funds.",
+          "all_in_cost_well_above_nominal": "The cost over the life is well above the nominal spread.",
+          "nominal_spread_below_range": "The nominal spread is below the comparables range.",
+          "nominal_spread_at_or_below_median": "The nominal spread is within the range, up to the median.",
+          "nominal_spread_above_median_within_range": "The nominal spread is within the range, above the median.",
+          "nominal_spread_above_range": "The nominal spread is above the comparables range.",
+          "improvement_partly_paid_in_collateral": "The improvement against the last operation is partly paid with collateral.",
+          "real_improvement_against_last_operation": "The improvement against the last operation remains after the adjustments.",
+          "covenant_headroom_tight": "Covenant headroom is tight on some date.",
+          "diligence_may_reopen_structure": "Diligence may reopen the structure.",
+          "covenant_tests_missing": "Required covenant tests are missing.",
+          "net_cost_conditioned_on_taxable_profit": "The net cost depends on taxable profit not adopted for the whole life."
+        },
+        "recommendations": {
+          "address_indenture_consent_before_signing": "Address the indenture consent with the bank before signing.",
+          "ask_longer_grace_and_tenor": "Ask for longer grace and tenor to relieve the peak year.",
+          "ask_lower_coverage_and_no_restricted_account": "Ask for lower coverage and no restricted account.",
+          "separate_uses_by_term": "Separate the uses by term, with a route for each.",
+          "keep_price_discussion_secondary": "With the spread in the range, negotiate the structure before the price."
+        },
+        "wouldChange": {
+          "debtor_consent_for_restricted_receivables": "Consent from the customer that forbids assignment.",
+          "indenture_clause_wording": "The wording of the indenture's lien clause.",
+          "other_free_asset_for_collateral": "Another free asset to make up the collateral.",
+          "seasonal_need_above_adopted": "A seasonal need above the one adopted.",
+          "committed_terms_after_diligence": "The committed terms after diligence."
+        },
+        "questions": {
+          "lender_covenant_definition": "To the bank: is the covenant definition the indenture's?",
+          "reciprocity_expected_by_lender": "To the bank: is reciprocity expected?",
+          "restricted_debtor_consent": "To the company: would the customer that forbids assignment consent?",
+          "indenture_clause_wording": "To the company: is the indenture's basket an aggregate amount or per operation, and what is already in it?",
+          "other_free_asset": "To the company: is there another free asset to make up the collateral?"
+        },
+        "process": "This analysis does not accept the proposal, does not talk to the bank and does not send a counterproposal.",
+        "exclusions": {
+          "proposal_acceptance": "accept the proposal",
+          "counterparty_contact": "talk to the bank",
+          "credit_approval": "approve credit",
+          "legal_opinion": "give a legal opinion",
+          "reciprocity_pricing": "price reciprocity"
+        }
+      },
+      "documentFolder": {
+        "title": "Folder organized",
+        "status": "Status",
+        "question": "Question",
+        "mode": "Request",
+        "modes": {
+          "organize": "Organize and say what matters for the decisions in course",
+          "organize_only": "Organize only, without analysis",
+          "organize_for_debt": "Organize for the debt discussion"
+        },
+        "asOf": "Read on {date}.",
+        "headline": "{files} files organized by subject. Exact copies: {duplicates}; superseded by a later version: {superseded}; already in the system: {inVault}.",
+        "noReading": "The folder could not be organized yet; the gaps below say what is missing.",
+        "historical": "The update could not be read. The inventory below is the prior one, shown as history.",
+        "decisionFindings": "What matters for the decisions in course",
+        "generalFindings": "What matters in the folder",
+        "noFindings": "Nothing in the folder changes the decisions in course.",
+        "source": "{file}, {where}",
+        "page": "p. {page}",
+        "versions": "Versions",
+        "prevails": "Prevails: {files}.",
+        "superseded": "Superseded: {files}.",
+        "sideBySide": "Kept side by side: {files}.",
+        "resolutions": {
+          "audited_over_draft": "the audited version prevails over the draft",
+          "higher_assurance": "the version with higher assurance prevails",
+          "later_version": "the later version prevails",
+          "later_position": "the latest position prevails",
+          "side_by_side": "versions kept side by side",
+          "unresolved": "no prevailing version",
+          "effective_text": "text in force read with its amendments",
+          "same_text": "same text"
+        },
+        "inventory": "Inventory",
+        "partition": "Entity: {partition}",
+        "columns": {
+          "file": "File as received",
+          "what": "What it is",
+          "entity": "Entity and period",
+          "version": "Version",
+          "situation": "Situation",
+          "findings": "Finding"
+        },
+        "documentary": "What the documents say",
+        "notRead": "What was not read",
+        "purposeGaps": "What is missing",
+        "conditional": "if it exists",
+        "questions": "Question only the company can answer",
+        "update": "What changed with what arrived",
+        "rowsUpdated": "Rows updated: {files}.",
+        "rowsAdded": "Rows added: {files}.",
+        "rowsPreserved": "{count} rows kept as they were.",
+        "identityCheck": "Check {id}: reported {reported}, recomposed {recomposed} (BRL millions).",
+        "checkStatuses": {
+          "matches": "matches",
+          "differs": "differs",
+          "not_run": "not checked"
+        },
+        "informed": "{statement} (informed by {author} on {date})",
+        "stillOpen": "Still open: {items}.",
+        "notValidated": "No document was declared validated and no ratio was calculated.",
+        "gaps": "Information gaps",
+        "noGaps": "No information gaps.",
+        "exclusionsTitle": "Out of scope",
+        "exclusions": {
+          "ratio_calculation": "Ratio calculation",
+          "projection": "Projection",
+          "recommendation": "Recommendation",
+          "document_validation": "Document validation",
+          "third_party_distribution": "Sending to third parties"
+        },
+        "gapReasons": {
+          "reading_conflicts_with_same_hash": "the same file was read two ways; the reading must be redone"
+        }
+      },
+      "financingPaths": {
+        "title": "Financing paths on one basis",
+        "status": "Status",
+        "question": "Question",
+        "units": "Amounts in millions of {currency}; leverage in times EBITDA; spreads a year over DI.",
+        "noReading": "No numeric reading yet: premises are missing, listed below.",
+        "withoutActionTitle": "Without action",
+        "withoutAction": "Without new funding, cash falls below the minimum of {minimum} from {first} and reaches {lowest} on {lowestDate}.",
+        "withoutActionNeverBelow": "Without new funding, cash stays at or above the minimum of {minimum}; the lowest cash is {lowest} on {lowestDate}.",
+        "peakYear": "In {year}, debt service adds up to {service} ({principal} of principal and {interest} of interest), against {available} of cash available before the project's investment: {gap} short.",
+        "peakYearCovered": "In {year}, debt service adds up to {service} ({principal} of principal and {interest} of interest), against {available} of cash available before the project's investment: {gap} to spare.",
+        "recommendationTitle": "Path inside every gate",
+        "recommendation": "{label}. Minimum cash of {minimum} on {date}, financing cost of {cost} through {end} and net debt of {netDebt} at the end of the horizon.",
+        "prepaid": "Prepays: {instruments}.",
+        "leverage": "Leverage on the indenture definition: {values}, against the limit of {limit}.",
+        "stressPolicy": "In the stress case, the worst point is {stress} on {date}, against the board policy of {policy}.",
+        "stressIndenture": "In the stress case, the worst point is {stress} on {date}.",
+        "longInstrument": "Long instrument: {label}, targeting {target}; the smallest amount that keeps the path inside every gate is {floor}.",
+        "amortizationYears": "Amortization from {first} to {last}, a term of {term} years.",
+        "spread": "Effective cost over the life of DI plus {spread}; at the sounding's maximum spread of {maximum}, the effective cost rises to DI plus {atCondition}.",
+        "insideAtCondition": "Under that condition the path stays inside every gate.",
+        "outsideAtCondition": "Under that condition the path leaves the gates.",
+        "chargesOutsideSpread": "Charges of the path on other instruments, outside that cost: {charges}.",
+        "calendar": "Sounding by {sounding}; route decision by {decision}.",
+        "mustPrecede": "The decision comes before {instrument} matures on {date}: {days} days.",
+        "noRecommendation": "No adopted path passes every gate; the table below shows the order and what each one misses.",
+        "alternativeTitle": "Dated alternative",
+        "alternative": "{label}, with {target} in {instrument}; decision by {date}.",
+        "alternativeConditions": "Gates it still misses: {conditions}.",
+        "alternativeNoConditions": "It passes every gate.",
+        "pathsTitle": "Paths on the same yardstick",
+        "pathsNote": "Ordered by the gates passed, then by financing cost through the end of the horizon and by net debt at the end.",
+        "insideEveryGate": "Inside every gate",
+        "yes": "Yes",
+        "no": "No",
+        "columns": {
+          "rank": "Order",
+          "path": "Path",
+          "role": "Role",
+          "failedGates": "Gates missed",
+          "minimumCash": "Lowest cash",
+          "cost": "Financing cost",
+          "netDebt": "Net debt at the end",
+          "leverage": "Worst leverage",
+          "stress": "Worst leverage under stress",
+          "consent": "Needs consent",
+          "period": "Period end",
+          "withoutAction": "Without action",
+          "recommended": "Recommended path",
+          "instrument": "Instrument",
+          "profile": "Profile",
+          "firstYear": "First year",
+          "result": "Result"
+        },
+        "roles": {
+          "status_quo": "Without action",
+          "candidate": "Option",
+          "companion": "Support"
+        },
+        "gates": {
+          "minimum_cash_base": "minimum cash in the base case",
+          "cash_nonnegative_stress": "non-negative cash under stress",
+          "indenture_base": "indenture covenant in the base case",
+          "indenture_stress": "indenture covenant under stress",
+          "policy_base": "board policy in the base case",
+          "policy_stress": "board policy under stress",
+          "basket_without_consent": "security inside the indenture basket, without consent",
+          "amortization_after_horizon": "amortization after the horizon covered by cash"
+        },
+        "cashTitle": "Cash at the end of each period",
+        "amortizationTitle": "Amortization after the horizon",
+        "firstYearCell": "{amortization} to amortize against {available} available in {year}",
+        "covered": "Covered every year",
+        "shortfallFrom": "Cash falls short from {year}",
+        "notCovered": "Not covered",
+        "wouldChangeTitle": "What would change the recommendation",
+        "demand": "If demand for {instrument} falls below {floor} (target {target}), the path leaves the gates.",
+        "sensitivityHolds": "{label}: the recommendation holds.",
+        "sensitivityBreaks": "{label}: the recommendation no longer holds ({gates}).",
+        "anotherPath": "another path comes first",
+        "assessmentTitle": "Fact, reading and recommendation",
+        "factsTitle": "Facts",
+        "readingsTitle": "Readings",
+        "recommendationsTitle": "Recommendations",
+        "changesTitle": "What would change the conclusion",
+        "codes": {
+          "facts": {
+            "status_quo_below_minimum_cash": "Without action, cash falls below the policy minimum within the horizon.",
+            "status_quo_peak_service_exceeds_available_cash": "In the year of heaviest service, the debt in place asks for more than the cash available before the investment.",
+            "indenture_basket_partly_occupied": "Part of the indenture basket for new security is already used.",
+            "no_path_inside_every_gate": "No adopted path passes every gate."
+          },
+          "readings": {
+            "recommended_path_inside_every_gate": "One path passes every gate and comes first in the order.",
+            "cheapest_path_misses_a_gate": "The path with the lowest financing cost misses a gate.",
+            "paths_with_the_project_miss_gates": "The paths with the investment on schedule miss a gate.",
+            "stress_policy_headroom_tight": "Under stress, the headroom against the board policy is narrow.",
+            "shorter_amortization_fails_after_horizon": "A shorter amortization leaves installments above cash after the horizon.",
+            "alternative_depends_on_consent": "The alternative depends on consent for the security.",
+            "alternative_misses_amortization_test": "The alternative does not cover the amortization after the horizon."
+          },
+          "recommendations": {
+            "follow_recommended_path_under_condition": "Follow the recommended path under the sounding's condition.",
+            "review_project_before_committing": "Review the investment before committing the disbursement.",
+            "ask_for_the_longer_amortization": "Ask for the longer amortization in the new instrument.",
+            "negotiate_covenant_headroom_in_new_terms": "Negotiate covenant headroom in the new instrument's terms.",
+            "keep_dated_alternative": "Keep the alternative, with a decision date before the maturity it resolves."
+          },
+          "wouldChange": {
+            "issue_demand_below_minimum_amount": "Demand for the issue below the smallest amount that keeps the path inside every gate.",
+            "sensitivity_breaks_recommendation": "One of the adopted sensitivities takes the recommended path out of the gates."
+          }
+        },
+        "process": "The analysis does not sound investors, contact banks or BNDES, issue or sign.",
+        "gaps": "Information gaps",
+        "noGaps": "No gaps on this basis.",
+        "exclusionsTitle": "What this analysis does not do",
+        "exclusions": {
+          "investor_demand": "Measure investor demand",
+          "lender_appetite": "Measure bank appetite",
+          "legal_opinion_on_indenture": "Give a legal opinion on the indenture",
+          "contact_with_counterparties": "Contact counterparties",
+          "issuance_or_signature": "Issue or sign"
+        }
+      },
+      "boardMaterial": {
+        "title": "Board discussion of the capital structure",
+        "status": "Status",
+        "question": "Question",
+        "outlineFirst": "There is time to align the outline before producing: these are the deliberations and the questions that change the material. The material comes after confirmation.",
+        "materialReady": "Material prepared, version {version}, for review before the meeting.",
+        "noReading": "Premises are missing to prepare the discussion; what is missing is in the gaps.",
+        "deliberations": "Deliberations requested, by urgency",
+        "deadline": "{action} by {date}",
+        "narrative": "Narrative",
+        "questionsBefore": "Before the material",
+        "pages": "Pages ({count})",
+        "agendaFits": "{pages} pages fit in {minutes} minutes of agenda.",
+        "agendaExceeds": "{pages} pages exceed what fits in {minutes} minutes ({capacity} pages).",
+        "agendaUnknown": "Agenda time not stated; one page every {perPage} minutes.",
+        "pageTitle": "{number}. {title}",
+        "options": "Options, with the criteria:",
+        "appendixPages": "Pages in the appendix",
+        "summary": "Summary for prior reading",
+        "questions": "Likely questions and answers",
+        "appendix": "Appendix",
+        "identity": "Figure check",
+        "identityMatches": "The {count} figures of the material were checked against the reviewed analyses and match; the {facts} material facts appear in the final text.",
+        "identityPartial": "{count} figures checked against the reviewed analyses.",
+        "columns": {
+          "shown": "As shown",
+          "source": "Reviewed analysis",
+          "path": "Field read"
+        },
+        "pending": "Declared pending items",
+        "indicative": "{reason}.",
+        "sourcePartial": "{source}: analysis with its own gaps, cited in the material.",
+        "omissions": "Removal requests",
+        "omission": "Request by {requester}: {outcome}.",
+        "versionsKept": "{count} versions of the material kept; the earlier one remains available.",
+        "notSent": "Nothing was presented or sent to third parties.",
+        "sourcesTitle": "Reviewed analyses read",
+        "gaps": "Information gaps",
+        "noGaps": "No information gaps.",
+        "exclusionsTitle": "What this preparation does not do",
+        "authorities": {
+          "board": "board authority",
+          "executive": "management authority",
+          "shareholders": "shareholder authority"
+        },
+        "roles": {
+          "decisions": "decisions",
+          "situation": "situation",
+          "constraint": "constraint",
+          "topic": "topic",
+          "alternatives": "alternatives",
+          "recommendation": "recommendation",
+          "risk": "risks",
+          "what_changes": "what changes the recommendation",
+          "next_steps": "next steps"
+        },
+        "outlineQuestions": {
+          "template": "The last board presentation, to use its template.",
+          "agenda_minutes": "How much time is on the agenda.",
+          "board_has_seen": "Whether the board has seen the topic."
+        },
+        "outcomes": {
+          "applied": "applied",
+          "refused": "not applied"
+        },
+        "templates": {
+          "not_supplied": "Company template not sent.",
+          "supplied_not_applied": "Template received; the visual application happens in the material review."
+        },
+        "sources": {
+          "tabela-divida": "Debt table",
+          "covenant": "Covenant and policy",
+          "caixa-semanal": "Weekly cash",
+          "linha-embalagem": "Investment project",
+          "projecao": "Driver-based projection",
+          "plano-fpa": "Challenge to the finance plan",
+          "recebiveis": "Receivables",
+          "custo-relativo": "Relative cost of debt",
+          "plano-2027": "Financing plan"
+        },
+        "gapReasons": {
+          "figure_pending_reviewed_result": "figure without a reviewed analysis",
+          "layout_exceeds_page": "text longer than the page",
+          "pages_exceed_agenda": "pages above the agenda time",
+          "recommendation_removed_without_options": "recommendation removed without options",
+          "label_not_in_dictionary": "name outside the dictionary",
+          "informed_reason_not_in_dictionary": "reason outside the dictionary",
+          "object_not_in_vocabulary": "object outside the vocabulary",
+          "species_not_registered": "instrument kind not registered"
+        },
+        "exclusions": {
+          "recalculation": "Does not recalculate the reviewed analyses.",
+          "presentation_delivery": "Does not present the material.",
+          "template_import": "Does not import the template automatically.",
+          "third_party_distribution": "Sends nothing to third parties.",
+          "credit_approval": "Is not a credit approval."
+        }
       }
     },
     "overview": "Overview",
@@ -8203,6 +8703,41 @@
         "title": "Premises to update the quarter",
         "lead": "I update the weekly cash and the covenant with this close, each premise with its origin, over the prior versions, which are kept. Confirm to calculate, or correct it in the conversation and I redo it.",
         "cases": "Actual against projected, the EBITDA and cash bridges by cause, what is one-off and what persists and until when, the tightest week and the covenant before and after, the action within what is approved, which decision changes and what did not change."
+      },
+      "boardMaterial": {
+        "title": "Premises for the board discussion",
+        "lead": "I prepare the discussion over this work's reviewed analyses, each pinned to the version I read; pages, decisions and figures come from them. Confirm to prepare, or correct it in the conversation and I redo it.",
+        "cases": "Outline before the material when there is time; then the pages with the conclusion in the title, the summary, the appendix, the questions with answers and the check of every figure.",
+        "groups": {
+          "version": "Reviewed analyses",
+          "action": "Deliberations",
+          "item": "Pages and items of the material"
+        }
+      },
+      "receivedProposal": {
+        "title": "Premises to read the proposal received",
+        "lead": "I read the proposal against the use of the money, the cash, the limits and the collateral with these terms and premises, each with its origin. Confirm to calculate, or correct it in the conversation and I redo it.",
+        "cases": "Whether the term fits the use, the cash with the proposal, the covenant in the indenture definition and in the bank case, the collateral against the portfolio and the basket, the price on a comparable basis with IOF and costs, what to ask the bank and the alternatives.",
+        "groups": {
+          "case": "Cases and asks to the bank",
+          "option": "Alternatives",
+          "item": "Portfolio groups"
+        }
+      },
+      "documentFolder": {
+        "title": "Premises to organize the folder",
+        "lead": "I organize the folder with these readings, the registry, the open decisions and what is already in the vault, each with its origin. Confirm to organize, or correct it in the conversation and I redo it.",
+        "cases": "What each file is, of whom and of when, which version counts for each use, what in the folder changes an open decision, what is missing by purpose and what was not read."
+      },
+      "financingPaths": {
+        "title": "Premises to evaluate the financing paths",
+        "lead": "I evaluate the paths on one basis with these instruments, limits, variants and paths, each with its origin. Confirm to calculate, or correct it in the conversation and I redo it.",
+        "cases": "Without action, each path by quarter with cash, service, tax, the indenture and the basket, the order by the criteria, the recommended path with its condition, the dated fallback plan and what would change it.",
+        "groups": {
+          "case": "Investment variants",
+          "option": "Paths",
+          "scenario": "Sensitivities"
+        }
       }
     },
     "groups": {
@@ -8225,7 +8760,12 @@
       "line": "Close lines",
       "cause": "Causes of the deviations",
       "facility": "Approved facilities",
-      "dependent": "Dependent analyses and materials"
+      "dependent": "Dependent analyses and materials",
+      "file": "Files",
+      "entity": "Registry",
+      "decision": "Open decisions",
+      "vault": "Already in the vault",
+      "informed": "The person's answers"
     },
     "origins": {
       "document": "Document",
@@ -8294,7 +8834,91 @@
       "dedicatedVehicleThreshold": "Volume that justifies a dedicated vehicle",
       "priorWeeklyCash": "Prior weekly cash",
       "priorCovenant": "Prior covenant test",
-      "materialityFloor": "Materiality floor"
+      "materialityFloor": "Materiality floor",
+      "boardMeetingDate": "Meeting date",
+      "boardAgendaMinutes": "Agenda time",
+      "boardTemplate": "Board template",
+      "boardOutlineConfirmed": "Outline confirmed",
+      "boardLeadDays": "Outline lead time",
+      "boardMinutesPerPage": "Minutes per page",
+      "boardSource": {
+        "tabela-divida": "Reviewed result: Debt table",
+        "covenant": "Reviewed result: Covenant and policy",
+        "caixa-semanal": "Reviewed result: Weekly cash",
+        "linha-embalagem": "Reviewed result: Investment project",
+        "projecao": "Reviewed result: Driver-based projection",
+        "plano-fpa": "Reviewed result: Challenge to the finance plan",
+        "recebiveis": "Reviewed result: Receivables",
+        "custo-relativo": "Reviewed result: Relative cost of debt",
+        "plano-2027": "Reviewed result: Financing plan"
+      },
+      "boardDeliberation": {
+        "linha": "Deliberation: packaging line",
+        "vencimentos": "Deliberation: maturities",
+        "politica": "Deliberation: debt policy",
+        "safra": "Deliberation: crop working capital"
+      },
+      "boardPage": {
+        "decisions": "Page: decisions",
+        "situation": "Page: situation",
+        "constraint": "Page: constraint",
+        "topic": "Page: topic",
+        "alternatives": "Page: alternatives",
+        "recommendation": "Page: recommendation",
+        "risk": "Page: risks",
+        "what_changes": "Page: what changes the recommendation",
+        "next_steps": "Page: next steps"
+      },
+      "boardTopicSeen": {
+        "yes": "Topic the board has seen: {label}",
+        "no": "Topic the board has not seen: {label}",
+        "unknown": "Topic to confirm whether the board has seen it: {label}"
+      },
+      "boardInformedReason": "Reason stated by the board chair",
+      "boardOmission": {
+        "recommendation": "Remove the recommendation: {label}",
+        "page": "Remove the page: {label}",
+        "deadline": "Remove the deadline: {label}"
+      },
+      "boardOmitted": "Left out of the material: {label}",
+      "receivedProposal": "Proposal from {label}",
+      "indexer": "Index",
+      "drawDate": "Draw date",
+      "paymentDay": "Payment day",
+      "use": "Use: {label}",
+      "needDate": "Date the money is needed",
+      "readingDate": "Reading date",
+      "companyCalendar": "Company calendar without the proposal",
+      "seasonalPeak": "Seasonal peak need",
+      "indentureLimit": "Indenture limit: {label}",
+      "boardPolicy": "Board policy",
+      "indentureBasket": "Indenture basket for new collateral",
+      "covenantScenarios": "Company case and bank case",
+      "covenantMeasurements": "Covenant measurements without the proposal",
+      "collateralReference": "Reference collateral coverage range",
+      "creditTax": "Credit IOF",
+      "indexCurve": "Annual CDI by year",
+      "tax": "Tax regime and rate",
+      "taxableAfterCalendar": "Taxable profit after the calendar",
+      "marketRange": "Comparable spread range",
+      "lastOperation": "Last operation: {label}",
+      "askCase": "Ask to the bank: {label}",
+      "documentFolderMode": {
+        "organize": "Request: organize and say what matters for the open decisions",
+        "organize_only": "Request: organize only, without analysis",
+        "organize_for_debt": "Request: organize for the debt discussion"
+      },
+      "documentFolderWindow": "Start of the reading window: {label}",
+      "quarterlyProjection": "Cash and projection by period",
+      "diCurve": "CDI curve",
+      "taxRate": "Tax rate",
+      "stressCase": "Stress case",
+      "postHorizonBase": "Annual base after the horizon",
+      "soundingPlan": "Sounding trigger and dates",
+      "issueQuantum": "Minimum issue resolution",
+      "indentureCovenant": "Indenture covenant",
+      "withoutProject": "Without the investment project",
+      "statusQuoPath": "Keep and roll over at maturity"
     }
   }
 }

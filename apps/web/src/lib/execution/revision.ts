@@ -2,6 +2,8 @@ import "server-only";
 
 import {readCapitalProcedurePacketBlocks, readCovenantHeadroomPacketBlocks, readDebtCapacityPacketBlocks, readDebtTablePacketBlocks, readFinancingComparisonPacketBlocks, readInvestmentDecisionPacketBlocks, readWeeklyCashPacketBlocks,
   readOperatingProjectionPacketBlocks, readProjectionChallengePacketBlocks, readQuarterUpdatePacketBlocks, readReceivablesFundingPacketBlocks,
+  readBoardMaterialPacketBlocks, readDocumentFolderPacketBlocks, readFinancingPathsPacketBlocks, readReceivedProposalPacketBlocks,
+  type BoardMaterialResultBlocksView, type DocumentFolderResultBlocksView, type FinancingPathsResultBlocksView, type ReceivedProposalResultBlocksView,
   type OperatingProjectionResultBlocksView, type ProjectionChallengeResultBlocksView, type QuarterUpdateResultBlocksView, type ReceivablesFundingResultBlocksView,
   type CovenantHeadroomResultBlocksView, type DebtCapacityResultBlocksView, type DebtTableResultBlocksView, type WeeklyCashResultBlocksView, type ExecutionResultBlocksView, type ExecutionResultCitation, type FinancingComparisonResultBlocksView, type Freshness, type InvestmentResultBlocksView} from "@offroad/domain-contracts";
 import type {SupabaseClient} from "@supabase/supabase-js";
@@ -29,7 +31,8 @@ type ExecutionRevisionBase = {
 /** A capital result carries its decision blocks; an investment result the case comparison; a
  * comparison of offers its proposals per case; a capacity analysis its limits per schedule; the debt
  * table its instruments and views; covenant headroom its measurements per limit; weekly cash its weeks;
- * the lote 3 results (projection, challenge, receivables funding, quarter update) their own blocks. */
+ * the lote 3 results (projection, challenge, receivables funding, quarter update) and the lote 4 results (folder,
+ * received proposal, financing paths, board material) their own blocks. */
 export type ExecutionRevision = ExecutionRevisionBase & (
   | {readonly kind?: "capital"; readonly blocks: ExecutionResultBlocksView}
   | {readonly kind: "investment"; readonly investment: InvestmentResultBlocksView}
@@ -41,7 +44,11 @@ export type ExecutionRevision = ExecutionRevisionBase & (
   | {readonly kind: "operating_projection"; readonly operatingProjection: OperatingProjectionResultBlocksView}
   | {readonly kind: "projection_challenge"; readonly projectionChallenge: ProjectionChallengeResultBlocksView}
   | {readonly kind: "receivables_funding"; readonly receivablesFunding: ReceivablesFundingResultBlocksView}
-  | {readonly kind: "quarter_update"; readonly quarterUpdate: QuarterUpdateResultBlocksView});
+  | {readonly kind: "quarter_update"; readonly quarterUpdate: QuarterUpdateResultBlocksView}
+  | {readonly kind: "document_folder"; readonly documentFolder: DocumentFolderResultBlocksView}
+  | {readonly kind: "received_proposal"; readonly receivedProposal: ReceivedProposalResultBlocksView}
+  | {readonly kind: "financing_paths"; readonly financingPaths: FinancingPathsResultBlocksView}
+  | {readonly kind: "board_material"; readonly boardMaterial: BoardMaterialResultBlocksView});
 
 /**
  * - `absent`: no revision (an execution committed before the producer, or a result the producer could
@@ -113,6 +120,23 @@ export function executionRevisionFromRead(read: ArtifactRead, executionId: strin
   if (pinned(manifest.traces, "quarter-update-packet:")) {
     const quarterUpdate = readQuarterUpdatePacketBlocks(serving.blocks);
     return quarterUpdate ? {state: "ready", revision: {...base("quarter-update-packet:"), kind: "quarter_update", quarterUpdate}} : {state: "unavailable"};
+  }
+  // Lote 4: each packet's trace names its schema without the version suffix.
+  if (pinned(manifest.traces, "document-folder-inventory-packet:")) {
+    const documentFolder = readDocumentFolderPacketBlocks(serving.blocks);
+    return documentFolder ? {state: "ready", revision: {...base("document-folder-inventory-packet:"), kind: "document_folder", documentFolder}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "received-proposal-packet:")) {
+    const receivedProposal = readReceivedProposalPacketBlocks(serving.blocks);
+    return receivedProposal ? {state: "ready", revision: {...base("received-proposal-packet:"), kind: "received_proposal", receivedProposal}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "capital-structure-paths-packet:")) {
+    const financingPaths = readFinancingPathsPacketBlocks(serving.blocks);
+    return financingPaths ? {state: "ready", revision: {...base("capital-structure-paths-packet:"), kind: "financing_paths", financingPaths}} : {state: "unavailable"};
+  }
+  if (pinned(manifest.traces, "board-capital-discussion-packet:")) {
+    const boardMaterial = readBoardMaterialPacketBlocks(serving.blocks);
+    return boardMaterial ? {state: "ready", revision: {...base("board-capital-discussion-packet:"), kind: "board_material", boardMaterial}} : {state: "unavailable"};
   }
   const blocks = readCapitalProcedurePacketBlocks(serving.blocks);
   if (!blocks) return {state: "unavailable"};

@@ -5,6 +5,10 @@ export * from "./task-localization";
 export * from "./capital-jobs";
 export * from "./job-inference";
 export * from "./objective-plan";
+export * from "./received-proposal-route";
+export * from "./document-folder-route";
+export * from "./financing-paths-route";
+export * from "./board-material-route";
 export {
   terminalWorkProductSchema,
   terminalDeliveryFormatSchema,

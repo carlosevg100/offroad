@@ -1,6 +1,5 @@
 import {getTranslations} from "next-intl/server";
-// Integration: import this type from "@offroad/domain-contracts" once its index exports lote4-received-proposal-result-blocks.
-import type {ReceivedProposalResultBlocksView} from "../../../../../packages/domain-contracts/src/lote4-received-proposal-result-blocks";
+import type {ReceivedProposalResultBlocksView} from "@offroad/domain-contracts";
 import {formatIsoDate, formatRounded, shiftDecimal} from "@/lib/execution/format";
 
 /** Whether a received proposal serves the company, as the blocks carry it, in the order the procedure weighs it:

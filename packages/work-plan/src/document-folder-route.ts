@@ -11,7 +11,7 @@
  */
 
 /** The kinds this route may take any message from. */
-export const documentFolderPromotableKinds = ["ambiguous", "documents_to_case", "information_organization"] as const;
+export const documentFolderPromotableKinds = ["ambiguous", "documents_to_case"] as const;
 
 /** The ficha phrasings other routes take, each the whole construction (only the final punctuation free). */
 export const documentFolderFichaExceptions = [

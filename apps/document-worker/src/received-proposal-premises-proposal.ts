@@ -11,32 +11,13 @@ import {readerGaps, type BoundBasis} from "./lote3-reader-check";
 export const receivedProposalPremiseMethod = {methodId: "evaluate-received-proposal", methodVersion: "2026.10.27-v1"} as const;
 
 // ---------------------------------------------------------------------------------------------
-// Entry. The router's own kind (received_proposal) decides once it is integrated; until then the same
-// recognizer as packages/work-plan/src/received-proposal-route.ts promotes from the kinds it may take.
-
-const promotable = new Set(["ambiguous", "documents_to_case", "factual_question"]);
-const proposalObject = /\b(?:proposta|term\s*sheet|termsheet|oferta|carta proposta|carta de proposta)\b|\b(?:ofereceu|ofereceram|mandou|mandaram|enviou|enviaram) (?:uma?|a|o) (?:linha|ccb|cce|nce|credito|financiamento|emprestimo|operacao)\b/;
-const severalOrCompared = /\b(?:propostas|term\s*sheets|termsheets|ofertas|compar\w*|versus|contra a (?:do|da|de)|ou a (?:do|da|de)|qual (?:das|dos|e a melhor|a melhor)|outra proposta (?:do|da|de))\b/;
-const arrived = /\b(?:recebi|recebemos|recebeu|receberam|chegou|chegaram|mandou|mandaram|enviou|enviaram|ofereceu|ofereceram|apresentou|apresentaram|veio|vieram|fez|fizeram|trouxe|trouxeram|passou|passaram)\b|\b(?:essa|esta|nessa|nesta|dessa|desta|a|na|da) (?:proposta|oferta|term\s*sheet|termsheet) (?:do|da|de|que)\b|\b(?:essa|esta|nessa|nesta|dessa|desta) (?:proposta|oferta|term\s*sheet|termsheet)\b/;
-const evaluation = /\b(?:e|esta|ta|parece|seria|achou|acha) (?:boa|bom|ruim|razoavel|competitiva|justa|cara|barata|de mercado|interessante|adequada|atrativa|vantajosa)\b|\bvale a pena\b|\b(?:vale|compensa|presta)\s*\?|\b(?:devo|devemos|deveria|deveriamos|posso|podemos|vale) (?:aceitar|fechar|assinar|topar|seguir com|pegar|tomar)\b|\bo que (?:voce |vc )?(?:acha|achou|me diz)\b|\bfaz sentido\b|\bo que (?:eu |a gente |nos )?(?:peco|pedimos|pedir|negocio|negociamos|negociar|contraproponho|contrapropor)\b|\b(?:analis(?:a|e|ar)|avali(?:a|e|ar))\b/;
-const financing = /\b(?:ccb|cce|nce|credito|financiamento|emprestimo|debentures?|linha|giro|capital de giro|cdi|ipca|spread|taxa|juros|carencia|amortiz\w*|garantia|cessao|fiduciaria|term\s*sheet|termsheet|bancos?|captacao|captar|nota comercial|cri|cra|fidc|finame|bndes)\b|\b(?:do|da|pelo|pela|o|a) (?:itau|bradesco|santander|btg|bb|banco do brasil|xp|sicredi|sicoob|daycoval|citi|citibank|abc|bocom|pine|bv|votorantim|banrisul|bnb|bnp|safra|caixa economica)\b/;
-const conceptual = /^(?:o que (?:e|sao|significa)|explique|explica|como funciona|qual (?:e )?a diferenca)\b|\b(?:o conceito de|como funciona|o que significa)\b/;
-const otherProposal = /\bproposta (?:de |para (?:a |o )?)?(?:compra|venda|aquisicao|emprego|trabalho|parceria|fornecimento|servicos?|prestacao|aluguel|locacao|seguro|consultoria|fusao|investimento na|aporte|valor|comercial|orcamento)\b|\bproposta comercial\b/;
-const readingOnly = /\b(?:so|apenas|somente)\b.{0,20}\b(?:organiz\w*|resum\w*|extra(?:i|ia|ir)|ler|leia|le|transcrev\w*|list\w*|registr\w*|anot\w*)\b|^(?:organiz\w*|resum\w*|extra(?:i|ia|ir)|transcrev\w*|registr\w*|anot\w*|arquiv\w*|salv\w*|guard\w*)\b/;
-const refused = /\b(?:nao|nunca|sem)\b.{0,25}\b(?:analis\w*|avali\w*|opin\w*|olh\w*)\b|\bnao (?:quero|preciso|precisamos|queremos)\b.{0,25}\b(?:analise|avaliacao|opiniao|leitura)\b/;
-function asksAboutReceivedProposal(folded: string): boolean {
-  const text = folded.trim();
-  if (!proposalObject.test(text) || !arrived.test(text) || !evaluation.test(text)) return false;
-  if (severalOrCompared.test(text) || conceptual.test(text) || otherProposal.test(text) || readingOnly.test(text) || refused.test(text)) return false;
-  return financing.test(text);
-}
+// Entry. The router's own kind (received_proposal, packages/work-plan/src/received-proposal-route.ts) decides.
 
 const whatIf = /(?:^|[.!?;]\s*|\b(?:mas|e|ok|certo)\s+)e se (?:eu|a gente|nos|o banco|mantiver|mantivermos|mantenho|pedir|pedirmos|peco|negociar|negociarmos|tirar|reduzir|aumentar|alongar|trocar)\b/;
 
 /** Whether a message asks, on its own, whether a received proposal is good for the company (ficha C01). */
 export function receivedProposalCue(message: string, hasAttachments: boolean): boolean {
-  const kind: string = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
-  return kind === "received_proposal" || (promotable.has(kind) && premiseCueKind(message, hasAttachments) === null && asksAboutReceivedProposal(foldCue(message)));
+  return (compileObjectiveToPlan({message, hasAttachments}).objectiveKind as string) === "received_proposal";
 }
 
 /** How a turn enters this step: by its own cue, or as a continuation candidate when the latest earlier premise
@@ -48,7 +29,7 @@ export function receivedProposalEntry(message: string, hasAttachments: boolean, 
   // this analysis: a candidate continuation even as a question.
   if (premiseCueKind(message, hasAttachments) !== null || (asksOrExplains(message) && !whatIf.test(foldCue(message)))) return null;
   const compiled: string = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;
-  if (["proposal_comparison", "relative_debt_cost", "debt_capacity"].includes(compiled)) return null;
+  if (["proposal_comparison", "relative_debt_cost", "debt_capacity", "document_folder", "financing_paths", "board_capital_discussion"].includes(compiled)) return null;
   for (let n = earlierUserMessages.length - 1; n >= 0; n--) {
     if (receivedProposalCue(earlierUserMessages[n]!, false)) return "continuation";
     if (premiseCueKind(earlierUserMessages[n]!, false) !== null) return null;
@@ -133,7 +114,7 @@ export const receivedProposalExtractionContract = {
     "proposalReadings: uma entrada por leitura dos termos (o term sheet, uma versão nova, o que a pessoa disse na conversa), cada uma com origin, source e anchor (página ou cláusula, null quando a fonte não diz). Em cada leitura: credor, firmeza (indicative quando sujeita a aprovação de crédito, committed quando firme), data do term sheet, validade em dias, valor, spread anual, comissão, data do desembolso, dia do mês dos pagamentos, prazo total em meses (termMonths), carência de principal em meses, número de parcelas, intervalo entre parcelas e entre pagamentos de juros em meses, amortização (sac, bullet, price ou other), tipo e cobertura da garantia, conta vinculada, covenant do credor (\"none\" quando a leitura diz que não há; limite, datas de teste e definição, not_stated quando a proposta não define), multa de pré-pagamento e por quantos meses, reciprocidade (none_stated quando a proposta não pede) e se o banco viu a escritura. Campo que a leitura não diz fica null.",
     "indexer é o indexador da proposta, só quando o documento ou a pessoa o diz. readingDate é a data da leitura, só quando dita. needDate é quando o dinheiro precisa entrar.",
     "uses: cada uso do dinheiro com valor, tipo (seasonal_working_capital, long_lived_capex, refinancing ou other) e o prazo que o uso pede em anos, mínimo e máximo, convertido do que foi dito (de outubro a março são de 0,25 a 0,5 ano; vida útil de dez anos vai até 10). seasonalPeak é o pico da necessidade sazonal, quando dito.",
-    "creditTax é a regra do IOF de crédito (alíquota fixa, diária e teto de dias), só quando um documento ou a pessoa a dá. indexCurve é o CDI anual por ano usado na conta. tax é o regime tributário e a alíquota nominal. taxableAfterCalendar é se a companhia segue com lucro tributável depois do último período do calendário, só quando dito.",
+    "creditTax é a regra do IOF de crédito (alíquota fixa, diária e teto de dias), só quando um documento ou a pessoa a dá; sem isso, fica null e a convenção da casa é usada. indexCurve é o CDI anual por ano usado na conta. tax é o regime tributário e a alíquota nominal. taxableAfterCalendar é se a companhia segue com lucro tributável depois do último período do calendário, só quando dito.",
     "calendar é a companhia sem a proposta por período (normalmente trimestre): openingDate é a data de início do calendário (a posição do último fechamento); em cada período, a data de fim, o serviço da dívida existente, o caixa disponível para o serviço, o caixa de fim de período e se o período tem lucro tributável. minimumCash é o caixa mínimo de operação, quando dito.",
     "indenture é o covenant da escritura vigente com aditamentos (limite, datas de teste, nome do documento); policy é o limite da política do conselho, quando existir. measurements são as apurações sem a proposta na definição da escritura, por data e cenário (base para o caso da companhia, bank para o caso do banco): dívida, caixa, EBITDA reportado e o ajuste que a definição escrita faz no EBITDA (0 quando a definição não ajusta).",
     "portfolio: cada grupo da carteira de recebíveis com valor, se o contrato permite ceder, se está livre ou cedido e a quem, se está em atraso e, quando cedido, se ocupa a exceção da escritura; anchor é a linha ou célula do aging, null quando a fonte não diz. basket é a exceção da escritura para garantia nova: limite, base (aggregate quando é valor agregado, per_operation quando é por operação), quanto já está ocupado e o prazo de convocação da assembleia em dias, mínimo e máximo.",
@@ -174,6 +155,11 @@ function reconcileField<F extends ReadingField>(readings: readonly Reading[], fi
     : joined(stating.map((r) => citedSource(r.origin, r.source)));
   return {value: stating[0]![field] as NonNullable<Reading[F]>, origin, source};
 }
+
+/** The house convention for the credit IOF of a company outside the Simples: 0.38% fixed plus 0.0082% a day, capped at 365
+ * days. Named on the card with its source and date; the person corrects it in the conversation. */
+export const houseCreditTax = {value: {fixedRate: "0.0038", dailyRate: "0.000082", maxDays: 365}, origin: "house" as const,
+  source: "IOF de crédito de pessoa jurídica fora do Simples: 0,38% fixo mais 0,0082% ao dia, com teto de 365 dias (Decreto 6.306/2007, na redação do Decreto 12.499/2025, com eficácia restabelecida pelo STF em 2025). Convenção da casa em 27/10/2026; um valor informado ou de documento prevalece."};
 
 /** A block of one origin whose fields may be partly stated: each unstated field it needs is asked by name. */
 function block<T extends Record<string, unknown>>(f: {value: T | null; origin: "informed" | "document" | null; source: string | null}, name: string, required: readonly (keyof T & string)[], missing: string[]) {
@@ -309,8 +295,10 @@ export function completeReceivedProposalFacts(input: {extraction: ReceivedPropos
     return missing.length > before ? null : {value: {id: useIds[k]!, label: u.label, amount: u.amount!, kind: u.kind!, tenorMinYears: u.tenorMinYears!, tenorMaxYears: u.tenorMaxYears!},
       origin: u.origin, source: citedSource(u.origin, u.source)};
   });
-  const creditTax = block(e.creditTax, "creditTax", ["fixedRate", "dailyRate", "maxDays"], missing);
-  if (!stated(e.creditTax)) missing.push("creditTax");
+  // House: the credit IOF of a company outside the Simples when neither the person nor a document gives it (decision 1);
+  // a stated rule prevails, and a rule stated in part is asked field by field.
+  const creditTax = stated(e.creditTax) ? block(e.creditTax, "creditTax", ["fixedRate", "dailyRate", "maxDays"], missing) : houseCreditTax;
+  if (!stated(e.creditTax)) used.push("creditTax");
   const curve = stated(e.indexCurve);
   if (!curve || !curve.value.length) missing.push("indexCurve");
   else if (conflictingKeys(curve.value, (x) => String(x.year), (x) => x.annualRate).size) missing.push("indexCurve.year");

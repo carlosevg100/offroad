@@ -1,9 +1,9 @@
 import {describe, expect, it} from "vitest";
 import {compileAdvisorStartingPlan} from "./advisor-starting-plan";
 import {inferCapitalProjectJob} from "./job-inference";
-import {compileObjectiveToPlan, lote3FichaExceptions, objectiveToPlanDecisionSchema} from "./objective-plan";
+import {compileObjectiveToPlan, lote3FichaExceptions, lote4FichaExceptions, objectiveToPlanDecisionSchema} from "./objective-plan";
 
-// Canonical paraphrases from outputs/fichas-ensaio-2026-10/{C02,C03,C04,C32}/corpo.html.
+// Canonical paraphrases from outputs/fichas-ensaio-2026-10/{C02,C03,C04,C09,C32,C47}/corpo.html and the C01 procedure.
 // These IDs belong to the fichas, not to the historical coverage catalogue or TaskSpecs.
 const fichas = [
   {id: "C02", kind: "proposal_comparison", messages: [
@@ -66,25 +66,51 @@ const fichas = [
     "Saiu o balancete de setembro, atualiza a projeção e o covenant.",
     "O que mudou com o resultado do terceiro trimestre?",
   ]},
-  {id: "C32", kind: "capital_strategy", messages: [
+  {id: "C32", kind: "financing_paths", messages: [
     "Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?",
     "Vence muita coisa ano que vem e ainda quero fazer o investimento. O que eu faço?",
     "Como financio a expansão sem apertar o caixa?",
     "Quero alongar a dívida e fazer o capex. Por onde começo?",
     "Não quero recomendação ainda, só me mostre os caminhos para a dívida de 2027.",
   ]},
+  {id: "C01", kind: "received_proposal", messages: [
+    "O Itaú mandou proposta de CCB de R$ 30 milhões, três anos, CDI mais 2,1, com cessão fiduciária de recebíveis. É boa?",
+    "Recebi uma proposta do Itaú, é boa?",
+    "O banco mandou um term sheet. Vale a pena?",
+    "Devo aceitar a proposta do Itaú?",
+    "O gerente do Santander ofereceu uma linha de giro a CDI mais 1,8. O que você acha?",
+  ]},
+  {id: "C09", kind: "document_folder", messages: [
+    "Joguei aqui a pasta do último ano. Organiza e me diz o que tem.",
+    "Só organiza, não analisa ainda.",
+    "O que tem nesses arquivos?",
+    "Organiza o material para discutirmos a dívida.",
+    "Subi tudo que o financeiro tinha. Dá uma olhada e me fala o que falta.",
+  ]},
+  {id: "C47", kind: "board_capital_discussion", messages: [
+    "Conselho na quarta. Prepara a discussão de estrutura de capital.",
+    "Faz uma página para o conselho com o plano de financiamento.",
+    "Prepara a discussão de estrutura de capital para o conselho de quarta",
+    "Monta o material do conselho sobre a estrutura de capital.",
+    "Monta o deck do conselho com o plano de financiamento.",
+  ]},
 ] as const;
 
 import originMainRouting from "./routing-regression.origin-main.json";
 import foldedProbes from "./routing-regression.folded-probes.origin-main.json";
+import lote3MainRouting from "./routing-regression.lote3-main.json";
+import lote4Probes from "./routing-regression.folded-probes.lote4.json";
 
 describe("canonical ficha objective routing", () => {
   // The replays compile thousands of plans; on shared CI runners they exceed the default 5 s, so each has 60 s.
   // Every routing test phrase of lotes 1 and 2 (all strings of the work-plan tests at origin/main), with and
   // without attachments, keeps the kind origin/main gave it: lote 3 never takes an existing route.
   it("keeps every lote 1 and lote 2 routing phrase on its origin/main kind", () => {
+    // Lote 4 takes only its enumerated ficha phrasings, the five C32 openings among them.
+    const fold = (m: string) => m.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, " ");
     const changed = (originMainRouting as {message: string; hasAttachments: boolean; kind: string}[])
-      .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind);
+      .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind)
+      .filter((row) => !lote4FichaExceptions.some((e) => e.from === row.kind && e.pattern.test(fold(row.message))));
     expect(changed).toEqual([]);
   }, 60_000);
   // Each signal of the existing folded patterns (risk matrix, material, operation review, board, meeting, market,
@@ -214,9 +240,75 @@ describe("canonical ficha objective routing", () => {
     const rows = [...originMainRouting, ...foldedProbes] as {message: string; hasAttachments: boolean; kind: string}[];
     const departures = rows.filter((r) => r.kind !== "ambiguous" && r.kind !== "documents_to_case")
       .filter((r) => compileObjectiveToPlan({message: r.message, hasAttachments: r.hasAttachments}).objectiveKind !== r.kind);
-    const allowed = departures.filter((r) => lote3FichaExceptions.some((e) => e.from === r.kind && e.pattern.test(fold(r.message))));
+    const allowed = departures.filter((r) => [...lote3FichaExceptions, ...lote4FichaExceptions].some((e) => e.from === r.kind && e.pattern.test(fold(r.message).replace(/\s+/g, " "))));
     expect(departures).toEqual(allowed);
+    // Lote 4: only the five C32 openings, each with and without attachments, leave the route origin/main gives them.
+    expect(departures.map((r) => [r.message, r.kind, compileObjectiveToPlan(r).objectiveKind]).sort()).toEqual(
+      fichas.find((f) => f.id === "C32")!.messages.flatMap((m) => [[m, "capital_strategy", "financing_paths"], [m, "capital_strategy", "financing_paths"]]).sort());
+  });
+  // Lote 4 replays: every string of the work-plan tests at origin/main after lote 3 (those not already in the replay
+  // above) and each folded-pattern signal of the probes joined to a lote 4 object, with and without attachments, keep
+  // the kind origin/main gave them whenever it gave a specific one; only the enumerated lote 4 ficha phrasings may leave it.
+  it("keeps every lote 3 routing phrase and every lote 4 probe on its origin/main route", () => {
+    const fold = (m: string) => m.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, " ");
+    const rows = [...lote3MainRouting, ...lote4Probes] as {message: string; hasAttachments: boolean; kind: string}[];
+    const departures = rows.filter((r) => r.kind !== "ambiguous" && r.kind !== "documents_to_case")
+      .filter((r) => compileObjectiveToPlan({message: r.message, hasAttachments: r.hasAttachments}).objectiveKind !== r.kind)
+      .filter((r) => !lote4FichaExceptions.some((e) => e.from === r.kind && e.pattern.test(fold(r.message))));
     expect(departures).toEqual([]);
+  }, 60_000);
+  it.each([
+    ["Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?", "capital_strategy", "financing_paths"],
+    ["Vence muita coisa ano que vem e ainda quero fazer o investimento. O que eu faço?", "capital_strategy", "financing_paths"],
+    ["Como financio a expansão sem apertar o caixa?", "capital_strategy", "financing_paths"],
+    ["Quero alongar a dívida e fazer o capex. Por onde começo?", "capital_strategy", "financing_paths"],
+    ["Não quero recomendação ainda, só me mostre os caminhos para a dívida de 2027.", "capital_strategy", "financing_paths"],
+    ["O que tem nesses arquivos?", "factual_question", "document_folder"],
+    ["Organiza o material para discutirmos a dívida.", "capital_strategy", "document_folder"],
+    ["Monta o material do conselho sobre a estrutura de capital.", "material_preparation", "board_capital_discussion"],
+    ["Monta o deck do conselho com o plano de financiamento.", "material_preparation", "board_capital_discussion"],
+    ["Prepare o material para o conselho sobre a estrutura de capital.", "material_preparation", "board_capital_discussion"],
+  ] as const)("enumerated lote 4 ficha exception: %s (origin/main %s)", (message, from, to) => {
+    const folded = message.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    expect(lote4FichaExceptions.filter((e) => e.from === from && e.to === to && e.pattern.test(folded))).toHaveLength(1);
+    for (const hasAttachments of [false, true]) expect(compileObjectiveToPlan({message, hasAttachments}).objectiveKind).toBe(to);
+  });
+  // The neighbours of the lote 4 methods keep the route origin/main gives them (plain, with attachments).
+  it.each([
+    // C01: several proposals, a comparison, a concept, a non-financing proposal, a bare proposal, only reading the term sheet.
+    ["Recebemos duas propostas, qual a melhor?", "proposal_comparison", "proposal_comparison"],
+    ["Compare a proposta do Itaú com a do Bradesco", "operation_review", "operation_review"],
+    ["O que é uma CCB?", "factual_question", "factual_question"],
+    ["Recebi uma proposta de compra da empresa, é boa?", "factual_question", "documents_to_case"],
+    ["A proposta é boa?", "factual_question", "documents_to_case"],
+    ["Organiza o term sheet do Itaú", "ambiguous", "documents_to_case"],
+    // C09: a source index, a data room for the bank, a diligence list, the debt table, one contract, an agenda.
+    ["Organiza a pasta de documentos", "information_organization", "information_organization"],
+    ["Organiza esses arquivos da Aurora por tipo e período", "information_organization", "information_organization"],
+    ["Organize os documentos do data room para o banco", "information_organization", "information_organization"],
+    ["Quais documentos faltam para a diligência?", "factual_question", "documents_to_case"],
+    ["Organiza a tabela de dívida", "debt_table", "debt_table"],
+    ["Lê esse contrato e me diz as cláusulas", "ambiguous", "documents_to_case"],
+    ["Organiza minha agenda", "ambiguous", "documents_to_case"],
+    // C32: any other capital strategy request, capacity, a project's return, formal drafts, a what-if alone.
+    ["Preciso financiar a fábrica nova. Qual o melhor caminho?", "capital_strategy", "capital_strategy"],
+    ["Quanto de dívida cabe para a linha nova?", "debt_capacity", "debt_capacity"],
+    ["A linha de embalagem se paga?", "factual_question", "documents_to_case"],
+    ["Prepare a decisão de estrutura de capital com as minutas para o banco.", "capital_strategy", "capital_strategy"],
+    ["Uma debênture de R$ 80 milhões me parece grande para a gente. E se eu só alongar o Bradesco com ele mesmo, por mais dois anos?", "capital_strategy", "capital_strategy"],
+    // C47: a decision brought to the board, a memo, an answer to a board question, the debt table, material without the capital topic.
+    ["Preciso levar ao conselho uma decisão sobre estrutura de capital e alternativas.", "board_decision", "board_decision"],
+    ["Prepara o memorando do trimestre para o conselho.", "material_preparation", "material_preparation"],
+    ["Prepara a resposta para o conselho sobre por que pagamos mais que a Serra Verde.", "relative_debt_cost", "relative_debt_cost"],
+    ["Preciso do endividamento atualizado para o conselho.", "debt_table", "debt_table"],
+    ["Monta o material do conselho com a tabela de dívida.", "debt_table", "debt_table"],
+    ["Monta o material do conselho.", "material_preparation", "material_preparation"],
+    ["Monta o material do conselho sobre a safra.", "material_preparation", "material_preparation"],
+    ["Prepare a reunião com o banco sobre a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Prepara a pauta do conselho sobre a política de remuneração", "board_decision", "board_decision"],
+  ] as const)("lote 4 neighbour keeps its origin/main route: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
   it.each([
     ["Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?", "capital_strategy", "receivables_funding"],
@@ -575,7 +667,7 @@ describe("canonical ficha objective routing", () => {
       expect(entry.plan.taskSpecs.map((task) => task.id)).not.toEqual(["Q01", "Q02", "Q03"]);
       expect(inferCapitalProjectJob({message, hasAttachments}).job).toBe(plan.entryJob);
       expect(plan.outputTerminal).not.toBe("preliminary_case");
-      expect(plan.outputTerminal).not.toBe("board_decision_pack");
+      if (ficha.id !== "C47") expect(plan.outputTerminal).not.toBe("board_decision_pack");
       expect(plan.taskGraph.tasks.every((task) => task.effect !== "external")).toBe(true);
       expect(objectiveToPlanDecisionSchema.safeParse(plan).success).toBe(true);
     });

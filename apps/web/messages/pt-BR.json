@@ -3624,6 +3624,506 @@
           "credit_approval": "Não é aprovação de crédito."
         },
         "topUpLate": "A necessidade cabe no limite de {limit} da {facility}, mas o saque registrado não cobre a semana mais apertada: mesmo com todo o limite, ela fecha em {closing} na de {week}, abaixo do mínimo."
+      },
+      "receivedProposal": {
+        "title": "Proposta recebida",
+        "lender": "Proposta de {lender}",
+        "status": "Situação",
+        "question": "Pergunta",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Sem lacunas de informação.",
+        "exclusionsTitle": "O que esta análise não faz",
+        "yes": "Sim",
+        "no": "Não",
+        "units": "Valores em milhões de {currency}; spreads e custos em porcentagem ao ano sobre o CDI; covenant em vezes o EBITDA.",
+        "noReading": "Faltam premissas para ler a proposta; o que falta está nas lacunas.",
+        "openQuestions": {
+          "indexer_confirmation": "Antes de qualquer número, o indexador da proposta precisa ser confirmado pelo term sheet ou pela companhia."
+        },
+        "firmness": {
+          "indicative": "Proposta indicativa, sujeita à aprovação de crédito, válida até {date}.",
+          "committed": "Proposta firme, válida até {date}."
+        },
+        "sawIndenture": "O banco viu a escritura.",
+        "didNotSeeIndenture": "O banco não viu a escritura.",
+        "diligence": "Na diligência, a restrição de garantia da escritura tende a aparecer, e é provável que o crédito reabra a estrutura.",
+        "liquidityTitle": "Calendário de pagamentos",
+        "liquidity": "Em {year}, o serviço da dívida existente é de {existing} contra {available} de caixa disponível para atendê-lo; a proposta acrescenta {proposal}, total de {total}.",
+        "peakQuarter": "A maior pressão fica no trimestre encerrado em {date}.",
+        "minimumWith": "Com a proposta, o menor caixa do horizonte é {amount}, em {date}.",
+        "belowPolicy": "Com a proposta, o caixa fica abaixo do mínimo a partir de {with}; sem ela, a partir de {without}.",
+        "belowPolicyWithOnly": "Com a proposta, o caixa fica abaixo do mínimo a partir de {with}.",
+        "fitTitle": "Prazo contra o uso do dinheiro",
+        "fit": "{share} do valor financia uso sazonal. Vida média de {life} anos, último pagamento em {date}.",
+        "useReadings": {
+          "longer_than_use": "o prazo da proposta passa o prazo do uso",
+          "shorter_than_use": "o prazo da proposta é menor que o prazo do uso",
+          "within_use": "o prazo da proposta cabe no prazo do uso"
+        },
+        "use": "{label} ({amount}): {reading}.",
+        "covenantTitle": "Covenant com a proposta",
+        "scenarios": {
+          "base": "Caso da companhia",
+          "bank": "Caso do banco"
+        },
+        "limits": {
+          "indenture": "Escritura",
+          "proposal": "Credor",
+          "board-policy": "Política do conselho"
+        },
+        "notTested": "não testado",
+        "breached": "acima do limite",
+        "testsPerYear": "O credor testa {lender} vezes por ano; a escritura, {indenture}.",
+        "anyBreachUnknown": "Sem todas as apurações exigidas, não há conclusão de cumprimento.",
+        "anyBreachYes": "Há data e cenário em que um limite fica acima do permitido com a proposta.",
+        "anyBreachNo": "Em todas as datas e cenários exigidos, os limites ficam dentro do permitido com a proposta.",
+        "missingTests": "Apurações exigidas que faltam: {list}.",
+        "untestedLimits": "Limites sem nenhuma apuração, não testados: {list}.",
+        "lenderBeforeDraw": "Datas de teste do credor anteriores ao desembolso, só como contraste: {list}.",
+        "collateralTitle": "Garantia e escritura",
+        "collateral": "A cobertura de {coverage}% pede {required} de recebíveis. Dos {free} nominalmente livres, {assignable} podem ser cedidos.",
+        "shortfall": "A carteira que pode ser cedida fica {shortfall} abaixo do pedido.",
+        "leftAfter": "Depois da cessão, sobram {left} cedíveis, para um pico sazonal de {peak}.",
+        "restrictedAccount": "O banco pede conta vinculada.",
+        "reference": "Cobertura de referência de {low}% a {high}%.",
+        "atTop": "A cobertura pedida está no topo da referência ou acima dele.",
+        "reasons": {
+          "assigned_to_other_creditor": "já cedido a outro credor",
+          "assignment_prohibited_without_debtor_consent": "contrato veda a cessão sem anuência do sacado",
+          "past_due": "em atraso"
+        },
+        "pledge": "A exceção da escritura para garantia nova é de {limit} ({basis}), com {occupied} já ocupados; restam {remaining}.",
+        "bases": {
+          "aggregate": "valor agregado",
+          "per_operation": "por operação"
+        },
+        "consent": "A garantia pedida passa a exceção em {excess} e depende de anuência dos debenturistas.",
+        "consentWindow": "Convocando a assembleia agora, a anuência sai até {by}; o dinheiro é para {need} ({slack} dias de folga).",
+        "noConsent": "A garantia pedida cabe na exceção da escritura.",
+        "priceTitle": "Preço e custo",
+        "price": "Spread nominal de CDI mais {nominal}. Custo efetivo pela vida de CDI mais {gross} bruto.",
+        "net": "Líquido de imposto, CDI mais {net}, pela convenção simplificada de dedução plena no lucro real.",
+        "netConventions": {
+          "not_all_periods_taxable": "Há período sem lucro tributável na vida da proposta; o custo líquido não é afirmado.",
+          "life_beyond_fiscal_calendar": "A proposta vai além do calendário fiscal adotado; sem hipótese para esses anos, o custo líquido não é afirmado.",
+          "no_deduction_presumido": "No lucro presumido, o custo líquido é igual ao bruto.",
+          "regime_unknown": "Regime tributário não informado; custo líquido não calculado."
+        },
+        "upfront": "Comissão e IOF retidos no desembolso somam {upfront}% do valor, dos quais {iof}% de IOF.",
+        "positions": {
+          "below_range": "abaixo da faixa",
+          "at_or_below_median": "dentro da faixa, até a mediana",
+          "above_median_within_range": "dentro da faixa, acima da mediana",
+          "above_range": "acima da faixa"
+        },
+        "market": "O spread nominal está {position} de comparáveis, de {low}% a {high}% com mediana de {median}% ({sample} comparáveis, confiança {confidence}, em {date}).",
+        "confidences": {
+          "high": "alta",
+          "moderate": "moderada",
+          "low": "baixa"
+        },
+        "history": "Contra a {peer} ({date}): diferença observada de {observed} pontos-base, esperada de {expected}, resíduo de {residual}.",
+        "historyNoResidual": "Contra a {peer} ({date}): diferença observada de {observed} pontos-base, esperada de {expected}.",
+        "families": {
+          "pricing_date": "mercado na data",
+          "tenor": "prazo",
+          "guarantee": "garantia",
+          "instrument_distribution": "instrumento",
+          "scale": "porte",
+          "other": "risco e outros"
+        },
+        "step": "{family}: {bps} pontos-base",
+        "asksTitle": "O que cada pedido ao banco compra",
+        "alternativesTitle": "Alternativas da companhia na mesma base",
+        "columns": {
+          "year": "Ano",
+          "existingService": "Serviço existente",
+          "proposalService": "Da proposta",
+          "totalService": "Total",
+          "available": "Disponível para o serviço",
+          "shortfallWith": "Falta com a proposta",
+          "date": "Data",
+          "scenario": "Cenário",
+          "ratio": "Dívida líquida sobre EBITDA",
+          "bucket": "Grupo da carteira",
+          "amount": "Valor",
+          "holder": "Com quem",
+          "reasons": "Por que não entra",
+          "ask": "Pedido",
+          "serviceDelta": "Serviço no ano de pico",
+          "costDelta": "Custo efetivo (pontos-base)",
+          "collateralDelta": "Garantia pedida",
+          "consent": "Ainda exige anuência",
+          "account": "Conta vinculada",
+          "route": "Rota",
+          "uses": "Usos cobertos",
+          "allIn": "Custo total sobre o CDI",
+          "difference": "Diferença contra a proposta (pontos-base)",
+          "guarantee": "Garantia",
+          "months": "Meses até o dinheiro"
+        },
+        "monthsRange": "{min} a {max}",
+        "notComparable": "não comparável",
+        "assessmentTitle": "Leitura",
+        "factsTitle": "Fatos",
+        "readingsTitle": "Leitura",
+        "recommendationsTitle": "O que eu pediria",
+        "wouldChangeTitle": "O que mudaria a conclusão",
+        "questionsTitle": "Perguntas ao banco e à companhia",
+        "facts": {
+          "proposal_indicative": "A proposta é indicativa e depende de aprovação de crédito.",
+          "collateral_exceeds_assignable_portfolio": "A garantia pedida passa a carteira que pode ser cedida.",
+          "assignment_prohibited_receivables_excluded": "Recebíveis de cliente que veda a cessão ficam de fora.",
+          "indenture_consent_required": "A garantia pedida passa a exceção da escritura e depende de anuência dos debenturistas.",
+          "peak_year_service_exceeds_available_cash": "No ano de pico, o serviço da dívida passa o caixa disponível para atendê-lo.",
+          "cash_below_minimum_with_proposal": "Com a proposta, o caixa fica abaixo do mínimo em algum trimestre.",
+          "board_policy_breached_in_a_case": "Em algum caso, a alavancagem passa o limite da política do conselho.",
+          "lender_tests_more_often_than_indenture": "O credor testa o covenant mais vezes que a escritura.",
+          "restricted_account_requested": "O banco pede conta vinculada.",
+          "coverage_at_top_of_reference": "A cobertura pedida está no topo da referência ou acima dele."
+        },
+        "readings": {
+          "term_longer_than_seasonal_use": "O prazo é mais longo que o uso sazonal que ele financia.",
+          "term_shorter_than_capex_use": "O prazo é mais curto que a vida do investimento que ele financia.",
+          "all_in_cost_well_above_nominal": "O custo pela vida fica bem acima do spread nominal.",
+          "nominal_spread_below_range": "O spread nominal está abaixo da faixa de comparáveis.",
+          "nominal_spread_at_or_below_median": "O spread nominal está dentro da faixa, até a mediana.",
+          "nominal_spread_above_median_within_range": "O spread nominal está dentro da faixa, acima da mediana.",
+          "nominal_spread_above_range": "O spread nominal está acima da faixa de comparáveis.",
+          "improvement_partly_paid_in_collateral": "A melhora contra a última operação é paga em parte com garantia.",
+          "real_improvement_against_last_operation": "A melhora contra a última operação aparece também depois dos ajustes.",
+          "covenant_headroom_tight": "A folga do covenant fica apertada em alguma data.",
+          "diligence_may_reopen_structure": "A diligência pode reabrir a estrutura.",
+          "covenant_tests_missing": "Faltam apurações exigidas do covenant.",
+          "net_cost_conditioned_on_taxable_profit": "O custo líquido depende de lucro tributável que não está adotado em toda a vida."
+        },
+        "recommendations": {
+          "address_indenture_consent_before_signing": "Tratar com o banco a anuência da escritura antes de assinar.",
+          "ask_longer_grace_and_tenor": "Pedir carência e prazo maiores para aliviar o ano de pico.",
+          "ask_lower_coverage_and_no_restricted_account": "Pedir cobertura menor e retirar a conta vinculada.",
+          "separate_uses_by_term": "Separar os usos por prazo, com uma rota para cada um.",
+          "keep_price_discussion_secondary": "Com o spread na faixa, concentrar a negociação na estrutura antes do preço."
+        },
+        "wouldChange": {
+          "debtor_consent_for_restricted_receivables": "Anuência do cliente que veda a cessão.",
+          "indenture_clause_wording": "A redação da cláusula de garantias da escritura.",
+          "other_free_asset_for_collateral": "Outro ativo livre para compor a garantia.",
+          "seasonal_need_above_adopted": "Uma necessidade sazonal maior que a adotada.",
+          "committed_terms_after_diligence": "Os termos firmes depois da diligência."
+        },
+        "questions": {
+          "lender_covenant_definition": "Ao banco: a definição do covenant é a da escritura?",
+          "reciprocity_expected_by_lender": "Ao banco: há reciprocidade esperada?",
+          "restricted_debtor_consent": "À companhia: o cliente que veda a cessão daria anuência?",
+          "indenture_clause_wording": "À companhia: a exceção da escritura é por valor agregado ou por operação, e o que já está dentro dela?",
+          "other_free_asset": "À companhia: há outro ativo livre para compor a garantia?"
+        },
+        "process": "Esta análise não aceita a proposta, não fala com o banco e não envia contraproposta.",
+        "exclusions": {
+          "proposal_acceptance": "aceitar a proposta",
+          "counterparty_contact": "falar com o banco",
+          "credit_approval": "aprovar crédito",
+          "legal_opinion": "dar opinião jurídica",
+          "reciprocity_pricing": "precificar reciprocidade"
+        }
+      },
+      "documentFolder": {
+        "title": "Pasta organizada",
+        "status": "Situação",
+        "question": "Pergunta",
+        "mode": "Pedido",
+        "modes": {
+          "organize": "Organizar e dizer o que importa para as decisões em curso",
+          "organize_only": "Só organizar, sem análise",
+          "organize_for_debt": "Organizar para a discussão da dívida"
+        },
+        "asOf": "Leitura de {date}.",
+        "headline": "{files} arquivos organizados por assunto. Cópias exatas: {duplicates}; superados por versão posterior: {superseded}; já no sistema: {inVault}.",
+        "noReading": "A pasta ainda não pôde ser organizada; as lacunas abaixo dizem o que falta.",
+        "historical": "A atualização não pôde ser lida. O inventário abaixo é o anterior, mostrado como histórico.",
+        "decisionFindings": "O que importa para as decisões em curso",
+        "generalFindings": "O que importa na pasta",
+        "noFindings": "Nada na pasta muda as decisões em curso.",
+        "source": "{file}, {where}",
+        "page": "p. {page}",
+        "versions": "Versões",
+        "prevails": "Vale: {files}.",
+        "superseded": "Superada: {files}.",
+        "sideBySide": "Mantidas lado a lado: {files}.",
+        "resolutions": {
+          "audited_over_draft": "a auditada prevalece sobre a minuta",
+          "higher_assurance": "prevalece a versão de maior asseguração",
+          "later_version": "prevalece a versão posterior",
+          "later_position": "prevalece a posição mais recente",
+          "side_by_side": "versões mantidas lado a lado",
+          "unresolved": "sem versão vencedora",
+          "effective_text": "texto vigente lido com os aditamentos",
+          "same_text": "mesmo texto"
+        },
+        "inventory": "Inventário",
+        "partition": "Entidade: {partition}",
+        "columns": {
+          "file": "Arquivo como chegou",
+          "what": "O que é",
+          "entity": "Entidade e período",
+          "version": "Versão",
+          "situation": "Situação",
+          "findings": "Achado"
+        },
+        "documentary": "O que os documentos dizem",
+        "notRead": "O que não foi lido",
+        "purposeGaps": "O que falta",
+        "conditional": "se existir",
+        "questions": "Pergunta que só a companhia responde",
+        "update": "O que mudou com o que chegou",
+        "rowsUpdated": "Linhas atualizadas: {files}.",
+        "rowsAdded": "Linhas novas: {files}.",
+        "rowsPreserved": "{count} linhas preservadas como estavam.",
+        "identityCheck": "Conferência {id}: informado {reported}, recomposto {recomposed} (R$ milhões).",
+        "checkStatuses": {
+          "matches": "confere",
+          "differs": "difere",
+          "not_run": "não conferida"
+        },
+        "informed": "{statement} (informado por {author} em {date})",
+        "stillOpen": "Continua em aberto: {items}.",
+        "notValidated": "Nenhum documento foi declarado validado e nenhum índice foi calculado.",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Sem lacunas de informação.",
+        "exclusionsTitle": "Fora do escopo",
+        "exclusions": {
+          "ratio_calculation": "Cálculo de índices",
+          "projection": "Projeção",
+          "recommendation": "Recomendação",
+          "document_validation": "Validação de documentos",
+          "third_party_distribution": "Envio a terceiros"
+        },
+        "gapReasons": {
+          "reading_conflicts_with_same_hash": "o mesmo arquivo foi lido de duas formas; a leitura precisa ser refeita"
+        }
+      },
+      "financingPaths": {
+        "title": "Caminhos de financiamento na mesma base",
+        "status": "Situação",
+        "question": "Pergunta",
+        "units": "Valores em milhões de {currency}; alavancagem em vezes o EBITDA; spreads ao ano sobre o CDI.",
+        "noReading": "Ainda não há leitura numérica: faltam premissas, listadas abaixo.",
+        "withoutActionTitle": "Sem ação",
+        "withoutAction": "Sem nova captação, o caixa fica abaixo do mínimo de {minimum} a partir de {first} e chega a {lowest} em {lowestDate}.",
+        "withoutActionNeverBelow": "Sem nova captação, o caixa não fica abaixo do mínimo de {minimum}; o menor caixa é {lowest} em {lowestDate}.",
+        "peakYear": "Em {year}, o serviço da dívida soma {service} ({principal} de principal e {interest} de juros), contra {available} de caixa disponível antes do investimento do projeto: faltam {gap}.",
+        "peakYearCovered": "Em {year}, o serviço da dívida soma {service} ({principal} de principal e {interest} de juros), contra {available} de caixa disponível antes do investimento do projeto: sobram {gap}.",
+        "recommendationTitle": "Caminho que passa em todos os critérios",
+        "recommendation": "{label}. Caixa mínimo de {minimum} em {date}, custo financeiro de {cost} até {end} e dívida líquida de {netDebt} no fim do horizonte.",
+        "prepaid": "Pré-paga: {instruments}.",
+        "leverage": "Alavancagem na definição da escritura: {values}, contra o limite de {limit}.",
+        "stressPolicy": "No caso de estresse, o pior ponto é {stress} em {date}, contra a política do conselho de {policy}.",
+        "stressIndenture": "No caso de estresse, o pior ponto é {stress} em {date}.",
+        "longInstrument": "Instrumento longo: {label}, com alvo de {target}; o menor valor que mantém o caminho dentro dos critérios é {floor}.",
+        "amortizationYears": "Amortização de {first} a {last}, prazo de {term} anos.",
+        "spread": "Custo efetivo pela vida de CDI mais {spread}; no spread máximo da sondagem, de {maximum}, o custo efetivo vai a CDI mais {atCondition}.",
+        "insideAtCondition": "Nessa condição o caminho segue dentro dos critérios.",
+        "outsideAtCondition": "Nessa condição o caminho sai dos critérios.",
+        "chargesOutsideSpread": "Encargos do caminho em outras operações, fora desse custo: {charges}.",
+        "calendar": "Sondagem até {sounding}; decisão da rota até {decision}.",
+        "mustPrecede": "A decisão vem antes do vencimento de {instrument}, em {date}: {days} dias.",
+        "noRecommendation": "Nenhum caminho adotado passa em todos os critérios; o quadro abaixo mostra a ordem e o que falta a cada um.",
+        "alternativeTitle": "Plano alternativo datado",
+        "alternative": "{label}, com {target} em {instrument}; decisão até {date}.",
+        "alternativeConditions": "Critérios que ele ainda não cumpre: {conditions}.",
+        "alternativeNoConditions": "Ele cumpre todos os critérios.",
+        "pathsTitle": "Caminhos na mesma régua",
+        "pathsNote": "Ordem pelos critérios cumpridos, depois pelo custo financeiro até o fim do horizonte e pela dívida líquida no fim.",
+        "insideEveryGate": "Dentro de todos",
+        "yes": "Sim",
+        "no": "Não",
+        "columns": {
+          "rank": "Ordem",
+          "path": "Caminho",
+          "role": "Papel",
+          "failedGates": "Critérios não cumpridos",
+          "minimumCash": "Menor caixa",
+          "cost": "Custo financeiro",
+          "netDebt": "Dívida líquida no fim",
+          "leverage": "Pior alavancagem",
+          "stress": "Pior alavancagem no estresse",
+          "consent": "Exige anuência",
+          "period": "Fim do período",
+          "withoutAction": "Sem ação",
+          "recommended": "Caminho recomendado",
+          "instrument": "Operação",
+          "profile": "Perfil",
+          "firstYear": "Primeiro ano",
+          "result": "Resultado"
+        },
+        "roles": {
+          "status_quo": "Sem ação",
+          "candidate": "Opção",
+          "companion": "Apoio"
+        },
+        "gates": {
+          "minimum_cash_base": "caixa mínimo no caso base",
+          "cash_nonnegative_stress": "caixa não negativo no estresse",
+          "indenture_base": "covenant da escritura no caso base",
+          "indenture_stress": "covenant da escritura no estresse",
+          "policy_base": "política do conselho no caso base",
+          "policy_stress": "política do conselho no estresse",
+          "basket_without_consent": "garantia dentro da exceção da escritura, sem anuência",
+          "amortization_after_horizon": "amortização depois do horizonte coberta pelo caixa"
+        },
+        "cashTitle": "Caixa no fim de cada período",
+        "amortizationTitle": "Amortização depois do horizonte",
+        "firstYearCell": "{amortization} a amortizar contra {available} disponível em {year}",
+        "covered": "Coberta em todos os anos",
+        "shortfallFrom": "Falta caixa a partir de {year}",
+        "notCovered": "Não coberta",
+        "wouldChangeTitle": "O que mudaria a recomendação",
+        "demand": "Se a demanda por {instrument} ficar abaixo de {floor} (alvo de {target}), o caminho sai dos critérios.",
+        "sensitivityHolds": "{label}: a recomendação se mantém.",
+        "sensitivityBreaks": "{label}: a recomendação deixa de valer ({gates}).",
+        "anotherPath": "outro caminho passa a ser o primeiro",
+        "assessmentTitle": "Fato, leitura e recomendação",
+        "factsTitle": "Fatos",
+        "readingsTitle": "Leituras",
+        "recommendationsTitle": "Recomendações",
+        "changesTitle": "O que mudaria a conclusão",
+        "codes": {
+          "facts": {
+            "status_quo_below_minimum_cash": "Sem ação, o caixa fica abaixo do mínimo de política dentro do horizonte.",
+            "status_quo_peak_service_exceeds_available_cash": "No ano de maior serviço, a dívida vigente pede mais do que o caixa disponível antes do investimento.",
+            "indenture_basket_partly_occupied": "Parte da exceção da escritura para garantia nova já está ocupada.",
+            "no_path_inside_every_gate": "Nenhum caminho adotado passa em todos os critérios."
+          },
+          "readings": {
+            "recommended_path_inside_every_gate": "Um caminho passa em todos os critérios e vem primeiro na ordem.",
+            "cheapest_path_misses_a_gate": "O caminho de menor custo financeiro não cumpre algum critério.",
+            "paths_with_the_project_miss_gates": "Os caminhos com o investimento no cronograma não cumprem algum critério.",
+            "stress_policy_headroom_tight": "No estresse, a folga contra a política do conselho fica estreita.",
+            "shorter_amortization_fails_after_horizon": "Um prazo de amortização mais curto deixa parcelas acima do caixa depois do horizonte.",
+            "alternative_depends_on_consent": "O plano alternativo depende de anuência para a garantia.",
+            "alternative_misses_amortization_test": "O plano alternativo não cobre a amortização depois do horizonte."
+          },
+          "recommendations": {
+            "follow_recommended_path_under_condition": "Seguir o caminho recomendado sob a condição da sondagem.",
+            "review_project_before_committing": "Rever o investimento antes de comprometer o desembolso.",
+            "ask_for_the_longer_amortization": "Pedir a amortização mais longa na nova operação.",
+            "negotiate_covenant_headroom_in_new_terms": "Negociar folga de covenant nos termos da nova operação.",
+            "keep_dated_alternative": "Manter o plano alternativo, com data de decisão antes do vencimento que ele resolve."
+          },
+          "wouldChange": {
+            "issue_demand_below_minimum_amount": "Demanda pela emissão abaixo do menor valor que mantém o caminho dentro dos critérios.",
+            "sensitivity_breaks_recommendation": "Uma das sensibilidades adotadas tira o caminho recomendado dos critérios."
+          }
+        },
+        "process": "A análise não sonda investidores, não contata bancos nem o BNDES e não emite nem assina.",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna nesta base.",
+        "exclusionsTitle": "O que esta análise não faz",
+        "exclusions": {
+          "investor_demand": "Medir a demanda de investidores",
+          "lender_appetite": "Medir o apetite de bancos",
+          "legal_opinion_on_indenture": "Dar opinião jurídica sobre a escritura",
+          "contact_with_counterparties": "Contatar contrapartes",
+          "issuance_or_signature": "Emitir ou assinar"
+        }
+      },
+      "boardMaterial": {
+        "title": "Discussão de estrutura de capital no conselho",
+        "status": "Situação",
+        "question": "Pergunta",
+        "outlineFirst": "Há tempo para alinhar o roteiro antes de produzir: estas são as deliberações e as perguntas que mudam o material. O material sai depois da confirmação.",
+        "materialReady": "Material preparado, versão {version}, para revisão antes da reunião.",
+        "noReading": "Faltam premissas para preparar a discussão; o que falta está nas lacunas.",
+        "deliberations": "Deliberações pedidas, por urgência",
+        "deadline": "{action} até {date}",
+        "narrative": "Linha narrativa",
+        "questionsBefore": "Antes do material",
+        "pages": "Páginas ({count})",
+        "agendaFits": "{pages} páginas cabem em {minutes} minutos de pauta.",
+        "agendaExceeds": "{pages} páginas passam do que cabe em {minutes} minutos ({capacity} páginas).",
+        "agendaUnknown": "Tempo de pauta não informado; uma página a cada {perPage} minutos.",
+        "pageTitle": "{number}. {title}",
+        "options": "Opções, com os critérios:",
+        "appendixPages": "Páginas no apêndice",
+        "summary": "Síntese para leitura prévia",
+        "questions": "Perguntas prováveis e respostas",
+        "appendix": "Apêndice",
+        "identity": "Conferência dos números",
+        "identityMatches": "Os {count} números do material foram conferidos contra as análises revisadas e batem; os {facts} fatos materiais aparecem no texto final.",
+        "identityPartial": "{count} números conferidos contra as análises revisadas.",
+        "columns": {
+          "shown": "Como aparece",
+          "source": "Análise revisada",
+          "path": "Campo lido"
+        },
+        "pending": "Pendências declaradas",
+        "indicative": "{reason}.",
+        "sourcePartial": "{source}: análise com lacunas próprias, citadas no material.",
+        "omissions": "Pedidos de retirada",
+        "omission": "Pedido de {requester}: {outcome}.",
+        "versionsKept": "{count} versões do material preservadas; a anterior continua disponível.",
+        "notSent": "Nada foi apresentado nem enviado a terceiros.",
+        "sourcesTitle": "Análises revisadas lidas",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Sem lacunas de informação.",
+        "exclusionsTitle": "O que esta preparação não faz",
+        "authorities": {
+          "board": "alçada do conselho",
+          "executive": "alçada da diretoria",
+          "shareholders": "alçada dos acionistas"
+        },
+        "roles": {
+          "decisions": "decisões",
+          "situation": "situação",
+          "constraint": "restrição",
+          "topic": "tema",
+          "alternatives": "alternativas",
+          "recommendation": "recomendação",
+          "risk": "riscos",
+          "what_changes": "o que muda a recomendação",
+          "next_steps": "próximos passos"
+        },
+        "outlineQuestions": {
+          "template": "A última apresentação ao conselho, para usar o template.",
+          "agenda_minutes": "Quanto tempo há na pauta.",
+          "board_has_seen": "Se o conselho já viu o tema."
+        },
+        "outcomes": {
+          "applied": "atendido",
+          "refused": "não atendido"
+        },
+        "templates": {
+          "not_supplied": "Template da companhia não enviado.",
+          "supplied_not_applied": "Template recebido; a aplicação visual é feita na revisão do material."
+        },
+        "sources": {
+          "tabela-divida": "Tabela de dívida",
+          "covenant": "Covenant e política",
+          "caixa-semanal": "Caixa semanal",
+          "linha-embalagem": "Projeto de investimento",
+          "projecao": "Projeção por drivers",
+          "plano-fpa": "Crítica ao plano da área financeira",
+          "recebiveis": "Recebíveis",
+          "custo-relativo": "Custo relativo da dívida",
+          "plano-2027": "Plano de financiamento"
+        },
+        "gapReasons": {
+          "figure_pending_reviewed_result": "número sem análise revisada",
+          "layout_exceeds_page": "texto maior que a página",
+          "pages_exceed_agenda": "páginas acima do tempo de pauta",
+          "recommendation_removed_without_options": "recomendação retirada sem opções",
+          "label_not_in_dictionary": "nome fora do dicionário",
+          "informed_reason_not_in_dictionary": "motivo fora do dicionário",
+          "object_not_in_vocabulary": "objeto fora do vocabulário",
+          "species_not_registered": "espécie do instrumento não registrada"
+        },
+        "exclusions": {
+          "recalculation": "Não recalcula as análises revisadas.",
+          "presentation_delivery": "Não apresenta o material.",
+          "template_import": "Não importa o template automaticamente.",
+          "third_party_distribution": "Não envia nada a terceiros.",
+          "credit_approval": "Não é aprovação de crédito."
+        }
       }
     },
     "overview": "Visão geral",
@@ -8203,6 +8703,41 @@
         "title": "Premissas para atualizar o trimestre",
         "lead": "Atualizo o caixa semanal e o covenant com este fechamento, cada premissa com a origem, sobre as versões anteriores que ficam preservadas. Confirme para calcular, ou corrija na conversa e eu refaço.",
         "cases": "Realizado contra projetado, a ponte do EBITDA e do caixa por causa, o que é pontual e o que continua até quando, a pior semana e o covenant antes e depois, a ação dentro do aprovado, qual decisão muda e o que não mudou."
+      },
+      "boardMaterial": {
+        "title": "Premissas para a discussão no conselho",
+        "lead": "Preparo a discussão sobre as análises revisadas deste trabalho, cada uma fixada na versão que li; páginas, decisões e números vêm delas. Confirme para preparar, ou corrija na conversa e eu refaço.",
+        "cases": "Roteiro antes do material quando há tempo; depois as páginas com a conclusão no título, a síntese, o apêndice, as perguntas com resposta e a conferência de cada número.",
+        "groups": {
+          "version": "Análises revisadas",
+          "action": "Deliberações",
+          "item": "Páginas e itens do material"
+        }
+      },
+      "receivedProposal": {
+        "title": "Premissas para ler a proposta recebida",
+        "lead": "Leio a proposta contra o uso do dinheiro, o caixa, os limites e as garantias com estes termos e premissas, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Se o prazo cabe no uso, o caixa com a proposta, o covenant na definição da escritura e no caso do banco, a garantia contra a carteira e a exceção, o preço em base comparável com IOF e custos, o que pedir ao banco e as alternativas.",
+        "groups": {
+          "case": "Casos e pedidos ao banco",
+          "option": "Alternativas",
+          "item": "Grupos da carteira"
+        }
+      },
+      "documentFolder": {
+        "title": "Premissas para organizar a pasta",
+        "lead": "Organizo a pasta com estas leituras, o cadastro, as decisões em curso e o que já está no cofre, cada um com a origem. Confirme para organizar, ou corrija na conversa e eu refaço.",
+        "cases": "O que cada arquivo é, de quem e de quando, qual versão vale para cada uso, o que na pasta muda uma decisão em curso, o que falta por finalidade e o que não foi lido."
+      },
+      "financingPaths": {
+        "title": "Premissas para avaliar os caminhos de financiamento",
+        "lead": "Avalio os caminhos na mesma base com estas operações, limites, variantes e caminhos, cada um com a origem. Confirme para calcular, ou corrija na conversa e eu refaço.",
+        "cases": "Sem ação, cada caminho por trimestre com caixa, serviço, imposto, escritura e exceção, a ordem pelos critérios, o caminho recomendado com condição, o plano alternativo datado e o que mudaria.",
+        "groups": {
+          "case": "Variantes do investimento",
+          "option": "Caminhos",
+          "scenario": "Sensibilidades"
+        }
       }
     },
     "groups": {
@@ -8225,7 +8760,12 @@
       "line": "Linhas do fechamento",
       "cause": "Causas dos desvios",
       "facility": "Linhas aprovadas",
-      "dependent": "Análises e materiais dependentes"
+      "dependent": "Análises e materiais dependentes",
+      "file": "Arquivos",
+      "entity": "Cadastro",
+      "decision": "Decisões em curso",
+      "vault": "Já no cofre",
+      "informed": "Respostas da pessoa"
     },
     "origins": {
       "document": "Documento",
@@ -8294,7 +8834,91 @@
       "dedicatedVehicleThreshold": "Volume que justifica operação dedicada",
       "priorWeeklyCash": "Caixa semanal anterior",
       "priorCovenant": "Teste de covenant anterior",
-      "materialityFloor": "Piso de materialidade"
+      "materialityFloor": "Piso de materialidade",
+      "boardMeetingDate": "Data da reunião",
+      "boardAgendaMinutes": "Tempo de pauta",
+      "boardTemplate": "Template do conselho",
+      "boardOutlineConfirmed": "Roteiro confirmado",
+      "boardLeadDays": "Antecedência do roteiro",
+      "boardMinutesPerPage": "Minutos por página",
+      "boardSource": {
+        "tabela-divida": "Resultado revisado: Tabela de dívida",
+        "covenant": "Resultado revisado: Covenant e política",
+        "caixa-semanal": "Resultado revisado: Caixa semanal",
+        "linha-embalagem": "Resultado revisado: Projeto de investimento",
+        "projecao": "Resultado revisado: Projeção por drivers",
+        "plano-fpa": "Resultado revisado: Crítica ao plano da área financeira",
+        "recebiveis": "Resultado revisado: Recebíveis",
+        "custo-relativo": "Resultado revisado: Custo relativo da dívida",
+        "plano-2027": "Resultado revisado: Plano de financiamento"
+      },
+      "boardDeliberation": {
+        "linha": "Deliberação: linha de embalagem",
+        "vencimentos": "Deliberação: vencimentos",
+        "politica": "Deliberação: política de endividamento",
+        "safra": "Deliberação: capital de giro da safra"
+      },
+      "boardPage": {
+        "decisions": "Página: decisões",
+        "situation": "Página: situação",
+        "constraint": "Página: restrição",
+        "topic": "Página: tema",
+        "alternatives": "Página: alternativas",
+        "recommendation": "Página: recomendação",
+        "risk": "Página: riscos",
+        "what_changes": "Página: o que muda a recomendação",
+        "next_steps": "Página: próximos passos"
+      },
+      "boardTopicSeen": {
+        "yes": "Tema já visto pelo conselho: {label}",
+        "no": "Tema não visto pelo conselho: {label}",
+        "unknown": "Tema a confirmar se o conselho viu: {label}"
+      },
+      "boardInformedReason": "Motivo informado pelo presidente do conselho",
+      "boardOmission": {
+        "recommendation": "Retirar a recomendação: {label}",
+        "page": "Retirar a página: {label}",
+        "deadline": "Retirar o prazo: {label}"
+      },
+      "boardOmitted": "Fora do material: {label}",
+      "receivedProposal": "Proposta de {label}",
+      "indexer": "Indexador",
+      "drawDate": "Data do desembolso",
+      "paymentDay": "Dia de pagamento",
+      "use": "Uso: {label}",
+      "needDate": "Data em que o dinheiro precisa entrar",
+      "readingDate": "Data da leitura",
+      "companyCalendar": "Calendário da companhia sem a proposta",
+      "seasonalPeak": "Pico da necessidade sazonal",
+      "indentureLimit": "Limite da escritura: {label}",
+      "boardPolicy": "Política do conselho",
+      "indentureBasket": "Exceção da escritura para garantia nova",
+      "covenantScenarios": "Caso da companhia e caso do banco",
+      "covenantMeasurements": "Apurações sem a proposta",
+      "collateralReference": "Faixa de cobertura de referência",
+      "creditTax": "IOF de crédito",
+      "indexCurve": "CDI anual por ano",
+      "tax": "Regime tributário e alíquota",
+      "taxableAfterCalendar": "Lucro tributável depois do calendário",
+      "marketRange": "Faixa de spread de comparáveis",
+      "lastOperation": "Última operação: {label}",
+      "askCase": "Pedido ao banco: {label}",
+      "documentFolderMode": {
+        "organize": "Pedido: organizar e dizer o que importa para as decisões em curso",
+        "organize_only": "Pedido: só organizar, sem análise",
+        "organize_for_debt": "Pedido: organizar para a discussão da dívida"
+      },
+      "documentFolderWindow": "Início da janela de leitura: {label}",
+      "quarterlyProjection": "Caixa e projeção por período",
+      "diCurve": "Curva do CDI",
+      "taxRate": "Alíquota de imposto",
+      "stressCase": "Caso de estresse",
+      "postHorizonBase": "Base anual depois do horizonte",
+      "soundingPlan": "Gatilho e datas da sondagem",
+      "issueQuantum": "Resolução da emissão mínima",
+      "indentureCovenant": "Covenant da escritura",
+      "withoutProject": "Sem o projeto de investimento",
+      "statusQuoPath": "Manter e rolar no vencimento"
     }
   }
 }

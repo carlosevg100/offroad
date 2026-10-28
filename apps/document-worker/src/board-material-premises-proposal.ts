@@ -1,8 +1,8 @@
 import {z} from "zod";
 import {composeBoundBoardCapitalDiscussion, prepareBoardCapitalDiscussionPacket, proposeBoardCapitalDiscussionHypotheses, type BoardCapitalDiscussionFacts} from "@offroad/financial-model";
-import {compileObjectiveToPlan} from "@offroad/work-plan";
+import {boardMaterialCue, compileObjectiveToPlan} from "@offroad/work-plan";
 import {extractedOrigin, fingerprintedProposal, itemSource, proposeLote2PremisesForTurn, sourced, stated, summaryRow, type Lote2Summary, type Lote2SummaryItem, type Lote2TurnPremises} from "./lote2-premises";
-import {asksOrExplains, foldCue, turnIntentInstruction, turnIntents} from "./premise-cue";
+import {asksOrExplains, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {inMemoryBasis, readerGaps, type BoundBasis} from "./lote3-reader-check";
 import {boardMaterialActions, boardMaterialReasonCodes, boardMaterialSourceIds, boardMaterialSourceMethods, boardMaterialTopics, planBoardMaterial,
   type BoardMaterialConversation, type BoardMaterialOmitted, type BoardMaterialPin, type BoardMaterialPrior} from "./board-material-planner";
@@ -11,25 +11,16 @@ import {boardMaterialActions, boardMaterialReasonCodes, boardMaterialSourceIds, 
 export const boardMaterialPremiseMethod = {methodId: "prepare-board-capital-discussion", methodVersion: "2026.10.27-v1"} as const;
 export const boardMaterialObjectiveKind = "board_capital_discussion";
 
-/** The ficha's construction: prepare (or make, assemble) the discussion, the material, the deck, the page or the agenda
- * for the board, or a board meeting on a stated day with a request to prepare it. Folded text. Deciding between capital
- * alternatives at the board (board_decision), a memo, an answer to a board question, the debt table and the quarter's
- * update keep their own routes. */
-export const boardMaterialCue = new RegExp([
-  String.raw`\b(?:prepar\w*|mont\w*|faz|faca|fazer|organiz\w*|monte)\b[^.?!]{0,40}\b(?:a |o |uma |um )?(?:discussao|material|deck|pagina|apresentacao|pauta|roteiro)\b[^.?!]{0,60}\b(?:conselho|board)\b`,
-  String.raw`\b(?:conselho|board)\b[^.?!]{0,40}\b(?:na|nesta|nessa|na proxima|dia)\s+(?:segunda|terca|quarta|quinta|sexta|\d{1,2})\b[^?!]{0,30}\bprepar\w*\b[^.?!]{0,30}\b(?:discussao|material|deck|apresentacao|pauta|roteiro)\b`,
-].join("|"));
-const neighbour = /\b(?:memorando|memo|resposta|responder|pergunt\w*|serra verde|endividamento atualizado|tabela de divida|trimestre)\b/;
+/** The ficha's construction is the router's (packages/work-plan/src/board-material-route.ts): preparing the board's capital
+ * discussion, from a board decision, and the ficha exception for board material on capital structure, financing or debt. */
+export {boardMaterialCue};
 
-/** The cue of this method: the router's own objective once it knows it, or the ficha's construction over a board message. */
+/** The cue of this method: the router's own objective. */
 export function boardMaterialCueKind(message: string, hasAttachments: boolean): boolean {
-  const kind = compileObjectiveToPlan({message, hasAttachments}).objectiveKind as string;
-  if (kind === boardMaterialObjectiveKind) return true;
-  const text = foldCue(message);
-  return kind === "board_decision" && boardMaterialCue.test(text) && !neighbour.test(text);
+  return (compileObjectiveToPlan({message, hasAttachments}).objectiveKind as string) === boardMaterialObjectiveKind;
 }
 const premiseKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash",
-  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
+  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update", "document_folder", "received_proposal", "financing_paths"]);
 /** As premiseEntry: by its own cue, or as a continuation when the latest earlier premise cue among the recent messages is
  * this one, the message is not a question nor a request for explanation, and it does not compile to another premise method. */
 export function boardMaterialEntry(message: string, hasAttachments: boolean, earlierUserMessages: readonly string[]): "cue" | "continuation" | null {

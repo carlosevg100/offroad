@@ -1,21 +1,18 @@
 import {renderToStaticMarkup} from "react-dom/server";
 import {describe, expect, it, vi} from "vitest";
-// Integration: import from "@offroad/domain-contracts" once its index exports lote4-received-proposal-result-blocks.
-import {readReceivedProposalPacketBlocks} from "../../../../../packages/domain-contracts/src/lote4-received-proposal-result-blocks";
+import {readReceivedProposalPacketBlocks} from "@offroad/domain-contracts";
 
 import en from "../../../messages/en-US.json";
 import pt from "../../../messages/pt-BR.json";
 import proposalBlocks from "../../../../../packages/domain-contracts/src/fixtures/received-proposal-result-blocks.json";
-import enProposal from "./received-proposal-result.messages.en-US.json";
-import ptProposal from "./received-proposal-result.messages.pt-BR.json";
 import {ReceivedProposalResult} from "./received-proposal-result";
 
 type Catalog = Record<string, unknown>;
 const resolve = (catalog: Catalog, key: string): unknown => key.split(".")
   .reduce<unknown>((node, part) => (node && typeof node === "object" ? (node as Catalog)[part] : undefined), catalog);
-// The catalogs as they will be once App.workExecutions.receivedProposal is merged into messages/*.json.
-const merged = (base: typeof pt, own: Catalog) => ({...base, App: {...base.App, workExecutions: {...base.App.workExecutions, receivedProposal: own}}});
-const catalogs = {"pt-BR": merged(pt, ptProposal), "en-US": merged(en as typeof pt, enProposal)};
+// This page's keys in the shared catalogs, under App.workExecutions.receivedProposal.
+const catalogs = {"pt-BR": pt, "en-US": en as typeof pt};
+const ptProposal = pt.App.workExecutions.receivedProposal, enProposal = (en as typeof pt).App.workExecutions.receivedProposal;
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async ({locale, namespace}: {locale: "pt-BR" | "en-US"; namespace: string}) => {
