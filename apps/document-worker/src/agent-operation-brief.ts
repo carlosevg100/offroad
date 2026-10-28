@@ -124,6 +124,18 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
 /** The objectives a message keeps the folder wait under: the folder itself, or nothing specific. Any other objective is
  * a change of request. */
 const folderKeepingKinds = new Set<string>(["document_folder", "ambiguous", "documents_to_case", "information_organization", "factual_question"]);
+/** The lote 4 method whose open cards this turn supersedes: a lote 4 premise step that answered (the person's turn on
+ * that method) and ended without a card, because the person corrected or rejected its premises and nothing can replace
+ * them yet. A step that did not run, or did not answer, supersedes nothing. */
+export const lote4PremiseMethods = {received_proposal: "evaluate-received-proposal", document_folder: "organize-document-folder", financing_paths: "evaluate-financing-paths",
+  board_material: "prepare-board-capital-discussion"} as const;
+export function premiseInvalidation(steps: Partial<Record<keyof typeof lote4PremiseMethods, {forAdvisor: {status: string}; proposal: unknown} | null>>): string | null {
+  for (const [step, method] of Object.entries(lote4PremiseMethods) as [keyof typeof lote4PremiseMethods, string][]) {
+    const r = steps[step];
+    if (r && r.forAdvisor.status === "missing" && !r.proposal) return method;
+  }
+  return null;
+}
 /** Whether the person withdrew a folder wait after it opened, read from their messages after the one it came from. */
 export function documentFolderResumeWithdrawn(context: {message_id: string; recent_messages: {id: string; role: string; content: string; created_at: string}[]},
   sourceMessageId: string): boolean {
@@ -444,7 +456,10 @@ Rules:
   and that the material comes after the user confirms. Never state a number the analyses do not hold. When its status
   is missing because no source is released, say which completed analyses the material needs first; a missing item
   instrumentLink.<instrument> asks which row of the debt table that instrument of the financing plan is (the same
-  contract), as a question, never as an error; for other missing items, ask in one short list, each with the reason.
+  contract), as a question, never as an error, showing the terms in instrumentLinks (both sides, with what is not
+  registered); instrumentLinkMismatch.<instrument>.<term> says the row the person named differs in that term and asks
+  again; linkAnswers.<n>.row or .instrument asks the person to name the row or the instrument as the table and the plan
+  name it; for other missing items, ask in one short list, each with the reason.
   A card row of an identity proposed by the bridge is a proposal: say the person confirms it with the card or tells you
   it is not the same contract.
 - Only use the patch paths allowed by the response schema.`;
@@ -1019,6 +1034,10 @@ export async function processAgentOperationBriefJob(
     const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? debtTable?.proposal ?? covenant?.proposal ?? weeklyCash?.proposal
       ?? projection?.proposal ?? challenge?.proposal ?? receivables?.proposal ?? quarter?.proposal
       ?? receivedProposal?.proposal ?? folder?.proposal ?? paths?.proposal ?? board?.proposal ?? null;
+    // A lote 4 card the person corrected or rejected without a replacement proposal is superseded before the reply is
+    // recorded: the latest message decides, so the earlier card can no longer be confirmed.
+    const invalidated = premiseInvalidation({received_proposal: receivedProposal, document_folder: folder, financing_paths: paths, board_material: board});
+    if (invalidated && queue.supersedePremiseProposals) await queue.supersedePremiseProposals(job, invalidated);
     if (premiseProposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
       await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premiseProposal);
     } else {

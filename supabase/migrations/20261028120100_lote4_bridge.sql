@@ -95,6 +95,30 @@ begin
   return result;
 end $$;
 
+-- A lote 4 card the person corrected or rejected in a later message, when that turn proposes nothing in its place: the
+-- latest message decides, so every open card of the method from an earlier message of the work is superseded and can no
+-- longer be confirmed (confirm_work_premise_proposal_v1 confirms only a proposed card). Only the turn's own job may.
+create function private.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text) returns integer
+language plpgsql volatile security definer set search_path = '' as $$
+declare job_row public.processing_jobs := private.job_for_capability(p_job_id, p_capability_token); project uuid; source uuid; n integer;
+begin
+  if job_row.kind <> 'agent_operation_brief' then raise exception 'agent_operation_brief_capability_required' using errcode = '42501'; end if;
+  if p_method_id is null or p_method_id not in ('evaluate-received-proposal', 'organize-document-folder', 'evaluate-financing-paths', 'prepare-board-capital-discussion') then
+    raise exception 'invalid_premise_proposal' using errcode = '22023'; end if;
+  source := (job_row.payload ->> 'message_id')::uuid;
+  select capital_project_id into project from public.document_intake_sessions where organization_id = job_row.organization_id and id = job_row.intake_session_id;
+  update public.work_premise_proposals set status = 'superseded'
+    where organization_id = job_row.organization_id and capital_project_id = project and method_id = p_method_id and status = 'proposed' and source_message_id <> source;
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke all on function private.worker_supersede_premise_proposals_v1(uuid, text, text) from public, anon, authenticated, service_role;
+grant execute on function private.worker_supersede_premise_proposals_v1(uuid, text, text) to authenticated;
+create function public.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text) returns integer
+language sql volatile security invoker set search_path = '' as $$ select private.worker_supersede_premise_proposals_v1(p_job_id, p_capability_token, p_method_id); $$;
+revoke all on function public.worker_supersede_premise_proposals_v1(uuid, text, text) from public, anon, authenticated, service_role;
+grant execute on function public.worker_supersede_premise_proposals_v1(uuid, text, text) to authenticated;
+
 -- Key for key the TypeScript mappings of packages/domain-contracts/src/lote4-*-result-blocks.ts; values are
 -- copied from the packet, never recomputed. A JSON null reads as absent, as `??` does; a label taken from a
 -- list by id is the last of that id when the TypeScript reads it through a map, the first when it uses find.

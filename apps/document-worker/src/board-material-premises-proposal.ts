@@ -5,7 +5,7 @@ import {extractedOrigin, fingerprintedProposal, itemSource, proposeLote2Premises
 import {asksOrExplains, turnIntentInstruction, turnIntents} from "./premise-cue";
 import {inMemoryBasis, readerGaps, type BoundBasis} from "./lote3-reader-check";
 import {boardMaterialActions, boardMaterialReasonCodes, boardMaterialSourceIds, boardMaterialSourceMethods, boardMaterialTopics, planBoardMaterial,
-  type BoardMaterialConversation, type BoardMaterialOmitted, type BoardMaterialPin, type BoardMaterialPrior} from "./board-material-planner";
+  type BoardMaterialConversation, type BoardMaterialLinkQuestion, type BoardMaterialOmitted, type BoardMaterialPin, type BoardMaterialPrior} from "./board-material-planner";
 
 /** The method these premises feed, pinned to its implemented version. */
 export const boardMaterialPremiseMethod = {methodId: "prepare-board-capital-discussion", methodVersion: "2026.10.27-v1"} as const;
@@ -60,6 +60,10 @@ export const boardMaterialExtractionSchema = z.strictObject({
   /** A proposed identity of a plan instrument and a debt-table row the person said is not the same contract, by the name
    * the person used (the creditor or the instrument). Absent from older extractions: none rejected. */
   linkRejections: z.array(z.strictObject({...item, label: z.string().trim().min(2).max(120)})).max(8).optional(),
+  /** Which row of the debt table an instrument of the plan is, as the person said it ("o empréstimo do plano é a linha CCB
+   * Bradesco 2029"): instrument is the name the person used for the plan's instrument (null when none), row the name of
+   * the table's row. Only what the person said. Absent from older extractions. */
+  linkAnswers: z.array(z.strictObject({...item, instrument: z.string().trim().min(2).max(120).nullable(), row: z.string().trim().min(2).max(200)})).max(8).optional(),
 });
 export type BoardMaterialExtraction = z.infer<typeof boardMaterialExtractionSchema>;
 
@@ -73,6 +77,7 @@ export const boardMaterialExtractionContract = {
     "seen diz se o conselho já viu cada tema (linha-embalagem: revisão do projeto da linha de embalagem; safra: financiamento do capital de giro da safra; vencimentos: vencimentos e plano de financiamento; politica: política de endividamento).",
     "reasons são motivos dados por alguém para um tema, com o autor (chair: presidente do conselho; cfo; ceo) e o código do dicionário fechado: reduce_single_supplier_dependence (depender menos de um único fornecedor do insumo principal), diversify_suppliers, own_capacity, reduce_operational_risk, serve_customer_contract; outside_dictionary quando o motivo dito não é nenhum desses. Gostar de um projeto não é motivo.",
     "deadlines são prazos de ações ditos na conversa ou em documento: supplier_notice (aviso ao fornecedor para renegociar o contrato), join_programs (adesão aos programas de antecipação), finish_sounding (concluir a sondagem), decide_route (decidir a rota dos vencimentos).",
+    "linkAnswers são respostas da pessoa dizendo qual linha da tabela de dívida é um instrumento do plano de financiamento (\"o empréstimo do plano é a linha CCB Bradesco 2029\"): instrument é o nome que a pessoa usou para o instrumento do plano (null quando não nomeou), row é o nome que ela usou para a linha da tabela, com as palavras dela. Lista vazia quando a pessoa não respondeu isso.",
     "linkRejections são as identificações propostas no cartão que a pessoa recusou (\"a CCB do plano não é a do Bradesco\"): label é o nome que a pessoa usou, do credor ou do instrumento. Lista vazia quando ninguém recusou.",
     "omissions são pedidos de retirar algo do material: recommendation quando pedem para tirar a recomendação de um tema, page quando pedem para tirar uma página ou um fato, deadline quando pedem para tirar um prazo (action); topic é o tema; requestedBy é quem pediu (o pedido feito em nome do presidente é chair).",
     "origin é informed quando a pessoa disse, document quando veio de um documento. source cita em poucas palavras de onde veio.",
@@ -107,6 +112,7 @@ export function boardMaterialConversation(e: BoardMaterialExtraction): {conversa
     reasons: once(e.reasons, (x) => `${x.topic}:${x.author}`, (x) => x.code, "reasons"),
     deadlines: once(e.deadlines, (x) => x.action, (x) => x.date, "deadlines"),
     linkRejections: (e.linkRejections ?? []).map((x) => ({label: x.label, origin: x.origin, source: x.source})),
+    linkAnswers: (e.linkAnswers ?? []).map((x) => ({instrument: x.instrument, row: x.row, origin: x.origin, source: x.source})),
     omissions: e.omissions.flatMap((o, k) => {
       // Only the chair and the CFO have a reviewed phrase as requester; anyone else is asked.
       if (o.requestedBy === null || o.requestedBy === "ceo") {missing.push(`omissions.${k + 1}.requestedBy`); return [];}
@@ -173,7 +179,11 @@ const said = (x: {origin: string; source: string}) => ({origin: x.origin === "an
 
 /** The card: the meeting, each reviewed result read (pinned by execution and fingerprint), each deliberation with its
  * deadlines, each page, what the conversation stated, and what was left out and why. */
-export function boardMaterialSummary(facts: BoardCapitalDiscussionFacts, pins: readonly BoardMaterialPin[], omitted: readonly BoardMaterialOmitted[]): Lote2Summary & {boardSources: BoardMaterialPin[]} {
+/** The question of an instrument no identity covers: its terms and each candidate row's, side by side. */
+export const questionText = (q: BoardMaterialLinkQuestion) => `Qual linha da tabela de dívida é este instrumento do plano? ${q.instrument}.`
+  + (q.candidates.length ? ` Linhas com termos compatíveis mas não todos registrados ou iguais: ${q.candidates.join(" | ")}.` : " Nenhuma linha tem termos registrados compatíveis.");
+export function boardMaterialSummary(facts: BoardCapitalDiscussionFacts, pins: readonly BoardMaterialPin[], omitted: readonly BoardMaterialOmitted[],
+  questions: readonly BoardMaterialLinkQuestion[] = []): Lote2Summary & {boardSources: BoardMaterialPin[]} {
   const row = summaryRow;
   const optional = <T>(x: T | null, f: (v: T) => Lote2SummaryItem) => x === null ? [] : [f(x)];
   return {situationId: boardMaterialSituation, referenceDate: facts.meetingDate.value, boardSources: [...pins], items: [
@@ -188,13 +198,17 @@ export function boardMaterialSummary(facts: BoardCapitalDiscussionFacts, pins: r
     ...facts.topics.map((t) => row("premise", t.value.id, said(t), `boardTopicSeen.${t.value.seen === null ? "unknown" : t.value.seen ? "yes" : "no"}`)),
     ...facts.informed.map((x) => row("premise", x.value.code, said(x), "boardInformedReason")),
     ...facts.omissions.map((o) => row("item", o.value.targetId, said(o), `boardOmission.${o.value.target}`)),
-    // One row per identity the bridge proposes: the person confirms the card with it or rejects it in the conversation.
-    ...facts.links.map((l) => row("premise", `${l.value.rowId} = ${l.value.instrumentId}`, said(l), "boardInstrumentLink")),
+    // One row per identity: proposed by the bridge with both sides' registered terms (confirmed with the card or rejected
+    // in the conversation), or informed by the person with the person's words.
+    ...facts.links.map((l) => row("premise", `${l.value.rowId} = ${l.value.instrumentId}`, said(l), l.origin === "informed" ? "boardInstrumentLinkInformed" : "boardInstrumentLink")),
+    // Each instrument no identity covers that some row could be, with both sides' terms: asked, never proposed.
+    ...questions.filter((q) => !q.needed).map((q) => row("item", q.label, {origin: "house", source: questionText(q)}, "boardInstrumentLinkQuestion")),
     ...omitted.map((o) => row("item", o.item, {origin: "house", source: boardOmittedReason(o.reason)}, "boardOmitted")),
   ]};
 }
-export function buildBoardMaterialPremiseProposal(facts: BoardCapitalDiscussionFacts, pins: readonly BoardMaterialPin[], omitted: readonly BoardMaterialOmitted[]) {
-  return fingerprintedProposal(boardMaterialPremiseMethod, facts, proposeBoardCapitalDiscussionHypotheses(facts), boardMaterialSummary(facts, pins, omitted));
+export function buildBoardMaterialPremiseProposal(facts: BoardCapitalDiscussionFacts, pins: readonly BoardMaterialPin[], omitted: readonly BoardMaterialOmitted[],
+  questions: readonly BoardMaterialLinkQuestion[] = []) {
+  return fingerprintedProposal(boardMaterialPremiseMethod, facts, proposeBoardCapitalDiscussionHypotheses(facts), boardMaterialSummary(facts, pins, omitted, questions));
 }
 
 /** One turn's premise step for the board material. Without any completed released result of the work it proposes
@@ -214,8 +228,9 @@ export async function proposeBoardMaterialPremisesForTurn(input: {
     return {forAdvisor: {status: "missing", missing: ["sources"]}, proposal: null};
   }
   // The method's own check runs inside the planner; the facts it accepted are not checked twice.
-  let verified: {facts: BoardCapitalDiscussionFacts; pins: BoardMaterialPin[]; omitted: BoardMaterialOmitted[]} | null = null;
-  return proposeLote2PremisesForTurn({logPrefix: "board_material_premises", idName: "board-material", expansionRefusalAsGap: true, schema: boardMaterialExtractionSchema,
+  let verified: {facts: BoardCapitalDiscussionFacts; pins: BoardMaterialPin[]; omitted: BoardMaterialOmitted[]; questions: BoardMaterialLinkQuestion[]} | null = null;
+  let asked: BoardMaterialLinkQuestion[] = [];
+  const turn = await proposeLote2PremisesForTurn({logPrefix: "board_material_premises", idName: "board-material", expansionRefusalAsGap: true, schema: boardMaterialExtractionSchema,
     complete: (extraction, id) => {
       const {conversation, missing} = boardMaterialConversation(extraction);
       if (missing.length) return {status: "missing", missing};
@@ -224,17 +239,20 @@ export async function proposeBoardMaterialPremisesForTurn(input: {
           try { return boardMaterialCheck(priors, verifiedPins(facts))(facts); }
           catch (error) { return error instanceof Error ? error.message : String(error); }
         }});
-      if (planned.status === "missing") return {status: "missing", missing: planned.missing};
-      verified = {facts: planned.facts, pins: planned.pins, omitted: planned.omitted};
+      if (planned.status === "missing") {asked = (planned.linkQuestions ?? []).filter((q) => q.needed); return {status: "missing", missing: planned.missing};}
+      verified = {facts: planned.facts, pins: planned.pins, omitted: planned.omitted, questions: planned.linkQuestions ?? []};
       return {status: "complete", facts: planned.facts, situationId: boardMaterialSituation, housePremiseKeys: planned.housePremiseKeys};
     },
-    build: (facts) => buildBoardMaterialPremiseProposal(facts, verified!.pins, verified!.omitted),
+    build: (facts) => buildBoardMaterialPremiseProposal(facts, verified!.pins, verified!.omitted, verified!.questions),
     readerCheck: (facts) => {
       if (verified?.facts === facts) return [];
       try { return boardMaterialReaderGaps(facts, priors, verifiedPins(facts)); }
       catch (error) { return [`readerRefused.${error instanceof Error ? error.message : "unknown"}`]; }
     }}, {...input, entry, projectId: input.projectId,
     loadEvidence: async () => ({today: input.today, documentFields: await input.loadEvidence()})});
+  // A question of which row an instrument is carries both sides' registered terms, so the person answers knowingly.
+  if (turn && turn.forAdvisor.status === "missing" && asked.length) return {...turn, forAdvisor: {...turn.forAdvisor, instrumentLinks: asked.map(questionText)}} as Lote2TurnPremises;
+  return turn;
   /** The pins of the sources the facts name, in their order, each with the scale the database records for its method:
    * a fact that names another scale is refused by name. */
   function verifiedPins(facts: BoardCapitalDiscussionFacts): BoardMaterialPin[] {

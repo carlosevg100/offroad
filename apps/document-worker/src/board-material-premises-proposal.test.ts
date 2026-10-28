@@ -66,16 +66,19 @@ describe("board material: ficha C47 through the conversation", () => {
     expect(result?.forAdvisor.status).toBe("proposed");
     const facts = result!.proposal!.facts as BoardCapitalDiscussionFacts, expected = gold(turn);
     const rename = new Map([[projectAnalysis, boardCapitalDiscussionAnalysisId(expected.discussionId)]]);
-    // Every fact is the calibration's, except the identities: the calibration adopts the Bradesco CCB of the plan as the
-    // Bradesco row of the debt table from the analysis of both results; the bridge proposes it, origin house, with the
-    // other pair whose registered terms agree (the 2021 debenture), for the person to confirm or reject on the card.
+    // Every fact is the calibration's, except the identity's origin: the calibration adopts the Bradesco CCB of the plan as
+    // the Bradesco row of the debt table from the analysis of both results; the bridge proposes it, origin house, because
+    // both register the final payment, the rate kind and the spread and all agree. The 2021 debenture is not proposed
+    // (the plan registers no final payment): it is asked on the card, with both sides' terms.
     const noLinks = (xs: ReturnType<typeof comparableHypotheses>) => xs.filter((h) => !/(?:^|\.)link\./.test(JSON.stringify(h)));
     expect(noLinks(comparableHypotheses(proposeBoardCapitalDiscussionHypotheses(facts), rename))).toEqual(noLinks(asGold(expected)));
     expect(facts.links.map((l) => [l.value, l.origin])).toEqual([
-      [{id: "debenture-1", planSourceId: "plano-2027", instrumentId: "debenture-2021", tableSourceId: "tabela-divida", rowId: "debenture-1"}, "house"],
       [{id: "ccb-bradesco", planSourceId: "plano-2027", instrumentId: "ccb-bradesco", tableSourceId: "tabela-divida", rowId: "ccb-bradesco"}, "house"]]);
-    expect(facts.links.every((l) => /^Identificação proposta do mesmo contrato: .* confirme ou recuse$/.test(l.source))).toBe(true);
-    expect(expected.links.map((l) => l.value)).toContainEqual(facts.links[1]!.value);
+    expect(expected.links.map((l) => l.value)).toEqual([facts.links[0]!.value]);
+    // The proposal shows both sides' registered terms next to each other, so the person confirms knowingly.
+    expect(facts.links[0]!.source).toBe("Identificação proposta do mesmo contrato, todos os termos registrados iguais. Plano, CCB Bradesco: vencimento final 2027-09-15; "
+      + "taxa pós-fixada (índice mais spread); índice 0.149; spread ou taxa 0.026; saldo 40 (contexto, não é termo). Tabela de dívida, CCB Bradesco: vencimento final 2027-09-15; "
+      + "taxa pós-fixada (índice mais spread); índice CDI 0.149; spread ou taxa 0.026; saldo 40 (contexto, não é termo). Confirme com o cartão ou recuse na conversa");
     // The confirmed card (in memory) and the calibration give the same material.
     const run = (f: BoardCapitalDiscussionFacts) => {
       const packet = prepareBoardCapitalDiscussionPacket(composeBoundBoardCapitalDiscussion({discussion: inMemoryBasis(proposeBoardCapitalDiscussionHypotheses(f)), question: "C47",
@@ -91,9 +94,12 @@ describe("board material: ficha C47 through the conversation", () => {
     expect(summary.boardSources.map((p) => p.role)).toEqual(Object.values(boardMaterialSourceIds));
     expect(summary.items.some((i) => i.labelKey === "boardOmitted")).toBe(false);
     // One card row per proposed identity, origin house, saying it is a proposed identification of the same contract.
-    const links = (summary.items as {labelKey: string | null; origin: string; source: string; label: string}[]).filter((i) => i.labelKey === "boardInstrumentLink");
-    expect(links.map((i) => [i.label, i.origin])).toEqual([["debenture-1 = debenture-2021", "house"], ["ccb-bradesco = ccb-bradesco", "house"]]);
-    expect(links.every((i) => i.source.startsWith("Identificação proposta do mesmo contrato:"))).toBe(true);
+    const items = summary.items as {labelKey: string | null; origin: string; source: string; label: string}[];
+    expect(items.filter((i) => i.labelKey === "boardInstrumentLink").map((i) => [i.label, i.origin])).toEqual([["ccb-bradesco = ccb-bradesco", "house"]]);
+    // The debenture of 2021: asked, never proposed on the spread alone; its missing final payment is named.
+    const asked = items.filter((i) => i.labelKey === "boardInstrumentLinkQuestion");
+    expect(asked.map((i) => [i.label, i.origin])).toEqual([["Debênture 2021", "house"]]);
+    expect(asked[0]!.source).toMatch(/^Qual linha da tabela de dívida é este instrumento do plano\? Plano, Debênture 2021: vencimento final não registrado; .*Tabela de dívida, Debênture 1ª emissão Debenturistas: vencimento final 2028-06-15;/);
   }, 120_000);
 
   it("proposes nothing when the turn does not answer, and nothing without a completed released result", async () => {

@@ -8887,6 +8887,8 @@
       },
       "boardOmitted": "Left out of the material: {label}",
       "boardInstrumentLink": "Proposed identification of the same contract: {label}",
+      "boardInstrumentLinkInformed": "Identification stated in the conversation: {label}",
+      "boardInstrumentLinkQuestion": "Plan instrument without an identification in the debt table: {label}",
       "receivedProposal": "Proposal from {label}",
       "indexer": "Index",
       "drawDate": "Draw date",

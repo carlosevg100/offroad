@@ -47,6 +47,9 @@ export type BoardMaterialConversation = {
   /** Proposed identities of a plan instrument and a debt-table row the person said are not the same contract, by the name
    * of either (the creditor, the instrument). */
   linkRejections?: {label: string; origin: Said; source: string}[];
+  /** Which row of the debt table an instrument of the plan is, as the person said it: the instrument by the name the
+   * person used (null when the person named none and answered the card's question) and the row by its name in the table. */
+  linkAnswers?: {instrument: string | null; row: string; origin: Said; source: string}[];
 };
 
 type Reading = [string, string, string];
@@ -302,9 +305,13 @@ const templateOf = (ref: string) => ref.split("|")[0]!;
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 const text = (v: unknown) => typeof v === "string" ? v : null;
 /** The anchors, each read from its result; an anchor the result does not determine stays null. */
-/** A proposed identity of an existing instrument of the plan and a row of the debt table: the same contract, proposed by
- * the bridge from the terms both results register and never adopted until the person confirms it on the card. */
-export type BoardMaterialLink = {id: string; instrumentId: string; rowId: string; creditor: string; instrumentLabel: string; terms: string[]};
+/** An identity of an existing instrument of the plan and a row of the debt table (the same contract): proposed by the
+ * bridge when both results register every contractual term and all agree (origin house, confirmed with the card), or
+ * informed by the person in the conversation (origin informed, the person's words as its reason). */
+export type BoardMaterialLink = {id: string; instrumentId: string; rowId: string; origin: "house" | "informed"; source: string};
+/** An existing instrument no identity covers: its registered terms and those of each row that could be it, side by side,
+ * for the person to say which row it is. `needed` when the material reads it. */
+export type BoardMaterialLinkQuestion = {instrumentId: string; label: string; needed: boolean; instrument: string; candidates: string[]};
 type Contribution = {fieldPath?: unknown; value?: {value?: unknown}};
 const contributionsOf = (packet: Record<string, unknown> | undefined): Contribution[] => {
   const c = (packet?.result as {contributions?: unknown} | undefined)?.contributions;
@@ -323,43 +330,146 @@ function sourceReader(packets: Map<string, Record<string, unknown>>, methods: Ma
     return {id, methodId, packet: packets.get(id)!} as unknown as BoardSourceReading;
   };
 }
-/** The identities the bridge can propose: an existing instrument of the plan and a row of the debt table whose contractual
- * terms registered in both results agree on at least one term (final payment date, or spread or fixed rate) and differ on
- * none, by the method's own check (boardLinkedInstrument); only a pair where each side has exactly one such counterpart,
- * and none the person rejected. Terms agreeing do not prove the identity: the person confirms or rejects it on the card. */
-export function proposeBoardMaterialLinks(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>,
-  rejected: readonly string[] = []): BoardMaterialLink[] {
+const notRegistered = "não registrado";
+/** The contractual terms one result registers for the instrument or the row, in the order both sides are shown. */
+type Terms = {label: string; finalPayment: string | null; rateKind: "index_plus_spread" | "fixed" | null; index: string | null; rate: string | null; balance: string | null};
+const kindWords = {index_plus_spread: "pós-fixada (índice mais spread)", fixed: "prefixada"} as const;
+const termsText = (who: string, t: Terms) => `${who}: vencimento final ${t.finalPayment ?? notRegistered}; taxa ${t.rateKind ? kindWords[t.rateKind] : notRegistered}; `
+  + `índice ${t.rateKind === "fixed" ? "não se aplica" : t.index ?? notRegistered}; spread ou taxa ${t.rate ?? notRegistered}; saldo ${t.balance ?? notRegistered} (contexto, não é termo)`;
+function planTerms(plans: Contribution[], instrumentId: string): Terms {
+  const terms = termOf(plans, `instrument.${instrumentId}.terms`) as unknown[] | undefined, rates = termOf(plans, `instrument.${instrumentId}.rates`);
+  const principal = termOf(plans, `instrument.${instrumentId}.principal`), index = termOf(plans, "index.byPeriod");
+  const kind = terms?.[2] === "index_plus_spread" || terms?.[2] === "fixed" ? terms[2] : null;
+  return {label: text(termOf(plans, `instrument.${instrumentId}.label`)) ?? instrumentId, finalPayment: text(termOf(plans, `instrument.${instrumentId}.finalPaymentDate`)), rateKind: kind,
+    index: kind === "index_plus_spread" && Array.isArray(index) && typeof index[0] === "string" ? index[0] : null,
+    rate: Array.isArray(rates) && typeof rates[0] === "string" ? rates[0] : null,
+    balance: Array.isArray(principal) && typeof principal[0] === "string" ? principal[0] : null};
+}
+function rowTerms(tables: Contribution[], row: Record<string, unknown>): Terms {
+  const indexer = text(row.indexer);
+  return {label: [text(row.label), text(row.creditor)].filter(Boolean).join(" ") || String(row.id), finalPayment: text(row.finalPayment),
+    rateKind: indexer === null ? null : indexer === "fixed" ? "fixed" : "index_plus_spread",
+    index: indexer && indexer !== "fixed" ? [indexer, text(termOf(tables, `index_rate.${indexer}`))].filter(Boolean).join(" ") : null,
+    rate: text(row.spread), balance: text(row.principal)};
+}
+const fold = (x: string) => x.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+/** The existing instruments of the plan, the rows of the table, and the method's own identity check of a pair. */
+function linkSides(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>) {
   const plan = packets.get("plano-2027"), table = packets.get("tabela-divida");
-  if (!plan || !table) return [];
-  const sourceOf = sourceReader(packets, methods), plans = contributionsOf(plan);
+  if (!plan || !table) return null;
+  const plans = contributionsOf(plan), tables = contributionsOf(table), sourceOf = sourceReader(packets, methods);
   const instruments = [...new Set(plans.flatMap((c) => {const m = typeof c.fieldPath === "string" ? /\.instrument\.([a-z0-9-]+)\.terms$/.exec(c.fieldPath) : null;
     return m && Array.isArray(c.value?.value) && c.value.value[0] === "existing" ? [m[1]!] : [];}))];
-  const rows = (() => {const r = readBoardSourcePath(table, "result.table.rows"); return Array.isArray(r) ? r.filter(isRecord) : [];})();
-  const fold = (x: string) => x.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-  const refused = rejected.map(fold).filter((x) => x.length > 1);
-  const pairs: {instrumentId: string; row: Record<string, unknown>; terms: string[]}[] = [];
-  for (const instrumentId of instruments) for (const row of rows) {
-    const rowId = text(row.id);
-    if (rowId === null) continue;
+  const rows = (() => {const r = readBoardSourcePath(table, "result.table.rows"); return Array.isArray(r) ? r.filter(isRecord).filter((x) => typeof x.id === "string") : [];})();
+  /** The method's own check of the pair: null, or the term it refuses (board_capital_record_link_mismatch). */
+  const check = (instrumentId: string, rowId: string): string | null => {
     try {
       boardLinkedInstrument("bridge", {bind: "j", role: "plan_instrument_of_row", row: "i"},
         [{id: "proposed", planSourceId: "plano-2027", instrumentId, tableSourceId: "tabela-divida", rowId}], sourceOf, {i: rowId});
-    } catch { continue; }
-    const terms: string[] = [];
-    const final = termOf(plans, `instrument.${instrumentId}.finalPaymentDate`);
-    if (typeof final === "string" && final === row.finalPayment) terms.push(`vencimento final ${final}`);
-    const rates = termOf(plans, `instrument.${instrumentId}.rates`), rate = Array.isArray(rates) ? rates[0] : undefined;
-    if (typeof rate === "string" && typeof row.spread === "string" && Number(rate) === Number(row.spread)) terms.push(`taxa ou spread ${row.spread}`);
-    if (terms.length) pairs.push({instrumentId, row, terms});
+      return null;
+    } catch (e) { return e instanceof Error ? e.message.split(":").at(-1) ?? "mismatch" : "mismatch"; }
+  };
+  return {plans, tables, instruments, rows, check};
+}
+/** The identities the bridge proposes: an existing instrument of the plan and a row of the debt table only when both
+ * results register the final payment date, the rate kind and the rate or spread, every one agrees, the method's own
+ * check finds no other term that differs, and each side has exactly that one counterpart. A term missing on either side
+ * is never a proposal: the instrument is asked, with both sides' terms side by side. Agreeing terms do not prove the
+ * identity: the person confirms it with the card or rejects it in the conversation. `pairs` are the rows that agree on
+ * some registered term and differ on none, shown in the question. */
+export function proposeBoardMaterialLinks(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>): {links: BoardMaterialLink[]; pairs: Map<string, string[]>} {
+  const sides = linkSides(packets, methods), pairs = new Map<string, string[]>();
+  if (!sides) return {links: [], pairs};
+  const full: {instrumentId: string; row: Record<string, unknown>}[] = [];
+  for (const instrumentId of sides.instruments) {
+    const a = planTerms(sides.plans, instrumentId);
+    for (const row of sides.rows) {
+      const b = rowTerms(sides.tables, row), rowId = String(row.id);
+      if (sides.check(instrumentId, rowId) !== null) continue;
+      if ((a.finalPayment !== null && a.finalPayment === b.finalPayment) || (a.rate !== null && b.rate !== null && Number(a.rate) === Number(b.rate))) {
+        pairs.set(instrumentId, [...pairs.get(instrumentId) ?? [], rowId]);
+      }
+      const complete = a.finalPayment !== null && b.finalPayment !== null && a.rateKind !== null && b.rateKind !== null && a.rate !== null && b.rate !== null;
+      if (complete && a.finalPayment === b.finalPayment && a.rateKind === b.rateKind && Number(a.rate) === Number(b.rate)) full.push({instrumentId, row});
+    }
   }
-  const count = (f: (p: (typeof pairs)[number]) => string) => (p: (typeof pairs)[number]) => pairs.filter((x) => f(x) === f(p)).length;
+  const count = (f: (p: (typeof full)[number]) => string) => (p: (typeof full)[number]) => full.filter((x) => f(x) === f(p)).length;
   const byInstrument = count((p) => p.instrumentId), byRow = count((p) => String(p.row.id));
-  return pairs.filter((p) => byInstrument(p) === 1 && byRow(p) === 1).flatMap((p, n) => {
-    const rowId = String(p.row.id), creditor = text(p.row.creditor) ?? rowId;
-    const label = text(termOf(plans, `instrument.${p.instrumentId}.label`)) ?? p.instrumentId;
-    if (refused.some((r) => [creditor, label, rowId, p.instrumentId].some((x) => fold(x).includes(r) || r.includes(fold(x))))) return [];
-    return [{id: linkKey.test(rowId) ? rowId : `vinculo-${n + 1}`, instrumentId: p.instrumentId, rowId, creditor, instrumentLabel: label, terms: p.terms}];
+  const links = full.filter((p) => byInstrument(p) === 1 && byRow(p) === 1).map((p, n) => {
+    const rowId = String(p.row.id), a = planTerms(sides.plans, p.instrumentId), b = rowTerms(sides.tables, p.row);
+    return {id: linkKey.test(rowId) ? rowId : `vinculo-${n + 1}`, instrumentId: p.instrumentId, rowId, origin: "house" as const,
+      source: `Identificação proposta do mesmo contrato, todos os termos registrados iguais. ${termsText(`Plano, ${a.label}`, a)}. `
+        + `${termsText(`Tabela de dívida, ${b.label}`, b)}. Confirme com o cartão ou recuse na conversa`};
   });
+  return {links, pairs};
+}
+/** The rows of the table the person named, by the table's own labels or ids: a row whose id, or whose label and creditor,
+ * appear in the answer; when several do, those whose final payment year the answer also names. Never guessed. */
+function rowNamed(rows: Record<string, unknown>[], answer: string): Record<string, unknown>[] {
+  const a = fold(answer), has = (x: unknown) => typeof x === "string" && x.trim().length > 1 && a.includes(fold(x));
+  const byId = rows.filter((r) => has(r.id));
+  if (byId.length === 1) return byId;
+  // The row whose own label the answer names most fully ("CCB 2" over "CCB"), with its creditor.
+  const matched = rows.filter((r) => has(r.label) && has(r.creditor)), longest = Math.max(0, ...matched.map((r) => String(r.label).length));
+  const named = matched.filter((r) => String(r.label).length === longest);
+  if (named.length <= 1) return named;
+  const dated = named.filter((r) => typeof r.finalPayment === "string" && a.includes(r.finalPayment.slice(0, 4)));
+  return dated.length ? dated : named;
+}
+/** The identities the person informed ("o empréstimo do plano é a linha CCB Bradesco 2029"): the instrument by the plan's
+ * own label or id (or, when the person names none, the one instrument the question asked about), the row by the table's
+ * own labels or ids, checked by the method's own term check. What cannot be resolved is asked; a term that differs is
+ * asked with the term (instrumentLinkMismatch). */
+function informedLinks(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>, answers: readonly {instrument: string | null; row: string; source: string}[],
+  asked: readonly string[]): {links: BoardMaterialLink[]; missing: string[]} {
+  const sides = linkSides(packets, methods), links: BoardMaterialLink[] = [], missing: string[] = [];
+  if (!sides || !answers.length) return {links, missing};
+  answers.forEach((x, k) => {
+    const said = x.instrument === null ? null : fold(x.instrument);
+    const named = said === null ? [] : sides.instruments.filter((i) => said.includes(fold(planTerms(sides.plans, i).label)) || said.includes(i));
+    const instruments = named.length ? named : asked.filter((i) => sides.instruments.includes(i));
+    const rows = rowNamed(sides.rows, x.row);
+    if (instruments.length !== 1) {missing.push(`linkAnswers.${k + 1}.instrument`); return;}
+    if (rows.length !== 1) {missing.push(`linkAnswers.${k + 1}.row`); return;}
+    const rowId = String(rows[0]!.id), term = sides.check(instruments[0]!, rowId);
+    if (term !== null) {missing.push(`instrumentLinkMismatch.${instruments[0]}.${term}`); return;}
+    links.push({id: linkKey.test(rowId) ? rowId : `vinculo-informado-${k + 1}`, instrumentId: instruments[0]!, rowId, origin: "informed", source: x.source});
+  });
+  return {links, missing};
+}
+/** The existing instruments the plan's alternative prepays: the ones the material names by their row of the debt table. */
+function neededInstruments(packets: Map<string, Record<string, unknown>>): string[] {
+  const plan = packets.get("plano-2027");
+  if (!plan) return [];
+  const alt = text(readBoardSourcePath(plan, "readings.alternative.pathId"));
+  const prepaid = alt === null ? undefined : readBoardSourcePath(plan, `result.evaluation.paths[id=${alt}].prepayments`);
+  const plans = contributionsOf(plan);
+  return [...new Set((Array.isArray(prepaid) ? prepaid.filter(isRecord) : []).map((x) => text(x.instrumentId)).filter((x): x is string => x !== null
+    && (termOf(plans, `instrument.${x}.terms`) as unknown[] | undefined)?.[0] === "existing"))];
+}
+/** The identities the facts carry and the questions left: the person's informed ones first, then the proposed ones that
+ * touch neither their instrument nor their row; a rejection by the person removes either kind. Every existing instrument
+ * no identity covers, that the material reads or that some row could be, is a question with both sides' terms. */
+export function boardMaterialLinks(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>,
+  conv: Pick<BoardMaterialConversation, "linkRejections" | "linkAnswers">): {links: BoardMaterialLink[]; missing: string[]; questions: BoardMaterialLinkQuestion[]} {
+  const sides = linkSides(packets, methods);
+  if (!sides) return {links: [], missing: [], questions: []};
+  const proposed = proposeBoardMaterialLinks(packets, methods), needed = neededInstruments(packets);
+  const informed = informedLinks(packets, methods, (conv.linkAnswers ?? []).map((x) => ({instrument: x.instrument, row: x.row, source: x.source})), needed);
+  const refused = (conv.linkRejections ?? []).map((x) => fold(x.label)).filter((x) => x.length > 1);
+  const names = (l: BoardMaterialLink) => {
+    const row = sides.rows.find((r) => r.id === l.rowId);
+    return [l.rowId, l.instrumentId, planTerms(sides.plans, l.instrumentId).label, ...row ? [text(row.creditor), text(row.label)].filter((x): x is string => x !== null) : []].map(fold);
+  };
+  const rejected = (l: BoardMaterialLink) => refused.some((r) => names(l).some((x) => x.includes(r) || r.includes(x)));
+  const kept = informed.links.filter((l) => !rejected(l));
+  const links = [...kept, ...proposed.links.filter((l) => !rejected(l) && !kept.some((x) => x.instrumentId === l.instrumentId || x.rowId === l.rowId))];
+  const questions = sides.instruments.filter((i) => !links.some((l) => l.instrumentId === i) && (needed.includes(i) || proposed.pairs.has(i))).map((i) => {
+    const a = planTerms(sides.plans, i), candidates = (proposed.pairs.get(i) ?? []).flatMap((r) => {const row = sides.rows.find((x) => x.id === r); return row ? [row] : [];});
+    return {instrumentId: i, label: a.label, needed: needed.includes(i), instrument: termsText(`Plano, ${a.label}`, a),
+      candidates: candidates.map((r) => {const b = rowTerms(sides.tables, r); return termsText(`Tabela de dívida, ${b.label}`, b);})};
+  });
+  return {links, missing: informed.missing, questions};
 }
 /** The records the library reads, each bound by the role its result registers, as the method binds them (boardRoleRecords);
  * the plan's path of each library row; the recommended path's tested shorter profile; the scenarios the projection
@@ -485,8 +595,9 @@ function resolveReading(packets: Map<string, Record<string, unknown>>, methods: 
 }
 
 export type BoardMaterialOmitted = {item: string; reason: string};
-export type BoardMaterialPlanned = {status: "complete"; facts: BoardCapitalDiscussionFacts; housePremiseKeys: string[]; omitted: BoardMaterialOmitted[]; pins: BoardMaterialPin[]}
-  | {status: "missing"; missing: string[]; omitted: BoardMaterialOmitted[]};
+export type BoardMaterialPlanned = {status: "complete"; facts: BoardCapitalDiscussionFacts; housePremiseKeys: string[]; omitted: BoardMaterialOmitted[]; pins: BoardMaterialPin[];
+  linkQuestions?: BoardMaterialLinkQuestion[]}
+  | {status: "missing"; missing: string[]; omitted: BoardMaterialOmitted[]; linkQuestions?: BoardMaterialLinkQuestion[]};
 
 /** Plans the board discussion over the reviewed results and the conversation. `check` runs the method over the
  * facts (as the confirmation will) and returns its refusal message, or null; without it the plan is returned as is. */
@@ -522,7 +633,10 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
 
   // 2. The readings each text may bind, resolved in the results.
   // The identities of a plan instrument and a debt-table row the bridge can propose (the person confirms them on the card).
-  const links = proposeBoardMaterialLinks(packets, methods, (conv.linkRejections ?? []).map((x) => x.label));
+  // The identities: the person's informed ones, then the ones the bridge proposes on every registered term; a rejection
+  // removes either. An informed identity that cannot be resolved or differs in a term is asked, never dropped.
+  const identified = boardMaterialLinks(packets, methods, conv), links = identified.links, linkQuestions = identified.questions;
+  if (identified.missing.length) return {status: "missing", missing: identified.missing, omitted, linkQuestions};
   const anchors = readAnchors(packets, methods, links);
   const declared = new Map<string, {reading: string[]} | {pending: [string, string, string]}>();
   // Why a reading did not resolve, named for the card: its result is absent, the role its record is bound by binds none
@@ -664,7 +778,7 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   // library cannot state over these results is left out and named; any other refusal is named and nothing is proposed.
   const askedOn = conv.askedOn ?? (house.push("askedOn"), {value: input.today, origin: "house" as const, source: "Data desta conversa"});
   house.push("leadDays", "minutesPerPage", "plan", "materialFacts");
-  if (links.length) house.push("instrumentLink");
+  if (links.some((l) => l.origin === "house")) house.push("instrumentLink");
   const build = () => {
     const texts = [...[...deliberations.values()].flatMap((d) => [d.title, d.subject, ...d.recommendation ? [d.recommendation] : [], ...d.dates.map((x) => x.action)]),
       ...pages.flatMap((p) => [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : [], ...p.options]), plan.summary.opening, plan.summary.closing,
@@ -703,15 +817,15 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
       questions: questions.map((q) => ({value: {...q}, origin: "house", source: "Perguntas prováveis do conselho"})),
       omissions, informed,
       // Each identity proposed by the bridge, one card row each: never adopted unless the person confirms the card.
-      links: links.map((l) => ({value: {id: l.id, planSourceId: "plano-2027", instrumentId: l.instrumentId, tableSourceId: "tabela-divida", rowId: l.rowId}, origin: "house",
-        source: `Identificação proposta do mesmo contrato: ${l.creditor} na tabela de dívida é ${l.instrumentLabel} no plano (${l.terms.join("; ")} nas duas fontes); confirme ou recuse`})),
+      links: links.map((l) => ({value: {id: l.id, planSourceId: "plano-2027", instrumentId: l.instrumentId, tableSourceId: "tabela-divida", rowId: l.rowId}, origin: l.origin,
+        source: l.source})),
     };
   };
   for (let round = 0; ; round++) {
     const parsed = boardCapitalDiscussionFactsSchema.safeParse(build());
     if (!parsed.success) return {status: "missing", missing: [...new Set(parsed.error.issues.map((i) => i.path.filter((x) => x !== "value").map((x) => typeof x === "number" ? String(x + 1) : String(x)).join(".") || "facts"))], omitted};
     const refusal = input.check?.(parsed.data) ?? null;
-    if (refusal === null) return {status: "complete", facts: parsed.data, housePremiseKeys: [...new Set(house)], omitted, pins};
+    if (refusal === null) return {status: "complete", facts: parsed.data, housePremiseKeys: [...new Set(house)], omitted, pins, linkQuestions};
     const creditorOf = (rowId: string) => {const t = packets.get("tabela-divida"), c = t ? readBoardSourcePath(t, `result.table.rows[id=${rowId}].creditor`) : null;
       return typeof c === "string" ? c : rowId;};
     const condition = /^board_capital_template_condition_(?:failed|undefined):([a-z0-9_.]+):/.exec(refusal)?.[1] ?? null;
@@ -763,7 +877,7 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
       // confirm the proposed identity), never shown the refusal as an error.
       const link = anchors.R.issues.i;
       if (link?.startsWith("link_absent:")) return {status: "missing", missing: [`instrumentLink.${link.slice("link_absent:".length).normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "instrument"}`], omitted};
+        .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "instrument"}`], omitted, linkQuestions};
       return {status: "missing", missing: [`readerRefused.${refusal.toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "unknown"}`], omitted};
     }
   }

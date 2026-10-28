@@ -439,6 +439,9 @@ export type QueueClient = {
   loadBoardMaterialPriors?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The turn's reply and its premise proposal, in one transaction; only a person's confirmation adopts them. */
   recordAgentResponseWithPremises?(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, premises: unknown): Promise<void>;
+  /** Supersedes the open cards of a lote 4 method from earlier messages of the work: the person corrected or rejected them
+   * and this turn proposes nothing in their place. */
+  supersedePremiseProposals?(job: AgentOperationBriefJob, methodId: string): Promise<number>;
   recordAgentResponse(
     job: AgentOperationBriefJob,
     assistantMessageId: string,
@@ -1326,6 +1329,11 @@ export function createQueueClient(
 
     async loadBoardMaterialPriors(job) {
       return call("worker_board_material_priors_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async supersedePremiseProposals(job, methodId) {
+      const n = await call("worker_supersede_premise_proposals_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_method_id: methodId});
+      return typeof n === "number" ? n : 0;
     },
 
     async recordAgentResponseWithPremises(job, assistantMessageId, response, premises) {

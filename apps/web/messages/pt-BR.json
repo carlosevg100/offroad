@@ -8887,6 +8887,8 @@
       },
       "boardOmitted": "Fora do material: {label}",
       "boardInstrumentLink": "Identificação proposta do mesmo contrato: {label}",
+      "boardInstrumentLinkInformed": "Identificação informada na conversa: {label}",
+      "boardInstrumentLinkQuestion": "Instrumento do plano sem identificação na tabela de dívida: {label}",
       "receivedProposal": "Proposta de {label}",
       "indexer": "Indexador",
       "drawDate": "Data do desembolso",

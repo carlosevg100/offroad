@@ -45210,7 +45210,7 @@
         },
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 341,
+          "line": 365,
           "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
           "mechanism": "direct_ddl"
         }
@@ -320781,7 +320781,7 @@
         },
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 469,
+          "line": 493,
           "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344672,7 +344672,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 274,
+          "line": 298,
           "anchor": "create function private.execution_result_board_material_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344726,7 +344726,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 164,
+          "line": 188,
           "anchor": "create function private.execution_result_document_folder_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344780,7 +344780,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 217,
+          "line": 241,
           "anchor": "create function private.execution_result_financing_paths_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -344834,7 +344834,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
-          "line": 101,
+          "line": 125,
           "anchor": "create function private.execution_result_received_proposal_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
@@ -347148,6 +347148,134 @@
           "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
           "line": 359,
           "anchor": "create function public.worker_cancel_document_folder_wait_v1(p_job_id uuid,p_capability_token text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text)",
+          "kind": "function",
+          "name": "worker_supersede_premise_proposals_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_method_id text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text)",
+          "kind": "function",
+          "name": "worker_supersede_premise_proposals_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_method_id text",
+          "security_definer": true
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (ponte)",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
+      "reason": "Ponte da conversa do lote 4: um cartão do lote 4 corrigido ou recusado sem substituto é superado pelo turno seguinte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 101,
+          "anchor": "create function private.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text) returns integer",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text)",
+          "kind": "function",
+          "name": "worker_supersede_premise_proposals_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_method_id text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text)",
+          "kind": "function",
+          "name": "worker_supersede_premise_proposals_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_method_id text",
+          "security_definer": false
+        }
+      },
+      "owner": "Claude, implementação do lote 4 de fichas (ponte)",
+      "decision": "preservar",
+      "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
+      "reason": "Ponte da conversa do lote 4: um cartão do lote 4 corrigido ou recusado sem substituto é superado pelo turno seguinte.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "line": 117,
+          "anchor": "create function public.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text) returns integer",
           "mechanism": "direct_ddl"
         }
       ]

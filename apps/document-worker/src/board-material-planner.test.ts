@@ -27,6 +27,14 @@ beforeAll(async () => {
 }, 240_000);
 
 const hex = (n: number) => `a0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+/** A stored result changed after its execution, parsed by its released schema and sealed again. */
+function altered(s: Source, edit: (p: Record<string, unknown>) => void): Source {
+  const packet = structuredClone(s.packet);
+  edit(packet);
+  const parsed = (boardReleasedSources[s.methodId as BoardSourceMethodId].schema as unknown as {parse: (v: unknown) => Record<string, unknown>}).parse(packet);
+  const {fingerprint: _f, ...payload} = parsed;
+  return {...s, packet: {...packet, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")}};
+}
 /** A stored result with some record ids written otherwise (a result of another company), its fingerprint recomputed. */
 function renamed(s: Source, pairs: [string, string][]): Source {
   let text = JSON.stringify(s.packet);
@@ -117,6 +125,53 @@ describe("board material planner: records read by what the results register, nev
     expect(asked.length).toBeGreaterThan(0);
     expect(asked.filter((o) => o.reason !== "link_absent:CCB Bradesco")).toEqual([]);
     expect(boardOmittedReason("link_absent:CCB Bradesco")).toMatch(/^qual linha da tabela de dívida é este instrumento do plano\?.*\(CCB Bradesco\)$/);
+  }, 240_000);
+
+  // Independent review, round 12: an identity is proposed only on every registered term; otherwise it is asked with both
+  // sides' terms, the person's answer is the identity (checked by the method), and a rejection wins over both.
+  const withoutPlanDate = (s: Source) => altered(s, (p) => {
+    const r = p.result as {contributions: {fieldPath: string}[]};
+    r.contributions = r.contributions.filter((c) => !c.fieldPath.endsWith(".instrument.ccb-bradesco.finalPaymentDate"));
+  });
+  // The table registers no spread for the Bradesco row (the method's own partial case: the material is the same).
+  const spreadMissing = () => sources.map((s) => s.id === "tabela-divida" ? altered(s, (p) => {
+    ((p.result as {table: {rows: {id: string; spread: string | null}[]}}).table.rows.find((x) => x.id === "ccb-bradesco")!).spread = null;
+  }) : s);
+  const reviewerCase = () => sources.map((s) => s.id === "plano-2027" ? withoutPlanDate(s) : s.id === "tabela-divida" ? altered(s, (p) => {
+    ((p.result as {table: {rows: {id: string; finalPayment: string}[]}}).table.rows.find((x) => x.id === "ccb-bradesco")!).finalPayment = "2032-09-15";
+  }) : s);
+  const planWith = (with_: Source[], conv: Partial<typeof conversation> = {}) => planBoardMaterial({ids: {discussionId: hex(9), definitionVersionId: hex(9)}, today: "2026-09-28",
+    perimeter: "standalone", currency: "BRL", priors: priorsOf(with_), conversation: {...conversation, ...conv}, check: checkOf(priorsOf(with_))});
+  it("never proposes an identity on a single coincident term: the plan without a final payment and a row maturing in 2032 is asked", () => {
+    const planned = planWith(reviewerCase());
+    expect(planned.status === "missing" ? planned.missing : planned.status).toEqual(["instrumentLink.ccb-bradesco"]);
+    const q = planned.linkQuestions!.find((x) => x.instrumentId === "ccb-bradesco")!;
+    expect(q.needed).toBe(true);
+    expect(q.instrument).toMatch(/^Plano, CCB Bradesco: vencimento final não registrado; .*spread ou taxa 0\.026;/);
+    expect(q.candidates).toEqual([expect.stringMatching(/^Tabela de dívida, CCB Bradesco: vencimento final 2032-09-15; .*spread ou taxa 0\.026;/)]);
+  }, 240_000);
+  it("takes the person's answer as the identity, checked by the method, and asks again when a term differs", () => {
+    // The table registers no spread for the Bradesco row: nothing is proposed, the person is asked and answers which row it is.
+    const asked = planWith(spreadMissing());
+    expect(asked.status === "missing" ? asked.missing : asked.status).toEqual(["instrumentLink.ccb-bradesco"]);
+    expect(asked.linkQuestions!.find((x) => x.instrumentId === "ccb-bradesco")!.candidates).toEqual([expect.stringMatching(/spread ou taxa não registrado;/)]);
+    const answered = planWith(spreadMissing(), {linkAnswers: [{instrument: null, row: "a linha CCB Bradesco", origin: "informed", source: "a CCB do plano é a linha CCB Bradesco da tabela"}]});
+    expect(answered.status === "missing" ? answered.missing : answered.status).toBe("complete");
+    if (answered.status !== "complete") return;
+    expect(answered.facts.links.map((l) => [l.value.instrumentId, l.value.rowId, l.origin, l.source])).toEqual([["ccb-bradesco", "ccb-bradesco", "informed", "a CCB do plano é a linha CCB Bradesco da tabela"]]);
+    // The row the person names differs in the final payment: asked again with the term, never adopted.
+    const wrong = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "Debênture 1ª emissão Debenturistas", origin: "informed", source: "é a debênture"}]});
+    expect(wrong.status === "missing" ? wrong.missing : wrong.status).toEqual(["instrumentLinkMismatch.ccb-bradesco.final_payment"]);
+    // A row the table does not name is asked, never guessed.
+    const unknown = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "a linha do Itaú", origin: "informed", source: "é a do Itaú"}]});
+    expect(unknown.status === "missing" ? unknown.missing : unknown.status).toEqual(["linkAnswers.1.row"]);
+  }, 240_000);
+  it("an informed identity wins over a proposed one, and a rejection wins over both", () => {
+    const both = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "CCB Bradesco", origin: "informed", source: "é a mesma CCB"}]});
+    expect(both.status === "complete" ? both.facts.links.map((l) => [l.value.rowId, l.origin]) : both).toEqual([["ccb-bradesco", "informed"]]);
+    const rejected = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "CCB Bradesco", origin: "informed", source: "é a mesma CCB"}],
+      linkRejections: [{label: "Bradesco", origin: "informed", source: "não, não é a do Bradesco"}]});
+    expect(rejected.status === "missing" ? rejected.missing : rejected.status).toEqual(["instrumentLink.ccb-bradesco"]);
   }, 240_000);
 
   it("binds every record by the role the method binds it by: the planner's roles are the library's own", async () => {

@@ -584,7 +584,7 @@
     },
     {
       "path": "apps/document-worker/src/queue.ts",
-      "sha256": "bacfd0bf55a8a41ba35cf817d5c128a46a115cb69175f97220cbbc3bcf306dd0",
+      "sha256": "00314632f76c00453f7e6bf8e35e264c2a8354accd86f72f578d74434fd9e4ed",
       "entrypoint": false,
       "rpcs": [
         "worker_apply_institutional_assumption_answer_v1",
@@ -669,6 +669,7 @@
         "worker_start_capital_project_task",
         "worker_store_public_company_memory",
         "worker_store_public_research_cache",
+        "worker_supersede_premise_proposals_v1",
         "worker_sync_institutional_information_requests_v1",
         "worker_sync_project_information_requests_v1",
         "worker_sync_receivables_information_requests_v1",

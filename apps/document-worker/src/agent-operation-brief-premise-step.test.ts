@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {documentFolderResumeWithdrawn, premiseStepForTurn} from "./agent-operation-brief";
+import {documentFolderResumeWithdrawn, premiseInvalidation, premiseStepForTurn} from "./agent-operation-brief";
 import {withdrawsDocumentFolderRequest} from "./document-folder-premises-proposal";
 
 describe("one premise step per turn", () => {
@@ -152,6 +152,23 @@ describe("withdrawal after a quoted report", () => {
   });
   it("the reviewer's case", () => {
     expect(documentFolderResumeWithdrawn(at("O diretor escreveu: 'Os documentos estão prontos'. Pode cancelar a organização."), "00000000-0000-4000-8000-000000000001")).toBe(true);
+  });
+});
+
+// Independent review, round 12: a lote 4 card the person corrects or rejects, when the turn proposes nothing in its place,
+// is superseded (worker_supersede_premise_proposals_v1; supabase/tests/lote4_premise_invalidation.sql proves the old card
+// can no longer be confirmed). A turn that proposes a card, or does not enter the method, supersedes nothing here.
+describe("which lote 4 cards a turn supersedes", () => {
+  const missing = {forAdvisor: {status: "missing"}, proposal: null}, proposed = {forAdvisor: {status: "proposed"}, proposal: {}};
+  it.each([
+    ["the board, rejected with nothing to propose", {board_material: missing}, "prepare-board-capital-discussion"],
+    ["the received proposal, corrected without a card", {received_proposal: missing}, "evaluate-received-proposal"],
+    ["the folder, with a reading still pending", {document_folder: missing}, "organize-document-folder"],
+    ["the 2027 plan, missing a term", {financing_paths: missing}, "evaluate-financing-paths"],
+    ["a new card in its place (the recording supersedes)", {board_material: proposed}, null],
+    ["no lote 4 step this turn", {}, null],
+  ] as const)("%s", (_, steps, method) => {
+    expect(premiseInvalidation(steps as never)).toBe(method);
   });
 });
 
