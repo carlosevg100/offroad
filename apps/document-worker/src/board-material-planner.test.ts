@@ -3,7 +3,7 @@ import {beforeAll, describe, expect, it} from "vitest";
 import {boardReleasedSources, composeBoundBoardCapitalDiscussion, prepareBoardCapitalDiscussionPacket, prepareCapitalPathsPacket, proposeBoardCapitalDiscussionHypotheses,
   type BoardCapitalDiscussionFacts, type BoardSourceMethodId} from "@offroad/financial-model";
 import {boardMaterialCheck, boardMaterialConversation, boardMaterialPriorsByMethod, boardOmittedReason} from "./board-material-premises-proposal";
-import {answeredInstrument, boardMaterialPathRows, boardMaterialRecordRoles, planBoardMaterial, recordsNamed, type BoardMaterialPlanned, type BoardMaterialPrior} from "./board-material-planner";
+import {answeredInstrument, boardMaterialPathRows, explicitIdentifiers, boardMaterialRecordRoles, planBoardMaterial, recordsNamed, type BoardMaterialPlanned, type BoardMaterialPrior} from "./board-material-planner";
 import {inMemoryBasis} from "./lote3-reader-check";
 import {itemKeys} from "./lote2-premises";
 import {houseStatusQuoLabel} from "./financing-paths-premises-proposal";
@@ -211,6 +211,43 @@ describe("board material planner: records read by what the results register, nev
     expect(recordsNamed(rows, "Debênture 1ª emissão Debenturistas", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["debenture-1"]);
     expect(recordsNamed(rows, "debenture-1", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["debenture-1"]);
     expect(answeredInstrument([{id: "ccb-bradesco", label: "CCB Bradesco"}], [], "a CCB Bradesco do plano")).toEqual(["ccb-bradesco"]);
+  }, 240_000);
+
+  // Independent review, round 15: an identifier the person writes is compared whole, never split by any separator.
+  it("pins the reviewer's case: an underscore suffix is an unknown id, never the known one", () => {
+    const row = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "ccb-bradesco_3", origin: "informed", source: "é a linha ccb-bradesco_3"}]});
+    expect(row.status === "missing" ? row.missing : row.status).toEqual(["linkAnswers.1.row"]);
+    expect(explicitIdentifiers("é a linha (ccb-bradesco_3).", [], () => [])).toEqual(["ccb-bradesco_3"]);
+    expect(explicitIdentifiers("a CCB Bradesco de 2032, a 1ª emissão", [{label: "Debênture 1ª emissão"}], (r) => [r.label])).toEqual([]);
+  }, 240_000);
+  it("over every record id of the calibration and of the role-renamed calibration, an id with any suffix is unknown and asked; the exact id resolves", async () => {
+    const board = await financialModelFixture<{boardRenamedSources: (seed?: string) => {packets: Record<string, Record<string, unknown>>}}>("board-capital-discussion.test-support.ts");
+    const renamed = board.boardRenamedSources().packets;
+    const records = (plan: Record<string, unknown>, table: Record<string, unknown>) => {
+      const cs = (plan.result as {contributions: {fieldPath: string; value: {value: unknown}}[]}).contributions;
+      const instruments = cs.flatMap((c) => {const m = /\.instrument\.([^.]+)\.terms$/.exec(c.fieldPath); return m ? [m[1]!] : [];}).map((id) => ({id,
+        label: String(cs.find((c) => c.fieldPath.endsWith(`.instrument.${id}.label`))?.value.value ?? id)}));
+      const rows = (table.result as {table: {rows: Record<string, unknown>[]}}).table.rows;
+      return {instruments, rows};
+    };
+    const byId = (id: string) => sources.find((x) => x.id === id)!.packet;
+    for (const {instruments, rows} of [records(byId("plano-2027"), byId("tabela-divida")), records(renamed["plano-2027"]!, renamed["tabela-divida"]!)]) {
+      const rowsNamed = (answer: string) => recordsNamed(rows, answer, (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id);
+      const ids = new Set([...rows.map((r) => String(r.id)), ...instruments.map((i) => i.id)]);
+      expect(ids.size).toBeGreaterThan(5);
+      for (const id of ids) for (const sep of ["-", "_", ".", "/", "#", ""]) for (const token of ["3", "03", "b", "x", "2b"]) {
+        const unknown = `${id}${sep}${token}`;
+        if (ids.has(unknown)) continue;
+        for (const answer of [unknown, `é a linha ${unknown}.`, `"${unknown}"`]) {
+          expect(rowsNamed(answer), answer).toEqual([]);
+          expect(answeredInstrument(instruments, [], answer), answer).toEqual([]);
+        }
+      }
+      for (const r of rows) for (const answer of [String(r.id), `é a linha ${String(r.id)}.`, `(${String(r.id)})`, `“${String(r.id)}”, obrigado`]) {
+        expect(rowsNamed(answer), answer).toEqual([r.id]);
+      }
+      for (const i of instruments) for (const answer of [i.id, `o ${i.id} do plano.`, `"${i.id}"`]) expect(answeredInstrument(instruments, [], answer), answer).toEqual([i.id]);
+    }
   }, 240_000);
 
   it("an informed identity wins over a proposed one, and a rejection wins over both", () => {

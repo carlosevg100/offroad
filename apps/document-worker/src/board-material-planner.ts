@@ -412,12 +412,21 @@ function spanOf(answer: string, name: unknown, exact: boolean): [number, number]
   const at = answer.indexOf(n);
   return at < 0 ? null : [at, at + n.length];
 }
-/** Tokens of the answer shaped like an identifier (hyphenated, or letters and digits together, never a year or an
- * ordinal such as "2a"), that are not words of any record's own label or creditor: the person named an id. */
-function explicitIds(answer: string, records: Record<string, unknown>[], labelOf: (r: Record<string, unknown>) => unknown[]): string[] {
-  const words = new Set(records.flatMap((r) => labelOf(r).flatMap((x) => typeof x === "string" ? fold(x).split(/[^a-z0-9-]+/) : [])));
-  return [...new Set(answer.split(/[^a-z0-9-]+/).map((t) => t.replace(/^-+|-+$/g, "")).filter((t) => t.length > 1 && !words.has(t)
-    && (/[a-z0-9]-[a-z0-9]/.test(t) || (/[a-z]/.test(t) && /\d/.test(t) && !/^\d+[ao]$/.test(t)))))];
+/** The explicit identifiers an answer writes: each maximal run of non-whitespace, stripped only of the surrounding
+ * sentence punctuation and quote marks, that holds one of - _ . / \ #, or a digit, or mixes case inside the word. A year
+ * (four digits alone), an ordinal (1ª, 2º) and any run that is a word of a record's own label are not identifiers. Kept
+ * whole, lower case: compared with every id as is, never split further. */
+export function explicitIdentifiers(answer: string, records: readonly Record<string, unknown>[], labelOf: (r: Record<string, unknown>) => unknown[]): string[] {
+  const words = new Set(records.flatMap((r) => labelOf(r).flatMap((x) => typeof x === "string" ? x.toLowerCase().split(/\s+/) : [])));
+  const out: string[] = [];
+  for (const run of answer.split(/\s+/)) {
+    const t = run.replace(/^[.,;:!?()[\]{}"'“”‘’«»]+|[.,;:!?()[\]{}"'“”‘’«»]+$/g, "");
+    if (!t) continue;
+    const shaped = /[-_./\\#]/.test(t) || /\d/.test(t) || /\p{Ll}\p{Lu}/u.test(t);
+    if (!shaped || /^\d{4}$/.test(t) || /^\d+[ªºaoAO°]$/.test(t) || words.has(t.toLowerCase())) continue;
+    out.push(t.toLowerCase());
+  }
+  return [...new Set(out)];
 }
 /** The records the person named, by their own ids and labels: an identifier the person wrote must be a record's id,
  * exactly (one that is none is unresolved and asked, never matched by a part or a label); otherwise an id on token
@@ -426,13 +435,14 @@ function explicitIds(answer: string, records: Record<string, unknown>[], labelOf
  * stay several (the person is asked); none is guessed. */
 export function recordsNamed(records: Record<string, unknown>[], answer: string, labelOf: (r: Record<string, unknown>) => unknown[], year?: (r: Record<string, unknown>) => unknown): Record<string, unknown>[] {
   const a = fold(answer);
-  const explicit = explicitIds(a, records, labelOf);
+  // An identifier the person wrote is a record's id exactly, whole and case-insensitively, or nothing.
+  const explicit = explicitIdentifiers(answer, records, labelOf);
   if (explicit.length) {
-    const hits = explicit.map((t) => records.filter((r) => typeof r.id === "string" && fold(r.id) === t));
+    const hits = explicit.map((t) => records.filter((r) => typeof r.id === "string" && r.id.toLowerCase() === t));
     return hits.every((h) => h.length === 1) && new Set(hits.map((h) => h[0])).size === 1 ? hits[0]! : [];
   }
   const labels = records.map((r) => {
-    const parts = labelOf(r).map((x) => spanOf(a, x, false));
+    const parts = labelOf(r).map((x) => spanOf(a, x, true));
     return parts.length && parts.every((x) => x !== null) ? parts as [number, number][] : null;
   });
   const longest = Math.max(0, ...labels.map((l) => l ? l.reduce((t, [x, y]) => t + y - x, 0) : 0));
