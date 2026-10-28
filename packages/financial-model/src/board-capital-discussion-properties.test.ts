@@ -565,8 +565,15 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const below = /abaixo d(?:a política de|e) (-?[\d.,]+)x nos cenários avaliados/.exec(t);
     if (!below) continue;
     const limit = new D(below[1]!.replace(/\./g, "").replace(",", "."));
-    for (const x of d.identity.filter((i) => /headroom\.measurements\[id=[^\]]+\]\.ratio$/.test(i.path)))
-      if (!new D(/-?[\d.]+(?:,\d+)?/.exec(x.display)![0].replace(/\./g, "").replace(",", ".")).lt(limit)) bad.push(`order_across_fields:${x.figureId}`);
+    // Every member of the global claim, read or not: shown members by their one presentation, the others by their exact value.
+    const covenantPacket = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
+      {result?: {headroom?: {measurements?: {id: string; ratio: string | null}[]}}} | undefined;
+    for (const m of covenantPacket?.result?.headroom?.measurements ?? []) {
+      if (m.ratio === null) continue;
+      const shown = d.identity.find((i) => i.path === `result.headroom.measurements[id=${m.id}].ratio`);
+      const value = shown ? new D(/-?[\d.]+(?:,\d+)?/.exec(shown.display)![0].replace(/\./g, "").replace(",", ".")) : new D(m.ratio);
+      if (!value.lt(limit)) bad.push(`order_across_fields:${shown?.figureId ?? m.id}`);
+    }
   }
   // A shorter profile ends earlier: the last effective payment of the tested profile comes before the adopted one's, by
   // the years of the two schedules, and the tested schedule shows its end.
@@ -1221,6 +1228,23 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const calibrationPlan = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!;
     const forged = {...plan, fingerprint: (calibrationPlan.packet as {fingerprint: string}).fingerprint};
     expect(oracle(full(2, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.methodId !== "evaluate-financing-paths")]).bad.some((x) => x.startsWith("term_last_payment:"))).toBe(true);
+  });
+  it("regression r28: every member of a global order, shown or not, holds against the limit as shown (full path, oracle not vacuous)", () => {
+    // Policy of 2,44x shown as 2,4x, with a measurement of 2,426x that no reading shows.
+    const covenant = auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>;
+    const limit = (places: string, stated: string) => (c: CaseData) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", places, stated];};
+    for (const turn of [2, 3] as const) {
+      expect(() => withBoardSource("covenant", covenant, () => full(turn, limit("1", "2.4"))))
+        .toThrow("board_capital_display_order_lost:risk.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit");
+      const p = withBoardSource("covenant", covenant, () => full(turn, limit("2", "2.44")));
+      expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027");
+      expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      // Not vacuous: the limit shown as 2,4x leaves the unshown 2,426x above it.
+      const forged = structuredClone(p);
+      for (const v of forged.result.discussion!.versions) for (const pg of v.pages) pg.title = pg.title.replace("2,44x", "2,4x");
+      forged.result.discussion!.versions.at(-1)!.summary = forged.result.discussion!.versions.at(-1)!.summary.replace(/2,44x/g, "2,4x");
+      expect(oracle(forged, [{packet: covenant}, ...auroraBoardSources()]).bad).toContain("order_across_fields:dez27-estresse");
+    }
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};

@@ -64,13 +64,20 @@ function buildSources() {
   ] as const;
 }
 /** C12 with the December managerial reading that C54 adds; the variant writes the policy's EBITDA definition (regressions only). */
-export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string} = {}) {
+export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true} = {}) {
   const c = auroraCovenantBasis(variant.policyDefinition ? {policyDefinition: variant.policyDefinition} : {}), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
   // Regressions only: the adverse measurement of December 2027 with another debt.
   if (variant.adverseDebt) c.entries.find((e) => e.fieldPath.endsWith("measurement.dez27-adverso.debt"))!.value = {type: "number", value: variant.adverseDebt};
   const p = "measurement.dez26-gerencial.", sc = "gerencial_dez", num = (path: string, value: string) => c.contribute(p + path, "currency", {type: "number", value}, sc);
   measurements.push({id: "dez26-gerencial", label: "dez26-gerencial", role: "test", limitIds: ["politica"], scenario: sc, date: c.contribute(p + "date", "date", {type: "date", value: "2026-12-31"}, sc),
     debt: num("debt", "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null});
+  // Regressions only: the board policy at another maximum, and a measurement against it that no reading shows (2,426x).
+  if (variant.policyMaximum) for (const e of c.entries) if (/\.politica\.maximumRatio$|limit\.politica\.max/.test(e.fieldPath)) e.value = {type: "number", value: variant.policyMaximum};
+  if (variant.unshownMeasurement) {
+    const q = "measurement.dez27-estresse.", s2 = "estresse_dez", n2 = (path: string, value: string) => c.contribute(q + path, "currency", {type: "number", value}, s2);
+    measurements.push({id: "dez27-estresse", label: "dez27-estresse", role: "test", limitIds: ["politica"], scenario: s2, date: c.contribute(q + "date", "date", {type: "date", value: "2027-12-31"}, s2),
+      debt: n2("debt", "121.3"), cash: n2("cash", "0"), reportedEbitda: n2("reportedEbitda", "50"), adjustments: [], unrealizedEbitda: null});
+  }
   return prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base", analysis: c.seal()});
 }
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base

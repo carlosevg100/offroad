@@ -506,15 +506,24 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const than = operand(c.than), items = list(c.every[0], c.every[1]);
       if (!items.every((x) => compareBoard(scalar(x[c.every[2]], c.every[2]), c.op, than))) return false;
       if (ordering(c.op)) {
-        // The members of the list shown in the same sentence are compared as shown with the reference as shown.
         const sThan = shownOperand(c.than, than), listPath = c.every[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
-        // Every member shown anywhere in the material (each reading has one presentation in the whole material).
-        for (const [id, f] of context.figures) {
-          if ("pending" in f || !f.origin || f.origin.methodId !== c.every[0]) continue;
-          if (!new RegExp(`^${listPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\[[^\\]]+\\]\\.${c.every[2]}$`).test(f.origin.path)) continue;
-          if (!compareBoard(shownFigure(f), c.op, sThan))
-            shownLost = {figures: [id, ...typeof c.than === "object" && "slot" in c.than ? [bindings[c.than.slot]!] : []], betweenTwoShown: false};
+        // Every member, shown or not, against the reference as shown: a member shown anywhere in the material enters by its
+        // one presentation, a member not shown by its exact value (each reading has one presentation in the material).
+        const pattern = new RegExp(`^${listPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\[([^\\]]+)\\]\\.${c.every[2]}$`);
+        const shownOf = (item: Record<string, unknown>): [string, string | null] => {
+          for (const [id, f] of context.figures) {
+            if ("pending" in f || !f.origin || f.origin.methodId !== c.every[0]) continue;
+            const m = pattern.exec(f.origin.path);
+            if (m && m[1]!.split("&").every((cond) => {const k = cond.indexOf("="); return String(item[cond.slice(0, k)]) === cond.slice(k + 1);})) return [shownFigure(f), id];
+          }
+          return [scalar(item[c.every[2]], c.every[2]), null];
+        };
+        const lost: string[] = [];
+        for (const item of items) {
+          const [member, id] = shownOf(item);
+          if (!compareBoard(member, c.op, sThan)) lost.push(id ?? `${listPath}[${String(item.id ?? items.indexOf(item))}].${c.every[2]}`);
         }
+        if (lost.length) shownLost = {figures: [...lost, ...typeof c.than === "object" && "slot" in c.than ? [bindings[c.than.slot]!] : []], betweenTwoShown: false};
       }
       return true;
     }

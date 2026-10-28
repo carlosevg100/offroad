@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T23:45:17.003Z",
-    "finishedAt": "2026-10-27T23:47:55.040Z"
+    "startedAt": "2026-10-28T00:04:06.192Z",
+    "finishedAt": "2026-10-28T00:06:44.785Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,22 @@
       "passed": true
     },
     {
+      "id": "unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7046627dd293fad3907de6337a7f061823e48d549d64d08638232197290d9280",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "827cfb827672a8ec9dda7b6868db3bfab83172f32ca2f3fed9b49850e3676636",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1231,6 +1247,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "94304f2d1988dc65bc79936a4cac7a34539b8708c081f3bed5976c33995868e0",
+  "evidenceFingerprint": "e114d9ef54ab48c212d5e0d461a07204ec808599a45f5425b4295ce4508a591e",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

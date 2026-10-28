@@ -316,6 +316,10 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r28: the policy of 2,44x shown with two decimals keeps every member below it, the unshown 2,426x included.
+    observe("policy-shown-with-two-decimals-above-every-measurement", withBoardSource("covenant", auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>,
+      () => boardPacketInput(2, (c) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", "2", "2.44"];})),
+      {title: "A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027"}, (p) => ({title: pageOf(p, "alavancagem").title})),
     // Review r27: the adverse leverage with two decimals, shown only in the wheat answer, keeps the summary's order.
     observe("summary-below-the-policy-with-the-adverse-shown-with-two-decimals", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];
@@ -544,6 +548,11 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r28: every member of a global order, shown or not, against the limit as shown.
+    ...([2, 3] as const).map((turn) => [`unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-${turn}`, () => withBoardSource("covenant",
+      auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>,
+      () => build(turn, (c) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", "1", "2.4"];})),
+      "board_capital_display_order_lost:risk.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit"] as [string, () => unknown, string]),
     // Review r27: one presentation per reading across the material; a shorter profile by its last effective payment.
     ...([2, 3] as const).flatMap((turn) => [
       [`summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,

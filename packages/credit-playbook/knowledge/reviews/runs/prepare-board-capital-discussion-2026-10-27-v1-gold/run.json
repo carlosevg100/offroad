@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-27T23:45:17.003Z",
-    "finishedAt": "2026-10-27T23:47:55.039Z"
+    "startedAt": "2026-10-28T00:04:06.192Z",
+    "finishedAt": "2026-10-28T00:06:44.784Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,14 @@
       "passed": true
     },
     {
+      "id": "policy-shown-with-two-decimals-above-every-measurement",
+      "expectation": "{\"title\":\"A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027\"}",
+      "observed": "{\"title\":\"A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027\"}",
+      "inputFingerprint": "0a4e3fb2ed46d06de8f4c7435177f57c5f2155bf6b6bcf60256b37a67961fcd7",
+      "outputFingerprint": "58da7c745bcca361efbfc84b8f6a78f177eb3565a4802de6ffa730aab28cb9d3",
+      "passed": true
+    },
+    {
       "id": "summary-below-the-policy-with-the-adverse-shown-with-two-decimals",
       "expectation": "{\"wheat\":true}",
       "observed": "{\"wheat\":true}",
@@ -591,6 +599,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "1610c643dc378a9a5fbee18e722f66bf8099b6b548fe37eca1046dd5ba506813",
+  "evidenceFingerprint": "945c0f1e509a53723a2e286858cd1431359606467041beaff08ad40254daf167",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
