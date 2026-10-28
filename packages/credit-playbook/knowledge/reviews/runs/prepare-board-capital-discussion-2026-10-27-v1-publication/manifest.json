@@ -7,7 +7,7 @@
   },
   "source": {
     "path": "capital/prepare-board-capital-discussion.md",
-    "hash": "62834076ab3b19075f71b9fa59a4c506ce9f8d93501be6874dce2ae62e821b63"
+    "hash": "f27abc3ec18c574420d2f6ffc54a6897e4c1eafc39e4b72e0215454d1ea041ab"
   },
   "compiler": {
     "version": "2026.09.21-v9",
@@ -2215,6 +2215,76 @@
                             }
                           },
                           "informed": {
+                            "required": false,
+                            "value": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "id": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "reading": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "object",
+                                      "fields": {
+                                        "decisionId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "union",
+                                            "variants": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "definitionVersionId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "definitionKind": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "reported",
+                                              "managerial",
+                                              "contractual"
+                                            ]
+                                          }
+                                        },
+                                        "missingReason": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "union",
+                                            "variants": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "links": {
                             "required": false,
                             "value": {
                               "type": "array",
@@ -5195,6 +5265,47 @@
                                   }
                                 }
                               },
+                              "links": {
+                                "required": true,
+                                "value": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "id": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "planSourceId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "instrumentId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "tableSourceId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "rowId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
                               "priorVersionsKept": {
                                 "required": true,
                                 "value": {
@@ -5719,7 +5830,7 @@
           "version": "2026.10.27-v1"
         }
       },
-      "componentHash": "8e683cf5fc8ef214e3321e5c3beb5c7f62eaf026ee0ed52e74c4b30e94ed9a8d",
+      "componentHash": "99b2e1ff53e7a79ded0102ad8a892e7d0646fb251cd758c072883e4945a3832f",
       "executor": {
         "module": "@offroad/financial-model",
         "exportName": "prepareBoardCapitalDiscussionPacket",
@@ -6575,7 +6686,7 @@
           },
           {
             "path": "packages/financial-model/contracts/board-capital-discussion-packet.json",
-            "hash": "6984a6caafab6849b59cc2e825050f38382e20cbd7ef85f48302478f4c2dff7a"
+            "hash": "5f9f44cb3546bc14645b4d83c087abfe7dc7c0d2b6eb29aac3522c40c8b1ede6"
           },
           {
             "path": "packages/financial-model/package.json",
@@ -6599,7 +6710,7 @@
           },
           {
             "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-            "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+            "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
           },
           {
             "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -6711,7 +6822,7 @@
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-            "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+            "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -6731,23 +6842,27 @@
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-            "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+            "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-properties.test.ts",
-            "hash": "997b11aabb0e5fee24aede07608619a21ab63d5968d840d509d7f38ee03f93ad"
+            "hash": "a36c087c8d8a3e1831438e8535d175345230d9ccb587e97f288070ff78c6f579"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-            "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+            "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
+          },
+          {
+            "path": "packages/financial-model/src/board-capital-discussion-roles.test.ts",
+            "hash": "aff0e0741b4a7ff4a9fa192efac4cd483446d82683be8312e100d80ac5a0d658"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-            "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+            "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-runs.test.ts",
-            "hash": "291b9746ecc10037ca77b88918ed91c951028fb157e9369bcab64d042d0c596b"
+            "hash": "012d83f25df04c63f79e09fcc8ae0316ee4c98b022dc4a626c31c02ce0c0c39e"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -6755,19 +6870,19 @@
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-            "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+            "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-            "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+            "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion.test.ts",
-            "hash": "97c46ce1a140a0453daf76f8c799d8d151e7ea0bccf09581efe20b9ba63704ed"
+            "hash": "5b9b74a0a33ad4f73e5f835d171d389227746274f7f6810e38353956dfb00d9c"
           },
           {
             "path": "packages/financial-model/src/board-capital-discussion.ts",
-            "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+            "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
           },
           {
             "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -7526,31 +7641,31 @@
             "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
           }
         ],
-        "hash": "00ae4791408ceb0305079358329d93444f62cf96468dac6d99c0b62375e41cee"
+        "hash": "7c562b238627316fd91df52633632ce2e423216c2612eab8f9ee59bfd455d3d6"
       },
       "evidence": [
         {
           "path": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-gold/run.json",
-          "hash": "3c5b648b2eef6e981fec7906486100eb3068c98c49a0863f070d8e9652357ffb"
+          "hash": "2330817c22fd9afb485972cc9ad84de59851b13cbdf50a0244d5e3309466b817"
         },
         {
           "path": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-adversarial/run.json",
-          "hash": "833b4f1a62320aab9f82e43a91ac1e549d81ba7d6ea3ed7aeeed6b82b94a2662"
+          "hash": "f49cadf01caa4e8ccaed8fee59f876df07c8a061f9254865f6ef0693ebf07d80"
         },
         {
           "path": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-consistency/run.json",
-          "hash": "ce7c8b5b328106cc0d5d5538e57cf5da282550b2e0613c4c9fc16027c1f08463"
+          "hash": "5ae4c0f9f49c6d12734647e088e9af03083dd6944ed876a9a9850ac3708f552e"
         },
         {
           "path": "packages/credit-playbook/knowledge/reviews/prepare-board-capital-discussion-2026-10-27-v1-independent-review.json",
-          "hash": "a9fe3e8c292fb774bd5b59f384a9775370b94235cb6a3388cdf66e83b8f5a255"
+          "hash": "51b150435eaf7d35fd0a79d8701cc96c53157adb3d3e859e980f410a4a35491f"
         },
         {
           "path": "packages/credit-playbook/knowledge/reviews/evidence/prepare-board-capital-discussion-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
-          "hash": "e77ae5bb39f8a52e5d0e19d812780e3b1fd5d2297117c4c479e39faf17687023"
+          "hash": "7df6b45a450a5b4c6bb163a4f3feb946e5cd8b76b90b4de00bad2d5e80ab7900"
         }
       ]
     }
   ],
-  "manifestHash": "55ae460feed68a733634865c5b85dba0695cac5c1da7ac584244a9f44c4c5686"
+  "manifestHash": "48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98"
 }
