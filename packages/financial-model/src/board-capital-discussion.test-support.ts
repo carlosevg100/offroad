@@ -64,7 +64,7 @@ function buildSources() {
   ] as const;
 }
 /** C12 with the December managerial reading that C54 adds; the variant writes the policy's EBITDA definition (regressions only). */
-export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true} = {}) {
+export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true; baseAsManagerialContrast?: true} = {}) {
   const c = auroraCovenantBasis(variant.policyDefinition ? {policyDefinition: variant.policyDefinition} : {}), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
   // Regressions only: the adverse measurement of December 2027 with another debt.
   if (variant.adverseDebt) c.entries.find((e) => e.fieldPath.endsWith("measurement.dez27-adverso.debt"))!.value = {type: "number", value: variant.adverseDebt};
@@ -73,12 +73,24 @@ export function auroraCovenantPacket(variant: {policyDefinition?: string; advers
     debt: num("debt", "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null});
   // Regressions only: the board policy at another maximum, and a measurement against it that no reading shows (2,426x).
   if (variant.policyMaximum) for (const e of c.entries) if (/\.politica\.maximumRatio$|limit\.politica\.max/.test(e.fieldPath)) e.value = {type: "number", value: variant.policyMaximum};
+  // Regressions only: the record under the id dez26-base becomes a managerial contrast (reported EBITDA, no adjustment,
+  // 2,116x), and the contractual test of December 2026 is registered under another id (2,198x).
+  if (variant.baseAsManagerialContrast) {
+    const base = (measurements as {id: string; role: string; limitIds: string[]; scenario: string; adjustments: unknown[]}[]).find((m) => m.id === "dez26-base")!;
+    Object.assign(base, {role: "contrast", limitIds: [], scenario: "gerencial_contraste", adjustments: []});
+    c.entries.find((e) => e.fieldPath.endsWith("measurement.dez26-base.reportedEbitda"))!.value = {type: "number", value: "53.5"};
+    const q = "measurement.dez26-contratual.", sc = "base", n3 = (path: string, value: string) => c.contribute(q + path, "currency", {type: "number", value}, sc);
+    measurements.push({id: "dez26-contratual", label: "dez26-contratual", role: "test", limitIds: ["aditamento", "politica"], scenario: sc,
+      date: c.contribute(q + "date", "date", {type: "date", value: "2026-12-31"}, sc), debt: n3("debt", "128.66666667"), cash: n3("cash", "15.45720186"), reportedEbitda: n3("reportedEbitda", "54.5"),
+      adjustments: [{id: "arrendamentos", label: c.contribute(q + "adjustment.arrendamentos.label", "text", {type: "text", value: "Pagamentos de arrendamento"}, sc), amount: n3("adjustment.arrendamentos.amount", "-3")}],
+      unrealizedEbitda: null});
+  }
   if (variant.unshownMeasurement) {
     const q = "measurement.dez27-estresse.", s2 = "estresse_dez", n2 = (path: string, value: string) => c.contribute(q + path, "currency", {type: "number", value}, s2);
     measurements.push({id: "dez27-estresse", label: "dez27-estresse", role: "test", limitIds: ["politica"], scenario: s2, date: c.contribute(q + "date", "date", {type: "date", value: "2027-12-31"}, s2),
       debt: n2("debt", "121.3"), cash: n2("cash", "0"), reportedEbitda: n2("reportedEbitda", "50"), adjustments: [], unrealizedEbitda: null});
   }
-  return prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: "dez26-base", analysis: c.seal()});
+  return prepareCovenantHeadroomPacket({schemaVersion: "covenant-headroom-packet-input.v1", question: "Como estamos contra os covenants?", headlineMeasurementId: variant.baseAsManagerialContrast ? "dez26-contratual" : "dez26-base", analysis: c.seal()});
 }
 /** C32 rebound to the shared company id. The variant relabels nothing: it makes the case called economy-4 keep the base
  * economy and carry the larger capex instead (regressions only), so a fixed text saying "economia menor" is false. */

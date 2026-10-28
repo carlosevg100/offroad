@@ -320,9 +320,9 @@ const maturityYear: BoardCondition = {largest: [DT, "result.table.profile.schedu
 const horizonYear: BoardCondition = {...cmp("ano", "eq", at(FP, "readings.horizon.lastPeriodEnd", true)), claim: "o ano mostrado é o fim do horizonte do plano"};
 const tightBelowMinimum: BoardCondition = {...cmp(at(WC, "readings.tightestWeek.belowMinimum"), "eq", {value: "true"}), claim: "o caixa fica abaixo do mínimo na semana mais apertada"};
 const allBelowPolicy: BoardCondition = {every: [CV, "result.headroom.measurements", "ratio"], op: "lt", than: {slot: "politica"}, claim: "todas as medições ficam abaixo da política"};
-const adverseYear: BoardCondition = {...cmp("ano", "eq", at(CV, "result.headroom.measurements[id=dez27-adverso].date", true)), claim: "o ano é o da medição adversa"};
+const adverseYear: BoardCondition = {...cmp("ano", "eq", at(CV, "result.headroom.measurements[id=$ma].date", true)), claim: "o ano é o da medição adversa"};
 /** The adverse measurement is adverse by its registered scenario, never by its identifier. */
-const adverseScenario: BoardCondition = {...cmp(at(CV, "result.headroom.measurements[id=dez27-adverso].scenario"), "eq", {value: "adverse"}), claim: "a medição é do cenário adverso registrado"};
+const adverseScenario: BoardCondition = {...cmp(at(CV, "result.headroom.measurements[id=$ma].scenario"), "eq", {value: "adverse"}), claim: "a medição é do cenário adverso registrado"};
 const policyIsBoard = claim("a política é do conselho e está em vigor", cmp(at(CV, "result.headroom.limits[id=politica].kind"), "eq", {value: "board_policy"}),
   cmp(at(CV, "result.headroom.limits[id=politica].status"), "eq", {value: "in_force"}));
 const policyUndefined = claim("a política adotada não registra definição de EBITDA (questão aberta do resultado do covenant)",
@@ -409,6 +409,13 @@ const issue = s("money", FP, L + "issueTarget", "value"), term = s("years", FP, 
 const policy = s("multiple", CV, "result.headroom.limits[id=politica].maximumRatio"), covenant = s("multiple", CV, "result.headroom.limits[id=aditamento].maximumRatio");
 const schedule = (profile: string) => `result.evaluation.paths[id=$p].amortizationTests[profileId=${profile}].years`;
 const metric = (type: BoardSlotType, caseId: string, field: string, nature?: "balance" | "flow" | "value") => s(type, IP, `comparison.metrics[caseId=${caseId}].${field}`, nature);
+/** The base path: a measurement of the registered base scenario. */
+const baseScenarioOf = (id: string) => claim("a medição é do cenário base registrado", cmp(at(CV, `result.headroom.measurements[id=${id}].scenario`), "eq", {value: "base"}));
+/** "Pela definição da escritura": the measurement tests the contractual limit in force, whose definition is registered. */
+const contractualTest = (id: string) => claim("a medição testa o limite contratual vigente, com definição registrada",
+  {bind: "lc", to: at(CV, `result.headroom.measurements[id=${id}].tests[kind=contractual].limitId`)},
+  cmp(at(CV, "result.headroom.limits[id=$lc].kind"), "eq", {value: "contractual"}), cmp(at(CV, "result.headroom.limits[id=$lc].status"), "eq", {value: "in_force"}),
+  cmp(at(CV, "result.definitions[limitId=$lc].definition"), "ne", {value: ""}));
 const measurement = (type: BoardSlotType, id: string, field: string, nature?: "balance" | "flow" | "value") => s(type, CV, `result.headroom.measurements[id=${id}].${field}`, nature);
 const tightWeek = s("date", WC, "readings.tightestWeek.weekStart");
 /** A receivables field by its registered concept: balance, capacity, program volume and sublimit never stand for one another. */
@@ -589,19 +596,19 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "recommendation.alternative": t("page.line", "Plano alternativo: sem {projeto}, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com {credor}, com waiver {species:de:existing}; decisão até {prazo}.",
     {projeto: project("o"), credor: creditorOf("$i"), prazo: dl("delib.action.decide_route")}, {when: [...bankFallback, ...sameProject]}),
   "risk.leverage": t("page.title", "A alavancagem fica abaixo da política de {politica} nos cenários avaliados, com {adverso} no adverso {de:ano}",
-    {politica: policy, adverso: measurement("multiple", "dez27-adverso", "ratio"), ano: yr("$y")}, {when: [allBelowPolicy, adverseYear, adverseScenario, ...policyIsBoard]}),
+    {politica: policy, adverso: measurement("multiple", "$ma", "ratio"), ano: yr("$y")}, {when: [allBelowPolicy, adverseYear, adverseScenario, ...policyIsBoard]}),
   "risk.leverage_path": t("page.line", "A alavancagem fica em {inicio} {em:data_inicio} e em {fim} {em:data_fim}.",
-    {inicio: measurement("multiple", "dez26-base", "ratio"), data_inicio: measurement("date", "dez26-base", "date"), fim: measurement("multiple", "dez27-base", "ratio"),
-      data_fim: measurement("date", "dez27-base", "date")}, {when: claim("a alavancagem do fim é menor que a do início", cmp("fim", "lt", "inicio"))}),
+    {inicio: measurement("multiple", "$mi", "ratio"), data_inicio: measurement("date", "$mi", "date"), fim: measurement("multiple", "$mf", "ratio"),
+      data_fim: measurement("date", "$mf", "date")}, {when: [...claim("a alavancagem do fim é menor que a do início", cmp("fim", "lt", "inicio")), ...baseScenarioOf("$mi"), ...baseScenarioOf("$mf")]}),
   "risk.leverage_adverse": t("page.line", "No adverso {de:ano}, chega a {adverso}, contra a política de {politica}.",
-    {ano: yr("$y"), adverso: measurement("multiple", "dez27-adverso", "ratio"), politica: policy}, {when: [adverseYear, adverseScenario, ...policyIsBoard, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica"))]}),
+    {ano: yr("$y"), adverso: measurement("multiple", "$ma", "ratio"), politica: policy}, {when: [adverseYear, adverseScenario, ...policyIsBoard, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica"))]}),
   "risk.policy_definition": t("page.title", "A política de {politica} precisa de uma definição de EBITDA", {politica: policy}, {when: [...policyIsBoard, ...policyUndefined]}),
   "risk.policy_readings": t("page.line", "Pelo EBITDA gerencial, {gerencial}; pela definição da escritura, {escritura} {em:data}.",
-    {gerencial: measurement("multiple", "dez26-gerencial", "ratio"), escritura: measurement("multiple", "dez26-base", "ratio"), data: measurement("date", "dez26-base", "date")},
-    {when: [...claim("as duas leituras são da mesma data", cmp(at(CV, "result.headroom.measurements[id=dez26-gerencial].date"), "eq", "data")),
-      ...claim("a leitura gerencial usa o EBITDA reportado e a da escritura o EBITDA ajustado",
-        cmp(at(CV, "result.headroom.measurements[id=dez26-gerencial].ebitda"), "eq", at(CV, "result.headroom.measurements[id=dez26-gerencial].reportedEbitda")),
-        cmp(at(CV, "result.headroom.measurements[id=dez26-base].ebitda"), "ne", at(CV, "result.headroom.measurements[id=dez26-base].reportedEbitda")))]}),
+    {gerencial: measurement("multiple", "$mg", "ratio"), escritura: measurement("multiple", "$me", "ratio"), data: measurement("date", "$me", "date")},
+    {when: [...claim("as duas leituras são da mesma data", cmp(at(CV, "result.headroom.measurements[id=$mg].date"), "eq", "data")),
+      // Roles by the registered record, never by identifier or by a numeric difference.
+      ...claim("a leitura gerencial não registra ajuste ao EBITDA reportado", {atMost: [CV, "result.headroom.measurements[id=$mg].adjustments"], count: 0}),
+      ...baseScenarioOf("$me"), ...contractualTest("$me")]}),
   "what_changes.title": t("page.title", "A recomendação depende de demanda acima de {piso}",
     {piso: s("money", FP, L + "issueFloorInsideGates", "value")}, {when: claim("o piso fica abaixo do alvo de emissão", cmp("piso", "lt", at(FP, L + "issueTarget")))}),
   "what_changes.demand": t("page.line", "Demanda {species:de:long} abaixo de {piso}, o mínimo que mantém a emissão de {alvo} dentro dos critérios.",
@@ -622,7 +629,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "summary.opening.debt_and_cash": t("summary.opening", "A companhia tem {principal} de dívida vencendo {em:ano} e um aperto de caixa já {em:semana}.",
     {principal: s("money", DT, "result.table.profile.scheduleByYear[year=$y].principal", "flow"), ano: yr("$y"), semana: tightWeek}, {when: [tightBelowMinimum]}),
   "summary.closing.leverage": t("summary.closing", "A alavancagem fica em {alavancagem} {em:data} e abaixo de {politica} nos cenários avaliados.",
-    {alavancagem: measurement("multiple", "dez26-base", "ratio"), data: measurement("date", "dez26-base", "date"), politica: policy}, {when: [allBelowPolicy, ...policyIsBoard]}),
+    {alavancagem: measurement("multiple", "$ms", "ratio"), data: measurement("date", "$ms", "date"), politica: policy}, {when: [allBelowPolicy, ...policyIsBoard, ...baseScenarioOf("$ms")]}),
   // Appendix.
   "appendix.debt_table": t("appendix", "Tabela de dívida"),
   "appendix.projection": t("appendix", "Projeção por drivers e premissas"),
@@ -681,7 +688,7 @@ export const boardTemplates: Record<string, BoardTemplate> = {
     {insumo: input("de"), choque: s("rate", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate"),
       defasagem: s("months", OP, "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths"), ano: yr("$y"),
       ebitda: s("money", OP, "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=$y-12-31].ebitda", "flow"),
-      ebitda_adverso: measurement("money", "dez27-adverso", "reportedEbitda", "flow"), alavancagem: measurement("multiple", "dez27-adverso", "ratio"), covenant},
+      ebitda_adverso: measurement("money", "$ma", "reportedEbitda", "flow"), alavancagem: measurement("multiple", "$ma", "ratio"), covenant},
     {answers: "q.wheat", when: [...wheatScenario("informado-trigo-4m"),
       ...claim("a alavancagem adversa fica abaixo do covenant", cmp("alavancagem", "lt", "covenant")), adverseScenario,
       ...claim("o covenant é contratual e está em vigor", cmp(at(CV, "result.headroom.limits[id=aditamento].kind"), "eq", {value: "contractual"}),
@@ -718,6 +725,16 @@ export const boardTemplates: Record<string, BoardTemplate> = {
   "requester.cfo": t("requester", "Diretor financeiro"),
   "authority.board_policy": t("authority", "Política de endividamento aprovada pelo conselho", {}, {when: policyIsBoard}),
 };
+/** Roles proved by the registered record, for every template at once: a measurement shown is a registered test, never
+ * a contrast; the case shown as going on now is the case of registered role base. */
+for (const template of Object.values(boardTemplates)) {
+  const paths = Object.values(template.slots).flatMap((x) => x.from ?? []).map(([, path]) => path);
+  const measured = [...new Set(paths.flatMap((x) => {const m = /^result\.headroom\.measurements\[id=([$a-z0-9-]+)\]/.exec(x); return m ? [m[1]!] : [];}))];
+  const added: BoardCondition[] = [
+    ...measured.flatMap((id) => claim("a medição mostrada é um teste registrado, não um contraste", cmp(at(CV, `result.headroom.measurements[id=${id}].role`), "eq", {value: "test"}))),
+    ...paths.some((x) => x.startsWith("comparison.metrics[caseId=base].")) ? claim("o caso mostrado como seguir agora é o caso de papel base registrado", cmp(at(IP, "comparison.metrics[caseId=base].role"), "eq", {value: "base"})) : []];
+  if (added.length) template.when = [...template.when, ...added];
+}
 
 /** The material assertions of the library, template by template: each claim of a fixed text with the verifiable
  * fields and the condition that sustain it. A template whose fixed text asserts nothing beyond its readings has none. */

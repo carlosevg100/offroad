@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T00:04:06.192Z",
-    "finishedAt": "2026-10-28T00:06:44.785Z"
+    "startedAt": "2026-10-28T00:45:51.907Z",
+    "finishedAt": "2026-10-28T00:48:30.918Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,22 @@
       "passed": true
     },
     {
+      "id": "managerial-contrast-under-the-base-id-read-as-the-contract-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "c29d947ff3c1b745a3594b2c650197dc46204442470ea8b503c31d93c071e4cc",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "managerial-contrast-under-the-base-id-read-as-the-contract-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "eeee14093df18ed33c295f221ac11238b106df30f25506ddf97b47c232a63846",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1247,6 +1263,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "e114d9ef54ab48c212d5e0d461a07204ec808599a45f5425b4295ce4508a591e",
+  "evidenceFingerprint": "a975c35097b66eb07749a21e568430f410dde706f647b3a5c873eb1bd896ebc7",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

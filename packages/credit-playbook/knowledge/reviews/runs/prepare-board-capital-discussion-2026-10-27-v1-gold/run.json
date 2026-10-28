@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T00:04:06.192Z",
-    "finishedAt": "2026-10-28T00:06:44.784Z"
+    "startedAt": "2026-10-28T00:45:51.907Z",
+    "finishedAt": "2026-10-28T00:48:30.917Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,14 @@
       "passed": true
     },
     {
+      "id": "contractual-reading-by-the-registered-test-beside-a-managerial-contrast",
+      "expectation": "{\"line\":\"Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026.\"}",
+      "observed": "{\"line\":\"Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026.\"}",
+      "inputFingerprint": "b6bdd79f19008606d16a247f93cd7b9f49750e4e16f84490a7f396ea1589d6cf",
+      "outputFingerprint": "bcbfee11ac83c7d41e03aa1447d5a893bc83ba9ae6f60d7f0c49fbf56ba05f25",
+      "passed": true
+    },
+    {
       "id": "policy-shown-with-two-decimals-above-every-measurement",
       "expectation": "{\"title\":\"A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027\"}",
       "observed": "{\"title\":\"A alavancagem fica abaixo da política de 2,44x nos cenários avaliados, com 2,37x no adverso de 2027\"}",
@@ -599,6 +607,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "945c0f1e509a53723a2e286858cd1431359606467041beaff08ad40254daf167",
+  "evidenceFingerprint": "f861b90c92880f0075fe2afd325f9260108e676ed9ef77e18a92408685652388",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

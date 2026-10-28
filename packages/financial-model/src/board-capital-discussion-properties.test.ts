@@ -113,13 +113,13 @@ const meaning: Record<string, Record<string, string>> = {
   "alternatives.moves.title": {caminhos: FP + "readings.horizon.candidatePaths"},
   "alternatives.moves.no_line_debenture": {credor: DT + "result.table.rows[id=*].creditor"}, "alternatives.moves.debenture_with_line": {credor: DT + "result.table.rows[id=*].creditor"},
   "alternatives.moves.extend_with_bank": {credor: DT + "result.table.rows[id=*].creditor"}, "alternatives.moves.extend_bradesco": {credor: DT + "result.table.rows[id=*].creditor"},
-  "risk.leverage": {politica: CV + "result.headroom.limits[id=politica].maximumRatio", adverso: CV + "result.headroom.measurements[id=dez27-adverso].ratio", ano: "year"},
-  "risk.leverage_path": {inicio: CV + "result.headroom.measurements[id=dez26-base].ratio", data_inicio: CV + "result.headroom.measurements[id=dez26-base].date",
-    fim: CV + "result.headroom.measurements[id=dez27-base].ratio", data_fim: CV + "result.headroom.measurements[id=dez27-base].date"},
-  "risk.leverage_adverse": {ano: "year", adverso: CV + "result.headroom.measurements[id=dez27-adverso].ratio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
+  "risk.leverage": {politica: CV + "result.headroom.limits[id=politica].maximumRatio", adverso: CV + "result.headroom.measurements[id=*].ratio", ano: "year"},
+  "risk.leverage_path": {inicio: CV + "result.headroom.measurements[id=*].ratio", data_inicio: CV + "result.headroom.measurements[id=*].date",
+    fim: CV + "result.headroom.measurements[id=*].ratio", data_fim: CV + "result.headroom.measurements[id=*].date"},
+  "risk.leverage_adverse": {ano: "year", adverso: CV + "result.headroom.measurements[id=*].ratio", politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
   "risk.policy_definition": {politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
-  "risk.policy_readings": {gerencial: CV + "result.headroom.measurements[id=dez26-gerencial].ratio", escritura: CV + "result.headroom.measurements[id=dez26-base].ratio",
-    data: CV + "result.headroom.measurements[id=dez26-base].date"},
+  "risk.policy_readings": {gerencial: CV + "result.headroom.measurements[id=*].ratio", escritura: CV + "result.headroom.measurements[id=*].ratio",
+    data: CV + "result.headroom.measurements[id=*].date"},
   "what_changes.title": {piso: LI + "issueFloorInsideGates"},
   "what_changes.demand": {piso: LI + "issueFloorInsideGates", alvo: LI + "issueTarget"},
   "what_changes.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
@@ -128,7 +128,7 @@ const meaning: Record<string, Record<string, string>> = {
   "what_changes.receivable_days": {ano: "year", giro: OP + "readings.projected.scenarios[id=prazo-60].rows[periodId=*].effects.changeInWorkingCapital"},
   "next_steps.notice": {prazo: notice}, "next_steps.programs": {prazo: programs}, "next_steps.sounding": {prazo: sounding}, "next_steps.route": {prazo: route, ano: "year"},
   "summary.opening.debt_and_cash": {principal: DT + "result.table.profile.scheduleByYear[year=*].principal", ano: "year", semana: WC + "readings.tightestWeek.weekStart"},
-  "summary.closing.leverage": {alavancagem: CV + "result.headroom.measurements[id=dez26-base].ratio", data: CV + "result.headroom.measurements[id=dez26-base].date",
+  "summary.closing.leverage": {alavancagem: CV + "result.headroom.measurements[id=*].ratio", data: CV + "result.headroom.measurements[id=*].date",
     politica: CV + "result.headroom.limits[id=politica].maximumRatio"},
   "q.roll_bank": {credor: DT + "result.table.rows[id=*].creditor"},
   "a.roll_bank": {credor: DT + "result.table.rows[id=*].creditor", falta: FP + "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum",
@@ -145,8 +145,8 @@ const meaning: Record<string, Record<string, string>> = {
   "a.strategic": {retorno: IP + "[caseId=base].annualIrr", custo: IP + "[caseId=base].discountRate"},
   "a.wheat": {choque: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
     defasagem: OP + "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths", ano: "year",
-    ebitda: OP + "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=*].ebitda", ebitda_adverso: CV + "result.headroom.measurements[id=dez27-adverso].reportedEbitda",
-    alavancagem: CV + "result.headroom.measurements[id=dez27-adverso].ratio", covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio"},
+    ebitda: OP + "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=*].ebitda", ebitda_adverso: CV + "result.headroom.measurements[id=*].reportedEbitda",
+    alavancagem: CV + "result.headroom.measurements[id=*].ratio", covenant: CV + "result.headroom.limits[id=aditamento].maximumRatio"},
   "q.anchor": {rede: RF + "result.funding.portfolio.items[itemId=*].label"},
   "a.anchor": {rede: RF + "result.funding.portfolio.items[itemId=*].label", saldo: RF + "result.funding.portfolio.items[itemId=*].amount", carteira: RF + "readings.gross",
     volume: RF + "result.funding.options[id=*].byItem[itemId=*].retained", taxa: RF + "readings.options[id=*].spreadOverDi"},
@@ -584,6 +584,27 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const last = (id: string) => {const ys = tests.find((x) => x.profileId === id)?.years ?? []; const paid = ys.filter((y) => !new D(y.scheduledAmortization).eq(0)); return {last: paid.at(-1)?.year, listed: ys.at(-1)?.year};};
     const tested = last("cinco-anos"), adopted = last("adopted");
     if (!(tested.last !== undefined && adopted.last !== undefined && tested.last < adopted.last && tested.last < tested.listed!)) bad.push(`term_last_payment:${t.slice(0, 60)}`);
+  }
+  // Roles by the registered record, the oracle's own reading: a measurement shown is a registered test; "pela definição
+  // da escritura" is a base test of the contractual limit in force whose definition is registered; "pelo EBITDA gerencial"
+  // registers no adjustment; a base path is of the base scenario; "no adverso" of the adverse scenario.
+  {
+    const cv = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
+      {result?: {headroom?: {limits?: {id: string; kind: string; status: string}[]; measurements?: {id: string; role: string; scenario: string; adjustments: unknown[]; tests: {limitId: string; kind: string}[]}[]}; definitions?: {limitId: string; definition: string | null}[]}} | undefined;
+    const record = (figureId: string | undefined) => {const x = d.identity.find((i) => i.figureId === figureId); const id = x ? /measurements\[id=([^\]]+)\]/.exec(x.path)?.[1] : undefined; return cv?.result?.headroom?.measurements?.find((m) => m.id === id);};
+    for (const b of v.bindings) {
+      const m = record(b.figureId ?? undefined);
+      if (!m) continue;
+      if (m.role !== "test") bad.push(`role_contrast_shown:${b.field}:${b.slot}`);
+      if (b.templateId === "risk.policy_readings" && b.slot === "escritura") {
+        const t = m.tests.find((x) => x.kind === "contractual"), limit = cv?.result?.headroom?.limits?.find((l) => l.id === t?.limitId);
+        const definition = cv?.result?.definitions?.find((x) => x.limitId === t?.limitId)?.definition;
+        if (m.scenario !== "base" || !limit || limit.status !== "in_force" || !definition) bad.push(`role_contractual:${b.field}`);
+      }
+      if (b.templateId === "risk.policy_readings" && b.slot === "gerencial" && m.adjustments.length) bad.push(`role_managerial:${b.field}`);
+      if ((b.templateId === "risk.leverage_path" || b.templateId === "summary.closing.leverage") && m.scenario !== "base") bad.push(`role_base:${b.field}:${b.slot}`);
+      if (["risk.leverage", "risk.leverage_adverse", "a.wheat"].includes(b.templateId) && ["adverso", "alavancagem", "ebitda_adverso"].includes(b.slot) && m.scenario !== "adverse") bad.push(`role_adverse:${b.field}:${b.slot}`);
+    }
   }
   // Orders as shown: a text that says one shown figure is above or below another says so of the numbers as shown.
   for (const t of texts) {
@@ -1244,6 +1265,26 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       for (const v of forged.result.discussion!.versions) for (const pg of v.pages) pg.title = pg.title.replace("2,44x", "2,4x");
       forged.result.discussion!.versions.at(-1)!.summary = forged.result.discussion!.versions.at(-1)!.summary.replace(/2,44x/g, "2,4x");
       expect(oracle(forged, [{packet: covenant}, ...auroraBoardSources()]).bad).toContain("order_across_fields:dez27-estresse");
+    }
+  });
+  it("regression r29: a role is the registered record's, never an identifier's: a managerial contrast under the id dez26-base is never the contractual reading (full path, oracle not vacuous)", () => {
+    const covenant = auroraCovenantPacket({baseAsManagerialContrast: true}) as unknown as Record<string, unknown>;
+    for (const turn of [2, 3] as const) {
+      // The readings bound to the record under the old id: a contrast, 2,116x, is refused as the base path and as the contract.
+      expect(() => withBoardSource("covenant", covenant, () => full(turn, (c) => {c.extraReadings["lev-dez26"] = ["covenant", "result.headroom.measurements[id=dez26-base].ratio", "1", "2.1"];})))
+        .toThrow(/board_capital_template_condition_failed:(risk\.leverage_path|risk\.policy_readings|summary\.closing\.leverage)/);
+      // The readings bound to the registered contractual test (2,198x): accepted, and named for what it is.
+      const p = withBoardSource("covenant", covenant, () => full(turn, (c) => {
+        c.extraReadings["lev-dez26"] = ["covenant", "result.headroom.measurements[id=dez26-contratual].ratio", "1", "2.2"];
+        c.extraReadings["dez26-date"] = ["covenant", "result.headroom.measurements[id=dez26-contratual].date", "month_long", "2026-12-31"];}));
+      expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "politica")!.lines[0]).toBe("Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026.");
+      expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      // Not vacuous: the same text with its contractual reading bound to the contrast.
+      const forged = structuredClone(p), x = forged.result.discussion!.identity.find((i) => i.figureId === "lev-dez26")!;
+      x.path = "result.headroom.measurements[id=dez26-base].ratio";
+      const bad = oracle(forged, [{packet: covenant}, ...auroraBoardSources()]).bad;
+      expect(bad.some((y) => y.startsWith("role_contrast_shown:"))).toBe(true);
+      expect(bad.some((y) => y.startsWith("role_contractual:"))).toBe(true);
     }
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {

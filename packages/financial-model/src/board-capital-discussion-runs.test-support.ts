@@ -316,6 +316,11 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r29: the readings bound to the registered contractual test are named for what it is.
+    observe("contractual-reading-by-the-registered-test-beside-a-managerial-contrast", withBoardSource("covenant", auroraCovenantPacket({baseAsManagerialContrast: true}) as unknown as Record<string, unknown>,
+      () => boardPacketInput(2, (c) => {c.extraReadings["lev-dez26"] = ["covenant", "result.headroom.measurements[id=dez26-contratual].ratio", "1", "2.2"];
+        c.extraReadings["dez26-date"] = ["covenant", "result.headroom.measurements[id=dez26-contratual].date", "month_long", "2026-12-31"];})),
+      {line: "Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026."}, (p) => ({line: pageOf(p, "politica").lines[0]})),
     // Review r28: the policy of 2,44x shown with two decimals keeps every member below it, the unshown 2,426x included.
     observe("policy-shown-with-two-decimals-above-every-measurement", withBoardSource("covenant", auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, (c) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", "2", "2.44"];})),
@@ -548,6 +553,11 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r29: a managerial contrast under the id dez26-base is never the base path nor the contractual reading.
+    ...([2, 3] as const).map((turn) => [`managerial-contrast-under-the-base-id-read-as-the-contract-turn-${turn}`, () => withBoardSource("covenant",
+      auroraCovenantPacket({baseAsManagerialContrast: true}) as unknown as Record<string, unknown>,
+      () => build(turn, (c) => {c.extraReadings["lev-dez26"] = ["covenant", "result.headroom.measurements[id=dez26-base].ratio", "1", "2.1"];})),
+      "board_capital_template_condition_failed:"] as [string, () => unknown, string]),
     // Review r28: every member of a global order, shown or not, against the limit as shown.
     ...([2, 3] as const).map((turn) => [`unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-${turn}`, () => withBoardSource("covenant",
       auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>,
