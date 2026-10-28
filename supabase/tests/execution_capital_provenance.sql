@@ -48,6 +48,24 @@ do $$declare f capital_provenance_fixture; m record; pinned jsonb; payload jsonb
   perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{inputs,adoptions}','[]'),payload,false,m.id||' omitted decision denied');
  end loop;
 end $$;
+-- C47 (prepare-board-capital-discussion) is bound to its published manifestHash, version and payload schema. Its
+-- recorded priors are proved in lote4_priors.sql; here they are taken as recorded (the check replaced inside this
+-- rolled-back transaction) so the pin alone decides: the published hash is accepted, any other hash is refused.
+create or replace function private.board_material_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean language sql stable set search_path='' as $f$ select true $f$;
+do $$declare f capital_provenance_fixture; pinned jsonb; payload jsonb; h text;begin
+ select * into strict f from capital_provenance_fixture;
+ pinned:=jsonb_set(f.c,'{method}',jsonb_build_object('methodId','prepare-board-capital-discussion','methodVersion','2026.10.27-v1',
+  'manifestHash','48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98'));
+ payload:=jsonb_build_object('schemaVersion','board-capital-discussion-packet-input.v1','question','C47',
+  'analysis',jsonb_build_object('discussion',jsonb_build_object('envelope',f.p#>'{decision,envelope}','scope',f.p#>'{decision,scope}'),
+   'sources',jsonb_build_array(jsonb_build_object('id','tabela-divida','packet','{}','moneyScale','reais'))));
+ perform pg_temp.check_capital_provenance(pinned,payload,true,'C47 with its published manifestHash accepted');
+ foreach h in array array[repeat('0',64),'55ae460feed68a733634865c5b85dba0695cac5c1da7ac584244a9f44c4c5686','c47-awaits-publication'] loop
+  perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{method,manifestHash}',to_jsonb(h)),payload,false,'C47 with another manifestHash refused ('||left(h,8)||')');
+ end loop;
+ perform pg_temp.check_capital_provenance(jsonb_set(pinned,'{method,methodVersion}','"2026.10.26-v1"'),payload,false,'C47 other version refused');
+ perform pg_temp.check_capital_provenance(pinned,jsonb_set(payload,'{schemaVersion}','"capital-procedure-packet-input.v2"'),false,'C47 other payload schema refused');
+end $$;
 select pg_temp.check_capital_provenance(c,p||jsonb_build_object('anchor',jsonb_build_object('sourceVersionId',gen_random_uuid(),'locator','Synthetic hidden clause')),false,'source hidden in nested anchor denied') from capital_provenance_fixture;
 select pg_temp.check_capital_provenance(c,p||jsonb_build_object('recommendation',jsonb_build_object('basisDecisionIds',jsonb_build_array(gen_random_uuid()))),false,'recommendation decision omitted from pins denied') from capital_provenance_fixture;
 select pg_temp.check_capital_provenance(c,p||jsonb_build_object('selection',jsonb_build_object('decisionId',null,'definitionVersionId',gen_random_uuid(),'missingReason','Synthetic gap')),false,'missing value does not authorize an unknown definition') from capital_provenance_fixture;

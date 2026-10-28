@@ -199,13 +199,13 @@ declare base jsonb:=jsonb_build_object('organizationId','a11b0000-0000-4000-9000
  m jsonb:=jsonb_build_object('organize-document-folder',jsonb_build_array('4378d63bf0b7465838fefe7e3463dbc755cd6c022803a60ac7fe32d368f75248','document-folder-inventory-packet-input.v1'),
   'evaluate-received-proposal',jsonb_build_array('4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0','received-proposal-packet-input.v1'),
   'evaluate-financing-paths',jsonb_build_array('e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4','capital-structure-paths-packet-input.v1'),
-  'prepare-board-capital-discussion',jsonb_build_array('55ae460feed68a733634865c5b85dba0695cac5c1da7ac584244a9f44c4c5686','board-capital-discussion-packet-input.v1'));
+  'prepare-board-capital-discussion',jsonb_build_array('48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98','board-capital-discussion-packet-input.v1'));
  k text;c jsonb;discussion jsonb;
 begin
  if private.execution_capital_payload_current_v1(base,'{}',auth.uid()) then raise exception 'null method accepted';end if;
- -- C47 is not published: its pin is no manifest hash, so its candidate manifest (kept in m) is refused like any other.
- if position('''c47-awaits-publication''' in pg_get_functiondef('private.execution_capital_payload_current_v1(jsonb,jsonb,uuid)'::regprocedure))=0
-  then raise exception 'C47 pinned before its publication';end if;
+ -- C47 is published: its pin is the publication record's manifestHash (the earlier candidate is refused below with any other).
+ if position('''48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98''' in pg_get_functiondef('private.execution_capital_payload_current_v1(jsonb,jsonb,uuid)'::regprocedure))=0
+  then raise exception 'C47 not pinned to its publication';end if;
  if not private.execution_capital_payload_current_v1(jsonb_build_object('method',jsonb_build_object('methodId','synthetic-execution')),'{}',auth.uid()) then raise exception 'unbound method changed answer';end if;
  for k in select jsonb_object_keys(m) loop
   c:=base||jsonb_build_object('method',jsonb_build_object('methodId',k,'methodVersion','2026.10.27-v1','manifestHash',m->k->>0));

@@ -41,8 +41,8 @@ function packet(overrides: {label?: string; reason?: string; question?: string; 
       rationale: "Reflects the contributions adopted in the working basis", conditions: ["Synthetic condition"], disconfirmers: ["The working basis is revised"]}]}}}};
 }
 
-// C47 is not published: its executor is packaged with its publication. C09, C01 and the 2027 plan are packaged.
-const awaitingPackaging = ["prepare-board-capital-discussion@2026.10.27-v1"];
+// Every lote 4 method is packaged (C09, C01 and the 2027 plan from ee5ca744, C47 from 34cb9daf): none may wait.
+const awaitingPackaging: string[] = [];
 
 describe("released method reference data keys", () => {
   it("copies the keys from the procedure source the release pinned, byte for byte", () => {
@@ -53,8 +53,8 @@ describe("released method reference data keys", () => {
     for (const identity of identities) {
       const [methodId, methodVersion] = identity.split("@");
       const release = lock.releases.find(entry => entry.provenance.procedure.id === methodId && entry.provenance.procedure.version === methodVersion);
-      // C47 is wired before its executor is packaged: until the lock has its release, the keys are those of the
-      // procedure source at that exact version. Only that identity may wait; packaging it makes this branch moot.
+      // A method wired before its executor is packaged reads its keys from the procedure source at that exact version;
+      // no identity waits now (awaitingPackaging is empty).
       if (!release && awaitingPackaging.includes(identity)) {
         const {frontmatter} = parseFrontmatter(readFileSync(join(root, `packages/credit-playbook/knowledge/procedures/capital/${methodId}.md`), "utf8"), `capital/${methodId}.md`);
         expect([frontmatter.id, frontmatter.version]).toEqual([methodId, methodVersion]);

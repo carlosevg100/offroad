@@ -111,5 +111,12 @@ export const releasedMethodArtifacts = [
     "methodVersion": "2026.10.27-v1",
     "manifestHash": "e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4",
     "artifactHash": "9c30e707f5651248e691ad93100765bafcc0f6228c8e6c8ec99e24cb3ed556b5"
+  },
+  {
+    "platformReleaseId": "prepare-board-capital-discussion-2026.10.27-v1",
+    "methodId": "prepare-board-capital-discussion",
+    "methodVersion": "2026.10.27-v1",
+    "manifestHash": "48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98",
+    "artifactHash": "824d7bb8163b45c43829b161568bb24f29e0dfed8f554ddcde400ba2fc156d38"
   }
 ] as const;

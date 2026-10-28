@@ -7,9 +7,8 @@
 -- and is refused), and the board discussion's envelope must be a basis version the contract pins. The lines added
 -- carry the trailing comment "lote 4"; removing them and the four methods from the list gives back the 20261027010426
 -- body byte for byte (packages/execution-request/src/lote4-payload-provenance-regression.test.ts). Other methods unchanged.
--- The C09, C01 and 2027 plan pins are the manifestHash of their publication records (published 28 October 2026 from main
--- ee5ca744, capability off). C47 is not published: its branch pins a value no manifest hash can take, so every C47
--- payload is refused by name until the C47 publication replaces it with the published manifestHash.
+-- Each pin is the manifestHash of the method's publication record, capability off: C09, C01 and the 2027 plan published
+-- 28 October 2026 from main ee5ca744, C47 (the role-bound version) from main 34cb9daf.
 set local lock_timeout='5s';
 
 create or replace function private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)
@@ -94,7 +93,7 @@ begin
    or c#>>'{method,manifestHash}' is distinct from 'e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4' -- lote 4
    or payload->>'schemaVersion' is distinct from 'capital-structure-paths-packet-input.v1')) -- lote 4
  or (c#>>'{method,methodId}'='prepare-board-capital-discussion' and (c#>>'{method,methodVersion}' is distinct from '2026.10.27-v1' -- lote 4
-   or c#>>'{method,manifestHash}' is distinct from 'c47-awaits-publication' -- lote 4
+   or c#>>'{method,manifestHash}' is distinct from '48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98' -- lote 4
    or payload->>'schemaVersion' is distinct from 'board-capital-discussion-packet-input.v1')) -- lote 4
  or total_bytes>8388608 then return false;end if;
  -- No authoritative derivation-to-observation publication receipt exists yet. A caller's

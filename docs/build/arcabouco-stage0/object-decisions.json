@@ -27749,7 +27749,7 @@
         },
         {
           "path": "supabase/migrations/20261028120400_lote4_payload_provenance.sql",
-          "line": 15,
+          "line": 14,
           "anchor": "create or replace function private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
           "mechanism": "direct_ddl"
         }

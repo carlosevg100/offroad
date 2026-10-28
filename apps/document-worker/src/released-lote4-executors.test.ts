@@ -1,9 +1,9 @@
 import {describe, expect, it} from "vitest";
-import {prepareCapitalPathsPacket, prepareDocumentFolderInventoryPacket, prepareReceivedProposalPacket} from "@offroad/financial-model";
+import {prepareBoardCapitalDiscussionPacket, prepareCapitalPathsPacket, prepareDocumentFolderInventoryPacket, prepareReceivedProposalPacket} from "@offroad/financial-model";
 import {loadReleasedCompiled, loadReleasedExecutionProfile} from "./released-method-executor";
 
 // The ficha calibration fixtures live with each method's own tests; they are loaded at run time so
-// the worker build does not compile another package's test sources. C47 is not published and stays out.
+// the worker build does not compile another package's test sources.
 const support = (file: string) => new URL(`../../../packages/financial-model/src/${file}`, import.meta.url).href;
 type Sealed = {seal(): unknown};
 const methods = [
@@ -19,6 +19,10 @@ const methods = [
   {identity: {methodId: "evaluate-financing-paths", methodVersion: "2026.10.27-v1", manifestHash: "e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4"},
     exportName: "prepareCapitalPathsPacket", source: prepareCapitalPathsPacket as (i: unknown) => {fingerprint: string},
     input: async () => ((await import(/* @vite-ignore */ support("capital-structure-paths.test-support.ts"))) as {auroraCapitalPathsBasis: () => Sealed}).auroraCapitalPathsBasis().seal()},
+  // C47, the role-bound version published from main 34cb9daf: the calibration's second turn (the material prepared).
+  {identity: {methodId: "prepare-board-capital-discussion", methodVersion: "2026.10.27-v1", manifestHash: "48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98"},
+    exportName: "prepareBoardCapitalDiscussionPacket", source: prepareBoardCapitalDiscussionPacket as (i: unknown) => {fingerprint: string},
+    input: async () => ((await import(/* @vite-ignore */ support("board-capital-discussion-runs.test-support.ts"))) as {boardPacketInput: (turn: number) => unknown}).boardPacketInput(2)},
 ];
 
 describe.each(methods)("installed published executor $identity.methodId", ({identity, exportName, source, input}) => {
@@ -46,8 +50,8 @@ describe.each(methods)("installed published executor $identity.methodId", ({iden
   });
 });
 
-describe("the board discussion (C47) before its publication", () => {
-  it("has no packaged executor", () => {
+describe("the board discussion (C47)", () => {
+  it("packages only the published manifest: the earlier candidate of the literal-id version has no executor", () => {
     expect(() => loadReleasedCompiled({methodId: "prepare-board-capital-discussion", methodVersion: "2026.10.27-v1", manifestHash: "55ae460feed68a733634865c5b85dba0695cac5c1da7ac584244a9f44c4c5686"}))
       .toThrow("published_method_executor_unavailable");
   });
