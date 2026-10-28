@@ -357,6 +357,12 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r40: with several tested profiles, the term answer names the one it reads by what is proven, never "mais curto".
+    observe("term-answer-with-a-shorter-profile-registered-names-the-profile-read", (() => {
+      const packet = auroraPlanPacket({shorterProfile: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => boardPacketInput(2, boardRestateSource("plano-2027", "evaluate-financing-paths", packet)));
+    })(), {answer: "Num perfil de amortização testado que termina antes do adotado, a amortização de 2029, de R$ 33 milhões, passa o caixa disponível depois dos juros, de R$ 24 milhões; o perfil adotado passa em todo o horizonte."},
+      (p) => ({answer: current(p).questions.find((q) => q.id === "prazo")!.answer})),
     // Review r39: a seen crop never sends the unseen packaging line to the appendix; the withdrawal reaches every occurrence of its theme only.
     observe("unseen-packaging-line-stays-before-the-recommendation-when-the-crop-is-seen", boardPacketInput(2, (c) => {c.topics = c.topics.map((t) => ({...t, seen: t.id === "safra"}));}),
       {linha: "main", safra: "appendix"}, (p) => ({linha: pageOf(p, "linha").placement, safra: pageOf(p, "safra").placement})),
@@ -785,6 +791,15 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r40: two readings compared share their base; otherwise refused.
+    ["policy-definitions-compared-with-another-managerial-debt", () => {
+      const packet = auroraCovenantPacket({managerialDebt: "80"}) as unknown as Record<string, unknown>;
+      return withBoardSource("covenant", packet, () => build(2, boardRestateSource("covenant", "measure-covenant-headroom", packet)));
+    }, "board_capital_template_condition_failed:risk.policy_readings"],
+    ["leverage-path-ending-under-another-definition", () => {
+      const packet = auroraCovenantPacket({endWithoutAdjustment: true}) as unknown as Record<string, unknown>;
+      return withBoardSource("covenant", packet, () => build(2, boardRestateSource("covenant", "measure-covenant-headroom", packet)));
+    }, "board_capital_template_condition_failed:risk.leverage_path"],
     // Review r39: the theme is derived from the templates; a topic in the facts that is not it, or none, is refused.
     ["page-topic-swapped-to-the-crop", () => boardPacketViaPremises(3, (c) => {c.pages.find((x) => x.id === "linha")!.topicId = "safra";}), "Topic safra of page linha is not the theme of its texts (linha-embalagem)"],
     ["page-topic-missing", () => boardPacketViaPremises(3, (c) => {c.pages.find((x) => x.id === "linha")!.topicId = null;}), "Topic of page linha missing"],

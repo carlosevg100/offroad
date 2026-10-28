@@ -673,6 +673,23 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       return added === want(c.added) && removed === want(c.removed) && prepaid === want(c.prepaid) && charges === want(c.charges)
         && (c.variant === "same" ? variantOf(path) === variantOf(quo[0]!) : variantOf(path) !== variantOf(quo[0]!));
     }
+    if ("sameBase" in c) {
+      const [method, pa, pb] = c.sameBase;
+      const fill = (x: string) => x.replace(/\$([a-z]+)/g, (_m: string, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
+      const a = read(method, fill(pa)), b = read(method, fill(pb));
+      if (!a || !b || typeof a !== "object" || typeof b !== "object") throw indefinite("records_absent");
+      // Every registered field compared, except the declared differences (a field, or a field inside every list element).
+      const strip = (r: unknown): unknown => {
+        const x = structuredClone(r) as Record<string, unknown>;
+        for (const d of c.differ) {
+          const m = /^([A-Za-z]+)\[\*\]\.([A-Za-z]+)$/.exec(d);
+          if (m) {const list = x[m[1]!]; if (Array.isArray(list)) for (const e of list) if (e && typeof e === "object") delete (e as Record<string, unknown>)[m[2]!];}
+          else delete x[d];
+        }
+        return x;
+      };
+      return boardCanonicalJson(strip(a)) === boardCanonicalJson(strip(b));
+    }
     if ("atMost" in c) {const xs = read(c.atMost[0], c.atMost[1]); if (!Array.isArray(xs)) throw unverified(c.atMost[1]); return xs.length <= c.count;}
     if ("changedOnly" in c) {
       // The case's whole input object (every adopted contribution) against its reference's, in canonical form; only source

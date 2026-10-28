@@ -81,13 +81,16 @@ function buildSources() {
   ] as const;
 }
 /** C12 with the December managerial reading that C54 adds; the variant writes the policy's EBITDA definition (regressions only). */
-export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true; baseAsManagerialContrast?: true; covenantMaximum?: string; adverseManagerial?: true} = {}) {
+export function auroraCovenantPacket(variant: {policyDefinition?: string; adverseDebt?: string; policyMaximum?: string; unshownMeasurement?: true; baseAsManagerialContrast?: true; covenantMaximum?: string; adverseManagerial?: true;
+  managerialDebt?: string; endWithoutAdjustment?: true} = {}) {
   const c = auroraCovenantBasis(variant.policyDefinition ? {policyDefinition: variant.policyDefinition} : {}), measurements = (c.input as unknown as {measurements: unknown[]}).measurements;
   // Regressions only: the adverse measurement of December 2027 with another debt.
   if (variant.adverseDebt) c.entries.find((e) => e.fieldPath.endsWith("measurement.dez27-adverso.debt"))!.value = {type: "number", value: variant.adverseDebt};
-  const p = "measurement.dez26-gerencial.", sc = "gerencial_dez", num = (path: string, value: string) => c.contribute(p + path, "currency", {type: "number", value}, sc);
+  const p = "measurement.dez26-gerencial.", sc = "base", num = (path: string, value: string) => c.contribute(p + path, "currency", {type: "number", value}, sc);
   measurements.push({id: "dez26-gerencial", label: "dez26-gerencial", role: "test", limitIds: ["politica"], scenario: sc, date: c.contribute(p + "date", "date", {type: "date", value: "2026-12-31"}, sc),
-    debt: num("debt", "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null});
+    debt: num("debt", variant.managerialDebt ?? "128.66666667"), cash: num("cash", "15.45720186"), reportedEbitda: num("reportedEbitda", "55.5"), adjustments: [], unrealizedEbitda: null});
+  // Regressions only (review r40): the December 2027 base measurement registered without the lease adjustment (another definition).
+  if (variant.endWithoutAdjustment) (measurements as {id: string; adjustments: unknown[]}[]).find((m) => m.id === "dez27-base")!.adjustments = [];
   // Regressions only: the board policy at another maximum, and a measurement against it that no reading shows (2,426x).
   if (variant.policyMaximum) for (const e of c.entries) if (/\.politica\.maximumRatio$|limit\.politica\.max/.test(e.fieldPath)) e.value = {type: "number", value: variant.policyMaximum};
   // Regressions only: the record under the id dez26-base becomes a managerial contrast (reported EBITDA, no adjustment,
@@ -305,7 +308,7 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
 export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
   amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string;
-  deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true; giroPaidInPeriod?: number; longIssueAmount?: string} = {}) {
+  deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true; giroPaidInPeriod?: number; longIssueAmount?: string; shorterProfile?: true} = {}) {
   const k = auroraCapitalPathsKernel();
   // Regressions only: the horizon after the plan reaches 2034 and the tested alternative profile pays its last third in 2034.
   if (variant.alternativeEndingIn2034) {
@@ -342,6 +345,11 @@ export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; 
     const scale = new Decimal(variant.longIssueAmount).div(80);
     long.draws = long.draws.map((x) => new Decimal(x).times(scale).toFixed());
     long.charges = long.charges.map((c) => ({...c, amount: new Decimal(c.amount).times(scale).toFixed()}));
+  }
+  // Regressions only (review r40): a second tested profile of the debenture, amortized entirely in 2029, shorter than the five-year one.
+  if (variant.shorterProfile) {
+    const long = instrument("debenture-80") as {afterHorizon: {alternatives: {id: string; label: string; shares: {year: number; share: string}[]}[]}};
+    long.afterHorizon.alternatives = [...long.afterHorizon.alternatives, {id: "um-ano", label: "Amortização em 2029", shares: [{year: 2029, share: "1"}]}];
   }
   // Regressions only: the 17 million crop loan repaid in another quarter (its registered term changes; index 2 is the calibration).
   if (variant.giroPaidInPeriod !== undefined) Object.assign(instrument("giro-4t26-17"), {principal: Array.from({length: 10}, (_, i) => i === variant.giroPaidInPeriod ? "17" : "0")});

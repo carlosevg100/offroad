@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T07:36:03.897Z",
-    "finishedAt": "2026-10-28T07:39:41.460Z"
+    "startedAt": "2026-10-28T08:40:41.474Z",
+    "finishedAt": "2026-10-28T08:44:27.416Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -25,7 +25,7 @@
       "id": "material-without-decisions",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b9873fafd634abc911091e6f52886876d04600963511ccfb0d8aa60db6dce45c",
+      "inputFingerprint": "6f70692f4236fdd75eda6e8511ba04a512802a81d616b36051e0d5643ee58923",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -33,7 +33,7 @@
       "id": "material-with-no-deliberation",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a9914a43d0d77ef02f9cdbaaeec1278789497b2fb4549422e7fc2d4365260e6d",
+      "inputFingerprint": "c81f3df6a8fe926b21a775c2a3b72a7dcf4aed7b6f54f5d706256b0b22cf2ee3",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -41,7 +41,7 @@
       "id": "divergent-number",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "bca1a6553ce9462110ec2af222afcdda696d6a867888e5c1f0eec2b37d0147ff",
+      "inputFingerprint": "cdf6c60f5fa8a1ba6c9e05334bdf2104c56c7189f940132dfe00bdc31fecf276",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -49,7 +49,7 @@
       "id": "concatenated-digits-in-an-answer",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "58d4de72178e58ee25b25253cbb79ee2af00b0a5b3acbf420d04a943962d933a",
+      "inputFingerprint": "5052032f84bfa8cc9b1faf8e8d2993b5583dbeee5049684c3d39255b28115766",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -57,7 +57,7 @@
       "id": "sign-written-before-a-reading-in-the-summary",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a72f5a34e325bd3c56976d087579b5df0e7ee61be661f7588d8b30729cc359ed",
+      "inputFingerprint": "a4ef8358d7edcff3ea575dabc7b5c4802784d007ebf5696a663bc4ff50f8a21a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -65,7 +65,7 @@
       "id": "year-reading-used-as-money",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "d14eb978dbbaac1e977f0a5b9aea7f0320acd7d9c38ba6782efecf1e083c7520",
+      "inputFingerprint": "daec8814bca81cdc0c1a6f2fee79e9cfe4c2297a63ccafe2fd6aa1170b73d0e7",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -73,7 +73,7 @@
       "id": "literal-year-written-by-hand",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c9ba558aac9810c68948090d0c7f37518b98a1eab72b1106a049f89e998dc788",
+      "inputFingerprint": "3cc8a4d0bbfd4745a0f3c6f6788119a089ec2506e8a2085554e960f49ecc5624",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -81,7 +81,7 @@
       "id": "currency-written-before-a-reading",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a798e1e9539b0efa438f214252426500142b264706f1ef9f4b95052157ac8dbc",
+      "inputFingerprint": "511b264528a46dfd0ef0d1a64a747b71e45dc7317c6225d49cb327776639715f",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -89,7 +89,7 @@
       "id": "money-in-billions-instead-of-millions",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "0b440a1a524e91840518f09d96354071d9b452b8a2a7a5fb082d31e74a41113c",
+      "inputFingerprint": "366284787aa26a4bb9f6a678b6272704abb48586ed3867dda9217e99775ef16a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -97,7 +97,7 @@
       "id": "years-shown-as-months",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f1145d8b63f5086cbd7f5f8ab70c29149aa58ad4eb746451a0341784d405d08d",
+      "inputFingerprint": "2c6f78b2f471b337acabc1afa6a1079206923b5199f36ea640807ecb23c810f7",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -105,7 +105,7 @@
       "id": "annual-rate-shown-as-monthly",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "18c0d8245aa679096a9fc4f0a170c7f0689211cf4d1004a83023ce94a79d3fc4",
+      "inputFingerprint": "6c11c13c97ec42527e9949934daeab6e10b2ec38207f19d69aae1af4b5ea2f16",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -113,7 +113,7 @@
       "id": "calendar-reading-used-as-reais",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "91aca86e06f8ffea868115805ca341cf357e9f1c31e0b2ffcc5cbb7bd37dd9c0",
+      "inputFingerprint": "68a92735ddcaa42c80bfd6e20c77d56a7e4d4a3caa1236be395230913e72a3e2",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -121,7 +121,7 @@
       "id": "calendar-reading-with-an-iso-currency",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "4fa3daf720f779a0b6b55725327db0ea5248ac215191e2255689b27d138d2239",
+      "inputFingerprint": "6a5fb943bbec0a1c4d8a165beafac11fea1f5e77dbe70418e848216cfa80352a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -129,7 +129,7 @@
       "id": "calendar-reading-as-a-percent-in-words",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f7e7fa0f5475dea2ea30a757567efc0df65fbec6dbd06de27277ff7014d2ce85",
+      "inputFingerprint": "d060cdc797a87cedc4f881560a216496c7dcf809dd475107f8e30c8913f102e7",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -137,7 +137,7 @@
       "id": "calendar-reading-as-a-value",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "58e0389b8b6e35e927e29cba7aa5427629aa6cee63f5f062edc324ce19ec4855",
+      "inputFingerprint": "ffde380bd1f6d3f094670c64951de220e6e624ea0ca5883d67f92bcdf3a17326",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -145,7 +145,7 @@
       "id": "capitalized-scale-without-a-marker",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "83fa8111ec03c0039c89f856d260aec86ddcd5fd4ab28cfcd9e022e552f08859",
+      "inputFingerprint": "0332a4322201691ee4946bb48980810ca572f48040e3a057d7096dfb56d2dcb1",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -153,7 +153,7 @@
       "id": "financial-field-read-as-a-label-principal-as-label",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "83812329e8cf7a6035f94051a2c3efbce5cb5b8f83c124882b64b62dd2c120b1",
+      "inputFingerprint": "9fc89218d93d3ddbafdf1b1a04da132b52a7716974c12bde83d706247030f8a8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -161,7 +161,7 @@
       "id": "financial-field-read-as-a-label-spread-as-label",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "8f34863c6c523ff0275a884e457294c996ba9ae2d16e46714bfd63a0620adea9",
+      "inputFingerprint": "08457f54d2315b7964e9c15d7acefd179af6614703d7445687a4feeb07969f19",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -169,7 +169,7 @@
       "id": "financial-field-read-as-a-label-npv-as-label",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "bc59799edca7d2c21a897a0ed3ed18c3093a957a82567350cc7de850319b44c9",
+      "inputFingerprint": "8aa32f44cc05b72a015796121b440c98ceff8998a49f1792544788faf87ab762",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -177,7 +177,7 @@
       "id": "field-outside-the-registry",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "081f1a082163cea644b203f5c2a644176d7f974339cdf5f7ef702a46b37aa022",
+      "inputFingerprint": "cad6f912d57d76d65e778ff29cde3cb2d6edd6d6b26e9087421e404651c83700",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -185,7 +185,7 @@
       "id": "date-format-on-a-number",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "fb7c6bb802dee9bdfd8f1836cbc9067db76d5593598af3d4c99ce7a0af0be4df",
+      "inputFingerprint": "ef21e33c357c9bca4e2a9ce6b6a0516b9586e22e1e3dc5b2e68f7c9a8cbb7c30",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -193,7 +193,7 @@
       "id": "scale-chosen-by-the-contribution",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b9cb0b3bc254a968e5e6511589c8ef82a06578dc1cfb9531d242cd05cb900b00",
+      "inputFingerprint": "d1ad16611de2061edb068ee48f6fe7ecc3cf1ca4705dbbfde44604f5699f041c",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -201,7 +201,7 @@
       "id": "fullwidth-digits-in-a-line",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "ee34b1e4829767d56ac8b75849430f9274ebbd04c62aaa6f3245f680f22f7e02",
+      "inputFingerprint": "72a7c85445440340c089a80504f30d7b291c4d5198c4b0f1311d762d990aba53",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -209,7 +209,7 @@
       "id": "arabic-indic-digits-in-an-answer",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "3039d118b6dcdc48ac3539c327f2020f4ffd1cce90219bd0d3a398ea5ba05088",
+      "inputFingerprint": "5b5ff589102c4213b6aafa2392d6de5e358510dcdf9399c5227ff39019018720",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -217,7 +217,7 @@
       "id": "calendar-reading-as-an-amount-in-yen",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f6cf5cf5aa0df5ac44f3aec26c272ac7343834dd19b00e66a5adeae39d9c11d9",
+      "inputFingerprint": "566b9b79ef3f4f2b570787ea9dca6db0b4a515a1ca529ea76a3b7d754f37c201",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -225,7 +225,7 @@
       "id": "calendar-reading-after-a-preposition",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a46cc6e983f05f823003042a67a0a1725e967493f026903fa88825625ace0925",
+      "inputFingerprint": "8439d7300c3b326af37ac5496834fbab66f4dbf5f9ef88247c4eb1058073e86f",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -233,7 +233,7 @@
       "id": "cents-in-free-text",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "4dff2850115d65a1c3587ee471b93adab22773978331c865b586b5c829d2e7dd",
+      "inputFingerprint": "2cbb87762b870d545629a296ac324079a901ebb7cbae58cc4dd79bfc90976a0a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -241,7 +241,7 @@
       "id": "thousands-in-free-text",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "88058481a9540f0b5d8ffcc83fe03efc9b51f8b8d88e71ec27a6f80268d2776b",
+      "inputFingerprint": "bf68b21851c5c74868c1dae6d834452314d4b4b9582acc89a5f8934dec094206",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -249,7 +249,7 @@
       "id": "per-week-in-free-text",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f6321f8040bc1482a1d8d0978470816b30c180b1d9f82ecbb984201c263b6f8e",
+      "inputFingerprint": "650b36589be530bd8ae3a875f5bdf05c64eb83bbd1701b66b2798421541194ca",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -257,7 +257,7 @@
       "id": "per-semester-in-free-text",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "38a321c5b83f776539b0edcbd69e2b1a6e872c8ea49be826c377e30c0e3c9b7b",
+      "inputFingerprint": "e4c6ecabde99481939ec167ca94de5e5398ee7e7cfc8839f59db5fd41d3c7532",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -265,7 +265,7 @@
       "id": "duration-in-parentheses",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "7665548fd004753ab4d0f1911e766d4f2015442fa515df603ca7484d78c62ae9",
+      "inputFingerprint": "c1a5a05947137684e731181d47f945d79279a4e2d6a4ff393af28ee6b9710db6",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -273,7 +273,7 @@
       "id": "value-after-a-date-preposition",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b5fe2ee20ae631aa1ab46c6a3ce28fbb2f8806f24b1487625616e5e405477012",
+      "inputFingerprint": "07a95980e85cde3a1ffb9ff431459bd860a8502860f634a3d745aac42b44bfd7",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -281,7 +281,7 @@
       "id": "discussion-in-another-currency",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "7af5279ddd6e907068058552ebe0693dd051885dd71e798dff480559206afaf4",
+      "inputFingerprint": "c9ca6b75ff138228239b6ff87b0092a098ba7d784627b425f61546cc5f5b0d68",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -289,7 +289,7 @@
       "id": "unknown-template-id",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "8a7edf5943979422fcf17a46e1f0004c1dee004b370c4e3c6fbfca2bd2fce7bf",
+      "inputFingerprint": "26e8dbe0fce4b9572c7934334b1b5a2c65ccb7ed77ac3b2a06ea16b253081829",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -297,7 +297,7 @@
       "id": "slot-left-unbound",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "97ae94a976ec1edd7c13e72f0c47056c0ecdf06b6f88aee6fa73da9a972da3dd",
+      "inputFingerprint": "56df6394fda6449888d13fea4c767607704dd7faf8684eccc1d8fc30004d6bf9",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -305,7 +305,7 @@
       "id": "slot-the-template-does-not-have",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b1507abe945ec04365ceb6ca85a8b4e03a852a297aa76f8cec74fa51cccc4aed",
+      "inputFingerprint": "ec02f92aba616ff6affc7785bc7478bb10697921c230916acee37b207e53d267",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -313,7 +313,7 @@
       "id": "years-bound-to-a-months-slot",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "3047f2f07aaf18fe1d8d6f46609a0bef0d9f425d6e1ae67c028f2e45104f4b5c",
+      "inputFingerprint": "5404564e5991fe76fcd97674cc756549250d1a4c695d044e8960aa5945189f47",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -321,7 +321,7 @@
       "id": "value-bound-to-a-date-slot",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "caa9bf7df253604ca83a9f0abc012530cf96ca431198c74e94479c702b641cbb",
+      "inputFingerprint": "663b255190df134f0f289aeeef905bfe4197d102ed0d0b4df99dbd16e309d8e9",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -329,7 +329,7 @@
       "id": "prose-in-a-binding",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "edbe009c7bd1e7266b43da5023e0c79db0fd58574f35a5dc6d65a1bbf1e3d37d",
+      "inputFingerprint": "50a797afe5bc2f01152652f4a743ea98a352fe54c4e10f2a56c1b440bc8704af",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -337,7 +337,7 @@
       "id": "literal-number-in-a-title",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "53de1328132c59dbfcbeb3dddc9a8f52a4260e932226692bb930793fdf873c16",
+      "inputFingerprint": "5d9fca0fce10c6dcaaef246aa66d3106a56d35efaa8518d70da5423c4c53aa23",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -345,7 +345,7 @@
       "id": "literal-deadline-in-a-line",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c75e6d73117d75c2a045a72da87354c5a6b738564f78f527e5c4a9d3b87c7da7",
+      "inputFingerprint": "1c89e8b6df60ee658d4ec701f51f2654942560a8d0c6712b71e0328af7e65f01",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -353,7 +353,7 @@
       "id": "reading-that-does-not-resolve",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a46fadfe6fce624c4c533e13661f6e853cef03bcd01165508a952be1f949163b",
+      "inputFingerprint": "f056475b98ddbfc8d58e6394b0139f7e7d2e9fe80128a5d97bf8170188cca748",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -361,7 +361,7 @@
       "id": "reading-of-an-unnamed-result",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "d03b1ae1eef368235334aa30fbc930c66119d21cdecd8683fe3b789c3857880a",
+      "inputFingerprint": "f2c48235070e87f806de155a775a18d35a55e24b52dd2049417be197b359f787",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -369,7 +369,7 @@
       "id": "tampered-reviewed-result",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e4e0690030326d9e888a77566a171b2396cc11a9031c7c38e7c79a7c10625346",
+      "inputFingerprint": "d959a21a048a65c9a94b16422aec6bee3c50bfc9d0248feb67f213426db0c9ac",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -377,7 +377,7 @@
       "id": "reviewed-result-of-another-version",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "78c603e331f02f62e72007bc64fb733691d8cfac733a79d1c499d4404e64a32d",
+      "inputFingerprint": "669b4568f4be0b82ff2e05dd192242def5fcda21e34e0e3825baff08e6170399",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -385,7 +385,7 @@
       "id": "reviewed-result-the-basis-does-not-name",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "5687006a24447492193764a63a2f3ae71c191bec9034a02cc241f630cca54e6c",
+      "inputFingerprint": "c34a025663999532283bd6228a1a1a1a5b65c3c135761a0c5672cf85964424d0",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -393,7 +393,7 @@
       "id": "reviewed-result-of-another-company",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e58f90590fa8f6d9043fdfa161abd523ee6736e24e1127b72f404446a905326c",
+      "inputFingerprint": "2c1b6c76ffeae27eebcce9567d6bc3ac130aeeeb07889fd07ca9bb2b6edcbcfa",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -401,7 +401,7 @@
       "id": "result-of-an-unreleased-method",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f8951bb1595e7f96557f029f2222206a24ae3c2f16483e987484cf40e6bce5ab",
+      "inputFingerprint": "8a39fc07e0bffb2f479d4c4ec3bfdfbb3928524f16271978a4bd34744a39c10d",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -409,7 +409,7 @@
       "id": "extra-result-beside-the-named-ones",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "200953fad046c61f5cd84e90c7ee0b2c43a364e44efb9a863d77b252b91e8c80",
+      "inputFingerprint": "97c594a7aaea944d2cbad9c57963e8c805ce41177b6764cb6a4830146205ecb1",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -417,7 +417,7 @@
       "id": "title-without-an-economic-number",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "92a98ec3e6400f83b3343664197a46a4eb8a45fbeba478e4b6999bcb5eeb2cec",
+      "inputFingerprint": "afac5c94aeb912d0db19567ff1c411efbe5c815eaeb31fd140cdf884861be633",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -425,7 +425,7 @@
       "id": "next-steps-without-a-deadline",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "2b0a7e9d69a3ac12df64a1e2fbf441a60f786378b722b27aa6226c29dd3c87e3",
+      "inputFingerprint": "1e02925ed6b0fc6522bb1dc57b0951ca7babaa356c26430695aa24c88b58c0be",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -433,7 +433,7 @@
       "id": "false-number-in-a-deliberation-title",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a7e8742f5763f43c6e4419dff5ed3fc3c1fc0cfddb0773f669d84a5f2cdae435",
+      "inputFingerprint": "c087d5c84829980a1358044a27ed550f80915c9e95854594749bf015841c5dd8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -441,7 +441,7 @@
       "id": "false-number-in-an-appendix-label",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "0ba86f3dab73d13c7f69379d414827b06a45e6c68cfe9a24dbbe30d7f1eebc3d",
+      "inputFingerprint": "92ae655a4e48c546ac306dab8fd002c52d4597f5d40582add89e8ec03a96c5af",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -449,7 +449,7 @@
       "id": "false-number-in-an-option-not-yet-shown",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f1089e3d07e4d5f8a669fa42317e6e716ebf44254be1f2fba5f90ef6bd8485da",
+      "inputFingerprint": "fb250b0cd2017ca1da321d9d37a0d137f2f0702f043d1baab24e8ffc0f966597",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -457,7 +457,7 @@
       "id": "paraphrase-that-drops-a-material-fact",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f939a83a13c5b37853f69113ae42e3b6a10aa58aab17de643200cee6306c469e",
+      "inputFingerprint": "39663bb5cb83010e4c72b6fb11d648cc4d099e0d076868d597e66dfe5ea755eb",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -465,7 +465,7 @@
       "id": "percent-sign-written-after-a-rate",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "307bd504d78061133ad4c1f0181eb94b9c5941d0854b6b416b4a1d2e2e10fac5",
+      "inputFingerprint": "09b024edf248f249880ad1a54dcee6f5dc2bd298ac95e51bdc1b9ed55c1130c6",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -473,7 +473,7 @@
       "id": "question-text-used-as-an-answer",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "319dae413f86c0cdea28d2d6827a814655df5103ee435f4e9ac6cae597e1e7ae",
+      "inputFingerprint": "6bc8a92e778520fcf8188269d24a2f078ec8244ca57ee58061a657b7874074b3",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -481,7 +481,7 @@
       "id": "return-and-cost-of-capital-swapped",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "21ea2e38caede76716f6d2059b6281dd6cd036358e0b42516be05fa578469d4e",
+      "inputFingerprint": "e384f95f13f851bfc9d4d9dd3c3565c038d65e242b12135cd76a32ea91b7a25e",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -489,7 +489,7 @@
       "id": "debt-total-bound-to-the-free-basket",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1be2b6f658ade82534523fc1143dffa05c9c2c7b0f056a5a207a8e5dae56e104",
+      "inputFingerprint": "3562976cc3cb9eb770dd37a9190f8c5a03ab0a877689fd701e6d8881f8f2f415",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -497,7 +497,7 @@
       "id": "program-cost-bound-to-debt-shares",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "92723d32ff50667d7e4e6801abc7c82bce04359e61bc99091da0dd988b5e00da",
+      "inputFingerprint": "a25b43c6b51e71ea78f27e5e8fb9c4f479e43ad78b42579548973060865d8079",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -505,7 +505,7 @@
       "id": "positive-npv-under-a-negative-claim",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "23483753d0304c827be6d065b333b914ac4b926c7f46d4a95cd3c422ebdb5771",
+      "inputFingerprint": "efc6bda4d0a0457bcd8ce4569ffe79c3b870b1f064d051c74bda6c23b123d9df",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -513,7 +513,7 @@
       "id": "path-row-reading-another-path",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b101ab41e3a7b2a09b4603359d8f22b6a09c83348804212778629a8144dce206",
+      "inputFingerprint": "87a9a339539959f806c1dffb0fa32d4b16830f795acd9bac30fca3e1f6dd3ea5",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -521,7 +521,7 @@
       "id": "ebitda-of-another-year",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "594a99811d4741dfebc1a6189c20beeb274f670a9b0517abd7df3b1fb3bed795",
+      "inputFingerprint": "ed9f5b1a3e63cc864a7c454675823596d3c454f880d493633aee06aad22251ee",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -529,7 +529,7 @@
       "id": "concentration-year-that-is-not-the-largest",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "da900af5e705870667247e02c89bdeba5bdb1e03e4abb775fdcd2f17ccd9ce0c",
+      "inputFingerprint": "fab9bf7718b2ef71fa7dae98baecf90ef7fea5815a8e19ad998e49415f0f2c3c",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -537,7 +537,7 @@
       "id": "adverse-leverage-dated-in-another-year",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b8d7987b3ea83e1656a9b344f06ff49161a1535430bab94cb8c6ffe5e372eff2",
+      "inputFingerprint": "e80f5ead1102e0e90e5dd36c69824cf58f0e87c8c5b1126714949165e207218d",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -545,7 +545,7 @@
       "id": "notice-dated-with-the-route-deadline",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "d25c964986dbd0be3f3ce8e80100082e314c69250c519c2268a87fd6e43aa91e",
+      "inputFingerprint": "1ec1c3ae86a5772a916645b32a1430206fd315c5eda443632c920b273827f262",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -553,7 +553,7 @@
       "id": "fallback-dated-with-the-sounding-deadline",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "7d2ff5c4273ac9889a28106849c70f892d99741d6cee2aa0c0bb827d785c4c16",
+      "inputFingerprint": "c6dcc00c655d09f2416d4f1f6bd298ecfcc0c27374fee514ba797a340d354e0b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -561,7 +561,7 @@
       "id": "action-of-another-deliberation",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "38d35c6490187c2ebb9f3cddb33070180b099750f7c6fa2164a15c650dabc6c9",
+      "inputFingerprint": "48ba135f4d64110a06fd2030d7bdca845e5a7a9867beb4787ef599f64045a54e",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -569,7 +569,7 @@
       "id": "subject-of-another-deliberation",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "33562d73c3af4b8e0e9786282d8f0b0086ea39ae9f6f2519d86b498c19aeee65",
+      "inputFingerprint": "c57fb56f2316a98f9e6f7b356d937a4fd938632fe7d95d63be9282cd7bc36f91",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -577,7 +577,7 @@
       "id": "page-line-used-as-a-deliberation-subject",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "8043561aa045101a80b6f7507550a95abdc05d3306c11afaa05b15e530695b07",
+      "inputFingerprint": "23867d9a8e23c4a58931e5618877e714d6c053d21f047a3e45d4445fb6fdf07c",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -585,7 +585,7 @@
       "id": "answer-to-another-question",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f6ebeb6b31c83b9d17955202724df61decd9481033f8402cdca2471033c045e8",
+      "inputFingerprint": "1bca3621c9d983cb5588311ae572a6421c7866266b4b07130606742f7d4574ff",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -593,7 +593,7 @@
       "id": "second-package-of-the-same-method",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b866fbe5d53f08b6d800c566be490c10b31b0f2af6110be8216e9f9a3f07292d",
+      "inputFingerprint": "6fd00923d3f9e6bc243c3ec06d67652439f4a3c2ecccf439cde0432322a66929",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -601,7 +601,7 @@
       "id": "basket-occupied-by-the-creditor-of-another-row",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "187dee49625467b98a5c65dce3e520fc8261e83c966594795ff5511e2a623860",
+      "inputFingerprint": "ff5a462aa8cecc3c2fa9e977db59eb70690c7c36bbee0a994c314f6a92107004",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -609,7 +609,7 @@
       "id": "largest-creditor-in-a-row-creditor-slot",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "8a9e3957d6568f93b93c0d215952cd1d5e41587de75d4f67cdb176554c858346",
+      "inputFingerprint": "8a5966ac6552fe8d596959ecae947776e93c3d106359a64436ac4ca75c778e17",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -617,7 +617,7 @@
       "id": "prepaid-creditor-the-plan-does-not-prepay",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c7d173a9be1c18e0698b189bed34459206b46be4a2ef2e79d4b467917c68ecde",
+      "inputFingerprint": "a2ffa061dfae46aed1f0cbc0fe2583f52f50ca65d0bd8068bc44af31be2a2579",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -625,7 +625,7 @@
       "id": "amended-creditor-the-plan-does-not-amend",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "6a492f97891f7ddcfb0c32dc206053714164a9a1b36076626666bf437202ebe0",
+      "inputFingerprint": "5286bb84223b65be8b9b2f4e9e07e8bc3ea979e735a095e12193e5ec8f31c5b6",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -633,7 +633,7 @@
       "id": "question-and-answer-name-different-creditors",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "2233791177fbceebfeca0bb9fa6a5fd673f8674e2eb12999d1d77dd73b3b6b53",
+      "inputFingerprint": "3b8af9ec158843511300d9daac4c2eca521d5176b5140f6772c9782a16fd6ebf",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -641,7 +641,7 @@
       "id": "exposure-read-from-the-program-volume",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "65ab3dc02ab57dff18ad08c45c1f857890f20218b38214045d88995fc5fe7af5",
+      "inputFingerprint": "12a771b6a10690474209d6a536360a2b55497ea514b019780882fc487ce0f82d",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -649,7 +649,7 @@
       "id": "exposure-read-from-the-eligible-capacity",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e9b73a7638813c0910a038ad326ca27dd69db83ff9c74b7786aefa7cb5def814",
+      "inputFingerprint": "5e5ec0ee14fcea2c0ea3d034ed52304771c0bdc016b6dac4f07ecb2a5a5a68dc",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -657,7 +657,7 @@
       "id": "program-volume-under-a-sublimit-shown-as-exposure",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1c4e21412e8b95af5c831be11d744e215cfd041e575dc3c1c6a2d4d2e36fdff7",
+      "inputFingerprint": "1ef7c69791890a0a456d678a30d2c7681f14d8d8591fa51982ec4e0d55f34a04",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -665,7 +665,7 @@
       "id": "assignment-ban-asserted-on-an-assignable-contract",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "75df344d450b99aef7811c84b6460c2c61a22980b40548f6cabd11757a675be9",
+      "inputFingerprint": "c7d40f941bd23da5db98437fa14446fe140c179dc6f0e71ac94162e1bac9bd2b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -673,7 +673,7 @@
       "id": "policy-already-defined",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "f0f8b610174ed395409a3c3ca6dd8b20679134d7e66894a417945a79a9bf320e",
+      "inputFingerprint": "c67da27fd890293a68818adb7e090f9aa86e7f6ab57ccf2f40666c2e2c2fde0e",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -681,7 +681,7 @@
       "id": "sensitivity-called-smaller-economy-with-unchanged-economy",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "485dc89ae6e6e579329946541cfea683d2e5067939b491c8a1cd354098d98e5c",
+      "inputFingerprint": "421024d2363d1a0ae9f44262abe13e50607d19af41b5fcecad51caf60dac079b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -689,7 +689,7 @@
       "id": "one-year-deferral-with-a-2-year-extension-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a486d18bc6e5755ab3ce4f2776d28cdca28d871c1407435514ed420ccae95eda",
+      "inputFingerprint": "2ab754012ad07b6570335e69fdf0d76ff58212c63c6a04af416224e440a24f02",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -697,7 +697,7 @@
       "id": "one-year-deferral-with-a-2-year-extension-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1b647d779da6f372c244bdad39946abb3234c056b9a339d084704131b76913ad",
+      "inputFingerprint": "603b3f569f1a3a2813d090059efb86c119602d1f04efe57e2147992a7f516f37",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -705,7 +705,7 @@
       "id": "one-year-deferral-with-a-3-year-extension-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "2ed4c192f6891bf800683e2c51a1cd12e4ad273c46441cfe5469c1bb65b7f6b7",
+      "inputFingerprint": "0898e81fee6988624d48ef208cfdee71cf4ce7fb5d71f63f6f0410385a959251",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -713,7 +713,7 @@
       "id": "one-year-deferral-with-a-3-year-extension-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "50f37a6374eebfefa84edc7346c71844d5cfe6be54b30b091e6b16ac1818f0e7",
+      "inputFingerprint": "08116d14cb40b504309ef4f3eef291192aa533858406f031fe4c21c42e819071",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -721,7 +721,7 @@
       "id": "one-year-deferral-with-a-5-year-extension-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "37e9e631a72cc5bad48bd08c13fa53210c4b4332b1cc279a04337530af253ca4",
+      "inputFingerprint": "d6daba53156e2e1131e87b50c98d4069b0ff063f72dfe6527094b46fb5c9da10",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -729,7 +729,7 @@
       "id": "one-year-deferral-with-a-5-year-extension-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c95476923594e5247a2d1fc66ad4a4ef287233a4fe2f3c43cecc86c0627595aa",
+      "inputFingerprint": "1078950b4ed60b1dda094f924ed8911353a0436e8839ec470f6c9412575973c8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -737,7 +737,7 @@
       "id": "one-year-deferral-with-an-added-period-ending-2037-06-30-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1f36dafab57c5efa8ddb50c0956021263d761fbefc9536125f2f8ca905aed778",
+      "inputFingerprint": "1a9534f137e763e0f9774fd2f85666565a8f7262ea5be7ca6fafbafcfae7cb61",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -745,7 +745,7 @@
       "id": "one-year-deferral-with-an-added-period-ending-2037-06-30-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c55440a6c88c3dfcb6e737f76b9077571937d93f9b0fb132d2e84505808caac9",
+      "inputFingerprint": "d95eec9f267760c4dbd8b79069469fdaa4b48605118cd3b69b40ff84aa04bbb3",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -753,7 +753,7 @@
       "id": "one-year-deferral-with-an-added-period-ending-2038-12-31-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "78c6f04bc1c69b1172891acc169c29ba2b1938db548b57ac29bd5fee3419110a",
+      "inputFingerprint": "7e0a6e5f94cb9b5e062d631eb81970ee58c1897827fcb32a5125a66a3b2aef3f",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -761,7 +761,7 @@
       "id": "one-year-deferral-with-an-added-period-ending-2038-12-31-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "6f0539ad8937efd9cf98ee1f62265ff60bafb9cbd871a18c0c2f9f934ebf5a52",
+      "inputFingerprint": "fa87ebb3673f6d95007035987aa5cdec7b91109019e4f3003d620ed00793d8f8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -769,7 +769,7 @@
       "id": "one-year-deferral-with-an-added-period-ending-2040-12-31-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "28ba4ea755c2b0437bb95f1dfcb09ee7e94ac2bf157b2199b64cb1f11ba419cb",
+      "inputFingerprint": "b2c0a450745d4cde127fc1e4bf90381e952dad96e996a9043f9f9ca746d4fd24",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -777,7 +777,7 @@
       "id": "one-year-deferral-with-an-added-period-ending-2040-12-31-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "afefd71e3bb5a159dfe276651d9efe95350dbd86f44c9a8c5f6b9cd6f38c253a",
+      "inputFingerprint": "044d6287fb1fdfcf65c8869506ef262789c49478d3060e57384a6f22f8087ef2",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -785,7 +785,7 @@
       "id": "half-year-row-shown-as-ebitda-of-2027-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "10d619594d35448af441e9058c42ce339d4b4f4839c7e6783c9cfcf28a66dfcd",
+      "inputFingerprint": "dbdf71d888e1e26d6fcecc27f6b7b9d20f613bdb8317ea11956d75415902f58a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -793,7 +793,7 @@
       "id": "quarter-row-shown-as-ebitda-of-2027-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "2f9ff97481c2f87b362ea055d8c133024dfba50b082d15107824e7c589f0c5df",
+      "inputFingerprint": "b613e426771b07a4e7591815e28cded216547237e89a418eaa85db53b4d3fd08",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -801,7 +801,7 @@
       "id": "recommendation-page-given-the-situation-role-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "eb295fbc1919131d158d80a30aaa73dcc9af498d42a22ba34b7983a7af320fa2",
+      "inputFingerprint": "09dc478706fe6b60d43560cf4aa3a12ef88779c58d440f00e07eb016f309136e",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -809,7 +809,7 @@
       "id": "half-year-row-shown-as-ebitda-of-2027-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "dc8defeccd19986cf70ca2094517115d33955655af1a59bc83210b35cb19f81e",
+      "inputFingerprint": "b604bf09572a9118b7dc5434cb205f630f4f070801a808a82970d575d8047342",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -817,7 +817,7 @@
       "id": "quarter-row-shown-as-ebitda-of-2027-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b8fc39c5a71ed4b358700e35ce9072fa28683ac8f749cba0892715cc10e3f12a",
+      "inputFingerprint": "ef6c05707e748448ce2bbb5d0ea8dcb1e154c39f2d3167836204c0dbeaa6ed69",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -825,7 +825,7 @@
       "id": "recommendation-page-given-the-situation-role-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "569ff4a4aa0c7584ef8f8c760a76210a79dbed9190b7bcc396e7be9a5fc77217",
+      "inputFingerprint": "97502aae537d61d069248e8208a419b714bd9ba9fd97ccdccb45eb4451b75954",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -833,7 +833,7 @@
       "id": "bank-discount-after-the-programs-peak-25-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "41ef515526aeaa1174c1deea85ed02d0d594d1578485af7d9100ab4c4af81ea4",
+      "inputFingerprint": "e31e3d66bb8b2363dc7cdb243f22cfd9e3081f83fcc93ef1312f874ce7223467",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -841,7 +841,7 @@
       "id": "bank-discount-after-the-programs-peak-40-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "12fcff73cfa5600ce288822e4a14fcd47d873a421d4b684941fcc04707f159c4",
+      "inputFingerprint": "eff5d4f1d7e63e6221434dd182db496ee5fc19174ef09e78872e8c1676ebb122",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -849,7 +849,7 @@
       "id": "third-program-in-the-plan-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "21c2da523608829d16cac5958db17237cf4a2e4ae217aa5e9083eea42e358a32",
+      "inputFingerprint": "4a23f1030773a3969e28ac712efc488eed0940cf307304ac566cfa178ec05648",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -857,7 +857,7 @@
       "id": "rating-net-gain-with-incomplete-cost-coverage-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "99e8c96ae7d939971b92554e2bdbc04d82cea67e705a3fe6335b6bb05661eb1e",
+      "inputFingerprint": "8a8374aba5ba779d8069c5dded880c79956925cc002277b10521fff362575944",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -865,7 +865,7 @@
       "id": "alternative-plan-said-presented-and-absent-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "151626a05231f30ff797a0fa67f99e78eb99dbaaddab0a1a81198ac74cca4de8",
+      "inputFingerprint": "49655ae50d771b28e970fb1252e294a4ef0387042e782c9fd3ea5653be608064",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -873,7 +873,7 @@
       "id": "bank-discount-after-the-programs-peak-25-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "152d4bfa3b3739e39f21ff95a30e1a31332a8eb64e4647769aeb008f4d42cf2b",
+      "inputFingerprint": "f2bdeef271d046a7ace1d01126d61cc775f0521ab56a197e19fb77dcddc32c94",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -881,7 +881,7 @@
       "id": "bank-discount-after-the-programs-peak-40-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "39b116e5d85f04bf059d6f3bcb426b253b4ff543794af4cc2933a8a20a2aba77",
+      "inputFingerprint": "16f319236dfebb29f897b076b925c8a9d5a21901d247829f90ef0125ae7e694c",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -889,7 +889,7 @@
       "id": "third-program-in-the-plan-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "95399ff305716afb174788ae374a3a829d8f8dacfcb850eb5518ee1d9328eb86",
+      "inputFingerprint": "70e4420e714e15cbf8fc31e7ad3772a40db82b19227407f5ef3dce9bd9e7d55a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -897,7 +897,7 @@
       "id": "rating-net-gain-with-incomplete-cost-coverage-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "7c763f27005bdf14203e3f2018c7fbbcea6ca899cbc41f3908255eb321d0fd07",
+      "inputFingerprint": "48a3543ea691f8ee0d8321c64f24543bd10b2510a78e22db0dfd8209fa8e3ea4",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -905,7 +905,7 @@
       "id": "alternative-plan-said-presented-and-absent-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "257b3891d064f09a83c154743b7ee83ada846aff74f541c7a3771e6aec26f51d",
+      "inputFingerprint": "1dabd42b98d13c30c4b62f5beae85b938b7f71edfa46c46b9a98ce17a420bd61",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -913,7 +913,7 @@
       "id": "largest-creditor-tied-with-another",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "895f9cfe62d35e805d990ed2c234a6267bac28b07b20c319a50e04c55936f9b1",
+      "inputFingerprint": "ad94f5251df1729642177bc8dd4e904c57887bc02d8e9695b785bc0bb7f4c33f",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -921,7 +921,7 @@
       "id": "rating-range-of-three-and-twelve-months-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "4869f660888f10b12bca2d839378552cfe81c6ff8fac79e77e0d167408a7ede5",
+      "inputFingerprint": "cf571a1c43c7843abfc03cf61dac5449d35d4bf7427c008d2dab791f67e2a1a1",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -929,7 +929,7 @@
       "id": "rating-range-of-three-and-twelve-months-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "be6590af744f38b22be432e569b5ba6c6997aab86be8d7f1704524ce8c81e6dd",
+      "inputFingerprint": "e0521695e18f08c284c3696784bd9254170d570ae762830a4765240fae9e376a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -937,7 +937,7 @@
       "id": "adverse-leverage-2-4602-shown-twice-by-equivalent-selectors-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "4d3633e4fa4aa01cdcc7548e575f04d8520ad356f41b7937ab1b9da0dbbf2a65",
+      "inputFingerprint": "9cac57ff070c0ebddded679dea1d3e25d9f9e7c7493ec5da0ad9de63abcb6b74",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -945,7 +945,7 @@
       "id": "adverse-leverage-2-4602-shown-twice-by-equivalent-selectors-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "3dcd8d710e62cd76b8b073907a6cfe5c82e790c64ef426392e85dae39e4d7bfe",
+      "inputFingerprint": "bc1e4745d6c451834e24e95617d64e976e200ea283e594c4bf11f4c10d4b706b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -953,7 +953,7 @@
       "id": "managerial-adverse-read-below-a-breached-covenant-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "bcb9d20074598d98bd8a846093b8f794965081055ca890917ada50e490f0a4e7",
+      "inputFingerprint": "b218879331e7968be02a75232ee0992db0482920d51d678c79e71d406e0aa88b",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -961,7 +961,7 @@
       "id": "contractual-adverse-against-a-covenant-of-2-3-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "ab434c84769ec0288ec7d26607c908adec19dfea1110b5686ac11725d4bc198f",
+      "inputFingerprint": "924972aca0334a09705382cbbcf176e53c662813392b06ea10a9f76fda7c4a9e",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -969,7 +969,7 @@
       "id": "managerial-adverse-read-below-a-breached-covenant-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "ddaa66586af85ad314adec4ab9b9a3074531f98d594c60556f1c0bd95f7a3122",
+      "inputFingerprint": "c4ba6d6cee257ce9fe0b5f874c9df60353415b4e16041de34d3d10ef35f74a61",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -977,7 +977,7 @@
       "id": "contractual-adverse-against-a-covenant-of-2-3-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "195312091fc6f24cf28e694f140824107a3b9b6e6c6972c905f20b66a9fc4c02",
+      "inputFingerprint": "d4dd2961f8540ded260016cecd21b3be7c5cc510c0c5d5f5ad01e466864ebc00",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -985,7 +985,7 @@
       "id": "managerial-contrast-under-the-base-id-read-as-the-contract-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "ce47afa087872c5ff79ba61d656bde470c9e12400a31d3b953ad466cf7502746",
+      "inputFingerprint": "8769d8e83f98e841b1bf4be9cc5af69f43dae45ac97bdfdec54f38f092a35325",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -993,7 +993,7 @@
       "id": "managerial-contrast-under-the-base-id-read-as-the-contract-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "82547fcf0fc713ae4cf419b923029ffdc426454c82ce49c6181a21a868a13cc6",
+      "inputFingerprint": "b2a3a33ba963c1727b502ea3e81d992c83ba5bf6da379cb58e275a85ceb29507",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1001,7 +1001,7 @@
       "id": "unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "2313693ea80d7a0e8a56ce1ada609ca4914b8b7ed4e72222d3857a632c818690",
+      "inputFingerprint": "f435e669d6f7900d731eb286f75eda8e8fc97878a29b10796f07e2e4d3a304a3",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1009,7 +1009,7 @@
       "id": "unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "89e030bdb54b82d3b556de90be2fb25b5dbda7c987c0399f70dd41c934a78b7c",
+      "inputFingerprint": "c7a92554b2dd5b9c4774c241e94ba40483eafdc50349e85b24f9a50208151b1e",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1017,7 +1017,7 @@
       "id": "summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "fb0eeabbbf11040b5e281d4a0ec9894b0c4d9ff95d5b2b6e4fc3eaccde865616",
+      "inputFingerprint": "fea594a12a2584a8d651fed5af39d9828b0506789011baea0743b57ed89baaf8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1025,7 +1025,7 @@
       "id": "tested-profile-ending-in-2034-called-shorter-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "9d2c0bee04dd0b923fb4a8bd94d854f6797630d4f1d079ed34ed0739e5519b43",
+      "inputFingerprint": "2c2a29539cd56abf8bade487b025c786f216612ec9913a776850a8e5baebb937",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1033,7 +1033,7 @@
       "id": "summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "060e345da873c8b5a7218633ce3c8e6a864387bbeff5770b61d17901cce89e62",
+      "inputFingerprint": "c8c6b266be352a073f27459a05669edab096401c11fcc1a1d84379c0f3d305c3",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1041,7 +1041,7 @@
       "id": "tested-profile-ending-in-2034-called-shorter-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "06709254bbe4c4db635f43016886092aa37c0b9aae5b35830ce2d023b796b451",
+      "inputFingerprint": "9d97a700572cff2667bc8a290e1542356206071e7cf2b8f59d0796ffe2111d57",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1049,7 +1049,7 @@
       "id": "same-reading-at-two-precisions",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "910b87f086d886607aa4c50cd39ecf898e6a243e8fb684a2d1a5da5018329fff",
+      "inputFingerprint": "a3f26cb2d8c9c3d11eea4bb353b77609908dc364f95d45c12a79126814cedc55",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1057,7 +1057,7 @@
       "id": "adverse-leverage-2-459-shown-as-the-policy-2-5-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "218eb3d9825d95d1bc3443d73ba088a9430cef4e6aa8168b9fbe49b4389668d0",
+      "inputFingerprint": "4173ddae37bfd3e545c7145df868cb55f25dc3b7a3024bc7eff95d0c892d3ea7",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1065,7 +1065,7 @@
       "id": "negative-npv-shown-as-zero-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "db8e5ade240c6675a587d230285ee0f48c4616eab9b1b8f289f136c0274f2890",
+      "inputFingerprint": "161a82c04ca573b857724c955588c52ce83a374e9ea2722ab5ad9f1a3fddb089",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1073,7 +1073,7 @@
       "id": "adverse-leverage-2-459-shown-as-the-policy-2-5-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "9c22df1cfa9f07395e15eb6fa37dcfc1deff91571cab14e84fc12b8281fc7503",
+      "inputFingerprint": "37011422942e462075734efa41a8bc1d46424f578575ea7103c37963aaefb4ae",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1081,7 +1081,7 @@
       "id": "negative-npv-shown-as-zero-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b66eff8574e8d1116b20e9703785275b8376ba66655aafdd5c1e7118bf43149a",
+      "inputFingerprint": "54ee633dd624b1f8ad7f7033537969a530988a9b194bfacd1f5c0b73e6b63bfd",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1089,7 +1089,7 @@
       "id": "deferred-variant-with-capex-times-2-named-a-deferral-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1764aea8b302c679d11617ac763c9d3ba54d3df35b1cadb9bdfe6b7db5149549",
+      "inputFingerprint": "8210f5f8629e37f7056f68b2f05428895e0e262800114cf0351a2e95116ecb26",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1097,7 +1097,7 @@
       "id": "deferred-variant-with-capex-times-2-named-a-deferral-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "3cd2c60d77012c42f0fa73a58421b760e8af81739b674e811afca1ed09d01438",
+      "inputFingerprint": "e7c397988849f98e214552ef6ebfd458211ac1b4b5c47b01750d5558ceabf196",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1105,7 +1105,7 @@
       "id": "deferred-variant-with-capex-times-10-named-a-deferral-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "6f75d6c28e4847e4bb3c60f212a329cbc3e3ed29593422468801c259ab8fb05c",
+      "inputFingerprint": "d37c67fca3ac034a1603bdd423e8fc495266fdf920c06282794d5f559f2ef7ad",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1113,7 +1113,7 @@
       "id": "deferred-variant-with-capex-times-10-named-a-deferral-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "648354eadfb7830eb5487699c1ea85d89a757f40133068ab1488704d386c69a8",
+      "inputFingerprint": "6896269697671eae60ddf2c0d6db299b751ddaabf64dd6db331d65bdb4b6a2a9",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1121,7 +1121,7 @@
       "id": "staged-npv-pending-as-the-cost-of-capital-at-30-percent",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "bac12aa37254b9b1bc0d8eac80f437b4ddecf18a7c1abf3804da1f143aa6450b",
+      "inputFingerprint": "3795c9eea780366ed0def2d7fa9ae02fd4844593f66cf6000c4044dd81883364",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1129,7 +1129,7 @@
       "id": "staged-npv-pending-as-the-return-in-the-answer",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "0f631412014496f5db7c69f466976ba19961e9f2fffbecaa6aa6273fad0ac5f5",
+      "inputFingerprint": "66c2baadcab09ecd9aab03bee49afb9cd4496876b80453b034dfb75d9fc26527",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1137,7 +1137,7 @@
       "id": "cost-of-capital-pending-leaves-the-claim-undefined",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e9d21af6e0ccb15fd1ae5ef22def9882181fcabf8b35baf7fefeedc9299b1542",
+      "inputFingerprint": "0df36edfe44d35b63bf8710900887dd2d6799ebe5b0bdec8a506244ecc8bb16a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1145,7 +1145,7 @@
       "id": "calibration-deferral-named-by-its-exact-definition",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "828c33a3d9403deecd39fd8fde4281fc006141cc7b76864517bcd24a762c739f",
+      "inputFingerprint": "e1c7bee3882d522a6867099c1d493dc508bbf65f7a8bddeb991f0a98c0745faf",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1153,7 +1153,7 @@
       "id": "exact-deferral-control-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e47533bafe5d921fddead8e7d9d769d591164a260af5956fb953a348f4d688ce",
+      "inputFingerprint": "dcc02e8e65f89e634d2ddafc2211cc34dcd11040d7bbc2e83271ba61e36680b1",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1161,7 +1161,7 @@
       "id": "exact-deferral-control-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "b32770aa3fdf562f2cb1485d5b8f5ed9229e9815a74cbf42ed2fe683dd6fb706",
+      "inputFingerprint": "85fc0d7b30c7f2dd615d04d97ffea9947403b379d5996bd9ac1449b0a2160652",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1169,7 +1169,7 @@
       "id": "exact-deferral-lastPeriodEconomy-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "4409c20a8d82931f964553db6aacc30c57b799e660f134013ad7b64bd66859a0",
+      "inputFingerprint": "014efc376dbef16d45a397aa4db0c98ec5997bd04e117f3542a288ef5f6a3867",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1177,7 +1177,7 @@
       "id": "exact-deferral-lastPeriodEconomy-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "5a39b51dff6cb953ef305bd85c7969ad1c3dd41ad873335608480ccc638f0b8f",
+      "inputFingerprint": "d87bcd68614e54fc0f25d9ca97c0069f83182c182184004b48dbbd79a44334a2",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1185,7 +1185,7 @@
       "id": "exact-deferral-adoptedTimes-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "34151c11151c8a324a2b02dfa328eb9e00d26386274e43a68d687ddcff04fd1d",
+      "inputFingerprint": "e7de27b783f78b6ffe72f21f082a15ced35823eaf31b14babb2aa183d9538fb4",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1193,7 +1193,7 @@
       "id": "exact-deferral-adoptedTimes-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "e90f098b8ae57bacefcdf8976a87a40da4aa4250a54e7f94593f46cee7631c60",
+      "inputFingerprint": "30b0db78106bf40e85bb7a706bd7aa6f9dd37a4df272c21ca8717b631a7b979c",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1201,7 +1201,7 @@
       "id": "exact-deferral-startupCapital-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "640e79f1fccdc0520060f4eff937e14b26ed447536153d96ed9d227677fa5698",
+      "inputFingerprint": "63d145433188651b0cd027c6f71c9e06d0634ae6f22b832578a92e30db8c390c",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1209,7 +1209,7 @@
       "id": "exact-deferral-startupCapital-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "3b49b91c0521e9ee3704fb63366e75c59143f3d9de558eebb4b4d90987c42248",
+      "inputFingerprint": "4980f1fded9e4c15a24ab767ea19414ea83b06b6eab1a7a43d0e05c762f74805",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1217,7 +1217,7 @@
       "id": "exact-deferral-lastPeriodEconomy-option-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "3d4a26ce00e7f43c27547bdcc851693c06522eb97f7866ee76e9429cacfb34a5",
+      "inputFingerprint": "b797153043971170e3c114b50a7413370e7aa2f5dd996ddc17e63afd8ef5e2b7",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1225,7 +1225,7 @@
       "id": "exact-deferral-startupCapital-option-turn-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "9eb0df41f16f0d5e4241cc78b7c62abebe4595f4e0e07b9dd01524419ba2793c",
+      "inputFingerprint": "ee4ab2b12ad1d6d84ed3c10631c67f1bb520f447ec10ff05c9ab5daa35ea38d8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1233,7 +1233,7 @@
       "id": "smaller-economy-with-a-30-percent-discount-rate",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "88446ed92f3bd7ccbcdc9ca79ba30be2fcbdbfcd8540be110dbdc0c1a728c83c",
+      "inputFingerprint": "9598cf6c9e7b1a9390b81ad2b489784ffebf9c19cbb5556c0a7cc1774b1b245a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1241,7 +1241,7 @@
       "id": "base-operations-at-a-30-percent-discount-rate-called-smaller-economy",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "064e8742c92b2b2f6896af0642285e8ba204cea0c01d3f7fcf04b641dd52601a",
+      "inputFingerprint": "53467b00f4b80de47caee4b5efb84ab15ea2a3e163419b86bbb70a0adcb42a81",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1249,7 +1249,7 @@
       "id": "later-receivables-claimed-on-longer-inventory",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "541f221c95ea2b19b77f9ed42583b384e791a4ce3a7ec3e38baddec5b3fdaf2a",
+      "inputFingerprint": "f7912f925c9d2c6d69743924234a16e4f9e2db58c328584616f36c7f64246724",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1257,7 +1257,7 @@
       "id": "larger-capex-claimed-on-front-loaded-capex-with-smaller-total",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "532ce00956588737fde44640c3055d0d471aaca2379f98b120b9c6937121784a",
+      "inputFingerprint": "fc864d9f6aa89ba9df9076932ab563956a241ae70d663e8da9392448e3e1de81",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1265,7 +1265,7 @@
       "id": "receivables-shorter-than-the-parent-with-longer-inventory",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "6a53bb3916062ca1a5281b4515cd68b6dc967e7073280a61539a4666849eb867",
+      "inputFingerprint": "edf1fd1fa133ef2f1c164df528b97ea080dc64f21d55ca17542229f074511df4",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1273,7 +1273,7 @@
       "id": "wheat-scenario-whose-shock-starts-after-the-year-shown",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "0a091e98c9477090a16bfd40deb09d68ea972b688ae84d59bce620c3ffbc9f09",
+      "inputFingerprint": "7d5590ad69472f53a0cc065a490328423d8da10e302929d8962a3ada86ce6ad2",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1281,7 +1281,7 @@
       "id": "receivables-longer-only-in-another-year",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "eb6cfb3cf5894074c4ce602916da49fd990ea43cdc86d8b1848b6070293df06d",
+      "inputFingerprint": "189e31fb1365ff510f9be3082f0277dba5ce830971625f7c256396313e3b7b61",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1289,7 +1289,7 @@
       "id": "boiler-investment-against-the-packaging-plan",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "9c2241e5fa99a145cd9207c3ae6453560a1d67e1de0d2c545e29dd18da6eae9a",
+      "inputFingerprint": "6a8735108d44363d40c853ce9387ff5b90581fbae64935b264f7a95365428ded",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1297,7 +1297,7 @@
       "id": "packaging-line-sul-against-a-norte-plan",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a5b54c9bffee1f27c3e4f9b7471c27129b90fce58421937d1a5a9a920aae5d77",
+      "inputFingerprint": "2140abe80569acd91be4415e35c4dc8dcb5a96c7c1199e62cc1ac216ff59caab",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1305,7 +1305,7 @@
       "id": "joint-program-called-the-client-s-own",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "13ef68f95fe8485d65b263271dd5ffc3808c8b1bb622e18c524f4c553ecf1270",
+      "inputFingerprint": "ac88bd8c6b0a21587db7b5e2cdd2d857232a716419346d27f7fea1b5e1966890",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1313,7 +1313,23 @@
       "id": "deferral-without-a-deferred-schedule",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "22493c0de1c777566c7ce66df8d086eb4f92ca796bc97be41a34f72b3ef51976",
+      "inputFingerprint": "b7a0401d7e8e079f1a34174843822b943d5abe6cc23f45bdc5f1694c1ef8442d",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "policy-definitions-compared-with-another-managerial-debt",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "0c8ee08eee8e3698ac4e73fc19c1d495ec832ba2f9d3cdcb13478b69d612f601",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "leverage-path-ending-under-another-definition",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b7913437169521151997ac021fa81b7c77e96aea0ae8d35ea1626797e7af950e",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1345,7 +1361,7 @@
       "id": "economy-smaller-first-and-larger-later",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "5c157c0b7b6d0be75996e800fac8388bd9e1c73766435e7d2ebaa40e824190da",
+      "inputFingerprint": "85f89501c53fa178ef669923a118325eb6b0e887501c653a31d53daa47134442",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1353,7 +1369,7 @@
       "id": "demand-floor-shown-with-no-decimals",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "3014fd5856ad2b9e7d27290a6a3ac29b05b326c42f0f2f21a5b085235a333acf",
+      "inputFingerprint": "923df2222c51e48a333f4ce176ef0635ad81b44c306d8d3fd2a59deb622e01a1",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1361,7 +1377,7 @@
       "id": "demand-floor-shown-with-one-decimal",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a726199e7999d6abef6d984af9c28c0fb917f4cff439ed0532e86c66df5f9676",
+      "inputFingerprint": "77aacb0a5457cece98cbcb1f626ca6cac8d576994615cd3556dc11af2ece5eb9",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1369,7 +1385,7 @@
       "id": "twelve-month-horizon-mid-month-shown-as-the-month",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "ced330c98cae7ccadd351bcd01489ff439e887ee7c37f2b2f17576e7760a4fda",
+      "inputFingerprint": "b2394f8fb68d3254c781bce3a6bf895d5a0ea3037dc435805a04ae2de62d1ca5",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1377,7 +1393,7 @@
       "id": "demand-one-quantum-below-the-floor",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "6e78aa2e10c41856f0fa37d861873a2fc600a6e4fdbe669f8d6b51fefbfbbf16",
+      "inputFingerprint": "bbf32ef35d971a95642601a0dbd2b14895005dd909533e8189c508e2de5a6f14",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1385,7 +1401,7 @@
       "id": "kept-debt-with-a-new-working-capital-loan",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "5ba76a594c7d6193c84b3fc82476726cc43b091a064bf38ed2b09feed284a30c",
+      "inputFingerprint": "bd87ece7b4ba29baa739813a0882df985337888b824e941fe154b5d59ab3747a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1393,7 +1409,7 @@
       "id": "deferral-with-operation-on-the-original-schedule",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "db1dfdd7c5a735ed8acc67e0ab5031a8b2d9d294d7e6954b2f7ff414a4590f91",
+      "inputFingerprint": "40149b907dcd770c7711b26bf91a12d35e85cce1652143802173bd3282b830e8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1401,7 +1417,7 @@
       "id": "extension-path-with-an-undeclared-prepayment",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "54b243a64794b10bf0c48b5e01f563efb8c616f4a905cfb2dc8b3e9510c5636d",
+      "inputFingerprint": "472c54f3b3ece37694861030ae572d3bc3c690d69353ac26ba8af6cae69d2abd",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1409,7 +1425,7 @@
       "id": "extension-whose-amendment-does-not-extend",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1bc4986fbb199bba8c0cf3dafbf81b6fc687f775675ed44588c42143b43cb96b",
+      "inputFingerprint": "1e739a7cc24d1f912ed12a409ecb3361a03b0581e42493e3de8c341f3efa1af8",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1417,7 +1433,7 @@
       "id": "development-bank-description-on-a-bank-loan",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "af1c2707ab1cbe28e288dbe96257f8a193061f29eae568c5437cff00fb8ef28c",
+      "inputFingerprint": "2ce8e7b0bd5faf9c252a7b441ec3803dfafbb206156e3cc882abe40017c66c9c",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1425,7 +1441,7 @@
       "id": "deferral-proven-only-by-capex-and-ebitda",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "a19ae68b4b5b873383138eff7b4e0bb9c4d0c3c0c9dc880258b3b1ddc3d54761",
+      "inputFingerprint": "c698831c3ced10591067544e429caa46550fbc34f4175d1143cdea8a62c70eb6",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1433,7 +1449,7 @@
       "id": "informed-fact-attributed-to-another-person",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "2aa64c6fe39afefbf963de2d5c6cfc1b46a0b05f864c59dc274e349e51e387d2",
+      "inputFingerprint": "f7aad1cf2e1c6c1703c629d4f1e09b3946233f73afca2dcb8d39e33ede5744f3",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1441,7 +1457,7 @@
       "id": "informed-fact-as-prose-1",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "5eecc7be5f1621490eeee5e62525ab6e02f109dd8bd0debdd64c563e45aa68a9",
+      "inputFingerprint": "bfbef6d2e61ddc073f26d908405bd0254b4188a8009e17db66f4a6c7dd114487",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1449,7 +1465,7 @@
       "id": "informed-fact-as-prose-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "211b2a0fa7160dd8ecd43abc0936033b07d8d0f84fc31d2da0cb982f1045d004",
+      "inputFingerprint": "4b3bf50e4d8e8c9cac20a88c85a24c20a6894447e732d425e7ae6b01f245e4ae",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1457,7 +1473,7 @@
       "id": "informed-fact-as-prose-3",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1de1aedad2d77b340bccb02b51e045837f4865548b132aa26a802f21597f1df5",
+      "inputFingerprint": "a8dd7b2bf6889ed540facc903946a1d1acc752ad7d961851ea021223818de485",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1465,7 +1481,7 @@
       "id": "informed-fact-as-prose-4",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "c28514b6566b80117a6c084da2a62f25323d88addc3a23660294c5622afd8496",
+      "inputFingerprint": "c82bea7ee5516b97f79da305a2e66d8952f9c914bd51d82c21ad0c73fd0d82dc",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1473,7 +1489,7 @@
       "id": "reading-in-an-informed-fact-slot",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "617a90a29b90a33ced849d7ebfafd2e053780c9a9fdcdb83df6dbb5986d4ce6c",
+      "inputFingerprint": "f9075116b7a46d61872acd1aad7c7651ace7039bbe255ee64502a21aed8f21a0",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1481,7 +1497,7 @@
       "id": "creditor-and-maturity-of-different-rows",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "684dbdd54e6f09f3bd84abb9d0e1d6e3be366f4224181d3eacd2a70985dfcac8",
+      "inputFingerprint": "ab77be8f0482e953f8453f7a32fefe7954a02690d7f7e7ecb6acd73c18c4017a",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1489,7 +1505,7 @@
       "id": "tampered-envelope",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "1566fc80602ef20b8f99ab7c670abe275eff17f31990ad0b457a59a4bd3bff7a",
+      "inputFingerprint": "b192cd26df696b896647a888e851b2beb682a716a59922a98850acf501127052",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1497,7 +1513,7 @@
       "id": "free-material-in-request",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
-      "inputFingerprint": "6cc5648499dfd75dd36aaf2990618c024f5256b39ab7a144749ad6569710ec3f",
+      "inputFingerprint": "615ea4e0a95b1593b34299174c2c3b1eed185f87c67fa2d51fed2ad4bfbef3ce",
       "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
       "passed": true
     },
@@ -1527,6 +1543,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "64f86941c15bcc56fd69c6759ba71ef347044bd22f8ce2b36dfa89784455677c",
+  "evidenceFingerprint": "192e2041f3fb9e879a251719dc5f5455d0035d97eb35e8394d973cdc0e18d368",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

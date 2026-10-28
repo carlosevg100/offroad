@@ -723,11 +723,34 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   // the years of the two schedules, and the tested schedule shows its end.
   const fpSource = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "evaluate-financing-paths")?.packetFingerprint)?.packet as
     {readings?: {recommendation?: {pathId?: string}}; result?: {evaluation?: {paths?: {id: string; amortizationTests?: {profileId: string; years: {year: number; scheduledAmortization: string}[]}[]}[]}}} | undefined;
-  for (const t of texts.filter((x) => /perfil de amortização mais curto testado/.test(x))) {
+  for (const t of texts.filter((x) => /perfil de amortização (?:mais curto testado|testado que termina antes do adotado)/.test(x))) {
     const tests = fpSource?.result?.evaluation?.paths?.find((p) => p.id === fpSource.readings?.recommendation?.pathId)?.amortizationTests ?? [];
     const last = (id: string) => {const ys = tests.find((x) => x.profileId === id)?.years ?? []; const paid = ys.filter((y) => !new D(y.scheduledAmortization).eq(0)); return {last: paid.at(-1)?.year, listed: ys.at(-1)?.year};};
-    const tested = last("cinco-anos"), adopted = last("adopted");
+    // The profile read is the one the shown amortization comes from, by its registered path.
+    const field = v.bindings.find((b) => b.templateId === "a.term" && b.slot === "amortizacao")?.figureId, readPath = d.identity.find((i) => i.figureId === field)?.path ?? "";
+    const readId = /amortizationTests\[profileId=([^\]]+)\]/.exec(readPath)?.[1] ?? "", tested = last(readId), adopted = last("adopted");
     if (!(tested.last !== undefined && adopted.last !== undefined && tested.last < adopted.last && tested.last < tested.listed!)) bad.push(`term_last_payment:${t.slice(0, 60)}`);
+    // Superlative lens: "mais curto" quantifies over every registered profile; the one read must end strictly first.
+    if (/mais curto/.test(t) && tests.some((x) => x.profileId !== readId && x.profileId !== "adopted" && (last(x.profileId).last ?? Infinity) <= (tested.last ?? -Infinity))) bad.push(`superlative_term:${t.slice(0, 60)}`);
+  }
+  // Common-base lens, the oracle's own reading: two measurements compared in one sentence share their base. The policy's
+  // definitions: same debt, cash, net debt, date and scenario; the leverage path over time: same scenario, role,
+  // adjustments and limits tested.
+  {
+    const cvb = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
+      {result?: {headroom?: {measurements?: Record<string, unknown>[]}}} | undefined;
+    const recordOf = (templateId: string, slot: string, field: string) => {
+      const figure = v.bindings.find((b) => b.templateId === templateId && b.slot === slot && b.field === field)?.figureId, path = d.identity.find((i) => i.figureId === figure)?.path ?? "";
+      const id = /measurements\[id=([^\]&]+)/.exec(path)?.[1]; return cvb?.result?.headroom?.measurements?.find((m) => m.id === id);};
+    const same = (a: Record<string, unknown> | undefined, b: Record<string, unknown> | undefined, keys: ((m: Record<string, unknown>) => unknown)[]) =>
+      !!a && !!b && keys.every((k) => JSON.stringify(k(a)) === JSON.stringify(k(b)));
+    for (const field of [...new Set(v.bindings.filter((b) => b.templateId === "risk.policy_readings").map((b) => b.field))])
+      if (!same(recordOf("risk.policy_readings", "gerencial", field), recordOf("risk.policy_readings", "escritura", field), ["debt", "cash", "netDebt", "date", "scenario"].map((k) => (m) => m[k])))
+        bad.push(`base_policy:${field}`);
+    const labels = (xs: unknown) => (Array.isArray(xs) ? xs : []).map((x) => (x as {label?: string; limitId?: string}).label ?? (x as {limitId?: string}).limitId).sort();
+    for (const field of [...new Set(v.bindings.filter((b) => b.templateId === "risk.leverage_path").map((b) => b.field))])
+      if (!same(recordOf("risk.leverage_path", "inicio", field), recordOf("risk.leverage_path", "fim", field), [(m) => m.scenario, (m) => m.role, (m) => labels(m.adjustments), (m) => labels(m.tests)]))
+        bad.push(`base_leverage_path:${field}`);
   }
   // Roles by the registered record, the oracle's own reading: a measurement shown is a registered test; "pela definição
   // da escritura" is a base test of the contractual limit in force whose definition is registered; "pelo EBITDA gerencial"
@@ -1912,5 +1935,34 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     // The production library and the check cannot be replaced at run time.
     expect(() => {(boardTemplates as Record<string, unknown>)["zz"] = {};}).toThrow(TypeError);
     expect(() => {(boardTemplates["a.term"]!.when as unknown[]).push({});}).toThrow(TypeError);
+  });
+  it("regression r40: no superlative without the whole set; two readings compared share their base (full path, turns 2 and 3, oracle not vacuous)", () => {
+    const sourceRun = (id: string, method: string, packet: Record<string, unknown>, turn: 2 | 3) => withBoardSource(id, packet, () => full(turn, boardRestateSource(id, method, packet)));
+    const readAgainst = (calibrated: Packet, method: string, packet: Record<string, unknown>) => {
+      const original = auroraBoardSources().find((x) => x.methodId === method)!;
+      return oracle(calibrated, [{packet: {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint}}, ...auroraBoardSources().filter((x) => x.methodId !== method)]).bad;
+    };
+    const shorter = auroraPlanPacket({shorterProfile: true}) as unknown as Record<string, unknown>;
+    const managerial = auroraCovenantPacket({managerialDebt: "80"}) as unknown as Record<string, unknown>, unadjusted = auroraCovenantPacket({endWithoutAdjustment: true}) as unknown as Record<string, unknown>;
+    for (const turn of [2, 3] as const) {
+      // Several tested profiles, one shorter than the five-year one: the answer names the profile it reads by what is proven.
+      const p = sourceRun("plano-2027", "evaluate-financing-paths", shorter, turn);
+      expect(current(p).questions.find((q) => q.id === "prazo")!.answer, `${turn}`)
+        .toBe("Num perfil de amortização testado que termina antes do adotado, a amortização de 2029, de R$ 33 milhões, passa o caixa disponível depois dos juros, de R$ 24 milhões; o perfil adotado passa em todo o horizonte.");
+      expect(oracle(p, [{packet: shorter}, ...auroraBoardSources().filter((x) => x.id !== "plano-2027")]), `${turn}`).toEqual({bad: [], missing: []});
+      // Not vacuous: the old superlative read against several profiles is flagged; against the single tested profile it is not.
+      const calibrated = packet(turn, () => undefined), superlative = structuredClone(calibrated);
+      const q = current(superlative).questions.find((x) => x.id === "prazo")!; q.answer = q.answer.replace("Num perfil de amortização testado que termina antes do adotado", "No perfil de amortização mais curto testado");
+      expect(readAgainst(superlative, "evaluate-financing-paths", shorter).some((x) => x.startsWith("superlative_term:")), `${turn}`).toBe(true);
+      expect(oracle(superlative).bad.some((x) => x.startsWith("superlative_term:")), `${turn}`).toBe(false);
+      // The policy's two definitions with another managerial debt on the same date: refused (only the EBITDA may differ).
+      expect(() => sourceRun("covenant", "measure-covenant-headroom", managerial, turn), `${turn}`).toThrow(/board_capital_template_condition_failed:risk\.policy_readings/);
+      // The leverage path with its end measured without the lease adjustment (another definition): refused.
+      expect(() => sourceRun("covenant", "measure-covenant-headroom", unadjusted, turn), `${turn}`).toThrow(/board_capital_template_condition_failed:risk\.leverage_path/);
+      // Not vacuous: the calibrated comparisons read against those sources are flagged on the base; the calibration is clean.
+      expect(readAgainst(calibrated, "measure-covenant-headroom", managerial).some((x) => x.startsWith("base_policy:")), `${turn}`).toBe(true);
+      expect(readAgainst(calibrated, "measure-covenant-headroom", unadjusted).some((x) => x.startsWith("base_leverage_path:")), `${turn}`).toBe(true);
+      expect(oracle(calibrated), `${turn}`).toEqual({bad: [], missing: []});
+    }
   });
 });

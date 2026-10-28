@@ -262,6 +262,9 @@ type BoardConditionBody =
   | {registeredTerm: readonly [string, string]; vocabulary: "input" | "project"; term: string}
   /** A list of the source has at most this many elements. */
   | {atMost: readonly [string, string]; count: number}
+  /** A common base for two readings compared in one sentence: the two registered records are equal in every field except
+   * the ones the sentence declares as the difference ("a.b", or "a[*].b" inside every element of a list). */
+  | {sameBase: readonly [string, string, string]; differ: readonly string[]}
   /** Two definitions (objects of the source, flattened, source anchors ignored) differ exactly in the named fields: each
    * changes somewhere and nothing else changes. */
   | {changedOnly: readonly [string, string, string]; fields: readonly string[]}
@@ -647,7 +650,13 @@ export const boardTemplates: Readonly<Record<string, BoardTemplate>> = {
     {when: [...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica")), adverseYear, adverseScenario, ...policyIsBoard, ...complies("$ma", "politica")]}),
   "risk.leverage_path": t("page.line", "A alavancagem fica em {inicio} {em:data_inicio} e em {fim} {em:data_fim}.",
     {inicio: measurement("multiple", "$mi", "ratio"), data_inicio: measurement("date", "$mi", "date"), fim: measurement("multiple", "$mf", "ratio"),
-      data_fim: measurement("date", "$mf", "date")}, {when: [...claim("a alavancagem do fim é menor que a do início", cmp("fim", "lt", "inicio")), ...baseScenarioOf("$mi"), ...baseScenarioOf("$mf")]}),
+      data_fim: measurement("date", "$mf", "date")}, {when: [...claim("a alavancagem do fim é menor que a do início", cmp("fim", "lt", "inicio")), ...baseScenarioOf("$mi"), ...baseScenarioOf("$mf"),
+      // Common base over time: the same scenario, role and definition (the same adjustments and the same limits tested);
+      // the date and the period's values differ, and the sentence shows each date.
+      ...claim("base comum no tempo: mesmo cenário, papel e definição (mesmos ajustes e limites testados); diferem a data e os valores do período",
+        {sameBase: [CV, "result.headroom.measurements[id=$mi]", "result.headroom.measurements[id=$mf]"],
+          differ: ["id", "label", "date", "debt", "cash", "netDebt", "reportedEbitda", "adjustments[*].amount", "ebitda", "ratio", "unrealizedEbitda", "tightestLimitId",
+            "tests[*].breached", "tests[*].ebitdaHeadroom", "tests[*].netDebtHeadroom", "tests[*].unrealizedEbitdaLossToLimit"]})]}),
   "risk.leverage_adverse": t("page.line", "No adverso {de:ano}, chega a {adverso}, contra a política de {politica}{definition:politica:$ma}.",
     {ano: yr("$y"), adverso: measurement("multiple", "$ma", "ratio"), politica: policy}, {when: [adverseYear, adverseScenario, ...policyIsBoard, ...claim("o adverso fica abaixo da política", cmp("adverso", "lt", "politica")), ...complies("$ma", "politica")]}),
   "risk.policy_definition": t("page.title", "A política de {politica} precisa de uma definição de EBITDA", {politica: policy}, {when: [...policyIsBoard, ...policyUndefined]}),
@@ -656,7 +665,11 @@ export const boardTemplates: Readonly<Record<string, BoardTemplate>> = {
     {when: [...claim("as duas leituras são da mesma data", cmp(at(CV, "result.headroom.measurements[id=$mg].date"), "eq", "data")),
       // Roles by the registered record, never by identifier or by a numeric difference.
       ...claim("a leitura gerencial não registra ajuste ao EBITDA reportado", {atMost: [CV, "result.headroom.measurements[id=$mg].adjustments"], count: 0}),
-      ...baseScenarioOf("$me"), ...contractualTest("$me")]}),
+      ...baseScenarioOf("$me"), ...contractualTest("$me"),
+      // Common base: the same debt, cash, net debt, date and scenario; only the EBITDA (and what follows from it) differs.
+      ...claim("base comum: mesma dívida, mesmo caixa, mesma dívida líquida, mesma data e mesmo cenário; só o EBITDA difere",
+        {sameBase: [CV, "result.headroom.measurements[id=$mg]", "result.headroom.measurements[id=$me]"],
+          differ: ["id", "label", "role", "reportedEbitda", "adjustments", "ebitda", "ratio", "unrealizedEbitda", "tests", "tightestLimitId"]})]}),
   "what_changes.title": t("page.title", "A recomendação depende de demanda a partir de {piso}",
     {piso: s("money", FP, L + "issueFloorInsideGates", "value")}, {when: [...claim("o piso não passa do alvo de emissão", cmp("piso", "le", at(FP, L + "issueTarget"))), ...inclusiveFloor("piso")]}),
   "what_changes.demand": t("page.line", "Demanda {species:de:long} abaixo de {piso}, o mínimo que mantém a emissão de {alvo} dentro dos critérios.",
@@ -690,7 +703,7 @@ export const boardTemplates: Readonly<Record<string, BoardTemplate>> = {
     {answers: "q.roll_bank", when: [...claim("falta caixa contra o mínimo da política", cmp("falta", "gt", "0")),
       ...claim("o caminho tem exatamente estes movimentos", moves("bradesco-sem-linha", {added: [bankUnscheduled, "aditamento"], removed: ["$i"], variant: "other"}), ...planVariant("bradesco-sem-linha", "none"), {extendsDebt: [FP, "$i"]}), ...sameProject]}),
   "q.term": t("question", "Por que {prazo} e não um prazo menor?", {prazo: term}),
-  "a.term": t("answer", "No perfil de amortização mais curto testado, a amortização {de:ano}, de {amortizacao}, passa o caixa disponível depois dos juros, de {disponivel}; o perfil adotado passa em todo o horizonte.",
+  "a.term": t("answer", "Num perfil de amortização testado que termina antes do adotado, a amortização {de:ano}, de {amortizacao}, passa o caixa disponível depois dos juros, de {disponivel}; o perfil adotado passa em todo o horizonte.",
     {ano: yr("$y"), amortizacao: s("money", FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].years[year=$y].scheduledAmortization", "flow"),
       disponivel: s("money", FP, "result.evaluation.paths[id=$p].amortizationTests[profileId=cinco-anos].years[year=$y].availableAfterInterest", "flow")},
     {answers: "q.term", when: [...claim("as leituras são do caminho recomendado", cmp("$p", "eq", at(FP, "readings.recommendation.pathId"))),
@@ -857,6 +870,7 @@ export function boardTemplateClaims() {
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
     : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}; ignorados: ${boardInputIgnored.join(", ")}`
     : "coversYear" in c ? `o intervalo registrado da linha de ${c.coversYear[0]} (início e fim) é exatamente o ano de ${c.coversYear[1]}`
+    : "sameBase" in c ? `os registros ${c.sameBase[1]} e ${c.sameBase[2]} de ${c.sameBase[0]} são iguais em todo campo, exceto ${c.differ.join(", ")}`
     : "boundary" in c ? `o campo de ${c.boundary[0]} é limite ${c.boundary[1] === "minimum" ? "mínimo" : "máximo"} registrado ${c.boundary[2] ? "inclusivo (o próprio valor é admitido)" : "exclusivo"}`
     : "largestGroup" in c ? `agrupando todos os elementos de ${c.largestGroup[0]} ${c.largestGroup[1]} por ${c.largestGroup[2]}, o maior total de ${c.largestGroup[3]} é único e é ${describe(c.equals)}`
     : "joinedCount" in c ? `exatamente ${c.count} elementos de ${c.joinedCount[0]} ${c.joinedCount[1]} (todos, não só os primeiros) apontam, por ${c.joinedCount[2]}, para ${c.joinedCount[3]} com ${c.joinedCount[4]} em [${c.joinedCount[5].join(", ")}]`
@@ -962,8 +976,7 @@ export function boardMatchPath(pattern: string, path: string): Record<string, st
  * watch list outside every registered phrase, or with its proof absent, is refused by the library self-check. */
 export type BoardQualifierProof = RegExp | "question" | "nearly_equal" | "gap";
 export const boardQualifiers: readonly {words: readonly string[]; phrase: RegExp; field: string; rule: string; proof: BoardQualifierProof}[] = [
-  {words: ["curto"], phrase: /perfil de amortização mais curto testado/, field: "amortizationTests[cinco-anos|adopted].years", rule: "último pagamento efetivo do perfil testado anterior ao do adotado (lastPaid)", proof: /"lastPaid".*"lt",\{"lastPaid"/},
-  {words: ["testado", "adotado"], phrase: /perfil de amortização mais curto testado|o perfil adotado/, field: "amortizationTests[profileId=cinco-anos|adopted]", rule: "os dois perfis registrados do caminho recomendado", proof: /profileId=adopted/},
+  {words: ["testado", "adotado"], phrase: /perfil de amortização testado que termina antes do adotado|o perfil adotado/, field: "amortizationTests[profileId=cinco-anos|adopted]", rule: "os dois perfis registrados do caminho recomendado", proof: /profileId=adopted/},
   {words: ["abaixo", "mínimo"], phrase: /caixa fica abaixo do mínimo/, field: "project-weekly-cash readings.tightestWeek.belowMinimum | evaluate-financing-paths shortfallVsPolicyMinimum", rule: "abaixo do mínimo registrado (belowMinimum verdadeiro, ou falta contra o mínimo maior que zero)", proof: /belowMinimum"\]\},"eq",\{"value":"true"\}|shortfallVsPolicyMinimum.*\{"slot":"falta"\},"gt",\{"value":"0"\}/},
   {words: ["abaixo"], phrase: /\{[a-z_]+\}[^;.]*abaixo d[aoe]s? (?:política de |covenant de )?\{[a-z_]+\}|abaixo de \{politica\} nos cenários avaliados/, field: "os dois valores mostrados", rule: "comparação estrita registrada entre os valores (lt), em exato e no exibido", proof: /,"lt",\{"slot"|"op":"lt","than":\{"slot"/},
   {words: ["abaixo", "mínimo"], phrase: /Demanda \{species:[^}]+\} abaixo de \{piso\}, o mínimo/, field: "readings.recommendation.longInstrument.issueFloorInsideGates (limite mínimo inclusivo registrado)", rule: "abaixo do piso: um montante menor que o piso falha nos critérios; o próprio piso passa (boundary minimum inclusivo, quantum registrado)", proof: /"boundary":\["piso","minimum",true\]/},
@@ -1044,6 +1057,7 @@ export const boardBoundaries: readonly {phrase: RegExp; relation: "<" | "<=" | "
   {phrase: /até \{prazo\}/, relation: "<=", field: "prazo da ação da deliberação", rule: "prazo de ação: até a data, inclusive", proof: /"type":"deadline"/, display: "exact_day"},
   {phrase: /antes do vencimento dessa dívida/, relation: "<", field: "prazo e finalPayment", rule: "prazo estritamente anterior ao vencimento (lt)", proof: /\{"slot":"prazo"\},"lt",\{"slot":"vencimento"\}/, display: "two_shown"},
   {phrase: /começando depois dos do plano de referência/, relation: ">", field: "componentes da variante", rule: "cada componente começa estritamente depois (startsLater)", proof: /"startsLater"|"planDeferred"/, display: "no_value"},
+  {phrase: /que termina antes do adotado/, relation: "<", field: "amortizationTests[*].years: último pagamento efetivo", rule: "o último pagamento efetivo do perfil lido vem antes do do adotado (lastPaid lt); nenhum superlativo sobre os demais perfis", proof: /"lastPaid".*"lt",\{"lastPaid"/, display: "no_value"},
   {phrase: /passa o caixa disponível/, relation: ">", field: "scheduledAmortization, availableAfterInterest", rule: "amortização estritamente maior que o caixa disponível (gt)", proof: /\{"slot":"amortizacao"\},"gt",\{"slot":"disponivel"\}/, display: "two_shown"},
   {phrase: /passa a capacidade da fábrica/, relation: ">", field: "readings.capacity.aboveWithoutInvestment", rule: "volume acima da capacidade registrado", proof: /aboveWithoutInvestment"\]\},"eq",\{"value":"true"\}/, display: "no_value"},
   {phrase: /disponível depois dos juros/, relation: "campo", field: "availableAfterInterest", rule: "nome do campo (caixa disponível depois dos juros), não fronteira", proof: /availableAfterInterest/, display: "no_value"},
@@ -1074,11 +1088,11 @@ export function checkBoardTemplateLibrary(library: Readonly<Record<string, Board
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
     const operands: BoardOperand[] = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
-      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "testsLimit" in c || "samePeriod" in c || "joinedCount" in c || "largestGroup" in c || "coversYear" in c || "boundary" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
+      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "testsLimit" in c || "samePeriod" in c || "joinedCount" in c || "largestGroup" in c || "coversYear" in c || "boundary" in c || "sameBase" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
       : "atKey" in c ? [c.key] : [c.equals]);
     const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
       : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
-      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]] : "testsLimit" in c ? ["result.headroom.measurements"] : "samePeriod" in c ? [] : "joinedCount" in c ? [c.joinedCount[1], c.joinedCount[3]] : "largestGroup" in c ? [c.largestGroup[1]] : "coversYear" in c || "boundary" in c ? []
+      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]] : "testsLimit" in c ? ["result.headroom.measurements"] : "samePeriod" in c ? [] : "joinedCount" in c ? [c.joinedCount[1], c.joinedCount[3]] : "largestGroup" in c ? [c.largestGroup[1]] : "sameBase" in c ? [c.sameBase[1], c.sameBase[2]] : "coversYear" in c || "boundary" in c ? []
       : "atKey" in c ? c.atKey.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
       : "startsLater" in c ? c.startsLater.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);
