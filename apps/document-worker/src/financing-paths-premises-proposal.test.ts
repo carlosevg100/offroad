@@ -254,6 +254,24 @@ describe("financing paths premises: house conventions never take a stated origin
   });
 });
 
+describe("financing paths premises: a stated stress without its start (independent review, round 6)", () => {
+  it("asks the start of a documented stress instead of dating it by the house under the document's origin", () => {
+    const k = support.auroraCapitalPathsKernel(), e = auroraExtraction(k);
+    e.stress = {value: {ebitdaFactor: "0.9", fromPeriodEnd: null}, origin: "document", source: "Plano de negócios, caso conservador"};
+    const c = completeFinancingPathsFacts({extraction: e, ids: idsOf(support.auroraCapitalPathsFacts()), asOf});
+    expect(c.status === "missing" ? c.missing : c).toEqual(["stress.fromPeriodEnd"]);
+    // With the start stated, factor and date keep the document's origin; without a stated stress the whole case is the house's.
+    e.stress = {value: {ebitdaFactor: "0.9", fromPeriodEnd: "2026-12-31"}, origin: "document", source: "Plano de negócios, caso conservador"};
+    const dated = complete(e), proposal = buildFinancingPathsPremiseProposal(dated.facts);
+    const reason = (end: string) => proposal.hypotheses.find((h) => h.fieldPath.endsWith(end))!.reason;
+    expect([reason(".stress.ebitdaFactor"), reason(".stress.fromPeriodEnd")].every((r) => r.startsWith("Origem: documento."))).toBe(true);
+    expect(dated.facts.stress.value.fromPeriodEnd).toBe("2026-12-31");
+    const house = complete(auroraExtraction(k));
+    expect(house.facts.stress.origin).toBe("house");
+    expect(buildFinancingPathsPremiseProposal(house.facts).hypotheses.find((h) => h.fieldPath.endsWith(".stress.fromPeriodEnd"))!.reason).toMatch(/^Origem: premissa da casa\./);
+  });
+});
+
 describe("financing paths premises: what is stated, what is asked, what is refused", () => {
   it("carries amounts into millions exactly, asks an unstated scale and refuses what does not fit", () => {
     expect([amountInMillions("62000000", "reais"), amountInMillions("1250", "milhares"), amountInMillions("-25.625", "milhoes"), amountInMillions("0.01", "reais")])

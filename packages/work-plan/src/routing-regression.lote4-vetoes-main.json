@@ -60,6 +60,46 @@
   "kind": "board_decision"
  },
  {
+  "message": "Quando o banco vai avaliar essa proposta de crédito que recebemos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai avaliar essa proposta de crédito que recebemos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria vai preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desista de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
   "message": "Não prepare a discussão da dívida para o conselho.",
   "hasAttachments": false,
   "kind": "board_decision"
@@ -176,6 +216,76 @@
  },
  {
   "message": "Deixe de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de preparar a discussão da dívida para o conselho.",
   "hasAttachments": true,
   "kind": "board_decision"
  },
@@ -390,6 +500,46 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco vai preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de preparar a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de preparar a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
   "message": "Não prepare o material do conselho sobre a estrutura de capital.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -506,6 +656,86 @@
  },
  {
   "message": "Deixe de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de preparar o material do conselho sobre a estrutura de capital.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -720,6 +950,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de preparar o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de preparar o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não prepare o deck do conselho sobre o financiamento.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -836,6 +1116,86 @@
  },
  {
   "message": "Deixe de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de preparar o deck do conselho sobre o financiamento.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -1050,6 +1410,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de preparar o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de preparar o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não monte a discussão da dívida para o conselho.",
   "hasAttachments": false,
   "kind": "board_decision"
@@ -1166,6 +1576,86 @@
  },
  {
   "message": "Deixe de montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desista de montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desista de montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de montar a discussão da dívida para o conselho.",
   "hasAttachments": true,
   "kind": "board_decision"
  },
@@ -1380,6 +1870,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco vai montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria vai montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria vai montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de montar a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de montar a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
   "message": "Não monte o material do conselho sobre a estrutura de capital.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -1496,6 +2036,86 @@
  },
  {
   "message": "Deixe de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de montar o material do conselho sobre a estrutura de capital.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -1710,6 +2330,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de montar o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de montar o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não monte o deck do conselho sobre o financiamento.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -1826,6 +2496,86 @@
  },
  {
   "message": "Deixe de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de montar o deck do conselho sobre o financiamento.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -2040,6 +2790,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de montar o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de montar o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não elabore a discussão da dívida para o conselho.",
   "hasAttachments": false,
   "kind": "board_decision"
@@ -2156,6 +2956,86 @@
  },
  {
   "message": "Deixe de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desista de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desista de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de elaborar a discussão da dívida para o conselho.",
   "hasAttachments": true,
   "kind": "board_decision"
  },
@@ -2370,6 +3250,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco vai elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria vai elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria vai elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de elaborar a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de elaborar a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
   "message": "Não elabore o material do conselho sobre a estrutura de capital.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -2486,6 +3416,86 @@
  },
  {
   "message": "Deixe de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de elaborar o material do conselho sobre a estrutura de capital.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -2700,6 +3710,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de elaborar o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de elaborar o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não elabore o deck do conselho sobre o financiamento.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -2816,6 +3876,86 @@
  },
  {
   "message": "Deixe de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de elaborar o deck do conselho sobre o financiamento.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -3030,6 +4170,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de elaborar o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de elaborar o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não faça a discussão da dívida para o conselho.",
   "hasAttachments": false,
   "kind": "board_decision"
@@ -3146,6 +4336,86 @@
  },
  {
   "message": "Deixe de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Recuso fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Rejeito fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desista de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desista de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Desisti de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Abandone a ideia de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Cancele o pedido para fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Esqueça a ideia de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Pare de fazer a discussão da dívida para o conselho.",
   "hasAttachments": true,
   "kind": "board_decision"
  },
@@ -3360,6 +4630,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O banco vai fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria vai fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A diretoria vai fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quando o banco vai fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de fazer a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "O CFO ficou de fazer a discussão da dívida para o conselho na semana que vem.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "A equipe de tesouraria pretende fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
   "message": "Não faça o material do conselho sobre a estrutura de capital.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -3476,6 +4796,86 @@
  },
  {
   "message": "Deixe de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de fazer o material do conselho sobre a estrutura de capital.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -3690,6 +5090,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de fazer o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de fazer o material do conselho sobre a estrutura de capital na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não faça o deck do conselho sobre o financiamento.",
   "hasAttachments": false,
   "kind": "material_preparation"
@@ -3806,6 +5256,86 @@
  },
  {
   "message": "Deixe de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Recuso fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Rejeito fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desista de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Desisti de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Abandone a ideia de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Cancele o pedido para fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Esqueça a ideia de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Pare de fazer o deck do conselho sobre o financiamento.",
   "hasAttachments": true,
   "kind": "material_preparation"
  },
@@ -4020,6 +5550,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O banco vai fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A diretoria vai fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quando o banco vai fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de fazer o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "O CFO ficou de fazer o deck do conselho sobre o financiamento na semana que vem.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "A equipe de tesouraria pretende fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
   "message": "Não avalie essa proposta de crédito do banco.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -4136,6 +5716,76 @@
  },
  {
   "message": "Deixe de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de avaliar essa proposta de crédito do banco.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -4340,6 +5990,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de avaliar essa proposta de crédito do banco na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de avaliar essa proposta de crédito do banco na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não avalie a proposta de CCB que o Itaú mandou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -4456,6 +6156,86 @@
  },
  {
   "message": "Deixe de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de avaliar a proposta de CCB que o Itaú mandou.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -4670,6 +6450,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de avaliar a proposta de CCB que o Itaú mandou na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de avaliar a proposta de CCB que o Itaú mandou na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não avalie o term sheet que o Bradesco enviou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -4786,6 +6616,86 @@
  },
  {
   "message": "Deixe de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de avaliar o term sheet que o Bradesco enviou.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -5000,6 +6910,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de avaliar o term sheet que o Bradesco enviou na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de avaliar o term sheet que o Bradesco enviou na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não analise essa proposta de crédito do banco.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -5116,6 +7076,86 @@
  },
  {
   "message": "Deixe de analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de analisar essa proposta de crédito do banco.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -5330,6 +7370,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de analisar essa proposta de crédito do banco na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de analisar essa proposta de crédito do banco na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não analise a proposta de CCB que o Itaú mandou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -5446,6 +7536,86 @@
  },
  {
   "message": "Deixe de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de analisar a proposta de CCB que o Itaú mandou.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -5660,6 +7830,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de analisar a proposta de CCB que o Itaú mandou na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de analisar a proposta de CCB que o Itaú mandou na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não analise o term sheet que o Bradesco enviou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -5776,6 +7996,86 @@
  },
  {
   "message": "Deixe de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de analisar o term sheet que o Bradesco enviou.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -5990,6 +8290,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de analisar o term sheet que o Bradesco enviou na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de analisar o term sheet que o Bradesco enviou na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não olhe essa proposta de crédito do banco.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -6106,6 +8456,86 @@
  },
  {
   "message": "Deixe de olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de olhar essa proposta de crédito do banco.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -6320,6 +8750,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de olhar essa proposta de crédito do banco na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de olhar essa proposta de crédito do banco na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não olhe a proposta de CCB que o Itaú mandou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -6436,6 +8916,86 @@
  },
  {
   "message": "Deixe de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de olhar a proposta de CCB que o Itaú mandou.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -6650,6 +9210,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de olhar a proposta de CCB que o Itaú mandou na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de olhar a proposta de CCB que o Itaú mandou na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não olhe o term sheet que o Bradesco enviou.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -6766,6 +9376,86 @@
  },
  {
   "message": "Deixe de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de olhar o term sheet que o Bradesco enviou.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -6980,6 +9670,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de olhar o term sheet que o Bradesco enviou na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de olhar o term sheet que o Bradesco enviou na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não organize a pasta de documentos.",
   "hasAttachments": false,
   "kind": "information_organization"
@@ -7096,6 +9836,86 @@
  },
  {
   "message": "Deixe de organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Recuso organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Recuso organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Rejeito organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Rejeito organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desista de organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desista de organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desisti de organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desisti de organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Abandone a ideia de organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Abandone a ideia de organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Cancele o pedido para organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Cancele o pedido para organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Esqueça a ideia de organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Esqueça a ideia de organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Pare de organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Pare de organizar a pasta de documentos.",
   "hasAttachments": true,
   "kind": "information_organization"
  },
@@ -7310,6 +10130,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "O banco vai organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A diretoria vai organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A diretoria vai organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quando o banco vai organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quando o banco vai organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "O CFO ficou de organizar a pasta de documentos na semana que vem.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "O CFO ficou de organizar a pasta de documentos na semana que vem.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A equipe de tesouraria pretende organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A equipe de tesouraria pretende organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não organize os arquivos que subimos.",
   "hasAttachments": false,
   "kind": "information_organization"
@@ -7426,6 +10296,86 @@
  },
  {
   "message": "Deixe de organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Recuso organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Recuso organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Rejeito organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Rejeito organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desista de organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desista de organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desisti de organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Desisti de organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Abandone a ideia de organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Abandone a ideia de organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Cancele o pedido para organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Cancele o pedido para organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Esqueça a ideia de organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Esqueça a ideia de organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Pare de organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Pare de organizar os arquivos que subimos.",
   "hasAttachments": true,
   "kind": "information_organization"
  },
@@ -7640,6 +10590,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "O banco vai organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A diretoria vai organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A diretoria vai organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quando o banco vai organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quando o banco vai organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "O CFO ficou de organizar os arquivos que subimos na semana que vem.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "O CFO ficou de organizar os arquivos que subimos na semana que vem.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A equipe de tesouraria pretende organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "A equipe de tesouraria pretende organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
   "message": "Não organize o material que joguei aqui.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -7756,6 +10756,86 @@
  },
  {
   "message": "Deixe de organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de organizar o material que joguei aqui.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -7970,6 +11050,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de organizar o material que joguei aqui na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de organizar o material que joguei aqui na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não arrume a pasta de documentos.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -8086,6 +11216,86 @@
  },
  {
   "message": "Deixe de arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de arrumar a pasta de documentos.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -8300,6 +11510,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de arrumar a pasta de documentos na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de arrumar a pasta de documentos na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não arrume os arquivos que subimos.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -8416,6 +11676,86 @@
  },
  {
   "message": "Deixe de arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de arrumar os arquivos que subimos.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -8630,6 +11970,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de arrumar os arquivos que subimos na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de arrumar os arquivos que subimos na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não arrume o material que joguei aqui.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -8746,6 +12136,86 @@
  },
  {
   "message": "Deixe de arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de arrumar o material que joguei aqui.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -8960,6 +12430,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de arrumar o material que joguei aqui na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de arrumar o material que joguei aqui na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não separe a pasta de documentos.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -9076,6 +12596,86 @@
  },
  {
   "message": "Deixe de separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de separar a pasta de documentos.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -9290,6 +12890,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de separar a pasta de documentos na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de separar a pasta de documentos na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não separe os arquivos que subimos.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -9406,6 +13056,86 @@
  },
  {
   "message": "Deixe de separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de separar os arquivos que subimos.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -9620,6 +13350,56 @@
   "kind": "information_organization"
  },
  {
+  "message": "O banco vai separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de separar os arquivos que subimos na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de separar os arquivos que subimos na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
   "message": "Não separe o material que joguei aqui.",
   "hasAttachments": false,
   "kind": "ambiguous"
@@ -9736,6 +13516,86 @@
  },
  {
   "message": "Deixe de separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Recuso separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Recuso separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Rejeito separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Rejeito separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desista de separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desista de separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Desisti de separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Desisti de separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Abandone a ideia de separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Abandone a ideia de separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Cancele o pedido para separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Cancele o pedido para separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Esqueça a ideia de separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Esqueça a ideia de separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Pare de separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Pare de separar o material que joguei aqui.",
   "hasAttachments": true,
   "kind": "documents_to_case"
  },
@@ -9948,5 +13808,55 @@
   "message": "Separe, sem pressa e sem análise, o material que joguei aqui.",
   "hasAttachments": true,
   "kind": "information_organization"
+ },
+ {
+  "message": "O banco vai separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O banco vai separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A diretoria vai separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A diretoria vai separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quando o banco vai separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quando o banco vai separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "O CFO ficou de separar o material que joguei aqui na semana que vem.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "O CFO ficou de separar o material que joguei aqui na semana que vem.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "A equipe de tesouraria pretende separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "A equipe de tesouraria pretende separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
  }
 ]

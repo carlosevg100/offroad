@@ -10297,11 +10297,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -10344,7 +10344,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "bd7bb558bb89cc2bb98ba2a097cd1fa198ce616c57e9aa89a4226ee908eae863"
+          "hash": "19740d84d36c78e15ef8af0556007412cb61430d53a345cb257f53049adcefac"
         },
         "evidence": [
           {
@@ -10370,7 +10370,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "ea2051d5dd1635778a405d24166f15549eb579c20c98a16dfb969af7d5265893"
+    "manifestHash": "a324664e836ad563208a9bbf6e70a0d8c0abfe3ae706c9de91ba4243f0891c96"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -18150,11 +18150,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -18197,7 +18197,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "0ab8e5a494a79f1a8cff87456662fd8cee881add6034c866b072a3c8808d8ac8"
+          "hash": "3f673897fdf508fb1059031fd248db31d3de9f7d3910e6f5b7dc3db03a74a024"
         },
         "evidence": [
           {
@@ -18223,7 +18223,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "0b64d0cb0856e949b08793b42605016da75195f3e2fb573007142a81b38180d9"
+    "manifestHash": "da23f85746080d2d217bd7c8ebb9720a584b56d485a8b0aa5ce9748c63742e07"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -23906,11 +23906,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -23953,7 +23953,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "ebeb9703531f430a36df38900a2b17fb5c80eec281cd29555c25a80b2f3d2862"
+          "hash": "83e0bb5d685dd1fd64db0b9c912f9d2597d94fc748ace833c4aa94c7c16a44c6"
         },
         "evidence": [
           {
@@ -23979,7 +23979,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "f32b3e4b78e8cdfb6b2895e02ff9b1786875d78094c422bc855f0ff2eb9c3d09"
+    "manifestHash": "2748c4e50dbefa55f5d548ec02e009fd6f90480a7a448496c150e617fc96ccb9"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -31453,11 +31453,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -31500,7 +31500,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "46d7aa156ec35c3b5e9432aefed757a9236003fa807e41fccf558b0be624faae"
+          "hash": "ec23fb7a5c7e425e5b66f07a5b55ca91f0588c85984670da926cfea180fb70e4"
         },
         "evidence": [
           {
@@ -31526,7 +31526,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "b093a14a07a39df31abb3dd88d982315764fed883414db7b9883bd2cb3aed497"
+    "manifestHash": "acd45d169112e96907a391c7e063000b00262ec35827b66761c546b5ca55c5e5"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -41080,11 +41080,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -41127,7 +41127,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "4c66fca2548b3beedd4f5010146af86f608b78ead3165b7035f81e729ebb6980"
+          "hash": "a5ecd57d577497303825e8122da8c941763bbcb3d947ce4ead382ce858546a46"
         },
         "evidence": [
           {
@@ -41153,7 +41153,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "8a7eb96ef12d95de1426b05b117f50867c8c453c5bd9352e4ef05a9bac6c1c0e"
+    "manifestHash": "4bbcd76b4efb43756eee0058526a97f5a5ab8b7416efff0b558ac77462c030e3"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -48822,11 +48822,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -48869,7 +48869,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "358b5879a59600c57ee580dccdbdcf61c8e96399e364027e6371b0e7ac6be1f6"
+          "hash": "e9bd3aaede74f0a94968f3cbf28ff6a34829466260a3632a3b897f68fd98479a"
         },
         "evidence": [
           {
@@ -48895,7 +48895,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "07789784d4ac4d9a7eed3465b52e612d9e5dd9a6a12f7e7acb41de7d17c2c814"
+    "manifestHash": "460bf3f22e54ac5bfcabf894f94d5da224b27515223039dd3014397930a280ad"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -58352,11 +58352,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -58399,7 +58399,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "1352f9353dcdca2c6dbd41a67bae1196148a0b1a74218828c4727ca68f022a71"
+          "hash": "ff0249c1e8aebb8249fef68d533c2c99995750d9a978342cc6ca1817688d2e98"
         },
         "evidence": [
           {
@@ -58425,7 +58425,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "75c87e54360afe1a622aa0eac5a1a8cda1bd94049499ff978efc1fce58adb928"
+    "manifestHash": "6ac19a8f5743703ffe1b3f8b50ed45a3537732e63107468fb5b627d89390e44b"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -70988,11 +70988,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -71035,7 +71035,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "96a23e937db9dd5d192c711d0c0a9452788928773bdc9802e367e5066c0f12b0"
+          "hash": "4c1c2cda7a99a8a5b06cf88603b85f68a10660c43aa26f977a8068389e178b57"
         },
         "evidence": [
           {
@@ -71061,7 +71061,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "fd29a26f4b8b1f68b3a963adb505483f48ab60748953da97efccd27f6d91316d"
+    "manifestHash": "d34e778a33997147d9571130cfb1fc5a56110de1672d6cd717dd25534aea787e"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -83398,11 +83398,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -83445,7 +83445,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "8c19d083e2d81dbe20f4e7e0c5dfd0ab162e5dd72a4cc5d876c1e0ec5403c099"
+          "hash": "fb8098fd650043d6f4174a7b848254af358f27130bdf2d2d975ae57986c70bf7"
         },
         "evidence": [
           {
@@ -83471,7 +83471,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "b896ad8ce057c153270e3af912aa3264a5da9ed49aab77b0cc847e920d468816"
+    "manifestHash": "ec4dca004afe87681cb919d4bf7e803860484b8a625802512b9330a288138527"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -89210,11 +89210,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -89257,7 +89257,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "254b708cb78a05d7425d263894d50cf6ea3ed719b27336f9436018bd298d7dce"
+          "hash": "576706df1210cf4c13f0ea50034146e4b1391b5aacb533cdc4561b8bbfdf2280"
         },
         "evidence": [
           {
@@ -89283,7 +89283,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "bd00b057a5f0895e822f55986dacceb1697b499140565073ca7714f3bbc2ab10"
+    "manifestHash": "47c9814131e0cf960da2d111442f8f9aa4bb936a0ecef4a68aa6fbcfb934bf97"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -97366,11 +97366,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -97413,7 +97413,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "3c261ea1a6a1b86e3277cba78a791377d484ce1fe4659e2ffbaa0f116fe7aa57"
+          "hash": "bedf8bdd8002c171fea465da1febe1738d2201d1422952346388ddd9d0c040fa"
         },
         "evidence": [
           {
@@ -97439,7 +97439,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "d384449e110bdbd3c95e2e613769f52a41c7bdc9199ba06d9ff8932425da3d6e"
+    "manifestHash": "4cfda225405ad51bc0ea13b44e67242aa6d3ac9cd4eb1a6345d3f6ee65365479"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -105736,11 +105736,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -105783,7 +105783,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "eacd7283bb9de1339c4e58472e04bff736edd5276d88cbee5bfa40762b2e5e5b"
+          "hash": "d1a209134a6545cbddab22c632b3d1d13ec1ff5cb4ccd5febdce585ff2dbebe3"
         },
         "evidence": [
           {
@@ -105809,7 +105809,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "e3d4e9313751fe582af21163a18e2da8e4aed3f0eda5fd4fd501cf08d921e0f7"
+    "manifestHash": "55433f68ad574f07db08ef22b35c4b8e1bf9f7674779a4ebd159033bda37e321"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -113332,11 +113332,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -113379,7 +113379,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "66abd34d55f3d7f78322bee1d521025adbb93f99ffd8a4a8706f4a026ed3ece0"
+          "hash": "2c437f3f1aa2fafe2130b3007e641450054e12dec3407650fb01be52a06d790f"
         },
         "evidence": [
           {
@@ -113405,7 +113405,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "1dd23771ee289fe66df71f7c14c9b0b259e4ae654de4029555afab067485064b"
+    "manifestHash": "4a3e64b1ae5419215193eaa7a70fadaa8ebab18926a3ac7b015aa3cf5f7e1ddf"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -137645,11 +137645,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -137692,7 +137692,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "1b3f457980c8f71b061fcf512ecdbafde2f5136901b949ba7d87c80800cd123f"
+          "hash": "bb6a04e00ed630eb8381c71258dac29ac4023d895b11fa6e0cfe1cf7088b6555"
         },
         "evidence": [
           {
@@ -137718,7 +137718,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "1f4e0f8bf5cadda067cb0527d0cd4d99c1e014071f1fe41242a192569acfde13"
+    "manifestHash": "139b13e7cb399bc0035b69b9a10bb6595dbe331138a66bcc8744c90357b05ed5"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -143975,11 +143975,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -144022,7 +144022,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "0857533906721bb803245653a449408b67368f7e257f6edabd9e45c39819010f"
+          "hash": "11ded7933035885e8b849132ab26556ff0499ac4e514c82102943e4e84c7a9b2"
         },
         "evidence": [
           {
@@ -144048,7 +144048,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "daf9b56ea1da31eaa683a74a2382b62c888fd26d09c7406cf845f273ae2234f9"
+    "manifestHash": "77745541e56d97e195116de73b64a68b61d037291fc39e75c4cdd46a27c86a2c"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -156839,11 +156839,11 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/work-plan/src/lote4-request.ts",
-              "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+              "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
             },
             {
               "path": "packages/work-plan/src/lote4-veto-family.ts",
-              "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+              "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
             },
             {
               "path": "packages/work-plan/src/objective-plan.ts",
@@ -156886,7 +156886,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "28113c517aa2f8eb6ca62af3428184718c84637c980021153611e6d07338db99"
+          "hash": "9ef473a3c19f41e23f94ed7eae7f49c49056a99a22ae68e3150931afad1b7fbf"
         },
         "evidence": [
           {
@@ -156912,7 +156912,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "09f379e8713267960c3e5be7ef001a4d98a2873fcae076c710196d473a9b65f9"
+    "manifestHash": "b578b74a1e4c0fdc0019a8433a96fca3623a0d502cade67bc807cb1fd0e93333"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -156976,7 +156976,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-debt-ledger",
       "exportName": "buildDebtLedger",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -156984,7 +156984,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "9a9aa31f9e062e0ff603d25b96908b367e0ab96bf8dd0ba3c9357a1a3ad49533"
       }
     ],
-    "manifestHash": "95945227ebe081b88002f17a472749b6fd6cb4cef1db144da124beaa9950762f"
+    "manifestHash": "bc03aa4ceba31c89495c1f450f0a0bc5fd99c85b855a3e1848db7d4c5a9b760e"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157048,7 +157048,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
       "exportName": "buildInterestAndIndexationSchedule",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157056,7 +157056,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "4d92040831baf6f3ce75fe498929de89aa850d3d497c9013aafc6e1f8ca02685"
       }
     ],
-    "manifestHash": "f958105a380971f80c7a802ee0de46e0deb279faeb34eb0295aaeaec28493c70"
+    "manifestHash": "03347f18ec7ac13c1e4b0b2d81e21c400c638d1aa38976018b8931b7245dd88d"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157120,7 +157120,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
       "exportName": "reconcileCovenantDefinitions",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157128,7 +157128,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "03470380a643dad767a765ec0d06875bf48ce0da0b4bce57053caf83ebf8a6b4"
       }
     ],
-    "manifestHash": "339e499eeb07d969c121fb1eeda4426477ef33544d818c0da66f7ad8011719f6"
+    "manifestHash": "476b9ad39222a4663c59ebe2a6f03070294b4bb9ee4745799da97c9d172e0f84"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157192,7 +157192,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
       "exportName": "reconcileFinancialStatements",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157200,7 +157200,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "a08f291c6583f230b7a3a88848f4ccab014f065de0ae1867b671070575c30e05"
       }
     ],
-    "manifestHash": "c0a13f62f940ebf92cce263e3d0b54bcc0b108218cea23a070dfca3cef2e4756"
+    "manifestHash": "367ec77907a1c9771721b1056d6826339b911daa1674ad442202568b2753d388"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157264,7 +157264,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
       "exportName": "planMeetingBrief",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157272,7 +157272,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "19834e22ea2a03cc6d1273fdff2a3fc58da3fdd148bc0219f8e6f4d9ac042567"
       }
     ],
-    "manifestHash": "e9a53d64112ae96db94841b42f4d357eb952fbd0cc0e69e72e6d973df578efcc"
+    "manifestHash": "ca3942eb810f42a9402f5650c3876ace2adffbd2f5ba285f45412f67028e3fb5"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157336,7 +157336,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/preview/synthesis",
       "exportName": "synthesisSkeleton",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157344,7 +157344,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "7301ff06438a26a3b90964577b0292d71cfb456e313e91e2c2b6bfa5c5bdf06d"
       }
     ],
-    "manifestHash": "9eab5733bf5c66fd248a09bf6c6c1f519cfdba1159c88782b96a633b8729ed39"
+    "manifestHash": "9622c5ceb5dc73665aa7760ac876de555625424b961aa8c5c0c981fe4a417b29"
   },
   {
     "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090",
@@ -157492,7 +157492,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
       "exportName": "compareRefinancingBeforeAfter",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157500,7 +157500,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "73d58853572afac424bd7323a662568c8e46ee09ea4e233ca4848c4310a10f52"
       }
     ],
-    "manifestHash": "844f6c59a7cb10d24bb8bad1afbbf428c851c679c085b8f8bec26da949dad17a"
+    "manifestHash": "1b3a2dac39c2761c4aa476e18bb010e9b7eabf0566d708df6edf7ef3b782c0fc"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157564,7 +157564,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
       "exportName": "diagnoseMaturityWall",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157572,7 +157572,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "15feca2fb00f7cadae3efffc27cc399b2e20b0e7bddd92f3a7a727ce8147b7fa"
       }
     ],
-    "manifestHash": "620574fb339f047b2f00dbda78d1199537ce4073447f9f2a4b603af7194df3d2"
+    "manifestHash": "9d46cd2040804917e66e28b0bfc7c283da3de7e2fd74f9dbca164d6d2726f56f"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157636,7 +157636,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
       "exportName": "estimateExitCostBySeries",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157644,7 +157644,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "801eea7f0fa061c88f76f0cdd7681746b2af3dc3d9c56ee6fc7bc662666c6a5b"
       }
     ],
-    "manifestHash": "938fb91b89306fca372042720f95f357d7934a8a9cbdff2a8d8d9668f91d18b8"
+    "manifestHash": "1e957487e26e46a13656b556d9f45bef64d11b675a237ff925c8173eed20b830"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -157708,7 +157708,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     "executor": {
       "module": "@offroad/credit-playbook/executors/declare-scenarios",
       "exportName": "declareScenarios",
-      "sourceClosureHash": "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b"
+      "sourceClosureHash": "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb"
     },
     "evidence": [
       {
@@ -157716,12 +157716,12 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         "hash": "ad57c9153addb67a306702ec35c7176c8e8328142a18603a6057b4db3b26e858"
       }
     ],
-    "manifestHash": "df75e285495008551a5416113ce3ecc89050b290ef920201116ff71bcb072159"
+    "manifestHash": "db2fe21873d1596cf1cfcf30dab72420ac50eebfaca0a4880842f42c03d97f89"
   }
 ];
 
 export const procedureExecutorSourceClosures = {
-  "8a77a5e80d76bd1d2479ae201ae9e552a71d5758345199d6802f5a5dbcc2162b": [
+  "71feb5e962c1f5467593eecb1f1d59888233e3926ee0dac8b47cec30e382afeb": [
     {
       "path": "packages/credit-ontology/package.json",
       "hash": "88043ee9dd9f2530aa04f1a5069e605ce8ef886cfe8345bbd0be995968cba709"
@@ -158512,11 +158512,11 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/work-plan/src/lote4-request.ts",
-      "hash": "51167f8004e94ccfcf6baf278b75a30f10c43238e082e2273b2ca754e9db2b79"
+      "hash": "10efbc0c350c780bd7613734ac641d2e2f92d2545d6d298e18844b5b9d5e9079"
     },
     {
       "path": "packages/work-plan/src/lote4-veto-family.ts",
-      "hash": "177f9a8e809ebf43bac3bbb781ce6291ba338921a0024250b6d30a669e4c22f5"
+      "hash": "87db2c9b65f9cb7a8e4d5f92c759a481765c828acdba22a491ecc47d0daa56dd"
     },
     {
       "path": "packages/work-plan/src/objective-plan.ts",

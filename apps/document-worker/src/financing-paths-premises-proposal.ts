@@ -472,8 +472,10 @@ export function completeFinancingPathsFacts(input: {extraction: Ex; ids: {capita
   const statedStress = stated(e.stress);
   const fromHouse = ends.find((end, n) => (n === 0 ? dayAfter(opening?.value ?? end) : dayAfter(ends[n - 1]!)) > input.asOf) ?? null;
   if (!statedStress && ends.length && fromHouse === null) missing.push("stress");
-  const stressFrom = statedStress?.value.fromPeriodEnd ?? fromHouse;
-  if (statedStress && statedStress.value.fromPeriodEnd !== null && !ends.includes(statedStress.value.fromPeriodEnd)) missing.push("stress.fromPeriodEnd");
+  // A stated stress takes its start from the same statement: a factor without its date is asked, never dated by the house
+  // under the statement's origin (the date changes which periods are stressed).
+  const stressFrom = statedStress ? statedStress.value.fromPeriodEnd : fromHouse;
+  if (statedStress && (statedStress.value.fromPeriodEnd === null || !ends.includes(statedStress.value.fromPeriodEnd))) missing.push("stress.fromPeriodEnd");
   if (!statedStress) used.push("stress");
 
   const order = ["openingDate", "openingCash", "indenture", "boardPolicy", "basket", "instruments", "variants", "periods", "diCurve", "taxRate", "postHorizon", "minimumCash",
