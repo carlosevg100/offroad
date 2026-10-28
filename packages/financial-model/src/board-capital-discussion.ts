@@ -1296,6 +1296,43 @@ export function boardWithdrawalVerified(recommendations: readonly {theme: string
     && recommendations.filter((r) => r.theme !== theme && shown(before, r.text)).every((r) => shown(after, r.text));
 }
 export type BoardVersionTexts = {summary: string; deliberations: {text: string}[]; pages: {title: string; lines: string[]; recommendation: string | null; options: string[]}[]};
+/** A page that presents a complete set covers the whole set of the source, by canonical identity: the page of paths
+ * (titled with the count of paths evaluated) has one row per evaluated path, each exactly once, the recommended among
+ * them, and the count shown is that number; the page of moves has one line per evaluated path, each exactly once. A set
+ * the library cannot represent (a path without a row or a line in the library) is refused, never truncated. */
+export function boardSetsComplete(d: BoardDiscussion, sources: BoardSourceReading[]) {
+  const fp = sources.find((x) => x.methodId === "evaluate-financing-paths");
+  if (!fp) return;
+  const plan = fp.packet as {readings?: {horizon?: {candidatePaths?: unknown}; recommendation?: {pathId?: unknown}}; result?: {evaluation?: {paths?: {id: string; role: string}[]}}};
+  const evaluated = (plan.result?.evaluation?.paths ?? []).filter((p) => p.role !== "companion").map((p) => p.id).sort();
+  const figureById = new Map(d.figures.map((f) => [f.id, f]));
+  const idOfRef = (ref: string): string | null => {
+    const parsed = (() => {try {return parseBoardTextRef(ref);} catch {return null;}})();
+    if (!parsed) return null;
+    if (parsed.templateId.startsWith("alternatives.row.")) {
+      // The row's path, by the record its readings resolve to (one record for every reading of the row).
+      const ids = new Set(Object.values(parsed.bindings).flatMap((b) => {const f = figureById.get(b);
+        const r = f && f.kind === "reading" && f.sourceId === fp.id ? boardResolvedRecord(fp.packet, f.path, "readings.paths") : null; return r ? [String(r.record.id)] : [];}));
+      return ids.size === 1 ? [...ids][0]! : null;
+    }
+    if (parsed.templateId.startsWith("alternatives.moves.") && parsed.templateId !== "alternatives.moves.title") {
+      // The line's path, by the record its moves condition names in the evaluation.
+      const named = parsed.template.when.flatMap((c) => "pathMoves" in c ? [c.pathMoves[1]] : []);
+      const r = named.length === 1 ? boardResolvedRecord(fp.packet, `result.evaluation.paths[id=${named[0]}].id`, "result.evaluation.paths") : null;
+      return r ? String(r.record.id) : null;
+    }
+    return null;
+  };
+  for (const p of d.pages) {
+    const title = (() => {try {return parseBoardTextRef(p.title).templateId;} catch {return "";}})();
+    if (title !== "alternatives.count" && title !== "alternatives.moves.title") continue;
+    const shown = p.lines.map(idOfRef).filter((x): x is string => x !== null).sort();
+    const missing = evaluated.filter((x) => !shown.includes(x)), extra = shown.filter((x, i) => !evaluated.includes(x) || shown.indexOf(x) !== i);
+    const count = Number(plan.readings?.horizon?.candidatePaths);
+    if (missing.length || extra.length || count !== evaluated.length || !evaluated.includes(String(plan.readings?.recommendation?.pathId)))
+      throw new Error(`board_capital_set_incomplete:page.${p.id}:paths:${[...missing.map((x) => `-${x}`), ...extra.map((x) => `+${x}`)].join(",") || `count_${String(plan.readings?.horizon?.candidatePaths)}`}`);
+  }
+}
 /** A breach the covenant result registers (a registered test with breached true) of a limit the material shows is a
  * material fact: the material carries the breach sentence of that limit bound to that measurement, or it is refused by
  * name. No compliance sentence about the limit comes out without it. */
@@ -1406,6 +1443,8 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   const produce = d.outlineConfirmed || !timeToAlign;
   if (produce) boardBreachesDisclosed(d, sources);
   const first = produce ? renderVersion(d, figures, noRemoval(), 1, sources) : null;
+  // A page presented as the whole set covers it (checked once every text has rendered, so a text's own refusal comes first).
+  if (first) boardSetsComplete(d, sources);
   // The composed material shows every material fact of the basis, or it is refused by name.
   if (first) {const lost = boardMissingFacts(d, figures, first.material); const id = [...lost.figures, ...lost.deadlines][0]; if (id) throw new Error(`board_capital_material_fact_not_shown:${id}`);}
   const {decisions, removed} = produce ? decideBoardOmissions(d, figures, sources) : {decisions: [], removed: noRemoval()};

@@ -570,7 +570,11 @@ export const boardTemplates: Readonly<Record<string, BoardTemplate>> = {
     {payback: metric("years", "base", "paybackYears"), pico: metric("money", "base", "peakCumulativeCashNeed.amount", "balance"), data: metric("date", "base", "peakCumulativeCashNeed.periodEndDate")}),
   "topic.project_sensitivities": t("page.line", "O VPL fica negativo em cada sensibilidade: com economia menor, {vpl_economia}; com capex e depreciação maiores, {vpl_capex}; com partida mais lenta, {vpl_partida}.",
     {vpl_economia: metric("money", "economy-4", "netPresentValue", "value"), vpl_capex: metric("money", "capex-120", "netPresentValue", "value"), vpl_partida: metric("money", "slower-start", "netPresentValue", "value")},
-    {when: [...negative("vpl_economia", "vpl_capex", "vpl_partida"), ...smallerEconomy, ...largerCapex, ...slowerStart]}),
+    {when: [...negative("vpl_economia", "vpl_capex", "vpl_partida"), ...smallerEconomy, ...largerCapex, ...slowerStart,
+      // "Cada sensibilidade" claims the whole set: the analysis registers exactly these three cases of role sensitivity.
+      ...claim("a análise registra exatamente três casos de sensibilidade, e são os três mostrados",
+        {joinedCount: [IP, "cases", "id", "cases", "role", ["sensitivity"]], count: 3},
+        ...["economy-4", "capex-120", "slower-start"].map((id) => cmp(at(IP, `cases[id=${id}].role`), "eq", {value: "sensitivity"})))]}),
   "topic.project_wait_quotes_registered": t("page.recommendation", "Recomendamos pedir cotações antes do pedido de compra; no caso que a análise registra como adiamento, o VPL fica em {vpl} e o retorno em {retorno}.",
     {vpl: metric("money", "defer-12", "netPresentValue", "value"), retorno: metric("rate", "defer-12", "annualIrr")},
     {when: [...claim("o caso registrado como adiamento tem VPL maior que seguir agora", cmp("vpl", "gt", at(IP, "comparison.metrics[caseId=base].netPresentValue"))), ...registeredDeferral]}),

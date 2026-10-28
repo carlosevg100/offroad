@@ -820,6 +820,18 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraPlanPacket({deferralWithoutLaterSchedule: true}) as unknown as Record<string, unknown>;
       return withBoardSource("plano-2027", packet, () => build(2, (c) => {boardRestatePath(c, packet, "adiar-linha");}));
     }, "board_capital_template_condition_failed:alternatives.moves.defer_line"],
+    // Review r43: a page presented as the whole set of paths covers it by record identity, or the material is refused.
+    ["eight-paths-with-rows-for-seven", () => {
+      const packet = auroraPlanPacket({eighthPath: "other"}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, boardRestateSource("plano-2027", "evaluate-financing-paths", packet)));
+    }, "board_capital_set_incomplete:page.caminhos:paths:-credito-sem-projeto"],
+    ["eighth-path-the-only-recommended-missing-from-the-comparison", () => {
+      const packet = auroraPlanPacket({eighthPath: "recommended"}) as unknown as Record<string, unknown>;
+      return withBoardSource("plano-2027", packet, () => build(2, (c) => {
+        for (const [name, field] of [["five-year-amort", "scheduledAmortization"], ["five-year-available", "availableAfterInterest"]] as const)
+          c.extraReadings[name] = ["plano-2027", `result.evaluation.paths[id=emissao-revista].amortizationTests[profileId=cinco-anos].years[year=2029].${field}`, "0", field === "scheduledAmortization" ? "33" : "24"];
+        boardRestateSource("plano-2027", "evaluate-financing-paths", packet)(c);}));
+    }, "board_capital_set_incomplete:page.caminhos:paths:-emissao-revista"],
     // Review r42: a composite selector equivalent to the simple one is the same limit, under the same fiscalization.
     ["covenant-of-2-4-read-by-a-composite-selector-breached-at-2-45-not-stated", () => {
       const packet = auroraCovenantPacket({covenantMaximum: "2.4", adverseDebt: "123.57599438"}) as unknown as Record<string, unknown>;

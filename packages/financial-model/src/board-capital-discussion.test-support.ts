@@ -308,7 +308,7 @@ export function auroraWeeklyPacket(variant: {lineKeptReceiptsMissing?: true} = {
  * (same disbursement and same start-up working capital), keeping only its later EBITDA. */
 export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; keptDebtWithNewLoan?: true; deferralWithOperationOnTime?: true; extensionWithExtraPrepayment?: true;
   amendmentWithoutExtension?: true; developmentLoanAsBank?: true; deferralOnlyCapexAndEbitda?: true; projectNamed?: string;
-  deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true; giroPaidInPeriod?: number; longIssueAmount?: string; shorterProfile?: true} = {}) {
+  deferredCapexFactor?: number; longInstrumentLabel?: string; alternativeEndingIn2034?: true; giroPaidInPeriod?: number; longIssueAmount?: string; shorterProfile?: true; eighthPath?: "other" | "recommended"} = {}) {
   const k = auroraCapitalPathsKernel();
   // Regressions only: the horizon after the plan reaches 2034 and the tested alternative profile pays its last third in 2034.
   if (variant.alternativeEndingIn2034) {
@@ -345,6 +345,21 @@ export function auroraPlanPacket(variant: {deferralWithoutLaterSchedule?: true; 
     const scale = new Decimal(variant.longIssueAmount).div(80);
     long.draws = long.draws.map((x) => new Decimal(x).times(scale).toFixed());
     long.charges = long.charges.map((c) => ({...c, amount: new Decimal(c.amount).times(scale).toFixed()}));
+  }
+  // Regressions only (review r43): an eighth path. "other": a three-year bank loan without the project; "recommended": the
+  // same moves as the recommended path with a revised debenture (the original repriced at 4%), so the eighth is the only one recommended.
+  if (variant.eighthPath) {
+    const kk = k as unknown as {paths: {id: string; label: string; instrumentIds: string[]; projectVariantId?: string}[]; instruments: {id: string; label: string; rate: {kind: string; spreads?: string[]}}[]};
+    if (variant.eighthPath === "other") {
+      const from = kk.paths.find((p) => p.id === "ccb-tres-anos")!;
+      kk.paths.push({...structuredClone(from), id: "credito-sem-projeto", label: "Crédito bancário de trinta milhões sem o projeto", projectVariantId: "sem-linha"});
+    } else {
+      const previous = kk.instruments.find((i) => i.id === "debenture-80")!, improved = structuredClone(previous);
+      improved.id = "debenture-revista"; improved.label = "Debênture"; kk.instruments.push(improved);
+      if (previous.rate.kind === "index_plus_spread") previous.rate.spreads = previous.rate.spreads!.map(() => "0.04");
+      const from = kk.paths.find((p) => p.id === "sem-linha-debenture")!;
+      kk.paths.push({...structuredClone(from), id: "emissao-revista", label: "Emissão revista sem o projeto", instrumentIds: from.instrumentIds.map((x) => x === "debenture-80" ? "debenture-revista" : x)});
+    }
   }
   // Regressions only (review r40): a second tested profile of the debenture, amortized entirely in 2029, shorter than the five-year one.
   if (variant.shorterProfile) {

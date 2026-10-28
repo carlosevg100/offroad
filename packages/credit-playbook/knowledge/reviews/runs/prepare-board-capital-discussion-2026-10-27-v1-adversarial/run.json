@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T10:13:33.156Z",
-    "finishedAt": "2026-10-28T10:17:19.358Z"
+    "startedAt": "2026-10-28T10:58:02.744Z",
+    "finishedAt": "2026-10-28T11:02:05.364Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -1318,6 +1318,22 @@
       "passed": true
     },
     {
+      "id": "eight-paths-with-rows-for-seven",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a07c6063d329b9efaefb59e4f3bc7291a5723e1c3630c59f1157611f726ce877",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "eighth-path-the-only-recommended-missing-from-the-comparison",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "54eb1321945c22f6f039c206fe8b9c194d5b57ff657c80f499cbda2f26bbdc9c",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "covenant-of-2-4-read-by-a-composite-selector-breached-at-2-45-not-stated",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1567,6 +1583,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "20a92a4fae9a61141eb580d05ec3da898a88faee8f2b2a2c18dbe46b45567561",
+  "evidenceFingerprint": "70cf65faaf6791ae3bf03e6dbd699e8b8e5035063a4fd7d6c02b263fc021f5b3",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -768,6 +768,28 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     // Superlative lens: "mais curto" quantifies over every registered profile; the one read must end strictly first.
     if (/mais curto/.test(t) && tests.some((x) => x.profileId !== readId && x.profileId !== "adopted" && (last(x.profileId).last ?? Infinity) <= (tested.last ?? -Infinity))) bad.push(`superlative_term:${t.slice(0, 60)}`);
   }
+  // Coverage, the oracle's own reading: a page presented as the complete set of paths shows every path the plan evaluates
+  // (status quo and candidates), each exactly once by the record its readings resolve to, and its count is that number;
+  // the page of moves has one line per evaluated path, by the oracle's own table of labels.
+  {
+    const fpc = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "evaluate-financing-paths")?.packetFingerprint)?.packet as
+      {result?: {evaluation?: {paths?: {id: string; role: string}[]}}; readings?: {recommendation?: {pathId?: string}}} | undefined;
+    const evaluated = (fpc?.result?.evaluation?.paths ?? []).filter((x) => x.role !== "companion").map((x) => x.id).sort();
+    const words = ["zero", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez"];
+    const countIn = (title: string, re: RegExp) => {const m = re.exec(title)?.[1]; return m === undefined ? NaN : /^\d+$/.test(m) ? Number(m) : words.indexOf(m);};
+    for (const page of v.pages) {
+      if (/^Avaliamos /.test(page.title)) {
+        const rows = page.lines.map((_, j) => {const ids = new Set(v.bindings.filter((b) => b.field === `page.${page.id}.line.${j}`).flatMap((b) => {
+          const r = resolved(d.identity.find((i) => i.figureId === b.figureId), "paths"); return r ? [String(r.element.id)] : [];})); return ids.size === 1 ? [...ids][0]! : null;}).filter((x): x is string => x !== null).sort();
+        if (JSON.stringify(rows) !== JSON.stringify(evaluated) || countIn(page.title, /^Avaliamos (\S+) caminhos/) !== evaluated.length || !rows.includes(fpc?.readings?.recommendation?.pathId ?? "")) bad.push(`coverage:${page.id}`);
+      }
+      if (/caminhos combinam estes movimentos/.test(page.title)) {
+        const labels: Record<string, string> = {A: "sem-linha-debenture", B: "adiar-linha", C: "debenture-com-linha", D: "manter", E: "ccb-tres-anos", F: "alongar-com-banco", G: "alongar-bradesco"};
+        const ids = page.lines.flatMap((l) => {const m = /^Caminho ([A-Z]):/.exec(l); return m ? [labels[m[1]!] ?? `?${m[1]}`] : [];}).sort();
+        if (JSON.stringify(ids) !== JSON.stringify(evaluated) || countIn(page.title, /^Os (\S+) caminhos/) !== evaluated.length) bad.push(`coverage:${page.id}`);
+      }
+    }
+  }
   // Temporal lens and breach disclosure, the oracle's own reading: a measurement read in a field without its date shown
   // must be of a year the field shows; a breach the covenant result registers for a limit the material shows must be
   // stated (the limit passed, with that measurement's leverage).
@@ -2099,5 +2121,39 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       page.lines = page.lines.filter((l) => !l.includes("passa o covenant"));
       expect(oracle(removed, [{packet: stress}, ...others()]).bad, `${turn}:${form}`).toContain("breach_omitted:aditamento:dez27-adverso");
     }
+  });
+  it("regression r43: a page presented as the whole set of paths covers it, by record identity, or the material is refused (full path, turns 2 and 3, oracle not vacuous)", () => {
+    const eight = auroraPlanPacket({eighthPath: "other"}) as unknown as Record<string, unknown>, recommended = auroraPlanPacket({eighthPath: "recommended"}) as unknown as Record<string, unknown>;
+    const evaluated = (p: Record<string, unknown>) => (p as {result: {evaluation: {paths: {id: string; role: string}[]}}}).result.evaluation.paths.filter((x) => x.role !== "companion").map((x) => x.id);
+    expect(evaluated(eight)).toHaveLength(8);
+    expect((recommended as {readings: {recommendation: {pathId: string}}}).readings.recommendation.pathId).toBe("emissao-revista");
+    for (const turn of [2, 3] as const) {
+      // Eight paths, the library having rows and lines for seven: refused on the page of paths, never truncated.
+      expect(() => withBoardSource("plano-2027", eight, () => full(turn, boardRestateSource("plano-2027", "evaluate-financing-paths", eight))), `${turn}`)
+        .toThrow("board_capital_set_incomplete:page.caminhos:paths:-credito-sem-projeto");
+      // The eighth as the only recommended path: refused the same way (the recommended among the missing).
+      expect(() => withBoardSource("plano-2027", recommended, () => full(turn, (c) => {
+        for (const [name, field] of [["five-year-amort", "scheduledAmortization"], ["five-year-available", "availableAfterInterest"]] as const)
+          c.extraReadings[name] = ["plano-2027", `result.evaluation.paths[id=emissao-revista].amortizationTests[profileId=cinco-anos].years[year=2029].${field}`, "0", field === "scheduledAmortization" ? "33" : "24"];
+        boardRestateSource("plano-2027", "evaluate-financing-paths", recommended)(c);})), `${turn}`).toThrow(/board_capital_set_incomplete:page\.caminhos:paths:-emissao-revista/);
+      // Not vacuous: the calibrated material read against the eight-path source, and with one row removed, is flagged.
+      const calibrated = packet(turn, () => undefined), original = auroraBoardSources().find((x) => x.id === "plano-2027")!;
+      expect(oracle(calibrated, [{packet: {...eight, fingerprint: (original.packet as {fingerprint: string}).fingerprint}}, ...auroraBoardSources().filter((x) => x.id !== "plano-2027")]).bad, `${turn}`)
+        .toEqual(expect.arrayContaining(["coverage:caminhos", "coverage:movimentos"]));
+      const cut = structuredClone(calibrated), page = current(cut).pages.find((x) => x.id === "caminhos")!; page.lines = page.lines.slice(1);
+      expect(oracle(cut).bad, `${turn}`).toContain("coverage:caminhos");
+      expect(oracle(calibrated), `${turn}`).toEqual({bad: [], missing: []});
+    }
+    // "Cada sensibilidade" claims the whole set: a fourth sensitivity case registered (forged, fingerprint resealed) refuses it.
+    const investment = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; role: string}[]};
+    const fourth = structuredClone(investment); fourth.cases.push({...structuredClone(fourth.cases.find((c) => c.id === "economy-4")!), id: "economy-5"});
+    const schema = boardReleasedSources["analyze-investment-project"].schema as unknown as {parse: (v: unknown) => Record<string, unknown>};
+    const {fingerprint: _f, ...payload} = schema.parse(fourth);
+    const sealed = {...fourth, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")} as unknown as Record<string, unknown>;
+    for (const turn of [2, 3] as const)
+      expect(() => withBoardSource("linha-embalagem", sealed, () => full(turn, () => undefined)), `${turn}`).toThrow(/board_capital_template_condition_failed:topic\.project_sensitivities/);
+    // The core refuses a page of paths that drops a row, whatever the rest of the material.
+    expect(() => full(2, (c) => {const pg = c.pages.find((x) => x.id === "caminhos")!; pg.lines = pg.lines.slice(1);})).toThrow(/board_capital_set_incomplete:page\.caminhos:paths:-/);
+    expect(() => full(2, (c) => {const pg = c.pages.find((x) => x.id === "movimentos")!; pg.lines = pg.lines.slice(1);})).toThrow(/board_capital_set_incomplete:page\.movimentos:paths:-/);
   });
 });
