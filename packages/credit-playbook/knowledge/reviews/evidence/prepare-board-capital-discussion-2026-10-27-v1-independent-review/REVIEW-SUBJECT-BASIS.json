@@ -5,11 +5,11 @@
   "id": "prepare-board-capital-discussion",
   "version": "2026.10.27-v1"
  },
- "commit": "7517bcfcc717d5aac77b90a7f4670abc58a9909b",
+ "commit": "4a67c2f2fe0e6b23d4ff196d75eea6070cba80fb",
  "pins": [
   {
    "path": "packages/credit-playbook/knowledge/procedures/capital/prepare-board-capital-discussion.md",
-   "sha256": "9a24698ec3b0cbd2a92e04de2f342acdedfb82a3fdf41339cf3af7f9e0ae04a0"
+   "sha256": "62834076ab3b19075f71b9fa59a4c506ce9f8d93501be6874dce2ae62e821b63"
   },
   {
    "path": "packages/financial-model/src/board-capital-discussion.ts",
