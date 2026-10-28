@@ -62,6 +62,10 @@
   {
    "path": "packages/financial-model/src/board-capital-discussion-scale.test.ts",
    "sha256": "c1c036bf459bf525bbe9eef92cec327a291b5ebb4f39c6d6fb298329ff70b479"
+  },
+  {
+   "path": "packages/financial-model/src/board-capital-discussion-roles.test.ts",
+   "sha256": ""
   }
  ],
  "externalOracle": [
