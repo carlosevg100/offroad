@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-10-05T18:37:54Z",
-  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten; lote 4 bridge: private.bind_job_authority_v1() from local replay through 20261028120400 (folder reading waits), pending live capture",
+  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten; lote 4 bridge: private.bind_job_authority_v1() and private.worker_fail_job() from local replay through 20261028120400 (folder reading waits), pending live capture",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -445,7 +445,7 @@
     {
       "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
       "file": "private.worker_fail_job(uuid,text,jsonb,boolean,integer).sql",
-      "sha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4"
+      "sha256": "b62463ffba59630261833fbc79f84ba2b7408187f328a8d92dcd24ca8d7bc578"
     },
     {
       "signature": "private.worker_finalize_capital_s11_recipe_v1(uuid,text,uuid,uuid,jsonb,text,text,text,text,bigint,integer,text,text,boolean,text)",

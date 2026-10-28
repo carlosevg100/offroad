@@ -1,0 +1,6622 @@
+[
+ {
+  "message": "Não estou pedindo que prepare a discussão da dívida para o conselho",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que prepare a discussão da dívida para o conselho",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como avaliar essa proposta de crédito do banco",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como avaliar essa proposta de crédito do banco",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você prepare a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de preparar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como preparar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não prepare o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não prepare o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você prepare o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você prepare o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de preparar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como preparar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não prepare o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não prepare o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você prepare o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você prepare o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de preparar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como preparar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não monte a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não monte a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você monte a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você monte a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de montar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de montar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como montar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como montar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não monte o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não monte o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você monte o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você monte o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de montar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como montar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não monte o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não monte o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você monte o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você monte o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de montar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como montar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não elabore a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não elabore a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você elabore a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você elabore a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de elaborar a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como elaborar a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não elabore o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não elabore o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você elabore o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você elabore o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de elaborar o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como elaborar o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não elabore o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não elabore o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você elabore o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você elabore o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de elaborar o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como elaborar o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não faça a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não faça a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não quero fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não preciso fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não desejo fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não gostaria de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você faça a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não estou pedindo que você faça a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não é para fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Ninguém pediu para fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Nem precisa fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Dispense fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Evite fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Deixe de fazer a discussão da dívida para o conselho.",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como devo fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Como posso fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "De que forma fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Qual a melhor forma de fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me diga como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me explique como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me ensine a fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Me oriente sobre como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": false,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Quero saber como fazer a discussão da dívida para o conselho?",
+  "hasAttachments": true,
+  "kind": "board_decision"
+ },
+ {
+  "message": "Não faça o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não faça o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você faça o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você faça o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de fazer o material do conselho sobre a estrutura de capital.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como fazer o material do conselho sobre a estrutura de capital?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não faça o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não faça o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não quero fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não preciso fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não desejo fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não gostaria de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você faça o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não estou pedindo que você faça o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não é para fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Ninguém pediu para fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Nem precisa fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Dispense fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Evite fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Deixe de fazer o deck do conselho sobre o financiamento.",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como devo fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Como posso fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "De que forma fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Qual a melhor forma de fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me diga como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me explique como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me ensine a fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Me oriente sobre como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": false,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Quero saber como fazer o deck do conselho sobre o financiamento?",
+  "hasAttachments": true,
+  "kind": "material_preparation"
+ },
+ {
+  "message": "Não avalie essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não avalie essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você avalie essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você avalie essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de avaliar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como avaliar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não avalie a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não avalie a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você avalie a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você avalie a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de avaliar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como avaliar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não avalie o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não avalie o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você avalie o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você avalie o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de avaliar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como avaliar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não analise essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não analise essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você analise essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você analise essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de analisar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de analisar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como analisar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como analisar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não analise a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não analise a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você analise a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você analise a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de analisar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como analisar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não analise o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não analise o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você analise o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você analise o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de analisar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como analisar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não olhe essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não olhe essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você olhe essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você olhe essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de olhar essa proposta de crédito do banco.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de olhar essa proposta de crédito do banco.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como olhar essa proposta de crédito do banco?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como olhar essa proposta de crédito do banco?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não olhe a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não olhe a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você olhe a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você olhe a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de olhar a proposta de CCB que o Itaú mandou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como olhar a proposta de CCB que o Itaú mandou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não olhe o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não olhe o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você olhe o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você olhe o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de olhar o term sheet que o Bradesco enviou.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como olhar o term sheet que o Bradesco enviou?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não organize a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não organize a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não quero organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não quero organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não preciso organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não preciso organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não desejo organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não desejo organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não gostaria de organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não gostaria de organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não estou pedindo que você organize a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não estou pedindo que você organize a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é para organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é para organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Ninguém pediu para organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Ninguém pediu para organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Nem precisa organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Nem precisa organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Dispense organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Dispense organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Evite organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Evite organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Deixe de organizar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Deixe de organizar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como devo organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como devo organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como posso organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como posso organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "De que forma organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "De que forma organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Qual a melhor forma de organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Qual a melhor forma de organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me diga como organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me diga como organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me explique como organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me explique como organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me ensine a organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me ensine a organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me oriente sobre como organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me oriente sobre como organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quero saber como organizar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quero saber como organizar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não organize os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não organize os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não quero organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não quero organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não preciso organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não preciso organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não desejo organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não desejo organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não gostaria de organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não gostaria de organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não estou pedindo que você organize os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não estou pedindo que você organize os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é para organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não é para organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Ninguém pediu para organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Ninguém pediu para organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Nem precisa organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Nem precisa organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Dispense organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Dispense organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Evite organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Evite organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Deixe de organizar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Deixe de organizar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como devo organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como devo organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como posso organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Como posso organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "De que forma organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "De que forma organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Qual a melhor forma de organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Qual a melhor forma de organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me diga como organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me diga como organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me explique como organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me explique como organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me ensine a organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me ensine a organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me oriente sobre como organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Me oriente sobre como organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quero saber como organizar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Quero saber como organizar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "information_organization"
+ },
+ {
+  "message": "Não organize o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não organize o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você organize o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você organize o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de organizar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de organizar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como organizar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como organizar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não arrume a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não arrume a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você arrume a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você arrume a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de arrumar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de arrumar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como arrumar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como arrumar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não arrume os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não arrume os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você arrume os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você arrume os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de arrumar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de arrumar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como arrumar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como arrumar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não arrume o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não arrume o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você arrume o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você arrume o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de arrumar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de arrumar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como arrumar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como arrumar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não separe a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não separe a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você separe a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você separe a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de separar a pasta de documentos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de separar a pasta de documentos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como separar a pasta de documentos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como separar a pasta de documentos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não separe os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não separe os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você separe os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você separe os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de separar os arquivos que subimos.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de separar os arquivos que subimos.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como separar os arquivos que subimos?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como separar os arquivos que subimos?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não separe o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não separe o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não quero separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não quero separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não preciso separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não preciso separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não desejo separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não desejo separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não gostaria de separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não gostaria de separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não estou pedindo que você separe o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não estou pedindo que você separe o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Não é para separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Não é para separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Ninguém pediu para separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Ninguém pediu para separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Nem precisa separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Nem precisa separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Dispense separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Dispense separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Evite separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Evite separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Deixe de separar o material que joguei aqui.",
+  "hasAttachments": false,
+  "kind": "ambiguous"
+ },
+ {
+  "message": "Deixe de separar o material que joguei aqui.",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como devo separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como devo separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Como posso separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Como posso separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "De que forma separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "De que forma separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Qual a melhor forma de separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Qual a melhor forma de separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me diga como separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me diga como separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me explique como separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me explique como separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me ensine a separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me ensine a separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Me oriente sobre como separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Me oriente sobre como separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ },
+ {
+  "message": "Quero saber como separar o material que joguei aqui?",
+  "hasAttachments": false,
+  "kind": "factual_question"
+ },
+ {
+  "message": "Quero saber como separar o material que joguei aqui?",
+  "hasAttachments": true,
+  "kind": "documents_to_case"
+ }
+]

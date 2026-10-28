@@ -431,6 +431,40 @@ begin
  if st->>'refusalCode' is distinct from 'reading_failed' then raise exception 'exhausted file not refused by name: %',st;end if;
 end $$;
 
+-- 3f. A folder reading job ends while the document pipeline is still ingesting in the same session: its failure for good
+-- or its completion moves neither the file it read nor the session, which only the run it follows may move.
+-- The jobs that filled the queue in 3b and 3e end, freeing the places.
+update public.processing_jobs set status='succeeded' where kind='document_folder_reading' and status='queued'
+ and (payload->>'context_fingerprint'=repeat('0',64) or payload->'context' ? 'lote');
+update public.document_intake_sessions set status='processing',current_run_id='70000000-0000-4000-8000-000000000712' where id='40000000-0000-4000-8000-000000000711';
+update public.source_documents set processing_status='processing' where id in ('a0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000005');
+do $$
+declare c jsonb:='{"registry":[{"id":"f3f","label":"F","groupLabel":"G"}]}';r jsonb;j1 uuid;j5 uuid;
+begin
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',c,
+  '[{"documentId":"a0000000-0000-4000-8000-000000000001"},{"documentId":"a0000000-0000-4000-8000-000000000005"}]',null);
+ if (r->>'queued')::int<>2 then raise exception 'reading jobs not queued for the ingestion test: %',r;end if;
+end $$;
+update public.processing_jobs set status='leased',attempts=2,max_attempts=2,leased_by='a3300000-0000-4000-8000-000000000711',leased_account_user_id='10000000-0000-4000-8000-000000000713',
+ lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(case source_document_id when 'a0000000-0000-4000-8000-000000000001' then repeat('k',64) else repeat('m',64) end,'sha256')
+ where kind='document_folder_reading' and status='queued' and payload#>>'{context,registry,0,id}'='f3f';
+do $$
+declare j1 uuid:=(select id from public.processing_jobs where kind='document_folder_reading' and source_document_id='a0000000-0000-4000-8000-000000000001' and payload#>>'{context,registry,0,id}'='f3f');
+ j5 uuid:=(select id from public.processing_jobs where kind='document_folder_reading' and source_document_id='a0000000-0000-4000-8000-000000000005' and payload#>>'{context,registry,0,id}'='f3f');r jsonb;
+begin
+ -- One reading completes; the last one of its run fails for good (the layer download), which ends the run failed.
+ r:=public.worker_complete_job(j5,repeat('m',64),'{}'::jsonb);
+ r:=public.worker_fail_job(j1,repeat('k',64),'{"code":"layer_download_failed","stage":"document_folder_reading","retryable":false,"cause":{"name":"StorageError","class":"transient","message":"layer download failed"}}'::jsonb,false,60);
+ if r->>'retrying'<>'false' or (r->>'pending_jobs')::int<>0 or (select status from public.processing_jobs where id=j1)<>'failed' then raise exception 'reading failure not final: %',r;end if;
+ if (select status from public.document_intake_sessions where id='40000000-0000-4000-8000-000000000711')<>'processing'
+  then raise exception 'a folder reading moved the session the pipeline is ingesting';end if;
+ if exists(select 1 from public.source_documents where id in ('a0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000005') and processing_status<>'processing')
+  then raise exception 'a folder reading moved the file the pipeline owns';end if;
+ raise notice 'PASS: a folder reading job ends without moving the file or the session being ingested';
+end $$;
+update public.document_intake_sessions set status='review_ready',current_run_id=null where id='40000000-0000-4000-8000-000000000711';
+update public.source_documents set processing_status='ready' where id in ('a0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000005');
+
 -- 4. The priors as the worker reads them: none yet; and every door refuses a forged capability.
 do $$
 begin

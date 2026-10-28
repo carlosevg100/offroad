@@ -203,6 +203,9 @@ declare base jsonb:=jsonb_build_object('organizationId','a11b0000-0000-4000-9000
  k text;c jsonb;discussion jsonb;
 begin
  if private.execution_capital_payload_current_v1(base,'{}',auth.uid()) then raise exception 'null method accepted';end if;
+ -- C47 is not published: its pin is no manifest hash, so its candidate manifest (kept in m) is refused like any other.
+ if position('''c47-awaits-publication''' in pg_get_functiondef('private.execution_capital_payload_current_v1(jsonb,jsonb,uuid)'::regprocedure))=0
+  then raise exception 'C47 pinned before its publication';end if;
  if not private.execution_capital_payload_current_v1(jsonb_build_object('method',jsonb_build_object('methodId','synthetic-execution')),'{}',auth.uid()) then raise exception 'unbound method changed answer';end if;
  for k in select jsonb_object_keys(m) loop
   c:=base||jsonb_build_object('method',jsonb_build_object('methodId',k,'methodVersion','2026.10.27-v1','manifestHash',m->k->>0));

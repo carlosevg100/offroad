@@ -27749,7 +27749,7 @@
         },
         {
           "path": "supabase/migrations/20261028120400_lote4_payload_provenance.sql",
-          "line": 12,
+          "line": 15,
           "anchor": "create or replace function private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
           "mechanism": "direct_ddl"
         }
@@ -79404,6 +79404,12 @@
           "line": 100,
           "anchor": "alter function public.worker_complete_job(uuid, text, jsonb) set schema private;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 512,
+          "anchor": "create or replace function private.worker_complete_job(p_job_id uuid, p_capability_token text, p_result jsonb DEFAULT '{}'::jsonb)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -79977,6 +79983,12 @@
           "line": 101,
           "anchor": "alter function public.worker_fail_job(uuid, text, jsonb, boolean, integer) set schema private;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "line": 433,
+          "anchor": "create or replace function private.worker_fail_job(p_job_id uuid, p_capability_token text, p_error jsonb, p_retryable boolean DEFAULT true, p_retry_in_seconds integer DEFAULT 60)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."

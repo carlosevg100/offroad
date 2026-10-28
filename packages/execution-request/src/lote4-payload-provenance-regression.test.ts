@@ -28,7 +28,7 @@ describe("the provenance walk with the lote 4 methods", () => {
       "organize-document-folder": ["4378d63bf0b7465838fefe7e3463dbc755cd6c022803a60ac7fe32d368f75248", "document-folder-inventory-packet-input.v1"],
       "evaluate-received-proposal": ["4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0", "received-proposal-packet-input.v1"],
       "evaluate-financing-paths": ["e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4", "capital-structure-paths-packet-input.v1"],
-      "prepare-board-capital-discussion": ["55ae460feed68a733634865c5b85dba0695cac5c1da7ac584244a9f44c4c5686", "board-capital-discussion-packet-input.v1"],
+      "prepare-board-capital-discussion": ["c47-awaits-publication", "board-capital-discussion-packet-input.v1"],
     };
     for (const [id, [hash, schema]] of Object.entries(manifests)) {
       expect(after.includes(`c#>>'{method,methodId}'='${id}' and (c#>>'{method,methodVersion}' is distinct from '2026.10.27-v1'`), id).toBe(true);
@@ -38,5 +38,22 @@ describe("the provenance walk with the lote 4 methods", () => {
     expect(after.includes("not private.board_material_priors_recorded_v1(c,payload)")).toBe(true);
     expect(after.includes("not private.document_folder_prior_recorded_v1(c,payload)")).toBe(true);
     expect(after.includes("p->>'assumptionVersionId'=private.execution_json_projection_v1(payload#>>'{analysis,discussion,envelope,canonical}')->>'versionId'")).toBe(true);
+  });
+  it("pins exactly the manifestHash of each publication record, and refuses C47 until its publication", () => {
+    const after = body("20261028120400_lote4_payload_provenance.sql");
+    const runs = join(__dirname, "../../credit-playbook/knowledge/reviews/runs");
+    const pinOf = (id: string) => {
+      const branch = after.slice(after.indexOf(`(c#>>'{method,methodId}'='${id}' and (c#>>'{method,methodVersion}'`));
+      return /c#>>'\{method,manifestHash\}' is distinct from '([^']+)'/.exec(branch)![1];
+    };
+    for (const id of ["organize-document-folder", "evaluate-received-proposal", "evaluate-financing-paths"]) {
+      const record = (file: string) => JSON.parse(readFileSync(join(runs, `${id}-2026-10-27-v1-publication`, file), "utf8"));
+      const manifest = record("manifest.json");
+      expect(manifest.procedure).toMatchObject({id, version: "2026.10.27-v1"});
+      // The manifest record, the founder's instruction and the content approval name one published hash; the SQL pins it.
+      expect([record("founder-instruction.json").manifestHash, record("content-approval.json").manifestHash]).toEqual([manifest.manifestHash, manifest.manifestHash]);
+      expect(pinOf(id), id).toBe(manifest.manifestHash);
+    }
+    expect(pinOf("prepare-board-capital-discussion")).not.toMatch(/^[a-f0-9]{64}$/);
   });
 });

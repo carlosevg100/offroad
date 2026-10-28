@@ -3,8 +3,9 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 
 import {boardMaterialFichaException, boardMaterialRoute} from "./board-material-route";
-import {documentFolderFichaExceptions, documentFolderRoute} from "./document-folder-route";
+import {documentFolderFichaExceptions, documentFolderRoute, organizeOnly} from "./document-folder-route";
 import {financingPathsCues, financingPathsRoute} from "./financing-paths-route";
+import {asksForLote4Action, type Lote4RequestKind} from "./lote4-request";
 import {receivedProposalRoute} from "./received-proposal-route";
 import {
   capitalProjectJobSchema,
@@ -655,31 +656,17 @@ function lote4Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceOb
   return lote4Vetoed(text, "document_folder") ? existing : documentFolderRoute(text, existing);
 }
 
-/** The actions each lote 4 method does, as verbs and as the nouns that name them: refusing one of these, or avoiding or
- * dispensing with it, refuses that method. A refusal of another action ("Só organiza, não analisa ainda") keeps it. */
-const lote4Actions: Record<"financing_paths" | "board_capital_discussion" | "received_proposal" | "document_folder", string> = {
-  financing_paths: String.raw`financi\w*|alongar|alongamento|captar|captacao|caminhos?`,
-  board_capital_discussion: String.raw`prepar\w*|mont\w*|fa(?:z|ca|zer)\b|elabor\w*|organiz\w*|discussao|material|pagina|deck|pauta|roteiro`,
-  received_proposal: String.raw`avali\w*|analis\w*|olh\w*|opin\w*|aceit\w*|ler\b|leia\b|leitura|proposta`,
-  document_folder: String.raw`organiz\w*|arrum\w*|separ(?:a|e|ar)\b|inventari\w*|classific\w*|catalog\w*|pasta|arquivos|documentos|material`,
-};
-const lote4Refusals = Object.fromEntries(Object.entries(lote4Actions).map(([k, actions]) => [k, new RegExp(
-  // A negation (with an auxiliary, a need or a request between) of the action, or avoiding, dispensing, cancelling or skipping it.
-  String.raw`\b(?:nao|nunca|jamais)\s+(?:(?:quero|queremos|quer|queria|queriamos|desejo|desejamos|deseja|desejaria|gostaria(?:mos)?(?: de)?|pretendo|pretendemos|planejo|planejamos|preciso|precisamos|precisa|vou|vamos|devo|devemos|deve|e para|pode|podem|posso|tem que|temos que|tenho que|vale a pena|e necessario|e preciso)\s+(?:mais\s+|ainda\s+|de\s+)*)?`
-  + String.raw`(?:que\s+(?:voce\s+|voces\s+|a gente\s+|se\s+)?)?(?:(?:a|o|as|os|uma?)\s+)?(?:${actions})`
-  + String.raw`|\b(?:dispens\w*|evit\w*|cancel\w*|pul(?:e|a|ar)|deixe de|deixa de|sem)\s+(?:(?:a|o|as|os|uma?)\s+)?(?:${actions})`)])) as Record<keyof typeof lote4Actions, RegExp>;
-/** The lote 3 vetoes, in one place for the four lote 4 promotions: a request to understand (explain, how it works, what
- * it is) or for guidance on how to do it, or a refusal of the method's action or of its need (wanting, wishing, needing
- * or planning it, negated) keeps the route origin/main gives. */
-/** A request for guidance on how to do it, not for it done: "quero saber como", "como devo", "ensine", "me oriente",
- * "passo a passo", or a question of how one should or could do it ("Como devo avaliar essa proposta?"). A question in the
- * first person about the company's own decision ("Como financio a expansão?") is the method's own request and stays. */
-const lote4GuidanceMarker = new RegExp(
-  String.raw`\b(?:quer(?:o|ia|emos|iamos)|gostaria(?:mos)?(?: de)?|desej(?:o|amos|aria)|preciso|precisamos)\s+(?:de\s+)?(?:saber|entender|aprender|descobrir)\s+(?:como|qual|quais|o que)\b`
-  + String.raw`|\bcomo\s+(?:(?:eu|nos|a gente|voce|a empresa|a companhia)\s+)?(?:devo|deveria|devemos|deveriamos|deve|posso|podemos|poderia|poderiamos|se\s+\w+|faco|fazemos|fazer|seria|e que)\b`
-  + String.raw`|\b(?:ensin\w*|me orient\w*|orient\w*-me|oriente\w*\s+(?:me|nos)|me ajud\w*\s+a\s+(?:entender|saber|aprender)|me explic\w*|nos explic\w*|me mostr\w*\s+como|passo a passo|qual (?:e\s+)?(?:a melhor forma|o melhor jeito|a melhor maneira|a forma|o jeito|a maneira|o caminho) de|tutorial|guia de como)\b`);
-function lote4Vetoed(text: string, kind: keyof typeof lote4Actions): boolean {
-  return conceptualMarker.test(text) || negatedNeed.test(text) || lote4GuidanceMarker.test(text) || lote4Refusals[kind].test(text);
+/** The lote 4 vetoes, in one place: the lote 3 vetoes (a request to understand, a refused need) and the structural
+ * condition of lote4-request.ts (C47, C01 and C09 are chosen only on a request for their action on their object that no
+ * negation, refusal or request for guidance precedes in its clause). C32 and the enumerated ficha phrasings are whole
+ * constructions and take only the lote 3 vetoes. */
+type Lote4Kind = "financing_paths" | Lote4RequestKind;
+function lote4Vetoed(text: string, kind: Lote4Kind): boolean {
+  if (conceptualMarker.test(text) || negatedNeed.test(text)) return true;
+  if (kind === "financing_paths") return false;
+  const whole = text.replace(/\s+/g, " ").trim();
+  if (lote4FichaExceptions.some((e) => e.pattern.test(whole)) || organizeOnly.test(whole)) return false;
+  return !asksForLote4Action(text, kind);
 }
 
 /** The routes of lotes 1 and 2, byte for byte as on origin/main. */

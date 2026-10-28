@@ -29,7 +29,7 @@ const folder = /\b(?:pastas?|arquivos|documentos|materia(?:l|is)|tudo)\b/;
 const dropped = /\b(?:joguei|jogamos|subi|subimos|coloquei|colocamos|mandei|mandamos|anexei|anexamos|carreguei|carregamos)\b.{0,40}\b(?:a pasta|as pastas|os arquivos|os documentos|o material|tudo)\b/;
 const tellMe = /\b(?:me (?:diz|diga|fala|fale|mostra|mostre) o que (?:tem|ha|falta)|o que (?:tem|ha) (?:ai|nela|neles|nisso)|o que falta|da uma olhada|de uma olhada)\b/;
 /** Organize only, without analysis yet: the ficha's variation, a whole construction. */
-const organizeOnly = /^(?:so|apenas|somente) organiz[ae][,;]? (?:e )?(?:nao|sem) analis\w*(?: (?:ainda|por enquanto|nada))?[.!]*$/;
+export const organizeOnly = /^(?:so|apenas|somente) organiz[ae][,;]? (?:e )?(?:nao|sem) analis\w*(?: (?:ainda|por enquanto|nada))?[.!]*$/;
 /** Material for a third party (a data room, a kit, a diligence, an auditor, a bank, investors): another method. */
 const thirdParty = /\b(?:data ?room|kit|pacote|diligencia|due diligence|auditor\w*|investidor\w*|para (?:o|os) bancos?|pro banco|enviar|mandar para|apresentacao|deck|teaser|memorando)\b/;
 /** A folder that is not the company's documents. */
