@@ -192,6 +192,27 @@ describe("board material planner: records read by what the results register, nev
     expect(recordsNamed(prefix, "a debenture do Banco A", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["debenture"]);
   });
 
+  // Independent review, round 14: an identifier the person wrote must be a record's id exactly; never a part of one.
+  it("asks again when the answer writes an id no record has, never matching a part of a known id or a label", () => {
+    const instrument = planWith(sources, {linkAnswers: [{instrument: "ccb-bradesco-3", row: "CCB Bradesco", origin: "informed", source: "é a ccb-bradesco-3"}]});
+    expect(instrument.status === "missing" ? [instrument.missing, instrument.linkAsks] : instrument).toEqual([["linkAnswers.1.instrument"],
+      [expect.stringMatching(/"ccb-bradesco-3".*CCB Bradesco \(ccb-bradesco\)/)]]);
+    const row = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "ccb-bradesco-3", origin: "informed", source: "é a linha ccb-bradesco-3"}]});
+    expect(row.status === "missing" ? [row.missing, row.linkAsks] : row).toEqual([["linkAnswers.1.row"],
+      [expect.stringMatching(/"ccb-bradesco-3".*CCB Bradesco \(ccb-bradesco\)/)]]);
+    const rows = [{id: "ccb-bradesco", label: "CCB", creditor: "Bradesco", finalPayment: "2027-09-15"}, {id: "debenture-1", label: "Debênture 1ª emissão", creditor: "Debenturistas", finalPayment: "2028-06-15"}];
+    for (const unknown of ["ccb-bradesco-02", "ccb-bradesco-b", "ccb-bradsco", "a linha ccb-bradesco-3 do Bradesco"]) {
+      expect(recordsNamed(rows, unknown, (r) => [r.label, r.creditor], (r) => r.finalPayment), unknown).toEqual([]);
+    }
+    for (const unknown of ["ccb-bradesco-3", "ccb-bradesco-b", "ccb-bradsco"]) expect(answeredInstrument([{id: "ccb-bradesco", label: "CCB Bradesco"}], ["ccb-bradesco"], unknown), unknown).toEqual([]);
+    // Every positive still resolves: the exact id, the label and creditor, a label with an ordinal and a year.
+    expect(recordsNamed(rows, "é a ccb-bradesco", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["ccb-bradesco"]);
+    expect(recordsNamed(rows, "a linha CCB Bradesco de 2027", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["ccb-bradesco"]);
+    expect(recordsNamed(rows, "Debênture 1ª emissão Debenturistas", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["debenture-1"]);
+    expect(recordsNamed(rows, "debenture-1", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["debenture-1"]);
+    expect(answeredInstrument([{id: "ccb-bradesco", label: "CCB Bradesco"}], [], "a CCB Bradesco do plano")).toEqual(["ccb-bradesco"]);
+  }, 240_000);
+
   it("an informed identity wins over a proposed one, and a rejection wins over both", () => {
     const both = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "CCB Bradesco", origin: "informed", source: "é a mesma CCB"}]});
     expect(both.status === "complete" ? both.facts.links.map((l) => [l.value.rowId, l.origin]) : both).toEqual([["ccb-bradesco", "informed"]]);

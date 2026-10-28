@@ -404,7 +404,7 @@ export function proposeBoardMaterialLinks(packets: Map<string, Record<string, un
   return {links, pairs};
 }
 const escape = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-/** Where a name occurs in the answer: on token boundaries (exact) or anywhere (substring); null when it does not. */
+/** Where a name occurs in the answer: on token boundaries (exact) or anywhere (for a label); null when it does not. */
 function spanOf(answer: string, name: unknown, exact: boolean): [number, number] | null {
   if (typeof name !== "string" || name.trim().length < 2) return null;
   const n = fold(name), m = exact ? new RegExp(`(?:^|[^a-z0-9-])(${escape(n)})(?:$|[^a-z0-9-])`).exec(answer) : null;
@@ -412,12 +412,25 @@ function spanOf(answer: string, name: unknown, exact: boolean): [number, number]
   const at = answer.indexOf(n);
   return at < 0 ? null : [at, at + n.length];
 }
-/** The records the person named, by their own ids and labels, most specific first: an exact id on token boundaries,
- * then an id as a substring, then the label (with the creditor, for a row); an id that is only part of a longer name the
- * answer gives another record ("debenture" inside "debenture 2a emissao") does not count. Several records named alike
+/** Tokens of the answer shaped like an identifier (hyphenated, or letters and digits together, never a year or an
+ * ordinal such as "2a"), that are not words of any record's own label or creditor: the person named an id. */
+function explicitIds(answer: string, records: Record<string, unknown>[], labelOf: (r: Record<string, unknown>) => unknown[]): string[] {
+  const words = new Set(records.flatMap((r) => labelOf(r).flatMap((x) => typeof x === "string" ? fold(x).split(/[^a-z0-9-]+/) : [])));
+  return [...new Set(answer.split(/[^a-z0-9-]+/).map((t) => t.replace(/^-+|-+$/g, "")).filter((t) => t.length > 1 && !words.has(t)
+    && (/[a-z0-9]-[a-z0-9]/.test(t) || (/[a-z]/.test(t) && /\d/.test(t) && !/^\d+[ao]$/.test(t)))))];
+}
+/** The records the person named, by their own ids and labels: an identifier the person wrote must be a record's id,
+ * exactly (one that is none is unresolved and asked, never matched by a part or a label); otherwise an id on token
+ * boundaries (unless it is only part of a longer name the answer gives another record, as "debenture" inside "debenture
+ * 2a emissao"), then the label (with the creditor, for a row), then the final payment year. Several records named alike
  * stay several (the person is asked); none is guessed. */
 export function recordsNamed(records: Record<string, unknown>[], answer: string, labelOf: (r: Record<string, unknown>) => unknown[], year?: (r: Record<string, unknown>) => unknown): Record<string, unknown>[] {
   const a = fold(answer);
+  const explicit = explicitIds(a, records, labelOf);
+  if (explicit.length) {
+    const hits = explicit.map((t) => records.filter((r) => typeof r.id === "string" && fold(r.id) === t));
+    return hits.every((h) => h.length === 1) && new Set(hits.map((h) => h[0])).size === 1 ? hits[0]! : [];
+  }
   const labels = records.map((r) => {
     const parts = labelOf(r).map((x) => spanOf(a, x, false));
     return parts.length && parts.every((x) => x !== null) ? parts as [number, number][] : null;
@@ -425,10 +438,8 @@ export function recordsNamed(records: Record<string, unknown>[], answer: string,
   const longest = Math.max(0, ...labels.map((l) => l ? l.reduce((t, [x, y]) => t + y - x, 0) : 0));
   const insideOther = (k: number, [x, y]: [number, number]) => labels.some((l, n) => n !== k && l !== null
     && l.reduce((t, [p, q]) => t + q - p, 0) > y - x && l.some(([p, q]) => p <= x && y <= q));
-  for (const exact of [true, false]) {
-    const byId = records.filter((r, k) => {const at = spanOf(a, r.id, exact); return at !== null && !insideOther(k, at);});
-    if (byId.length) return byId;
-  }
+  const byId = records.filter((r, k) => {const at = spanOf(a, r.id, true); return at !== null && !insideOther(k, at);});
+  if (byId.length) return byId;
   const named = records.filter((_, k) => labels[k] !== null && labels[k]!.reduce((t, [x, y]) => t + y - x, 0) === longest);
   if (named.length <= 1 || !year) return named;
   const dated = named.filter((r) => {const v = year(r); return typeof v === "string" && a.includes(v.slice(0, 4));});
@@ -456,7 +467,7 @@ function informedLinks(packets: Map<string, Record<string, unknown>>, methods: M
       missing.push(`linkAnswers.${k + 1}.instrument`);
       asks.push(x.instrument === null
         ? `A pessoa disse "${x.source}" sem dizer qual instrumento do plano é; os instrumentos do plano são: ${instruments.map((i) => i.label).join(", ")}`
-        : `O plano não tem um único instrumento com o nome "${x.instrument}" (a pessoa disse "${x.source}"); os instrumentos do plano são: ${instruments.map((i) => i.label).join(", ")}`);
+        : `O plano não tem um único instrumento com o nome "${x.instrument}" (a pessoa disse "${x.source}"); os instrumentos do plano são: ${instruments.map((i) => `${i.label} (${i.id})`).join(", ")}`);
       return;
     }
     const rows = recordsNamed(sides.rows, x.row, (r) => [r.label, r.creditor], (r) => r.finalPayment);
