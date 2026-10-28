@@ -61,6 +61,48 @@ const fingerprintOf = (value: unknown) => createHash("sha256").update(JSON.strin
 /** Reads one value of a reviewed result by path: dotted keys, `[n]` for a position and `[field=value]`
  * for the one element whose field equals the value. Anything else, or a selector matching zero or
  * several elements, is unresolved. */
+/** The canonical identity of a path in a packet: the field it effectively resolves to, every selector replaced by the
+ * index of the one element it selects (so equivalent selectors give the same identity); null when it does not resolve. */
+export function boardCanonicalPath(root: unknown, path: string, form: "index" | "text" = "index"): string | null {
+  const segments = path.split(/\.(?![^[]*\])/);
+  let node: unknown = root;
+  const out: string[] = [];
+  for (const raw of segments) {
+    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
+    if (!m) return null;
+    node = isRecord(node) && Object.hasOwn(node, m[1]!) ? node[m[1]!] : undefined;
+    let part = m[1]!;
+    for (const selector of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
+      const body = selector.slice(1, -1);
+      if (!Array.isArray(node)) return null;
+      let index: number;
+      if (/^\d+$/.test(body)) index = Number(body);
+      else {
+        const conditions = body.split("&").map((x) => {const k = x.indexOf("="); return [x.slice(0, k), x.slice(k + 1)] as const;});
+        const hits = node.flatMap((x, i) => isRecord(x) && conditions.every(([f, v]) => (typeof x[f] === "string" || typeof x[f] === "number") && String(x[f]) === v) ? [i] : []);
+        if (hits.length !== 1) return null;
+        index = hits[0]!;
+      }
+      const element = node[index];
+      // The "text" form keeps the selector's text, reduced to its shortest leading conditions that still select the same
+      // one element (so a redundant condition never makes a second text for the same field).
+      if (form === "text") {
+        const conditions = /^\d+$/.test(body) ? [] : body.split("&");
+        let kept = conditions.length ? conditions.length : 0;
+        for (let n = 1; n < conditions.length; n++) {
+          const sub = conditions.slice(0, n).map((x) => {const k = x.indexOf("="); return [x.slice(0, k), x.slice(k + 1)] as const;});
+          const hits = (node as unknown[]).flatMap((x, i) => isRecord(x) && sub.every(([f, v]) => (typeof x[f] === "string" || typeof x[f] === "number") && String(x[f]) === v) ? [i] : []);
+          if (hits.length === 1 && hits[0] === index) {kept = n; break;}
+        }
+        part += conditions.length ? `[${conditions.slice(0, kept).join("&")}]` : selector;
+      } else part += `[${index}]`;
+      node = element;
+    }
+    if (node === undefined) return null;
+    out.push(part);
+  }
+  return out.join(".");
+}
 export function readBoardSourcePath(root: unknown, path: string): unknown {
   const segments = path.split(/\.(?![^[]*\])/);
   let node: unknown = root;
@@ -196,7 +238,7 @@ export function boardConditionSlots(c: unknown): string[] {
   walk(c);
   return out;
 }
-export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string}; unnamed?: true} | {pending: true; methodId?: string; path?: string};
+export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string; canonical?: string; fingerprint?: string}; unnamed?: true} | {pending: true; methodId?: string; path?: string};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[];
   /** The canonical names of the debtors this text names, by the reading bound to the debtor slot. */
   debtors?: Map<string, string>;
@@ -419,8 +461,9 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   // The value of an operand as the text shows it: a bound figure's display, read back in the field's own scale; any
   // operand the text does not show (a constant, a source field) is its exact value.
   // A source field the sentence does not show, but another field of the material does: its one presentation.
+  const canonicalOf = (f: BoardFigureDisplay) => "pending" in f || !f.origin ? null : f.origin.canonical ?? boardCanonicalPath(sourceOf(f.origin.methodId).packet, f.origin.path);
   const atFigure = (o: {at: readonly [string, string]}, f: BoardFigureDisplay) => !("pending" in f) && !!f.origin && f.origin.methodId === o.at[0]
-    && f.origin.path === o.at[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "\u0000");
+    && canonicalOf(f) === boardCanonicalPath(sourceOf(o.at[0]).packet, o.at[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "\u0000"));
   const shownFigure = (f: BoardFigureDisplay): string => {
     if ("pending" in f || !f.origin) throw indefinite("figure_pending");
     if (["calendar", "date", "label", "flag"].includes(f.unit)) return f.origin.value;
@@ -509,20 +552,17 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         const sThan = shownOperand(c.than, than), listPath = c.every[1].replace(/\$([a-z]+)/g, (_m: string, k: string) => vars[k] ?? "");
         // Every member, shown or not, against the reference as shown: a member shown anywhere in the material enters by its
         // one presentation, a member not shown by its exact value (each reading has one presentation in the material).
-        const pattern = new RegExp(`^${listPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\[([^\\]]+)\\]\\.${c.every[2]}$`);
-        const shownOf = (item: Record<string, unknown>): [string, string | null] => {
-          for (const [id, f] of context.figures) {
-            if ("pending" in f || !f.origin || f.origin.methodId !== c.every[0]) continue;
-            const m = pattern.exec(f.origin.path);
-            if (m && m[1]!.split("&").every((cond) => {const k = cond.indexOf("="); return String(item[cond.slice(0, k)]) === cond.slice(k + 1);})) return [shownFigure(f), id];
-          }
-          return [scalar(item[c.every[2]], c.every[2]), null];
-        };
+        // Each member by its canonical identity (the list's resolved path, the element's index, the field): every reading
+        // of that field anywhere in the material is compared, whatever selector text it used.
+        const listCanonical = boardCanonicalPath(sourceOf(c.every[0]).packet, listPath);
+        if (listCanonical === null) throw indefinite("list_absent");
         const lost: string[] = [];
-        for (const item of items) {
-          const [member, id] = shownOf(item);
-          if (!compareBoard(member, c.op, sThan)) lost.push(id ?? `${listPath}[${String(item.id ?? items.indexOf(item))}].${c.every[2]}`);
-        }
+        items.forEach((item, index) => {
+          const identity = `${listCanonical}[${index}].${c.every[2]}`;
+          const shown = [...context.figures].filter(([, f]) => !("pending" in f) && f.origin?.methodId === c.every[0] && canonicalOf(f) === identity);
+          const members = shown.length ? shown.map(([id, f]) => [shownFigure(f), id] as const) : [[scalar(item[c.every[2]], c.every[2]), null] as const];
+          for (const [member, id] of members) if (!compareBoard(member, c.op, sThan)) lost.push(id ?? identity);
+        });
         if (lost.length) shownLost = {figures: [...lost, ...typeof c.than === "object" && "slot" in c.than ? [bindings[c.than.slot]!] : []], betweenTwoShown: false};
       }
       return true;
@@ -1171,14 +1211,17 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
     if (!check) throw new Error(`board_capital_figure_without_origin:${f.id}`);
     if (!check.matches) throw new Error(`board_capital_figure_diverges:${f.id}:${check.rounded}:${f.stated}`);
     const display = unnamed ? boardUnnamedLabel : check.display;
-    figures.set(f.id, {display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: f.path, value: check.value}, ...unnamed ? {unnamed: true as const} : {}});
+    // The reading's identity is the field it resolves to in that package (selectors canonicalized to indices), never its text.
+    figures.set(f.id, {display, unit: spec.kind, origin: {sourceId: s.id, methodId: s.methodId, path: boardCanonicalPath(s.packet, f.path, "text") ?? f.path, value: check.value,
+      canonical: boardCanonicalPath(s.packet, f.path) ?? f.path, fingerprint: s.packetFingerprint}, ...unnamed ? {unnamed: true as const} : {}});
     checks.push({figureId: f.id, sourceId: s.id, methodId: s.methodId, methodVersion: s.methodVersion, packetFingerprint: s.packetFingerprint, path: f.path, unit: spec.kind,
       scale: spec.scale, period: spec.period, presentation: f.presentation, value: check.value, rounded: check.rounded, stated: f.stated, display, matches: true as const});
   }
   // One presentation per reading in the whole material: the same field of the same result is never shown at two precisions.
   const presentations = new Map<string, {ids: string[]; presentation: string}>();
   for (const f of d.figures) if (f.kind === "reading") {
-    const k = `${f.sourceId}|${f.path}`, seen = presentations.get(k);
+    const o = (figures.get(f.id) as {origin?: {canonical?: string; fingerprint?: string}} | undefined)?.origin;
+    const k = `${f.sourceId}|${o?.fingerprint ?? ""}|${o?.canonical ?? f.path}`, seen = presentations.get(k);
     if (seen && seen.presentation !== f.presentation) throw new Error(`board_capital_reading_presentation_not_unique:${[...seen.ids, f.id].join(",")}`);
     presentations.set(k, {ids: [...seen?.ids ?? [], f.id], presentation: f.presentation});
   }

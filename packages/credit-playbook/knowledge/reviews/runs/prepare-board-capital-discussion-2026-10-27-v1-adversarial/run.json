@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T01:36:38.356Z",
-    "finishedAt": "2026-10-28T01:39:16.690Z"
+    "startedAt": "2026-10-28T02:13:17.029Z",
+    "finishedAt": "2026-10-28T02:15:55.555Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,22 @@
       "passed": true
     },
     {
+      "id": "adverse-leverage-2-4602-shown-twice-by-equivalent-selectors-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "311d44df3b157c6246b975a1989127de12107ef2f2cbd22f363ca70d9fe26313",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "adverse-leverage-2-4602-shown-twice-by-equivalent-selectors-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7f355205e1654a8b241adb13019e6038d5acf322c963b7e56f0551fb9a6da8b2",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "managerial-adverse-read-below-a-breached-covenant-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1295,6 +1311,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "4349f2127b9de34a52dc44f39aaa4838508459adc8ddb0b9d0042870b8a1ae37",
+  "evidenceFingerprint": "6628ac49661442ddaffd373abdae5e8102b6d4c8839897b3ddcb23879e875235",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

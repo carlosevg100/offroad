@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T01:36:38.356Z",
-    "finishedAt": "2026-10-28T01:39:16.688Z"
+    "startedAt": "2026-10-28T02:13:17.029Z",
+    "finishedAt": "2026-10-28T02:15:55.554Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,14 @@
       "passed": true
     },
     {
+      "id": "equivalent-selectors-with-one-presentation",
+      "expectation": "{\"below\":true}",
+      "observed": "{\"below\":true}",
+      "inputFingerprint": "d4206d382ad2a7041a8b2f04d231c7df3a0c865f4be43348169584e9aa21f9c4",
+      "outputFingerprint": "4651dcc22c361a36c9cb50dedf1fbeaa3278cc8a09166752792a1ace2ab2b5fe",
+      "passed": true
+    },
+    {
       "id": "contractual-adverse-below-the-covenant-of-3-0-beside-a-managerial-measurement",
       "expectation": "{\"below\":true}",
       "observed": "{\"below\":true}",
@@ -615,6 +623,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "0c08ca129790d9aa9277933c78e9072eb07c3d167443b07264d4dd3aa4332f7f",
+  "evidenceFingerprint": "840eabac017c7baadb9f761a4e8afa3e1862d52a4d30276f0d3f8d2839e2d9cd",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

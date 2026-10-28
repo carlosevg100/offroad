@@ -559,6 +559,32 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const existingSays = /(debênture|nota comercial) atual|debenturistas|waiver da (debênture|nota comercial)/.exec(t);
     if (existingSays && planSpecies.existing !== (existingSays[0] === "debenturistas" ? "debênture" : existingSays[1] ?? existingSays[2])) bad.push(`species_existing:${t.slice(0, 60)}`);
   }
+  // The oracle's own resolution of each reading to the field it reaches (selectors replaced by the selected index): two
+  // readings of one field never carry two presentations, whatever the selector text.
+  {
+    const resolve = (root: unknown, path: string) => {
+      let node: unknown = root; const out: string[] = [];
+      for (const raw of path.split(/\.(?![^[]*\])/)) {
+        const name = raw.replace(/\[.*$/, ""); node = (node as Record<string, unknown> | undefined)?.[name]; let part = name;
+        for (const sel of raw.match(/\[[^\]]+\]/g) ?? []) {
+          const body = sel.slice(1, -1), xs = node as Record<string, unknown>[];
+          if (!Array.isArray(xs)) return null;
+          const i = /^\d+$/.test(body) ? Number(body) : (() => {const hits = xs.flatMap((x, k) => body.split("&").every((c) => String(x?.[c.split("=")[0]!]) === c.slice(c.indexOf("=") + 1)) ? [k] : []); return hits.length === 1 ? hits[0]! : -1;})();
+          if (i < 0) return null; node = xs[i]; part += `[${i}]`;
+        }
+        out.push(part);
+      }
+      return out.join(".");
+    };
+    const byField = new Map<string, Set<string>>();
+    for (const x of d.identity) {
+      const packet = sources.find((y) => y.packet.fingerprint === x.packetFingerprint)?.packet;
+      const field = packet ? resolve(packet, x.path) : null;
+      if (!field) continue;
+      const key = `${x.packetFingerprint}|${field}`, set = byField.get(key) ?? new Set<string>(); set.add(`${x.presentation}`); byField.set(key, set);
+    }
+    for (const [key, set] of byField) if (set.size > 1) bad.push(`presentation_conflict:${key.split("|")[1]}`);
+  }
   // Coherence across fields: a text that puts every measurement below the policy holds for every measurement shown
   // anywhere in the material, at its one presentation.
   for (const t of texts) {
@@ -591,7 +617,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   {
     const cv = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
       {result?: {headroom?: {limits?: {id: string; kind: string; status: string}[]; measurements?: {id: string; role: string; scenario: string; adjustments: unknown[]; tests: {limitId: string; kind: string}[]}[]}; definitions?: {limitId: string; definition: string | null}[]}} | undefined;
-    const record = (figureId: string | undefined) => {const x = d.identity.find((i) => i.figureId === figureId); const id = x ? /measurements\[id=([^\]]+)\]/.exec(x.path)?.[1] : undefined; return cv?.result?.headroom?.measurements?.find((m) => m.id === id);};
+    const record = (figureId: string | undefined) => {const x = d.identity.find((i) => i.figureId === figureId); const id = x ? /measurements\[id=([^\]&]+)/.exec(x.path)?.[1] : undefined; return cv?.result?.headroom?.measurements?.find((m) => m.id === id);};
     for (const b of v.bindings) {
       const m = record(b.figureId ?? undefined);
       if (!m) continue;
@@ -613,7 +639,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       for (const b of v.bindings.filter((x) => x.templateId === templateId && x.slot === slot)) {
         const limitBinding = v.bindings.find((x) => x.field === b.field && x.templateId === templateId && x.slot === limitSlot);
         const limitId = /limits\[id=([^\]]+)\]/.exec(d.identity.find((i) => i.figureId === limitBinding?.figureId)?.path ?? "")?.[1];
-        const m = all.find((x) => x.id === /measurements\[id=([^\]]+)\]/.exec(d.identity.find((i) => i.figureId === b.figureId)?.path ?? "")?.[1]);
+        const m = all.find((x) => x.id === /measurements\[id=([^\]&]+)/.exec(d.identity.find((i) => i.figureId === b.figureId)?.path ?? "")?.[1]);
         const own = m?.tests.find((x) => x.limitId === limitId);
         if (!m || !own || own.breached || all.some((x) => x.role === "test" && x.date === m.date && x.scenario === m.scenario && x.tests.some((y) => y.limitId === limitId && y.breached)))
           bad.push(`compliance:${b.field}:${slot}`);
@@ -1271,7 +1297,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const limit = (places: string, stated: string) => (c: CaseData) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", places, stated];};
     for (const turn of [2, 3] as const) {
       expect(() => withBoardSource("covenant", covenant, () => full(turn, limit("1", "2.4"))))
-        .toThrow("board_capital_display_order_lost:summary.closing.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit");
+        .toThrow("board_capital_display_order_lost:summary.closing.leverage:0:result.headroom.measurements[9].ratio,policy-limit");
       const p = withBoardSource("covenant", covenant, () => full(turn, limit("2", "2.44")));
       expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "alavancagem")!.title).toBe("A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,44x pela definição da escritura");
       expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
@@ -1345,6 +1371,26 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     // With a registered definition the definition may be omitted; with the policy definition registered the sentence omits it.
     const defined = auroraCovenantPacket({policyDefinition: "Mesma definição da escritura"}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("covenant", defined, () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:delib.policy.definition");
+  });
+  it("regression r31: a reading is the field it resolves to; equivalent selectors never carry two presentations (full path, oracle not vacuous)", () => {
+    // 2,4602x shown as 2,46x by one selector and as 2,5x by an equivalent one.
+    const covenant = auroraCovenantPacket({adverseDebt: "124.0361"}) as unknown as Record<string, unknown>;
+    const edit = (places: string, stated: string) => (c: CaseData) => {
+      c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];
+      c.extraReadings["lev-adv27-alt"] = ["covenant", "result.headroom.measurements[id=dez27-adverso&scenario=adverse].ratio", places, stated];
+      const q = c.questions.find((x) => x.id === "trigo")!; q.answer = q.answer.replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-alt");
+    };
+    for (const turn of [2, 3] as const) {
+      expect(() => withBoardSource("covenant", covenant, () => full(turn, edit("1", "2.5")))).toThrow("board_capital_reading_presentation_not_unique:lev-adv27,lev-adv27-alt");
+      // Control: the same presentation through both selectors is one reading of one field.
+      const p = withBoardSource("covenant", covenant, () => full(turn, edit("2", "2.46")));
+      expect(p.result.discussion!.versions.at(-1)!.questions.find((q) => q.id === "trigo")!.answer).toContain("a alavancagem fica em 2,46x, abaixo do covenant de 3,0x.");
+      expect(oracle(p, [{packet: covenant}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      // Not vacuous: the equivalent selector given another presentation.
+      const forged = structuredClone(p), x = forged.result.discussion!.identity.find((i) => i.figureId === "lev-adv27-alt")!;
+      x.presentation = "1";
+      expect(oracle(forged, [{packet: covenant}, ...auroraBoardSources()]).bad.some((y) => y.startsWith("presentation_conflict:result.headroom.measurements["))).toBe(true);
+    }
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};

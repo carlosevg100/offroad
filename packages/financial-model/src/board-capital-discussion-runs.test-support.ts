@@ -79,6 +79,12 @@ export const boardCovenantAnswer = (cov: string, managerial: boolean) => (c: Cas
   const q = c.questions.find((x) => x.id === "trigo")!;
   q.answer = q.answer.replace("ebitda_adverso=ebitda-adv27", "ebitda_adverso=ebitda-adv27-ger").replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-ger");
 };
+/** The adverse leverage read twice, by an id selector and by an equivalent compound selector (test side only). */
+export const boardEquivalentSelectors = (places: string, stated: string) => (c: CaseData) => {
+  c.extraReadings["lev-adv27"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].ratio", "2", "2.46"];
+  c.extraReadings["lev-adv27-alt"] = ["covenant", "result.headroom.measurements[id=dez27-adverso&scenario=adverse].ratio", places, stated];
+  const q = c.questions.find((x) => x.id === "trigo")!; q.answer = q.answer.replace("alavancagem=lev-adv27", "alavancagem=lev-adv27-alt");
+};
 export const boardStatedMillions = (packet: Record<string, unknown>, caseId: string) => {
   const v = (packet.comparison as {metrics: {caseId: string; netPresentValue: string}[]}).metrics.find((m) => m.caseId === caseId)!.netPresentValue;
   return new Decimal(v).div(1000000).toDecimalPlaces(1, Decimal.ROUND_HALF_UP).toFixed(1);
@@ -326,6 +332,10 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r31: the same presentation through equivalent selectors is one reading of one field.
+    observe("equivalent-selectors-with-one-presentation", withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124.0361"}) as unknown as Record<string, unknown>,
+      () => boardPacketInput(2, boardEquivalentSelectors("2", "2.46"))),
+      {below: true}, (p) => ({below: current(p).questions.find((q) => q.id === "trigo")!.answer.includes("a alavancagem fica em 2,46x, abaixo do covenant de 3,0x.")})),
     // Review r30: the contractual adverse test against the covenant of 3,0x, beside the managerial one.
     observe("contractual-adverse-below-the-covenant-of-3-0-beside-a-managerial-measurement", withBoardSource("covenant", auroraCovenantPacket({adverseManagerial: true}) as unknown as Record<string, unknown>,
       () => boardPacketInput(2, boardCovenantAnswer("3.0", false))),
@@ -567,6 +577,10 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r31: equivalent selectors are one field; two presentations of it are refused.
+    ...([2, 3] as const).map((turn) => [`adverse-leverage-2-4602-shown-twice-by-equivalent-selectors-turn-${turn}`, () => withBoardSource("covenant",
+      auroraCovenantPacket({adverseDebt: "124.0361"}) as unknown as Record<string, unknown>, () => build(turn, boardEquivalentSelectors("1", "2.5"))),
+      "board_capital_reading_presentation_not_unique:lev-adv27,lev-adv27-alt"] as [string, () => unknown, string]),
     // Review r30: compliance with a limit only by a registered, unbreached test of that very limit.
     ...([2, 3] as const).flatMap((turn) => [
       [`managerial-adverse-read-below-a-breached-covenant-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({covenantMaximum: "2.3", adverseManagerial: true}) as unknown as Record<string, unknown>,
@@ -583,7 +597,7 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ...([2, 3] as const).map((turn) => [`unshown-measurement-2-426-above-the-policy-shown-as-2-4-turn-${turn}`, () => withBoardSource("covenant",
       auroraCovenantPacket({policyMaximum: "2.44", unshownMeasurement: true}) as unknown as Record<string, unknown>,
       () => build(turn, (c) => {c.extraReadings["policy-limit"] = ["covenant", "result.headroom.limits[id=politica].maximumRatio", "1", "2.4"];})),
-      "board_capital_display_order_lost:summary.closing.leverage:0:result.headroom.measurements[dez27-estresse].ratio,policy-limit"] as [string, () => unknown, string]),
+      "board_capital_display_order_lost:summary.closing.leverage:0:result.headroom.measurements[9].ratio,policy-limit"] as [string, () => unknown, string]),
     // Review r27: one presentation per reading across the material; a shorter profile by its last effective payment.
     ...([2, 3] as const).flatMap((turn) => [
       [`summary-below-the-policy-with-the-adverse-shown-as-2-5-in-the-wheat-answer-turn-${turn}`, () => withBoardSource("covenant", auroraCovenantPacket({adverseDebt: "124"}) as unknown as Record<string, unknown>,
