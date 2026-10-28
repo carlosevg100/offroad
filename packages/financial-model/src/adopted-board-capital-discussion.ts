@@ -40,6 +40,8 @@ export const adoptedBoardCapitalDiscussionInputSchema = adoptedAnalysisContextSc
   omissions: z.array(z.strictObject({id: key, reading: selection})).max(12),
   /** [origin, author, code]: a fact informed in the conversation, adopted as a code of the method's dictionary with who stated it. */
   informed: z.array(z.strictObject({id: key, reading: selection})).max(12).default([]),
+  /** [plan source, plan instrument, debt-table source, debt-table row]: the adopted identity of two records of two results. */
+  links: z.array(z.strictObject({id: key, reading: selection})).max(12).default([]),
 }).refine((i) => i.endDate >= i.openingDate, "Invalid period");
 export type AdoptedBoardCapitalDiscussionInput = z.infer<typeof adoptedBoardCapitalDiscussionInputSchema>;
 
@@ -121,6 +123,8 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
     return {id: o.id, target: r?.[0] as (typeof boardOmissionTargets)[number], targetId: r?.[1] as string, requestedBy: r?.[2] as string};});
   const informed = input.informed.map((x) => {const r = list(x.reading, `informed.${x.id}`, z.tuple([z.string().max(40), z.string().max(40), z.string().regex(/^[a-z][a-z_]{0,59}$/)]));
     return {id: x.id, origin: r?.[0] as string, author: r?.[1] as string, code: r?.[2] as string};});
+  const links = input.links.map((x) => {const r = list(x.reading, `link.${x.id}`, z.tuple([key, key, key, key]));
+    return {id: x.id, planSourceId: r?.[0] as string, instrumentId: r?.[1] as string, tableSourceId: r?.[2] as string, rowId: r?.[3] as string};});
   // The results it reads are those the basis names, by fingerprint, and no other.
   const byId = new Map(packets.map((p) => [p.id, p.packet]));
   if (byId.size !== packets.length || packets.some((p) => !input.sources.some((s) => s.id === p.id))) throw new Error("board_capital_source_not_named");
@@ -131,7 +135,7 @@ export function calculateAdoptedBoardCapitalDiscussion(raw: unknown) {
     return [verifyBoardSource(n, parseBoardSourceText(n.id, packet), {entityId: input.entityId, currency: input.currency})];
   });
   const discussion: BoardDiscussion | null = complete ? {meetingDate, askedOn, leadDays: Number(leadDays), agendaMinutes: agendaMinutes === null ? null : Number(agendaMinutes),
-    minutesPerPage: Number(minutesPerPage), nextMeetingDate, template, outlineConfirmed, topics, deliberations, figures, materialFigureIds, indicative, pages, summary, appendix, questions, omissions, informed} : null;
+    minutesPerPage: Number(minutesPerPage), nextMeetingDate, template, outlineConfirmed, topics, deliberations, figures, materialFigureIds, indicative, pages, summary, appendix, questions, omissions, informed, links} : null;
   const result = discussion ? prepareBoardCapitalDiscussion(discussion, sources) : null;
   const payload = {schemaVersion: "adopted-board-capital-discussion.v1" as const, financialCoreVersion, scope: input.scope, analysisId: input.analysisId,
     entityId: input.entityId, perimeter: input.perimeter, currency: input.currency, basisFingerprint: input.envelope.fingerprint,

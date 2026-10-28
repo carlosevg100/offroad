@@ -1030,7 +1030,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const relabelled = auroraInvestmentPacket({economyCaseWithLargerCapexOnly: true}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("linha-embalagem", relabelled, () => full(2, (c) => {
       c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(relabelled, "economy-4")];
-    }))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+    }))).toThrow("board_capital_record_role_absent:topic.project_sensitivities:ce:sensitivity_case");
     const p = full(2, () => undefined);
     expect(p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "linha")!.lines[3]).toBe("Motivo apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal.");
     expect(() => full(2, (c) => {c.informed[0]!.author = "cfo";})).toThrow("board_capital_informed_fact_mismatch");
@@ -1051,7 +1051,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const frontLoaded = auroraInvestmentPacket({capexFrontLoadedSmallerTotal: true}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("linha-embalagem", frontLoaded, () => full(2, (c) => {
       c.extraReadings["npv-capex"] = ["linha-embalagem", "comparison.metrics[caseId=capex-120].netPresentValue", "1", boardStatedMillions(frontLoaded, "capex-120")];
-    }))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+    }))).toThrow("board_capital_record_role_absent:topic.project_sensitivities:cc:sensitivity_case");
     // Not vacuous: the calibrated material read against the projection with longer inventory and the investment with
     // front-loaded capex is read as false on both causes, and only on those.
     const calibrated = packet(2, () => undefined), fingerprintOf = (method: string) => calibrated.result.discussion!.identity.find((x) => x.methodId === method)!.packetFingerprint;
@@ -1105,7 +1105,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const onTime = auroraPlanPacket({deferralWithOperationOnTime: true}) as unknown as Record<string, unknown>;
     expect(() => withBoardSource("plano-2027", onTime, () => full(2, (c) => {boardRestatePath(c, onTime, "adiar-linha");}))).toThrow("board_capital_template_condition_failed:alternatives.moves.defer_line");
     const extra = auroraPlanPacket({extensionWithExtraPrepayment: true}) as unknown as Record<string, unknown>;
-    expect(() => withBoardSource("plano-2027", extra, () => full(2, (c) => {boardRestatePath(c, extra, "alongar-bradesco");}))).toThrow("board_capital_template_condition_failed:alternatives.moves.extend_bradesco");
+    expect(() => withBoardSource("plano-2027", extra, () => full(2, (c) => {boardRestatePath(c, extra, "alongar-bradesco");}))).toThrow("board_capital_record_role_absent:alternatives.row.extend_bradesco:p:path_with_moves");
     // Not vacuous: each forged plan read against the calibrated texts, and a working-capital line forged as a balance.
     const calibrated = packet(2, () => undefined), plan = calibrated.result.discussion!.identity.find((x) => x.methodId === "evaluate-financing-paths")!.packetFingerprint;
     const readWith = (packet: Record<string, unknown>) => oracle(calibrated, [{packet: {...packet, fingerprint: plan}}, ...auroraBoardSources()]).bad;
@@ -1122,13 +1122,15 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       {id: "sem-recomendacao", target: "page", targetId: "recomendacao", requestedBy: "requester.chair"}];});
     expect(refused.readings!.omissions.map((o) => o.outcome)).toEqual(["refused", "refused"]);
     expect(oracle(refused)).toEqual({bad: [], missing: []});
-    const variants = [["amendmentWithoutExtension", "alternatives.moves.extend_bradesco", ["alongar-bradesco"]], ["developmentLoanAsBank", "alternatives.moves.debenture_with_line", ["debenture-com-linha", "alongar-com-banco", "alongar-bradesco"]],
-      ["deferralOnlyCapexAndEbitda", "alternatives.moves.defer_line", ["adiar-linha"]]] as const;
+    // A path whose moves no longer are its row's has no row (the row is found by its moves); otherwise its line is refused.
+    const variants = [["amendmentWithoutExtension", "template_condition_failed:alternatives.moves.extend_bradesco", ["alongar-bradesco"]],
+      ["developmentLoanAsBank", "record_role_absent:alternatives.row.debenture_with_line", ["debenture-com-linha", "alongar-com-banco", "alongar-bradesco"]],
+      ["deferralOnlyCapexAndEbitda", "template_condition_failed:alternatives.moves.defer_line", ["adiar-linha"]]] as const;
     const calibrated = packet(3, () => undefined), plan = calibrated.result.discussion!.identity.find((x) => x.methodId === "evaluate-financing-paths")!.packetFingerprint;
     for (const [name, template, paths] of variants) {
       const forged = auroraPlanPacket({[name]: true} as Parameters<typeof auroraPlanPacket>[0]) as unknown as Record<string, unknown>;
       expect(() => withBoardSource("plano-2027", forged, () => full(2, (c) => {for (const id of paths) boardRestatePath(c, forged, id);
-        c.extraReadings["bradesco-gap"] = boardRestated(forged, "plano-2027", "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", 0);})), name).toThrow(`board_capital_template_condition_failed:${template}`);
+        c.extraReadings["bradesco-gap"] = boardRestated(forged, "plano-2027", "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum", 0);})), name).toThrow(`board_capital_${template}`);
       // Not vacuous: the calibrated texts read against the forged plan are flagged by the oracle on that path.
       const read = oracle(calibrated, [{packet: {...forged, fingerprint: plan}}, ...auroraBoardSources()]).bad;
       expect(read.some((x) => x.startsWith("path_") || x.startsWith("scenario_plan_deferral:")), name).toBe(true);
@@ -1262,7 +1264,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       // Without the economy change: the same operations are positive at the base's 15% and negative at 30%.
       if (!withEconomy) expect(npv("base").gt(0)).toBe(true);
       expect(() => withBoardSource("linha-embalagem", packet, () => full(2, (c) => {
-        c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}))).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+        c.extraReadings["npv-economy"] = ["linha-embalagem", "comparison.metrics[caseId=economy-4].netPresentValue", "1", boardStatedMillions(packet, "economy-4")];}))).toThrow("board_capital_record_role_absent:topic.project_sensitivities:ce:sensitivity_case");
       // Not vacuous: the calibration's texts read against this result (same fingerprint) are refused by the oracle.
       const p = full(2, () => undefined), forged = {...packet, fingerprint: (original.packet as {fingerprint: string}).fingerprint};
       expect(oracle(p, [{packet: forged}, ...auroraBoardSources().filter((x) => x !== original && x.methodId !== "analyze-investment-project")]).bad.some((x) => x.startsWith("scenario_economy:"))).toBe(true);
@@ -1592,8 +1594,8 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     // The same sentence without the definition named: flagged by the library, and refused by the render it is given to
     // (the library is frozen; a changed one is passed explicitly to one render, never put in place of the production one).
     const original = boardTemplates["risk.leverage_adverse"]!;
-    const changed = {...boardTemplates, "risk.leverage_adverse": {...original, text: original.text.replace("{definition:politica:$ma}", "")}};
-    expect(checkBoardTemplateLibrary(changed)).toContain("risk.leverage_adverse:definition_token:politica");
+    const changed = {...boardTemplates, "risk.leverage_adverse": {...original, text: original.text.replace("{definition:$lp:$ma}", "")}};
+    expect(checkBoardTemplateLibrary(changed)).toContain("risk.leverage_adverse:definition_token:$lp");
     const covenant = auroraBoardSources().find((x) => x.id === "covenant")!, table = auroraBoardSources().find((x) => x.id === "tabela-divida")!;
     const reading = (x: {id: string; methodId: string; packet: Record<string, unknown>; moneyScale: string}) => ({id: x.id, methodId: x.methodId, methodVersion: "v", executorVersion: null, packetSchemaVersion: "v",
       packetFingerprint: String(x.packet.fingerprint), moneyScale: x.moneyScale, status: "s", gaps: [], packet: x.packet}) as unknown as BoardSourceReading;
@@ -1726,7 +1728,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       const packet = structuredClone(original);
       const entry = packet.cases.find((x) => x.id === "economy-4")!.result.contributions.find((x) => x.fieldPath.endsWith(`.${field}`))!;
       entry.value = change(entry.value);
-      expect(() => withBoardSource("linha-embalagem", reseal("analyze-investment-project", packet as unknown as Record<string, unknown>), () => full(2, () => undefined)), field).toThrow("board_capital_template_condition_failed:topic.project_sensitivities");
+      expect(() => withBoardSource("linha-embalagem", reseal("analyze-investment-project", packet as unknown as Record<string, unknown>), () => full(2, () => undefined)), field).toThrow("board_capital_record_role_absent:topic.project_sensitivities:ce:sensitivity_case");
       refused++;
     }
     expect(refused).toBe(fields.length - named.length);
@@ -1738,11 +1740,11 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       packet.result.contributions.push({...structuredClone(packet.result.contributions[0]!), fieldPath: prefix + extra, value: {type: "number", value: "1"}});
       expect(() => withBoardSource("projecao", reseal("build-operating-projection", packet as unknown as Record<string, unknown>), () => full(2, () => undefined)), extra).toThrow(/board_capital_template_condition_failed:(what_changes\.wheat|a\.wheat)/);
     }
-    // A plan path: a field the move line does not read refuses the line.
+    // A plan path: a field the moves do not account for leaves the path without its row (the row is found by its moves).
     const plan = auroraBoardSources().find((x) => x.methodId === "evaluate-financing-paths")!.packet as {result: {contributions: {fieldPath: string; value: unknown}[]}};
     const packet = structuredClone(plan), instruments = packet.result.contributions.find((x) => x.fieldPath.endsWith(".path.ccb-tres-anos.instruments"))!;
     packet.result.contributions.push({...structuredClone(instruments), fieldPath: instruments.fieldPath.replace(/instruments$/, "covenantPackage"), value: {type: "text", value: "novo"}});
-    expect(() => withBoardSource("plano-2027", reseal("evaluate-financing-paths", packet as unknown as Record<string, unknown>), () => full(2, () => undefined))).toThrow("board_capital_template_condition_failed:alternatives.moves.short_bank_loan");
+    expect(() => withBoardSource("plano-2027", reseal("evaluate-financing-paths", packet as unknown as Record<string, unknown>), () => full(2, () => undefined))).toThrow("board_capital_record_role_absent:alternatives.row.short_bank_loan:p:path_with_moves");
   }, 300000);
   it("property: generated contributions (templates moved, slots rebound, templates at random) are refused or read clean by the independent oracle, concepts included (fixed seed)", () => {
     const r = random(4724);
@@ -1831,9 +1833,9 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const original = boardTemplates["alternatives.moves.short_bank_loan"]!, roll = boardTemplates["a.roll_bank"]!;
     const problems = checkBoardTemplateLibrary({...boardTemplates,
       "alternatives.moves.short_bank_loan": {...original, text: original.text.replace("financiamento bancário novo", "crédito bancário de curto prazo e financiamento bancário novo")},
-      "a.roll_bank": {...roll, text: roll.text.replace("{bankcredit:bradesco-sem-linha}", "{bankcredit:ccb-tres-anos}")}});
+      "a.roll_bank": {...roll, text: roll.text.replace("{bankcredit:$b}", "{bankcredit:$p}")}});
     expect(problems).toContain("alternatives.moves.short_bank_loan:qualifier_unproved:curto");
-    expect(problems).toContain("a.roll_bank:bankcredit_unproved:ccb-tres-anos");
+    expect(problems).toContain("a.roll_bank:bankcredit_unproved:$p");
     const supplier = boardTemplates["delib.action.supplier_notice"]!;
     expect(checkBoardTemplateLibrary({...boardTemplates, "delib.action.supplier_notice": {...supplier, text: supplier.text.replace("ao fornecedor", "ao fornecedor atual")}}))
       .toEqual(["delib.action.supplier_notice:qualifier_unproved:atual"]);
@@ -2135,7 +2137,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       expect(() => withBoardSource("plano-2027", recommended, () => full(turn, (c) => {
         for (const [name, field] of [["five-year-amort", "scheduledAmortization"], ["five-year-available", "availableAfterInterest"]] as const)
           c.extraReadings[name] = ["plano-2027", `result.evaluation.paths[id=emissao-revista].amortizationTests[profileId=cinco-anos].years[year=2029].${field}`, "0", field === "scheduledAmortization" ? "33" : "24"];
-        boardRestateSource("plano-2027", "evaluate-financing-paths", recommended)(c);})), `${turn}`).toThrow(/board_capital_set_incomplete:page\.caminhos:paths:-emissao-revista/);
+        boardRestateSource("plano-2027", "evaluate-financing-paths", recommended)(c);})), `${turn}`).toThrow(/board_capital_record_role_ambiguous:alternatives\.row\.no_line_debenture:p:path_with_moves:emissao-revista,sem-linha-debenture/);
       // Not vacuous: the calibrated material read against the eight-path source, and with one row removed, is flagged.
       const calibrated = packet(turn, () => undefined), original = auroraBoardSources().find((x) => x.id === "plano-2027")!;
       expect(oracle(calibrated, [{packet: {...eight, fingerprint: (original.packet as {fingerprint: string}).fingerprint}}, ...auroraBoardSources().filter((x) => x.id !== "plano-2027")]).bad, `${turn}`)
@@ -2151,7 +2153,7 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const {fingerprint: _f, ...payload} = schema.parse(fourth);
     const sealed = {...fourth, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")} as unknown as Record<string, unknown>;
     for (const turn of [2, 3] as const)
-      expect(() => withBoardSource("linha-embalagem", sealed, () => full(turn, () => undefined)), `${turn}`).toThrow(/board_capital_template_condition_failed:topic\.project_sensitivities/);
+      expect(() => withBoardSource("linha-embalagem", sealed, () => full(turn, () => undefined)), `${turn}`).toThrow(/board_capital_record_role_ambiguous:topic\.project_sensitivities:ce:sensitivity_case:economy-4,economy-5/);
     // The core refuses a page of paths that drops a row, whatever the rest of the material.
     expect(() => full(2, (c) => {const pg = c.pages.find((x) => x.id === "caminhos")!; pg.lines = pg.lines.slice(1);})).toThrow(/board_capital_set_incomplete:page\.caminhos:paths:-/);
     expect(() => full(2, (c) => {const pg = c.pages.find((x) => x.id === "movimentos")!; pg.lines = pg.lines.slice(1);})).toThrow(/board_capital_set_incomplete:page\.movimentos:paths:-/);

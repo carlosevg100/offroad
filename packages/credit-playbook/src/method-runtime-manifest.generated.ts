@@ -9401,7 +9401,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -9517,7 +9517,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -9529,15 +9529,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -9545,15 +9545,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -10348,7 +10348,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "5c92cf383c3b90985dda4db9f6abc94b8e5157e6fef5a66174f38061081d98a7"
+          "hash": "20a869b1691df4953adb9eaf833164c5d6551de4eab6aab323daccf091a99fab"
         },
         "evidence": [
           {
@@ -10374,7 +10374,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "27b06311a4b61e6713542ce31492f122acb19259965f2daab83b6ba98c428732"
+    "manifestHash": "7ce42634ae2848b83192017fc636cbe4db5ddf3240b75aaed4ee67757714a1bb"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -17258,7 +17258,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -17374,7 +17374,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -17386,15 +17386,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -17402,15 +17402,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -18205,7 +18205,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "aa0c9fb364a36a162a98706d656bd8feb04b9841833628c3accdf28c4fcc132a"
+          "hash": "9389de0f02687d89e607a1957c5502d3a7f1de411da60cd0ec72368728d63ac0"
         },
         "evidence": [
           {
@@ -18231,7 +18231,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "88f6608193c97c81bfc06064bd5cf33e37cdf47ffb3e0fcb6f8d72776fe134d0"
+    "manifestHash": "b9c9b5622c545ef52e1a67a72aca6c2ea564d107edee9f1af9b0b0af80e4a43b"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -23018,7 +23018,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -23134,7 +23134,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -23146,15 +23146,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -23162,15 +23162,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -23965,7 +23965,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "f469fff5cf18919366d0c1bfbbb7247c7034f410b72641e46ba476a20d3f9e7c"
+          "hash": "b4412b273515e5193eeae74406e19a029113ead16c6c0b119c015baf58e7e62b"
         },
         "evidence": [
           {
@@ -23991,7 +23991,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "8bee8196fc08a433c48305332cb02af635433996593d7aee260f10c543ce8106"
+    "manifestHash": "c54f513a496aa3dcacf8f03e852565e345406b5149b4aa65f860c8b706a39add"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -30569,7 +30569,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -30685,7 +30685,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -30697,15 +30697,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -30713,15 +30713,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -31516,7 +31516,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "d6a01f2569082f80c26ad40cbc3daf04503f06368bf6825c0e520323985b6a92"
+          "hash": "876d3e99982aa7216585157c45eb5989f8ea590f7732cfe91331e3fe8d8b5f5f"
         },
         "evidence": [
           {
@@ -31542,7 +31542,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "1ea554837cea585339d9bb9442893b3d23d4a0b5d6d697f86292bf62b35ff35d"
+    "manifestHash": "0caaadfdacdc0a55a1b713696f8a0cda200ec729ab33fe8747605d624c908bd6"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -40200,7 +40200,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -40312,7 +40312,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -40324,15 +40324,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -40340,15 +40340,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -41147,7 +41147,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "b88465db3c45fe45c3438d02970a0094ea4c9ea05a77e8e811f17f3fb4fdf0de"
+          "hash": "f0887b5d271070003994a75dd944a9aab394c68469089863fd2dfdba27c72694"
         },
         "evidence": [
           {
@@ -41173,7 +41173,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "9661c64cb57b269f96d09715633e1636502e256b82ca9467dc88842cc6568820"
+    "manifestHash": "11107903a73271eecf6c97fa0edb09a180e5ef55696d8f1087e161c67165588a"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -47946,7 +47946,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -48058,7 +48058,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -48070,15 +48070,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -48086,15 +48086,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -48893,7 +48893,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "f00eef5edde8a8a03ba0cf99be631695fd2cff233df88fb8ea78758bc2f4c558"
+          "hash": "fbba99890af1c434e456893e2007f43e05423a19c11bd8b73914ad996cbf1e61"
         },
         "evidence": [
           {
@@ -48919,7 +48919,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "52444800b302b30a60513290d07d47f9061cdb3ae9536c46506aaa3a06141fb2"
+    "manifestHash": "daa7b165e4c27a4729a350d2cf85edef7102d54d178cc843ee8b1031a4aadc50"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -57472,7 +57472,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -57588,7 +57588,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -57600,15 +57600,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -57616,15 +57616,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -58427,7 +58427,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "3f45b7fdb1345a4477eba6209ee60abc62f3dd16a8052f040b67dd613b43c534"
+          "hash": "eca220ee62245a188d96f7abc4db7f1c4ce174e49a5d1141e8c166124a52c8f9"
         },
         "evidence": [
           {
@@ -58453,7 +58453,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "6f82fa37e155bff241ef58153cbbf1aecb9a7dc3cbacc49f6f295532a9a82b12"
+    "manifestHash": "8065f3ed0d17b38b843fa8b33f3250f3bb631912e596c16dd39438bcd12a407d"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -70120,7 +70120,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -70232,7 +70232,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -70244,15 +70244,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -70260,15 +70260,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -71067,7 +71067,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "a656447dd4c24ff918861b62aa3d894ba1b75d4cdce407c4fe056ac45854cda4"
+          "hash": "7dfe42e72c9d03330a4f0f6d1b83fa0f131dd0d6cd07371b0668b842cbb7959a"
         },
         "evidence": [
           {
@@ -71093,7 +71093,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "69ba41fd2b8d3895bad2080d6e8acf67a5dc77c06fafa4198244a47fbc1d3041"
+    "manifestHash": "4e65d58e9ed7a313a8196ce13d739edc54e2f280cc59f06155d14551f7673edb"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -82534,7 +82534,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -82646,7 +82646,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -82658,15 +82658,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -82674,15 +82674,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -83481,7 +83481,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "5357279d6f1ff285593ba34de98b5133b0b8a9220898bbdf231ef5d7819434eb"
+          "hash": "d4b2bd5bc76268b84f2f58e7af0ba5b37bb98a837c64e52ee99075254b994c86"
         },
         "evidence": [
           {
@@ -83507,7 +83507,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "3137a14d9cc265b87deb37d27b1b273f00e89869077d7b0fc3f36b5ff89abebf"
+    "manifestHash": "8bc04e8b69abf3c359fa302d6ad53f1651c8c14fca33f189bfa60a80ed5149a8"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -88354,7 +88354,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -88466,7 +88466,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -88478,15 +88478,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -88494,15 +88494,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -89297,7 +89297,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "61278ee79ecbad1529eccd38b79333c2e9b6ae380bdf7f166cbeb2f902e874ef"
+          "hash": "aa2baa7356d11b391479e455a69de3532f7f3bde40427423ed6156b06b4edb5c"
         },
         "evidence": [
           {
@@ -89323,7 +89323,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "8fd100bacd558a1cfe51236e48d8c32d71cc71bc22d45bfb8fe059af0fc3913d"
+    "manifestHash": "0d2dcc631d5dbf0d6072fd394fd9f531ac836af5fbbe9f59640103c8bf5bf0b2"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -96510,7 +96510,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -96622,7 +96622,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -96634,15 +96634,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -96650,15 +96650,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -97457,7 +97457,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "2d707f495100598fd3ee8c645effffe84e47c4ff611b3ad35f3c0fbf988ef968"
+          "hash": "9102779dfee8d582dd1a61c6c30a5af56d8b33f531e811becdcb364f93dc7bee"
         },
         "evidence": [
           {
@@ -97483,7 +97483,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "b8ad4aa0e838289c6f3352b9da3d2d83a87179d7db80ec00a4820ab5bfe101ef"
+    "manifestHash": "4beced8a562679fc7d360d4d992a781d3614fef37fb54f30b5a9c2e8289b4bbb"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -104876,7 +104876,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -104988,7 +104988,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -105000,15 +105000,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -105016,15 +105016,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -105831,7 +105831,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "c83c094a1576c43615e0ecb604b0c9e5b042076554d20e9f43272f85f1222b81"
+          "hash": "19324429f75f650755eb1004296802befdce3df80b9bad81f9c4629ee82a9b28"
         },
         "evidence": [
           {
@@ -105857,7 +105857,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "302fc5501bbaaf1e42a626f65dd1412f6b4046584f5546cfd9c0ce03ed4554b9"
+    "manifestHash": "5c258df5f67645dd39fe540a08eb459de2c75d868dba6ae5888c164642b4137b"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -105868,7 +105868,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
     },
     "source": {
       "path": "capital/prepare-board-capital-discussion.md",
-      "hash": "62834076ab3b19075f71b9fa59a4c506ce9f8d93501be6874dce2ae62e821b63"
+      "hash": "f27abc3ec18c574420d2f6ffc54a6897e4c1eafc39e4b72e0215454d1ea041ab"
     },
     "compiler": {
       "version": "2026.09.21-v9",
@@ -108076,6 +108076,76 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
                               }
                             },
                             "informed": {
+                              "required": false,
+                              "value": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "fields": {
+                                    "id": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "reading": {
+                                      "required": true,
+                                      "value": {
+                                        "type": "object",
+                                        "fields": {
+                                          "decisionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "definitionVersionId": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "string"
+                                            }
+                                          },
+                                          "definitionKind": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "reported",
+                                                "managerial",
+                                                "contractual"
+                                              ]
+                                            }
+                                          },
+                                          "missingReason": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "union",
+                                              "variants": [
+                                                {
+                                                  "type": "string"
+                                                },
+                                                {
+                                                  "type": "null"
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "links": {
                               "required": false,
                               "value": {
                                 "type": "array",
@@ -111056,6 +111126,47 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
                                     }
                                   }
                                 },
+                                "links": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "fields": {
+                                        "id": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "planSourceId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "instrumentId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "tableSourceId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "rowId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
                                 "priorVersionsKept": {
                                   "required": true,
                                   "value": {
@@ -111580,7 +111691,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             "version": "2026.10.27-v1"
           }
         },
-        "componentHash": "8e683cf5fc8ef214e3321e5c3beb5c7f62eaf026ee0ed52e74c4b30e94ed9a8d",
+        "componentHash": "99b2e1ff53e7a79ded0102ad8a892e7d0646fb251cd758c072883e4945a3832f",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareBoardCapitalDiscussionPacket",
@@ -112452,7 +112563,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/contracts/board-capital-discussion-packet.json",
-              "hash": "6984a6caafab6849b59cc2e825050f38382e20cbd7ef85f48302478f4c2dff7a"
+              "hash": "5f9f44cb3546bc14645b4d83c087abfe7dc7c0d2b6eb29aac3522c40c8b1ede6"
             },
             {
               "path": "packages/financial-model/package.json",
@@ -112476,7 +112587,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -112588,7 +112699,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -112608,23 +112719,27 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-properties.test.ts",
-              "hash": "997b11aabb0e5fee24aede07608619a21ab63d5968d840d509d7f38ee03f93ad"
+              "hash": "a36c087c8d8a3e1831438e8535d175345230d9ccb587e97f288070ff78c6f579"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
+            },
+            {
+              "path": "packages/financial-model/src/board-capital-discussion-roles.test.ts",
+              "hash": "aff0e0741b4a7ff4a9fa192efac4cd483446d82683be8312e100d80ac5a0d658"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test.ts",
-              "hash": "291b9746ecc10037ca77b88918ed91c951028fb157e9369bcab64d042d0c596b"
+              "hash": "012d83f25df04c63f79e09fcc8ae0316ee4c98b022dc4a626c31c02ce0c0c39e"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -112632,19 +112747,19 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test.ts",
-              "hash": "97c46ce1a140a0453daf76f8c799d8d151e7ea0bccf09581efe20b9ba63704ed"
+              "hash": "5b9b74a0a33ad4f73e5f835d171d389227746274f7f6810e38353956dfb00d9c"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -113431,20 +113546,20 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "aef549bf0670721dde82e040d93b593d76b1725201b43b74910ef69cb0c2646b"
+          "hash": "c464db994b4db85bb605dc9a7b504cfe4fe6a7c7106f3363b0474cbf3ffd0329"
         },
         "evidence": [
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-gold/run.json",
-            "hash": "3c5b648b2eef6e981fec7906486100eb3068c98c49a0863f070d8e9652357ffb"
+            "hash": "2330817c22fd9afb485972cc9ad84de59851b13cbdf50a0244d5e3309466b817"
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-adversarial/run.json",
-            "hash": "833b4f1a62320aab9f82e43a91ac1e549d81ba7d6ea3ed7aeeed6b82b94a2662"
+            "hash": "f49cadf01caa4e8ccaed8fee59f876df07c8a061f9254865f6ef0693ebf07d80"
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/runs/prepare-board-capital-discussion-2026-10-27-v1-consistency/run.json",
-            "hash": "ce7c8b5b328106cc0d5d5538e57cf5da282550b2e0613c4c9fc16027c1f08463"
+            "hash": "5ae4c0f9f49c6d12734647e088e9af03083dd6944ed876a9a9850ac3708f552e"
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/prepare-board-capital-discussion-2026-10-27-v1-independent-review.json",
@@ -113452,12 +113567,12 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/evidence/prepare-board-capital-discussion-2026-10-27-v1-independent-review/REVIEW-SUBJECT-BASIS.json",
-            "hash": "e77ae5bb39f8a52e5d0e19d812780e3b1fd5d2297117c4c479e39faf17687023"
+            "hash": "7df6b45a450a5b4c6bb163a4f3feb946e5cd8b76b90b4de00bad2d5e80ab7900"
           }
         ]
       }
     ],
-    "manifestHash": "8a4da51fd0ffc50ad3347e95ff31d13a9c755617fbdcfc3b534912a733d83899"
+    "manifestHash": "56244ca2992ad84fc003154d604196e9638f35c08b82346bf5ffb736d4864b03"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -136785,7 +136900,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -136897,7 +137012,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -136909,15 +137024,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -136925,15 +137040,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -137748,7 +137863,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "bbde572dd0d9b31e2f45ab45bc8ad2bf7a9ab073c041cea2b774aedd1976658e"
+          "hash": "e63319cf618aabbc02868a3ee3b05dfdb1378770519fd0539888cc64171e774a"
         },
         "evidence": [
           {
@@ -137774,7 +137889,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "2df4937ee77268d2b5e6f1abdb3800ec02733834f886a7daa945037cd9c490b3"
+    "manifestHash": "0454013d1d573f40bfa8d62809f8fff0cbfda6431e33c9db99b4f6fb51d583fe"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -143139,7 +143254,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -143251,7 +143366,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -143263,15 +143378,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -143279,15 +143394,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -144082,7 +144197,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "82063497f9298b87a9feffe8df8afbfdf66e791600476517d4c9854684752249"
+          "hash": "772e83319bcb45ee54ab484c95c30016d8049f6a274595fd67b8fa48eda9f437"
         },
         "evidence": [
           {
@@ -144108,7 +144223,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "89056e84c6304122b6257a599bb2494843adff28a357cd8ee12fadb4781e8566"
+    "manifestHash": "27135462eb25e7ecee71628987a405558d73ca6efef7dc2f389cfab7817cbc81"
   },
   {
     "schemaVersion": "compiled-procedure-manifest.v1",
@@ -156003,7 +156118,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/adopted-board-capital-discussion.ts",
-              "hash": "d21c874e0a671fdadea28abe78754c1de712791a296e2ae1a80438d322545580"
+              "hash": "45c0b8a4266c15b49e55b77eeb1075ddffab3f4b47ec60dafa5d603b2ca97935"
             },
             {
               "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
@@ -156115,7 +156230,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-composer.ts",
-              "hash": "93d50b549e9bf2b7494ace50fb24d07102474a587b1a2e2c95748330ff82d925"
+              "hash": "1ae5f9f9e6dc652923b25e85565df090ea24358c669467811172328a65074a5a"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-contracts.ts",
@@ -156127,15 +156242,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-premises.ts",
-              "hash": "09b7ccbf788ea4349d5f643bc46893a1bfc2f29afd52eda6d39ba79e2660df11"
+              "hash": "b8275b87af46ed0ce5482ebbdf09d933db618ada90f8a2c70c4dfac6c5276e1b"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-results.ts",
-              "hash": "cd660a93a925f6ce5a27725b2c2aefcdf8ea48863d30ff3dc509d59ba9b3bdb3"
+              "hash": "7fa544972c26c980ca3f257a1b152958772214acc51564845e3ecab78e9f0c68"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-runs.test-support.ts",
-              "hash": "d04e8b140ed00a7bdcc13e8a79745df0afaf9a6979c6f2029a72ded92aa37e0f"
+              "hash": "c77dce2f3d65ef1de3baa594da5fc80a0dc8e26ce6ba565417ff4734089d821d"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-sources.ts",
@@ -156143,15 +156258,15 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
-              "hash": "31eca96dd78287366a55dcaf1fc1b0bc7a23c54371241b5127e24520f2a5011e"
+              "hash": "8de1b2fe63768a0520b0a7e64fef00067447f5e6ea3eeaaaaa2dcd80cd0a9c05"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.test-support.ts",
-              "hash": "f867e8351d9610a393b2facaf3eba4f4ea822df630e84ed58e2295aac1c1cb82"
+              "hash": "f14e8fba3ea2c0e15f7fb9a83760bbba6e563279e1e89ada83806b9245e9cf71"
             },
             {
               "path": "packages/financial-model/src/board-capital-discussion.ts",
-              "hash": "eec020b0b83660e3435951d113269c8afcae4967411296212a14c8ad86ae4307"
+              "hash": "9376ee740c1866a484f5b57007c2ca7b3fca4bfa22d6f4c02b565318bf376329"
             },
             {
               "path": "packages/financial-model/src/capital-chart-series.ts",
@@ -156950,7 +157065,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "8d2b018a0af45fe8bf120426ef8d0e76c4f94a954f8f510d2ee6a5323b8975f6"
+          "hash": "5efc9b694df35a305831068d600bb9211214df6f7603d6279447d02ed8e289ba"
         },
         "evidence": [
           {
@@ -156976,7 +157091,7 @@ export const procedureBuildProvenance: readonly ProcedureBuildProvenanceEntry[] 
         ]
       }
     ],
-    "manifestHash": "09b7d6a314144a16edf6cf3f0700e0390ced35de4f02ee21193e047829eba6c5"
+    "manifestHash": "037b84f49aea7ba0c05fbd396507dc1fdc69dbacbb0ec3747b2e7da8c1a15ed2"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
