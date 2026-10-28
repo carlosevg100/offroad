@@ -3,7 +3,7 @@ import {beforeAll, describe, expect, it} from "vitest";
 import {boardReleasedSources, composeBoundBoardCapitalDiscussion, prepareBoardCapitalDiscussionPacket, prepareCapitalPathsPacket, proposeBoardCapitalDiscussionHypotheses,
   type BoardCapitalDiscussionFacts, type BoardSourceMethodId} from "@offroad/financial-model";
 import {boardMaterialCheck, boardMaterialConversation, boardMaterialPriorsByMethod, boardOmittedReason} from "./board-material-premises-proposal";
-import {boardMaterialPathRows, boardMaterialRecordRoles, planBoardMaterial, type BoardMaterialPlanned, type BoardMaterialPrior} from "./board-material-planner";
+import {answeredInstrument, boardMaterialPathRows, boardMaterialRecordRoles, planBoardMaterial, recordsNamed, type BoardMaterialPlanned, type BoardMaterialPrior} from "./board-material-planner";
 import {inMemoryBasis} from "./lote3-reader-check";
 import {itemKeys} from "./lote2-premises";
 import {houseStatusQuoLabel} from "./financing-paths-premises-proposal";
@@ -166,6 +166,32 @@ describe("board material planner: records read by what the results register, nev
     const unknown = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "a linha do Itaú", origin: "informed", source: "é a do Itaú"}]});
     expect(unknown.status === "missing" ? unknown.missing : unknown.status).toEqual(["linkAnswers.1.row"]);
   }, 240_000);
+  // Independent review, round 13: an explicit name is never replaced, and the most specific name wins.
+  it("asks again, quoting the person, when the instrument named does not resolve; never links another instrument", () => {
+    const planned = planWith(sources, {linkAnswers: [{instrument: "CCB Itaú", row: "CCB Bradesco", origin: "informed", source: "a CCB Itaú do plano é a linha CCB Bradesco"}]});
+    expect(planned.status === "missing" ? [planned.missing, planned.linkAsks] : planned).toEqual([["linkAnswers.1.instrument"],
+      [expect.stringMatching(/^O plano não tem um único instrumento com o nome "CCB Itaú" \(a pessoa disse "a CCB Itaú do plano é a linha CCB Bradesco"\)/)]]);
+    // With no instrument named and two instruments being asked about, the answer is asked again, never given to either.
+    const two = [{id: "ccb-bradesco", label: "CCB Bradesco"}, {id: "debenture-2021", label: "Debênture 2021"}];
+    expect(answeredInstrument(two, ["ccb-bradesco", "debenture-2021"], null)).toEqual([]);
+    expect(answeredInstrument(two, ["ccb-bradesco"], null)).toEqual(["ccb-bradesco"]);
+    expect(answeredInstrument(two, ["ccb-bradesco"], "CCB Itaú")).toEqual([]);
+    expect(answeredInstrument([...two, {id: "ccb-bradesco-2", label: "CCB Bradesco"}], [], "ccb-bradesco-2")).toEqual(["ccb-bradesco-2"]);
+  }, 240_000);
+  it("resolves an exact row id before a prefix id and before labels, and an id inside another row's longer label does not count", () => {
+    const twin = (id: string) => ({id, label: "CCB", creditor: "Bradesco", finalPayment: "2027-09-15"});
+    const rows = [twin("ccb-bradesco"), twin("ccb-bradesco-2")];
+    expect(recordsNamed(rows, "ccb-bradesco-2", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["ccb-bradesco-2"]);
+    expect(recordsNamed(rows, "é a ccb-bradesco", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["ccb-bradesco"]);
+    // Identical labels, creditors and terms, named only by label: both, so the person is asked.
+    expect(recordsNamed(rows, "a CCB do Bradesco", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["ccb-bradesco", "ccb-bradesco-2"]);
+    // An id that is a prefix of another row's label: the row named by its full label and creditor wins.
+    const prefix = [{id: "debenture", label: "Debênture", creditor: "Banco A", finalPayment: "2028-06-15"},
+      {id: "debenture-2", label: "Debênture 2ª emissão", creditor: "Debenturistas", finalPayment: "2031-06-15"}];
+    expect(recordsNamed(prefix, "a Debênture 2ª emissão dos Debenturistas", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["debenture-2"]);
+    expect(recordsNamed(prefix, "a debenture do Banco A", (r) => [r.label, r.creditor], (r) => r.finalPayment).map((r) => r.id)).toEqual(["debenture"]);
+  });
+
   it("an informed identity wins over a proposed one, and a rejection wins over both", () => {
     const both = planWith(sources, {linkAnswers: [{instrument: "CCB Bradesco", row: "CCB Bradesco", origin: "informed", source: "é a mesma CCB"}]});
     expect(both.status === "complete" ? both.facts.links.map((l) => [l.value.rowId, l.origin]) : both).toEqual([["ccb-bradesco", "informed"]]);

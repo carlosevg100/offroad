@@ -229,7 +229,7 @@ export async function proposeBoardMaterialPremisesForTurn(input: {
   }
   // The method's own check runs inside the planner; the facts it accepted are not checked twice.
   let verified: {facts: BoardCapitalDiscussionFacts; pins: BoardMaterialPin[]; omitted: BoardMaterialOmitted[]; questions: BoardMaterialLinkQuestion[]} | null = null;
-  let asked: BoardMaterialLinkQuestion[] = [];
+  let asked: BoardMaterialLinkQuestion[] = [], reasked: string[] = [];
   const turn = await proposeLote2PremisesForTurn({logPrefix: "board_material_premises", idName: "board-material", expansionRefusalAsGap: true, schema: boardMaterialExtractionSchema,
     complete: (extraction, id) => {
       const {conversation, missing} = boardMaterialConversation(extraction);
@@ -239,7 +239,10 @@ export async function proposeBoardMaterialPremisesForTurn(input: {
           try { return boardMaterialCheck(priors, verifiedPins(facts))(facts); }
           catch (error) { return error instanceof Error ? error.message : String(error); }
         }});
-      if (planned.status === "missing") {asked = (planned.linkQuestions ?? []).filter((q) => q.needed); return {status: "missing", missing: planned.missing};}
+      if (planned.status === "missing") {
+        asked = (planned.linkQuestions ?? []).filter((q) => q.needed); reasked = planned.linkAsks ?? [];
+        return {status: "missing", missing: planned.missing};
+      }
       verified = {facts: planned.facts, pins: planned.pins, omitted: planned.omitted, questions: planned.linkQuestions ?? []};
       return {status: "complete", facts: planned.facts, situationId: boardMaterialSituation, housePremiseKeys: planned.housePremiseKeys};
     },
@@ -251,7 +254,9 @@ export async function proposeBoardMaterialPremisesForTurn(input: {
     }}, {...input, entry, projectId: input.projectId,
     loadEvidence: async () => ({today: input.today, documentFields: await input.loadEvidence()})});
   // A question of which row an instrument is carries both sides' registered terms, so the person answers knowingly.
-  if (turn && turn.forAdvisor.status === "missing" && asked.length) return {...turn, forAdvisor: {...turn.forAdvisor, instrumentLinks: asked.map(questionText)}} as Lote2TurnPremises;
+  if (turn && turn.forAdvisor.status === "missing" && (asked.length || reasked.length)) {
+    return {...turn, forAdvisor: {...turn.forAdvisor, instrumentLinks: [...reasked, ...asked.map(questionText)]}} as Lote2TurnPremises;
+  }
   return turn;
   /** The pins of the sources the facts name, in their order, each with the scale the database records for its method:
    * a fact that names another scale is refused by name. */

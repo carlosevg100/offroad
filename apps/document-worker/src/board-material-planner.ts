@@ -403,39 +403,73 @@ export function proposeBoardMaterialLinks(packets: Map<string, Record<string, un
   });
   return {links, pairs};
 }
-/** The rows of the table the person named, by the table's own labels or ids: a row whose id, or whose label and creditor,
- * appear in the answer; when several do, those whose final payment year the answer also names. Never guessed. */
-function rowNamed(rows: Record<string, unknown>[], answer: string): Record<string, unknown>[] {
-  const a = fold(answer), has = (x: unknown) => typeof x === "string" && x.trim().length > 1 && a.includes(fold(x));
-  const byId = rows.filter((r) => has(r.id));
-  if (byId.length === 1) return byId;
-  // The row whose own label the answer names most fully ("CCB 2" over "CCB"), with its creditor.
-  const matched = rows.filter((r) => has(r.label) && has(r.creditor)), longest = Math.max(0, ...matched.map((r) => String(r.label).length));
-  const named = matched.filter((r) => String(r.label).length === longest);
-  if (named.length <= 1) return named;
-  const dated = named.filter((r) => typeof r.finalPayment === "string" && a.includes(r.finalPayment.slice(0, 4)));
+const escape = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Where a name occurs in the answer: on token boundaries (exact) or anywhere (substring); null when it does not. */
+function spanOf(answer: string, name: unknown, exact: boolean): [number, number] | null {
+  if (typeof name !== "string" || name.trim().length < 2) return null;
+  const n = fold(name), m = exact ? new RegExp(`(?:^|[^a-z0-9-])(${escape(n)})(?:$|[^a-z0-9-])`).exec(answer) : null;
+  if (exact) return m ? [m.index + m[0].indexOf(n), m.index + m[0].indexOf(n) + n.length] : null;
+  const at = answer.indexOf(n);
+  return at < 0 ? null : [at, at + n.length];
+}
+/** The records the person named, by their own ids and labels, most specific first: an exact id on token boundaries,
+ * then an id as a substring, then the label (with the creditor, for a row); an id that is only part of a longer name the
+ * answer gives another record ("debenture" inside "debenture 2a emissao") does not count. Several records named alike
+ * stay several (the person is asked); none is guessed. */
+export function recordsNamed(records: Record<string, unknown>[], answer: string, labelOf: (r: Record<string, unknown>) => unknown[], year?: (r: Record<string, unknown>) => unknown): Record<string, unknown>[] {
+  const a = fold(answer);
+  const labels = records.map((r) => {
+    const parts = labelOf(r).map((x) => spanOf(a, x, false));
+    return parts.length && parts.every((x) => x !== null) ? parts as [number, number][] : null;
+  });
+  const longest = Math.max(0, ...labels.map((l) => l ? l.reduce((t, [x, y]) => t + y - x, 0) : 0));
+  const insideOther = (k: number, [x, y]: [number, number]) => labels.some((l, n) => n !== k && l !== null
+    && l.reduce((t, [p, q]) => t + q - p, 0) > y - x && l.some(([p, q]) => p <= x && y <= q));
+  for (const exact of [true, false]) {
+    const byId = records.filter((r, k) => {const at = spanOf(a, r.id, exact); return at !== null && !insideOther(k, at);});
+    if (byId.length) return byId;
+  }
+  const named = records.filter((_, k) => labels[k] !== null && labels[k]!.reduce((t, [x, y]) => t + y - x, 0) === longest);
+  if (named.length <= 1 || !year) return named;
+  const dated = named.filter((r) => {const v = year(r); return typeof v === "string" && a.includes(v.slice(0, 4));});
   return dated.length ? dated : named;
 }
+/** The plan instruments an answer names: by the plan's own id or label; only when the person names none, the one
+ * instrument being asked about (never when several are). An explicit name is never replaced by another instrument. */
+export function answeredInstrument(instruments: readonly {id: string; label: string}[], pending: readonly string[], said: string | null): string[] {
+  if (said === null) return pending.length === 1 ? [...pending] : [];
+  return recordsNamed(instruments as unknown as Record<string, unknown>[], said, (r) => [r.label]).map((r) => String(r.id));
+}
 /** The identities the person informed ("o empréstimo do plano é a linha CCB Bradesco 2029"): the instrument by the plan's
- * own label or id (or, when the person names none, the one instrument the question asked about), the row by the table's
- * own labels or ids, checked by the method's own term check. What cannot be resolved is asked; a term that differs is
- * asked with the term (instrumentLinkMismatch). */
+ * own id or label, the row by the table's own id or label and creditor (recordsNamed), checked by the method's own term
+ * check. Only when the person names no instrument, and exactly one instrument is being asked about, is the answer that
+ * instrument's. A name that resolves to none or to several is asked again, quoting the person's words; a term that differs
+ * is asked with the term (instrumentLinkMismatch). */
 function informedLinks(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>, answers: readonly {instrument: string | null; row: string; source: string}[],
-  asked: readonly string[]): {links: BoardMaterialLink[]; missing: string[]} {
-  const sides = linkSides(packets, methods), links: BoardMaterialLink[] = [], missing: string[] = [];
-  if (!sides || !answers.length) return {links, missing};
+  asked: readonly string[]): {links: BoardMaterialLink[]; missing: string[]; asks: string[]} {
+  const sides = linkSides(packets, methods), links: BoardMaterialLink[] = [], missing: string[] = [], asks: string[] = [];
+  if (!sides || !answers.length) return {links, missing, asks};
+  const instruments = sides.instruments.map((id) => ({id, label: planTerms(sides.plans, id).label}));
   answers.forEach((x, k) => {
-    const said = x.instrument === null ? null : fold(x.instrument);
-    const named = said === null ? [] : sides.instruments.filter((i) => said.includes(fold(planTerms(sides.plans, i).label)) || said.includes(i));
-    const instruments = named.length ? named : asked.filter((i) => sides.instruments.includes(i));
-    const rows = rowNamed(sides.rows, x.row);
-    if (instruments.length !== 1) {missing.push(`linkAnswers.${k + 1}.instrument`); return;}
-    if (rows.length !== 1) {missing.push(`linkAnswers.${k + 1}.row`); return;}
-    const rowId = String(rows[0]!.id), term = sides.check(instruments[0]!, rowId);
-    if (term !== null) {missing.push(`instrumentLinkMismatch.${instruments[0]}.${term}`); return;}
-    links.push({id: linkKey.test(rowId) ? rowId : `vinculo-informado-${k + 1}`, instrumentId: instruments[0]!, rowId, origin: "informed", source: x.source});
+    const chosen = answeredInstrument(instruments, asked.filter((i) => sides.instruments.includes(i)), x.instrument);
+    if (chosen.length !== 1) {
+      missing.push(`linkAnswers.${k + 1}.instrument`);
+      asks.push(x.instrument === null
+        ? `A pessoa disse "${x.source}" sem dizer qual instrumento do plano é; os instrumentos do plano são: ${instruments.map((i) => i.label).join(", ")}`
+        : `O plano não tem um único instrumento com o nome "${x.instrument}" (a pessoa disse "${x.source}"); os instrumentos do plano são: ${instruments.map((i) => i.label).join(", ")}`);
+      return;
+    }
+    const rows = recordsNamed(sides.rows, x.row, (r) => [r.label, r.creditor], (r) => r.finalPayment);
+    if (rows.length !== 1) {
+      missing.push(`linkAnswers.${k + 1}.row`);
+      asks.push(`A tabela de dívida não tem uma única linha com o nome "${x.row}" (a pessoa disse "${x.source}"); as linhas são: ${sides.rows.map((r) => `${rowTerms(sides.tables, r).label} (${String(r.id)})`).join(", ")}`);
+      return;
+    }
+    const rowId = String(rows[0]!.id), term = sides.check(chosen[0]!, rowId);
+    if (term !== null) {missing.push(`instrumentLinkMismatch.${chosen[0]}.${term}`); return;}
+    links.push({id: linkKey.test(rowId) ? rowId : `vinculo-informado-${k + 1}`, instrumentId: chosen[0]!, rowId, origin: "informed", source: x.source});
   });
-  return {links, missing};
+  return {links, missing, asks};
 }
 /** The existing instruments the plan's alternative prepays: the ones the material names by their row of the debt table. */
 function neededInstruments(packets: Map<string, Record<string, unknown>>): string[] {
@@ -451,9 +485,9 @@ function neededInstruments(packets: Map<string, Record<string, unknown>>): strin
  * touch neither their instrument nor their row; a rejection by the person removes either kind. Every existing instrument
  * no identity covers, that the material reads or that some row could be, is a question with both sides' terms. */
 export function boardMaterialLinks(packets: Map<string, Record<string, unknown>>, methods: Map<string, string>,
-  conv: Pick<BoardMaterialConversation, "linkRejections" | "linkAnswers">): {links: BoardMaterialLink[]; missing: string[]; questions: BoardMaterialLinkQuestion[]} {
+  conv: Pick<BoardMaterialConversation, "linkRejections" | "linkAnswers">): {links: BoardMaterialLink[]; missing: string[]; asks: string[]; questions: BoardMaterialLinkQuestion[]} {
   const sides = linkSides(packets, methods);
-  if (!sides) return {links: [], missing: [], questions: []};
+  if (!sides) return {links: [], missing: [], asks: [], questions: []};
   const proposed = proposeBoardMaterialLinks(packets, methods), needed = neededInstruments(packets);
   const informed = informedLinks(packets, methods, (conv.linkAnswers ?? []).map((x) => ({instrument: x.instrument, row: x.row, source: x.source})), needed);
   const refused = (conv.linkRejections ?? []).map((x) => fold(x.label)).filter((x) => x.length > 1);
@@ -469,7 +503,7 @@ export function boardMaterialLinks(packets: Map<string, Record<string, unknown>>
     return {instrumentId: i, label: a.label, needed: needed.includes(i), instrument: termsText(`Plano, ${a.label}`, a),
       candidates: candidates.map((r) => {const b = rowTerms(sides.tables, r); return termsText(`Tabela de dívida, ${b.label}`, b);})};
   });
-  return {links, missing: informed.missing, questions};
+  return {links, missing: informed.missing, asks: informed.asks, questions};
 }
 /** The records the library reads, each bound by the role its result registers, as the method binds them (boardRoleRecords);
  * the plan's path of each library row; the recommended path's tested shorter profile; the scenarios the projection
@@ -597,7 +631,9 @@ function resolveReading(packets: Map<string, Record<string, unknown>>, methods: 
 export type BoardMaterialOmitted = {item: string; reason: string};
 export type BoardMaterialPlanned = {status: "complete"; facts: BoardCapitalDiscussionFacts; housePremiseKeys: string[]; omitted: BoardMaterialOmitted[]; pins: BoardMaterialPin[];
   linkQuestions?: BoardMaterialLinkQuestion[]}
-  | {status: "missing"; missing: string[]; omitted: BoardMaterialOmitted[]; linkQuestions?: BoardMaterialLinkQuestion[]};
+  | {status: "missing"; missing: string[]; omitted: BoardMaterialOmitted[]; linkQuestions?: BoardMaterialLinkQuestion[];
+    /** Answers that named an instrument or a row no record resolves to, quoting the person's words: asked again. */
+    linkAsks?: string[]};
 
 /** Plans the board discussion over the reviewed results and the conversation. `check` runs the method over the
  * facts (as the confirmation will) and returns its refusal message, or null; without it the plan is returned as is. */
@@ -636,7 +672,7 @@ export function planBoardMaterial(input: {ids: {discussionId: string; definition
   // The identities: the person's informed ones, then the ones the bridge proposes on every registered term; a rejection
   // removes either. An informed identity that cannot be resolved or differs in a term is asked, never dropped.
   const identified = boardMaterialLinks(packets, methods, conv), links = identified.links, linkQuestions = identified.questions;
-  if (identified.missing.length) return {status: "missing", missing: identified.missing, omitted, linkQuestions};
+  if (identified.missing.length) return {status: "missing", missing: identified.missing, omitted, linkQuestions, linkAsks: identified.asks};
   const anchors = readAnchors(packets, methods, links);
   const declared = new Map<string, {reading: string[]} | {pending: [string, string, string]}>();
   // Why a reading did not resolve, named for the card: its result is absent, the role its record is bound by binds none
