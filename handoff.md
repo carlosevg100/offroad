@@ -1,3 +1,12 @@
+## 2026-10-28: lote 4 de fichas testado (C09, C01, C32 plano de 2027, C47)
+
+- Quatro métodos 2026.10.27-v1 com revisão independente aprovada, ainda não publicados: organize-document-folder (C09, inventário da pasta; aprovado na r21), evaluate-received-proposal (C01, proposta de banco recebida; r6), evaluate-financing-paths (plano de financiamento de 2027 da C32 sobre a Aurora, método próprio porque prepare-capital-structure-decision v4 sustenta o fluxo R01; r4) e prepare-board-capital-discussion (C47, material do conselho; r44).
+- Executores registrados nos adapters e no manifesto; contratos gerados; revisões em knowledge/reviews com as bases fixadas em evidence/. Prompts, resultados e logs de cada rodada em outputs/implementacao-lote4-2026-10-27/revisao/.
+- C09: domínio estreitado por recusa (entidade, período, data de referência tipada, perímetro, BRL, aditamento só direto), guarda única por efeito com dependências rastreadas, papéis no lugar de nomes na voz do método, janelas de 30 dias para matrícula e fluxo como convenção da casa.
+- C01: custo pela vida com o motor da C02 (CDI + 4,90 bruto; a aproximação de 4,4 da ficha não zera o VP), exceção agregada da escritura com 12 de 15 ocupados, covenant por cobertura completa de apurações, líquido condicionado a lucro real.
+- C47: nenhum texto livre da contribuição; biblioteca fechada de modelos com slots por conceito e origem, registro de campos por fonte, formatador do método, identidade canônica do campo resolvido, afirmações fixas conferidas na fonte, auditoria de 193 afirmações. Turno 2 sai parcial por uma lacuna verdadeira: a tabela de dívida (C10) não registra modalidade nem finalidade da conta garantida.
+- Falta: aprovação de conteúdo do fundador, publicação, captura, perfis, ponte com a conversa (extração no worker, roteador, migrações) e liberação.
+
 ## 2026-10-26: ponte da conversa do lote 3 (C24, C26, C35, C54), liberada em 27/10/2026
 
 - Roteador: operating_projection, projection_challenge, receivables_funding e quarter_update, calibrados nas frases das fichas; perguntas conceituais, deck e memorando, matriz de risco, minuta e comparação de alternativas ficam na rota própria. Seleção de métodos: projeção e crítica servem negócio estável, giro estrutural e capex; recebíveis servem giro sazonal e estrutural; fechamento do trimestre serve giro sazonal e covenant próximo.
