@@ -58,6 +58,10 @@
   {
    "path": "packages/financial-model/src/board-capital-discussion-templates.ts",
    "sha256": "3dec55d547a685f5c5de04f7ebca194436de8ee0f131fd2930a9fd0361467275"
+  },
+  {
+   "path": "packages/financial-model/src/board-capital-discussion-scale.test.ts",
+   "sha256": "3dec55d547a685f5c5de04f7ebca194436de8ee0f131fd2930a9fd0361467275"
   }
  ],
  "externalOracle": [
