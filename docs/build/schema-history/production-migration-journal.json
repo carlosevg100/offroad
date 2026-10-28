@@ -2753,12 +2753,17 @@
     {
       "name": "lote4_priors",
       "version": "20261028120200",
-      "statements_md5": "98d7773b947c04555cfa6bcc858fd95f"
+      "statements_md5": "1ab3af3691f15345f0fef9ecf593b6a5"
     },
     {
       "name": "lote4_folder_reading",
       "version": "20261028120300",
-      "statements_md5": "80770d824c0349bb039e7ba7cfc565dc"
+      "statements_md5": "b7263017fbfc736bb709c5b2f0d0374a"
+    },
+    {
+      "name": "lote4_payload_provenance",
+      "version": "20261028120400",
+      "statements_md5": "05b823c6ba37d4aa67dd10ccfb7b0552"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",

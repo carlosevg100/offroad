@@ -648,7 +648,8 @@ export const lote4FichaExceptions: ReadonlyArray<{ficha: string; from: Workspace
 function lote4Route(text: string, existing: WorkspaceObjectiveKind): WorkspaceObjectiveKind {
   const paths = financingPathsRoute(text, existing);
   if (paths !== existing) return paths;
-  const board = boardMaterialRoute(text, existing);
+  // A refusal of the action or of the need, or a request to understand, never promotes to the board discussion: the lote 3 vetoes.
+  const board = negatedAction.test(text) || negatedNeed.test(text) || conceptualMarker.test(text) ? existing : boardMaterialRoute(text, existing);
   if (board !== existing) return board;
   const proposal = receivedProposalRoute(text, existing);
   if (proposal !== existing) return proposal;

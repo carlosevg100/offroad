@@ -306,6 +306,13 @@ describe("canonical ficha objective routing", () => {
     ["Monta o material do conselho sobre a safra.", "material_preparation", "material_preparation"],
     ["Prepare a reunião com o banco sobre a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
     ["Prepara a pauta do conselho sobre a política de remuneração", "board_decision", "board_decision"],
+    // Independent review, round 1: a refusal or a request to understand keeps the board decision.
+    ["Não prepare a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Explique como preparar a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Não quero que você prepare a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Evite preparar o material do conselho sobre o financiamento", "material_preparation", "material_preparation"],
+    ["Me explica como montar a pauta do conselho sobre a dívida", "board_decision", "board_decision"],
+    ["Quero entender como fazer a página do conselho com o plano de financiamento", "board_decision", "board_decision"],
   ] as const)("lote 4 neighbour keeps its origin/main route: %s", (message, plain, attached) => {
     expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
     expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);

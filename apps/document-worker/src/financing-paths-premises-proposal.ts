@@ -489,7 +489,9 @@ export function completeFinancingPathsFacts(input: {extraction: Ex; ids: {capita
     minimumCash: {value: minimumCash, origin: minimum.origin, source: minimum.source},
     index: {value: {name: "DI" as const, annualByPeriod: byPeriod as string[], afterHorizon: post.map((p) => ({year: p.year, annualRate: curve.value.afterHorizon.find((x) => x.year === p.year)!.rate}))},
       origin: curve.origin, source: curve.source},
-    tax: {value: {rate: tax.value, lossTreatment: "no_cash_benefit" as const}, origin: tax.origin, source: `${tax.source}; base negativa sem benefício de caixa (convenção do método)`},
+    // The method's facts carry one origin per fact: the rate's. The loss treatment is the house convention, and its own
+    // hypothesis and card row say so with origin house (financingPathsHouseLossTreatment), never the rate's origin.
+    tax: {value: {rate: tax.value, lossTreatment: "no_cash_benefit" as const}, origin: tax.origin, source: tax.source},
     variants,
     stress: statedStress ? {value: {id: "estresse", label: `EBITDA multiplicado por ${statedStress.value.ebitdaFactor}`, ebitdaFactor: statedStress.value.ebitdaFactor, fromPeriodEnd: stressFrom},
       origin: statedStress.origin, source: statedStress.source}
@@ -546,6 +548,7 @@ export function financingPathsSummary(facts: CapitalPathsFacts): Lote2Summary {
     row("premise", "Caixa mínimo de política", facts.minimumCash, "minimumCash"),
     row("premise", "Curva do CDI", facts.index, "diCurve"),
     row("premise", "Alíquota de imposto", facts.tax, "taxRate"),
+    row("premise", "Base negativa sem benefício de caixa", financingPathsHouseLossTreatment, "taxLossTreatment"),
     row("premise", facts.stress.value.label, facts.stress, "stressCase"),
     row("premise", "Base anual depois do horizonte", facts.postHorizon, "postHorizonBase"),
     row("premise", "Gatilho e datas da sondagem", facts.plan, "soundingPlan"),
@@ -560,8 +563,13 @@ export function financingPathsSummary(facts: CapitalPathsFacts): Lote2Summary {
   ]};
 }
 
+/** The loss treatment of the tax: a house convention of the method (a tax loss gives no cash benefit), named with its own origin. */
+export const financingPathsHouseLossTreatment = {origin: "house" as const,
+  source: "Base negativa sem benefício de caixa: convenção da casa para o método, independente da origem da alíquota"};
 export function buildFinancingPathsPremiseProposal(facts: CapitalPathsFacts) {
-  return fingerprintedProposal(financingPathsPremiseMethod, facts, proposeCapitalPathsHypotheses(facts), financingPathsSummary(facts));
+  const hypotheses = proposeCapitalPathsHypotheses(facts).map((h) => h.fieldPath.endsWith(".tax.lossTreatment")
+    ? {...h, reason: `Origem: premissa da casa. ${financingPathsHouseLossTreatment.source}`} : h);
+  return fingerprintedProposal(financingPathsPremiseMethod, facts, hypotheses, financingPathsSummary(facts));
 }
 
 export async function proposeFinancingPathsPremisesForTurn(input: {

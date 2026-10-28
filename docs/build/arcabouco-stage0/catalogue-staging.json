@@ -110710,29 +110710,6 @@
       "security_definer": true
     },
     {
-      "id": "function:private.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
-      "kind": "function",
-      "name": "worker_document_folder_readings_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb",
-      "security_definer": true
-    },
-    {
       "id": "function:private.worker_record_document_folder_reading_v1(p_job_id uuid, p_capability_token text, p_status text, p_reading jsonb, p_refusal_code text)",
       "kind": "function",
       "name": "worker_record_document_folder_reading_v1",
@@ -110776,29 +110753,6 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text",
-      "security_definer": false
-    },
-    {
-      "id": "function:public.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb)",
-      "kind": "function",
-      "name": "worker_document_folder_readings_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "public",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb",
       "security_definer": false
     },
     {
@@ -110897,6 +110851,152 @@
       "enabled": "O",
       "function": "private.guard_contribution_immutable_v1()",
       "definition": "CREATE TRIGGER document_folder_readings_immutable BEFORE DELETE OR UPDATE ON private.document_folder_readings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "function:private.document_folder_reading_advance_v1(p_job processing_jobs)",
+      "kind": "function",
+      "name": "document_folder_reading_advance_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job processing_jobs",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.document_folder_reading_enqueue_v1(p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[])",
+      "kind": "function",
+      "name": "document_folder_reading_enqueue_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_session uuid, p_subject uuid, p_reader_version text, p_context jsonb, p_documents uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb, p_framing jsonb)",
+      "kind": "function",
+      "name": "worker_document_folder_readings_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb, p_framing jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_document_folder_readings_v1(p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb, p_framing jsonb)",
+      "kind": "function",
+      "name": "worker_document_folder_readings_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_reader_version text, p_context jsonb, p_files jsonb, p_framing jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.document_folder_reading_waits.document_folder_reading_waits_deny",
+      "kind": "policy",
+      "name": "document_folder_reading_waits_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "document_folder_reading_waits",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.document_folder_reading_waits",
+      "rls": true,
+      "kind": "table",
+      "name": "document_folder_reading_waits",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
     }
   ],
   "captured_at": "2026-10-06T17:27:10.04562+00:00"

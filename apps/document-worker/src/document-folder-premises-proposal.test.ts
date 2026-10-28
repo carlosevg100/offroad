@@ -1,10 +1,11 @@
+import {readFileSync} from "node:fs";
 import {beforeAll, describe, expect, it} from "vitest";
 import {composeBoundDocumentFolderInventory, prepareDocumentFolderInventoryPacket, type DocumentFolderInventoryPacket, type DocumentFolderInventoryPacketInput, type DocumentReading,
   type ProposedHypothesis} from "@offroad/financial-model";
 import type {DocumentLayer} from "@offroad/document-intelligence";
 import {compileObjectiveToPlan} from "@offroad/work-plan";
 import {completeDocumentFolderFacts, documentFolderEntry, documentFolderLayerContent, documentFolderReaderVersion, documentFolderReading, proposeDocumentFolderPremisesForTurn,
-  readDocumentFolderFile, type DocumentFolderEvidence, type DocumentFolderReadingOutcome,
+  documentFolderResumeNotices, documentFolderResumeOf, isDocumentFolderResumeNotice, readDocumentFolderFile, type DocumentFolderEvidence, type DocumentFolderFraming, type DocumentFolderReadingOutcome,
   type DocumentFolderExtraction, type DocumentFolderReadingExtraction, type DocumentFolderReadingRequest, type DocumentFolderRequestTest, type DocumentFolderTurnPremises} from "./document-folder-premises-proposal";
 import {inMemoryBasis} from "./lote3-reader-check";
 import {financialModelFixture} from "./lote2-premises.test-support";
@@ -85,14 +86,14 @@ function readingStore(evidence: () => DocumentFolderEvidence, read: (r: Document
 }
 
 async function run(o: {message: string; readings: DocumentReading[]; extraction?: DocumentFolderExtraction; earlier?: string[]; prior?: unknown; date?: string; author?: string | null;
-  evidence?: DocumentFolderEvidence; requests?: DocumentFolderReadingRequest[]; pending?: Set<string>}) {
+  evidence?: DocumentFolderEvidence; requests?: DocumentFolderReadingRequest[]; pending?: Set<string>; resume?: {framing: DocumentFolderFraming}; framings?: unknown[]; onExtract?: () => void}) {
   const events: string[] = [], requests = o.requests ?? [];
   const all = [...s.auroraFolderReadings(), ...s.auroraTurnTwoReadings()];
   const evidence = o.evidence ?? evidenceOf(o.readings);
   const result = await proposeDocumentFolderPremisesForTurn({message: o.message, hasAttachments: true, recentUserMessages: o.earlier ?? [], projectId,
     messageDate: o.date ?? "2026-09-01", author: o.author === undefined ? "Controller da Aurora" : o.author,
-    loadFolder: async () => evidence, loadPrior: async () => ({prior: o.prior ?? null}), loadReadings: readingStore(() => evidence, reader(all, requests), o.pending),
-    extract: async () => o.extraction ?? turn({mode: {value: "organize", origin: "informed", source: "Organiza e me diz o que tem"}}), log: (event) => {events.push(event);}, asks});
+    loadFolder: async () => evidence, loadPrior: async () => ({prior: o.prior ?? null}), loadReadings: async (request) => {o.framings?.push(request.framing); return readingStore(() => evidence, reader(all, requests), o.pending)(request);}, ...o.resume ? {resume: o.resume} : {},
+    extract: async () => {o.onExtract?.(); return o.extraction ?? turn({mode: {value: "organize", origin: "informed", source: "Organiza e me diz o que tem"}});}, log: (event) => {events.push(event);}, asks});
   return {result, events, requests};
 }
 const proposed = (r: DocumentFolderTurnPremises | null) => {if (r?.forAdvisor.status !== "proposed" || !r.proposal) throw new Error(JSON.stringify(r?.forAdvisor)); return r.proposal;};
@@ -156,6 +157,17 @@ describe("ficha C09 bridge: the folder organized from the conversation", {timeou
     const named = (await run({message: runs.folderTurnTwoQuestion, earlier: [runs.folderQuestion], readings, extraction: wrong, prior, date: "2026-09-02", author: null,
       evidence: {...evidenceOf(readings), author: "Mariana Souza, Controller", messageDate: "2026-09-02T14:00:00Z"}})).result!;
     expect(named.forAdvisor).toMatchObject({status: "missing", missing: ["informed.1.questionId"]});
+    // Independent review, round 1: the same answer twice is one answer; two different answers to the same question are asked.
+    const q = open[0]!.id;
+    const twice = turn({informed: [{questionId: q, statement: "A minuta não foi para nenhum banco.", origin: "informed", source: "mensagem"},
+      {questionId: q, statement: "A minuta não foi para nenhum banco", origin: "informed", source: "mensagem"}]});
+    const merged = proposed((await run({message: runs.folderTurnTwoQuestion, earlier: [runs.folderQuestion], readings: [...readings, ...s.auroraTurnTwoReadings()], extraction: twice, prior, date: "2026-09-02"})).result);
+    expect((merged.facts as {informed: {value: {questionId: string}}[]}).informed.filter((i) => i.value.questionId === q)).toHaveLength(1);
+    const both = turn({informed: [{questionId: q, statement: "A minuta não foi para nenhum banco.", origin: "informed", source: "mensagem"},
+      {questionId: q, statement: "A minuta foi enviada ao Itaú.", origin: "informed", source: "mensagem"}]});
+    const contradiction = (await run({message: runs.folderTurnTwoQuestion, earlier: [runs.folderQuestion], readings: [...readings, ...s.auroraTurnTwoReadings()], extraction: both, prior, date: "2026-09-02"})).result!;
+    expect(contradiction.forAdvisor).toMatchObject({status: "missing", missing: ["informed.2.contradiction"]});
+    expect(contradiction.proposal).toBeNull();
     const none = (await run({message: runs.folderTurnTwoQuestion, earlier: [runs.folderQuestion], readings, extraction: turn(), prior, date: "2026-09-02"})).result!;
     expect(none.forAdvisor).toMatchObject({status: "missing", missing: ["nothingArrived"]});
   });
@@ -180,6 +192,29 @@ describe("ficha C09 bridge: the folder organized from the conversation", {timeou
     evidence.files[photo] = {...evidence.files[photo]!, layer: {...evidence.files[photo]!.layer!, pages: [{n: 1, blocks: [], tables: [], scanned: true}]} as never};
     const p = (await run({message: runs.folderQuestion, readings, evidence})).result!;
     expect(p.forAdvisor).toMatchObject({status: "missing", missing: [`files.${photo + 1}.unreadable`]});
+  });
+
+  it("keeps the person's framing while the files are read, and the resumed turn organizes the folder as asked without a new message", async () => {
+    const readings = s.auroraFolderReadings(), framings: unknown[] = [];
+    const only = turn({mode: {value: "organize_only", origin: "informed", source: "Só organiza"}});
+    const waiting = (await run({message: "Só organiza, não analisa ainda.", readings, extraction: only, pending: new Set([readings[0]!.fileId]), framings})).result!;
+    expect(waiting.forAdvisor).toMatchObject({status: "missing", missing: ["files.1.reading_pending"]});
+    expect(framings[0]).toEqual({mode: only.mode, decisions: [], informed: []});
+    // The database resumes the turn by its brief job (payload document_folder_resume) with that framing and the person's
+    // original message; the continuation message is the system's and no extraction reads it as the person's answer.
+    const resume = documentFolderResumeOf({wait_id: projectId, source_message_id: projectId, framing: framings[0]})!;
+    expect(resume.sourceMessageId).toBe(projectId);
+    expect(documentFolderResumeOf({kind: "document_folder_resume", framing: framings[0]})).toBeNull();
+    expect(documentFolderResumeOf(undefined)).toBeNull();
+    let extracted = 0;
+    const resumed = proposed((await run({message: documentFolderResumeNotices["pt-BR"], readings, resume,
+      extraction: turn({turnIntent: "unrelated"}), onExtract: () => {extracted++;}})).result);
+    expect(resumed.summary.mode).toBe("organize_only");
+    expect(extracted).toBe(0);
+    // The notices are exactly the texts the database writes, and never count as the person's words.
+    const sql = readFileSync(new URL("../../../supabase/migrations/20261028120300_lote4_folder_reading.sql", import.meta.url), "utf8");
+    for (const text of Object.values(documentFolderResumeNotices)) {expect(sql).toContain(`'${text}'`); expect(isDocumentFolderResumeNotice(text)).toBe(true);}
+    expect(isDocumentFolderResumeNotice("Só organiza, não analisa ainda.")).toBe(false);
   });
 
   it("names what it cannot read or adopt, never drops a file and never proposes on another intent", async () => {

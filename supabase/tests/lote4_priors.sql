@@ -189,6 +189,47 @@ begin
  raise notice 'PASS: board source scale read from the adopted basis';
 end $$;
 
+-- 8c. The provenance walk binds the four lote 4 methods to version, manifest and payload schema; the board discussion and a
+-- folder update are refused unless the v4 producer recorded their priors for this very execution, so a request through v1
+-- or v2 (which reach the same walk) is refused; the board's discussion envelope must be a basis version the contract pins.
+do $$
+declare base jsonb:=jsonb_build_object('organizationId','a11b0000-0000-4000-9000-000000000001','workId','a11b0000-0000-4000-9000-000000000002',
+  'executionId','a11b0000-0000-4000-9000-0000000000c7','purpose','p','inputs',jsonb_build_object('adoptions','[]'::jsonb,'hypotheses','[]'::jsonb,'sources','[]'::jsonb));
+ m jsonb:=jsonb_build_object('organize-document-folder',jsonb_build_array('4378d63bf0b7465838fefe7e3463dbc755cd6c022803a60ac7fe32d368f75248','document-folder-inventory-packet-input.v1'),
+  'evaluate-received-proposal',jsonb_build_array('4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0','received-proposal-packet-input.v1'),
+  'evaluate-financing-paths',jsonb_build_array('e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4','capital-structure-paths-packet-input.v1'),
+  'prepare-board-capital-discussion',jsonb_build_array('55ae460feed68a733634865c5b85dba0695cac5c1da7ac584244a9f44c4c5686','board-capital-discussion-packet-input.v1'));
+ k text;c jsonb;discussion jsonb;
+begin
+ if private.execution_capital_payload_current_v1(base,'{}',auth.uid()) then raise exception 'null method accepted';end if;
+ if not private.execution_capital_payload_current_v1(jsonb_build_object('method',jsonb_build_object('methodId','synthetic-execution')),'{}',auth.uid()) then raise exception 'unbound method changed answer';end if;
+ for k in select jsonb_object_keys(m) loop
+  c:=base||jsonb_build_object('method',jsonb_build_object('methodId',k,'methodVersion','2026.10.27-v1','manifestHash',m->k->>0));
+  -- Another version, another manifest or another payload schema is refused; a payload with no stored basis is refused.
+  if private.execution_capital_payload_current_v1(jsonb_set(c,'{method,methodVersion}','"2026.10.26-v1"'),jsonb_build_object('schemaVersion',m->k->>1),auth.uid())
+   then raise exception '% other version accepted',k;end if;
+  if private.execution_capital_payload_current_v1(jsonb_set(c,'{method,manifestHash}',to_jsonb(repeat('0',64))),jsonb_build_object('schemaVersion',m->k->>1),auth.uid())
+   then raise exception '% other manifest accepted',k;end if;
+  if private.execution_capital_payload_current_v1(c,jsonb_build_object('schemaVersion','x'),auth.uid()) then raise exception '% other schema accepted',k;end if;
+  if private.execution_capital_payload_current_v1(c,jsonb_build_object('schemaVersion',m->k->>1),auth.uid()) then raise exception '% payload without a basis accepted',k;end if;
+ end loop;
+ -- The board discussion without recorded priors (any request through v1 or v2) is refused, and so is a discussion whose
+ -- envelope names a basis version the contract does not pin.
+ discussion:=jsonb_build_object('envelope',jsonb_build_object('canonical',jsonb_build_object('versionId','a11b0000-0000-4000-9000-0000000000d1')::text,'fingerprint',repeat('a',64)));
+ c:=base||jsonb_build_object('method',jsonb_build_object('methodId','prepare-board-capital-discussion','methodVersion','2026.10.27-v1','manifestHash',m->'prepare-board-capital-discussion'->>0));
+ if private.execution_capital_payload_current_v1(c,jsonb_build_object('schemaVersion','board-capital-discussion-packet-input.v1','analysis',
+   jsonb_build_object('sources',jsonb_build_array(jsonb_build_object('id','plano-2027','packet','{}')),'discussion',discussion)),auth.uid()) then raise exception 'board without recorded priors accepted';end if;
+ if private.board_material_priors_recorded_v1(c,jsonb_build_object('analysis',jsonb_build_object('sources',jsonb_build_array(jsonb_build_object('id','plano-2027','packet','{}')),'discussion',discussion))) then
+  raise exception 'board priors not recorded through v4 accepted';end if;
+ -- A folder update without its recorded prior inventory is refused; a first inventory records none.
+ c:=base||jsonb_build_object('method',jsonb_build_object('methodId','organize-document-folder','methodVersion','2026.10.27-v1','manifestHash',m->'organize-document-folder'->>0));
+ if private.document_folder_prior_recorded_v1(c,'{"analysis":{"base":{},"update":{}}}') then raise exception 'folder update without a recorded prior accepted';end if;
+ if private.execution_capital_payload_current_v1(c,'{"schemaVersion":"document-folder-inventory-packet-input.v1","analysis":{"base":{},"update":{}}}',auth.uid()) then
+  raise exception 'folder update through v1 or v2 accepted';end if;
+ if not private.document_folder_prior_recorded_v1(c,'{"analysis":{"base":{}}}') then raise exception 'first inventory refused for lack of a prior';end if;
+ raise notice 'PASS: provenance walk binds the four lote 4 methods and their priors';
+end $$;
+
 -- 9. Grants: the doors for authenticated only; every helper and the pins closed.
 do $$ declare f text;
 begin

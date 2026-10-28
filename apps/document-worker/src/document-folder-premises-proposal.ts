@@ -246,6 +246,19 @@ export const documentFolderExtractionSchema = z.strictObject({
   informed: z.array(z.strictObject({questionId: z.string().min(1).max(184), statement: z.string().trim().min(1).max(2000), origin: extractedOrigin, source: itemSource})).max(20),
 });
 export type DocumentFolderExtraction = z.infer<typeof documentFolderExtractionSchema>;
+/** How the person framed the request, kept by the database while the readings are made and given back on resume. */
+export const documentFolderFramingSchema = documentFolderExtractionSchema.omit({turnIntent: true});
+export type DocumentFolderFraming = z.infer<typeof documentFolderFramingSchema>;
+/** The resume a folder reading job queued, as its brief job carries it (payload document_folder_resume): the person's
+ * original message and how they framed the request. The job decides the resume; no message is read as the person's. */
+export function documentFolderResumeOf(resume: unknown): {framing: DocumentFolderFraming; sourceMessageId: string} | null {
+  const m = z.object({wait_id: z.uuid(), source_message_id: z.uuid(), framing: documentFolderFramingSchema}).safeParse(resume);
+  return m.success ? {framing: m.data.framing, sourceMessageId: m.data.source_message_id} : null;
+}
+/** The texts of the system's continuation message (private.document_folder_reading_advance_v1 writes them, origin system):
+ * never the person's words, so they are left out of what the person said. */
+export const documentFolderResumeNotices = {"pt-BR": "Leitura da pasta concluída.", "en-US": "Folder reading completed."} as const;
+export const isDocumentFolderResumeNotice = (content: string) => (Object.values(documentFolderResumeNotices) as string[]).includes(content.trim());
 
 export const documentFolderExtractionContract = {
   task: "document_folder_extraction" as const,
@@ -336,8 +349,17 @@ export type DocumentFolderPriorContext = ReturnType<typeof documentFolderPriorCo
 export function completeDocumentFolderUpdateFacts(input: {prior: DocumentFolderPriorContext; readings: DocumentReading[]; extraction: DocumentFolderExtraction;
   updateId: string; readingDate: string; author: string | null}): DocumentFolderCompletion<DocumentFolderUpdateFacts> {
   const {prior: p, extraction: e} = input, missing: string[] = [], used: string[] = [];
-  const open = new Set(p.openQuestions.map((q) => q.id)), carried = new Set(p.carriedInformed.map((i) => i.questionId));
-  const answers = e.informed.filter((i) => !carried.has(i.questionId));
+  const open = new Set(p.openQuestions.map((q) => q.id));
+  // One answer per question: the same answer said twice is one answer; two different answers to the same question, or an
+  // answer that differs from the one already recorded, is a contradiction asked before any card, never resolved by order.
+  const said = (statement: string) => statement.normalize("NFKC").trim().replace(/\s+/g, " ").replace(/[.!;]+$/, "").toLocaleLowerCase("pt-BR");
+  const recorded = new Map(p.carriedInformed.map((i) => [i.questionId, said(i.statement)]));
+  const byQuestion = new Map<string, string>(), answers: typeof e.informed = [];
+  e.informed.forEach((i, n) => {
+    const now = said(i.statement), before = recorded.get(i.questionId) ?? byQuestion.get(i.questionId);
+    if (before === undefined) {byQuestion.set(i.questionId, now); answers.push(i); return;}
+    if (before !== now) missing.push(`informed.${n + 1}.contradiction`);
+  });
   answers.forEach((i, n) => {
     if (!open.has(i.questionId)) missing.push(`informed.${n + 1}.questionId`);
     if (!input.author) missing.push(`informed.${n + 1}.author`);
@@ -415,18 +437,21 @@ export async function proposeDocumentFolderPremisesForTurn(input: {
   loadFolder: () => Promise<unknown>; loadPrior: () => Promise<unknown>;
   /** The stored reading of each named file of the work, queuing a reading job for each that has none
    * (worker_document_folder_readings_v1). The turn never reads a file itself. */
-  loadReadings: (request: {readerVersion: string; context: ReturnType<typeof documentFolderReadingContext>; files: {documentId: string}[]}) => Promise<unknown>;
+  loadReadings: (request: {readerVersion: string; context: ReturnType<typeof documentFolderReadingContext>; files: {documentId: string}[]; framing: unknown}) => Promise<unknown>;
   extract: (text: string) => Promise<unknown>;
+  /** A continuation the folder readings resumed: the turn enters the step and keeps the framing the person gave, without extraction. */
+  resume?: {framing: DocumentFolderFraming};
   log: (event: string, detail: Record<string, unknown>) => void; asks?: DocumentFolderRequestTest;
 }): Promise<DocumentFolderTurnPremises | null> {
-  const entry = input.projectId ? documentFolderEntry(input.message, input.hasAttachments, input.recentUserMessages, input.asks) : null;
+  const entry = !input.projectId ? null : input.resume ? "continuation" : documentFolderEntry(input.message, input.hasAttachments, input.recentUserMessages, input.asks);
   if (!input.projectId || !entry) return null;
   try {
     const evidence = documentFolderEvidenceSchema.parse(await input.loadFolder());
     const priorRead = documentFolderPriorSchema.parse(await input.loadPrior()).prior;
     const prior = priorRead ? documentFolderPriorContext(priorRead) : null;
-    const extraction = documentFolderExtractionSchema.parse(await input.extract(JSON.stringify({latestUserMessage: input.message,
-      earlierUserMessages: input.recentUserMessages.slice(-6), openQuestions: prior?.openQuestions ?? []})));
+    const extraction = input.resume ? documentFolderExtractionSchema.parse({turnIntent: "answers_pending", ...input.resume.framing})
+      : documentFolderExtractionSchema.parse(await input.extract(JSON.stringify({latestUserMessage: input.message,
+        earlierUserMessages: input.recentUserMessages.slice(-6), openQuestions: prior?.openQuestions ?? []})));
     if (extraction.turnIntent !== "answers_pending") {
       input.log("document_folder_premises.not_answering", {turnIntent: extraction.turnIntent, entry});
       return null;
@@ -441,7 +466,8 @@ export async function proposeDocumentFolderPremisesForTurn(input: {
     // Only the files the reading job can read are asked for; the rest are named without reading.
     const eligible = files.filter((f) => f.status === "ready" && formats[f.mimeType ?? ""] && !f.locked && readable(f));
     const stored = eligible.length ? documentFolderReadingsSchema.parse(await input.loadReadings({readerVersion: documentFolderReaderVersion,
-      context: documentFolderReadingContext(evidence.entities), files: eligible.map((f) => ({documentId: f.documentId}))})) : null;
+      context: documentFolderReadingContext(evidence.entities), files: eligible.map((f) => ({documentId: f.documentId})),
+      framing: {mode: extraction.mode, decisions: extraction.decisions, informed: extraction.informed}})) : null;
     const read = assembleDocumentFolderReadings(files, evidence.entities, new Map((stored?.files ?? []).map((r) => [r.documentId, r])));
     if (read.missing.some((m) => m.endsWith(".reading_pending"))) input.log("document_folder_premises.reading", {pending: read.missing.filter((m) => m.endsWith(".reading_pending")).length, queued: stored?.queued ?? 0});
     const author = evidence.author ?? input.author;

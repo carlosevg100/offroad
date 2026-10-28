@@ -1,3 +1,4 @@
+import {isSystemMessage, systemNoticeOf} from "@/lib/advisor/system-notice";
 import {ArtifactRoundtripWork} from "@/components/advisor/artifact-roundtrip-work";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {loadWorkReviewDashboard} from "@/lib/advisor/work-review-dashboard";
@@ -421,11 +422,13 @@ async function ConversationalCapitalProject({
   const advisorMessages = messages?.length
     ? messages.map((message) => {
         const artifactId = specializedCompletionArtifactId(message.metadata);
+        // A message the system wrote (origin system) is Offroad's notice: never shown as the person's words or with an author.
+        const notice = systemNoticeOf(message.metadata), system = isSystemMessage(message.metadata);
         return {
           id: message.id,
-          role: message.role,
-          humanAuthorId: message.human_author_id,
-          content: message.content,
+          role: system ? "assistant" : message.role,
+          humanAuthorId: system ? null : message.human_author_id,
+          content: notice ? t(`systemNotices.${notice}`) : message.content,
           status: message.status,
           errorCode: message.error_code,
           createdAt: message.created_at,

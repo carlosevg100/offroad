@@ -488,7 +488,9 @@ begin
  from public.agent_messages m
  left join public.profiles pr on pr.id=coalesce(m.human_author_id,m.created_by)
  left join public.organization_memberships om on om.organization_id=m.organization_id and om.user_id=coalesce(m.human_author_id,m.created_by) and om.status='active'
- where m.organization_id=org and m.id=nullif(job_row.payload->>'message_id','')::uuid and m.role='user' and nullif(btrim(pr.full_name),'') is not null;
+ -- A turn the folder readings resumed answers with the person's original message, never the system's continuation.
+ where m.organization_id=org and m.id=coalesce(nullif(job_row.payload#>>'{document_folder_resume,source_message_id}','')::uuid,nullif(job_row.payload->>'message_id','')::uuid)
+  and m.role='user' and coalesce(m.metadata->>'origin','person')<>'system' and nullif(btrim(pr.full_name),'') is not null;
  select capital_project_id into work from public.document_intake_sessions where organization_id=org and id=job_row.intake_session_id;
  if work is null or subject is null then
   return jsonb_build_object('subjectEntityId',null,'entities','[]'::jsonb,'decisions','[]'::jsonb,'vault','[]'::jsonb,'files','[]'::jsonb,'author',author,'messageDate',message_date);

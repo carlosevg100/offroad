@@ -4352,7 +4352,10 @@
       "awaitingPlanFallback": "Confira o plano acima e aprove esta versão para iniciar a análise. Se necessário, ajuste o escopo ou acrescente documentos antes de aprovar.",
       "approvedPlanFallback": "O plano foi aprovado. Você pode acompanhar o andamento aqui; os resultados aparecerão conforme o trabalho for concluído.",
       "preparingPlanFallback": "O projeto foi criado. Acrescente contexto ou documentos enquanto o plano deste trabalho é preparado.",
-      "startFallback": "O projeto foi criado. Acrescente contexto ou documentos para orientar o trabalho."
+      "startFallback": "O projeto foi criado. Acrescente contexto ou documentos para orientar o trabalho.",
+      "systemNotices": {
+        "documentFolderResume": "Leitura da pasta concluída. Retomo a organização com os arquivos lidos."
+      }
     },
     "integrationPreview": {
       "kicker": "Validação interna",
@@ -8912,6 +8915,7 @@
       "quarterlyProjection": "Caixa e projeção por período",
       "diCurve": "Curva do CDI",
       "taxRate": "Alíquota de imposto",
+      "taxLossTreatment": "Base negativa sem benefício de caixa",
       "stressCase": "Caso de estresse",
       "postHorizonBase": "Base anual depois do horizonte",
       "soundingPlan": "Gatilho e datas da sondagem",

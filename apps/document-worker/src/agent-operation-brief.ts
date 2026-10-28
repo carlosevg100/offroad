@@ -73,7 +73,8 @@ import {projectionChallengeExtractionContract, proposeProjectionChallengePremise
 import {proposeReceivablesFundingPremisesForTurn, receivablesFundingExtractionContract, shouldProposeReceivablesFundingPremises} from "./receivables-funding-premises-proposal";
 import {proposeQuarterUpdatePremisesForTurn, quarterUpdateExtractionContract, shouldProposeQuarterUpdatePremises} from "./quarter-update-premises-proposal";
 import {proposeReceivedProposalPremisesForTurn, receivedProposalExtractionContract, shouldProposeReceivedProposalPremises} from "./received-proposal-premises-proposal";
-import {documentFolderExtractionContract, proposeDocumentFolderPremisesForTurn, shouldProposeDocumentFolderPremises} from "./document-folder-premises-proposal";
+import {documentFolderExtractionContract, documentFolderResumeOf, isDocumentFolderResumeNotice, proposeDocumentFolderPremisesForTurn, shouldProposeDocumentFolderPremises}
+  from "./document-folder-premises-proposal";
 import {financingPathsExtractionContract, proposeFinancingPathsPremisesForTurn, shouldProposeFinancingPathsPremises} from "./financing-paths-premises-proposal";
 import {boardMaterialExtractionContract, proposeBoardMaterialPremisesForTurn, shouldProposeBoardMaterialPremises} from "./board-material-premises-proposal";
 
@@ -399,6 +400,8 @@ Rules:
   Never say whether the proposal is good, nor state a spread, a cost or an amount, before the calculation exists, and
   never speak for the bank. When its status is missing, ask for the missing items in one short list, each with the
   reason; a reference coverage is asked with what it is for.
+- systemContinuation document_folder_readings_completed means the person wrote nothing new: the folder files they sent were
+  read and the organization continues. Never treat it as something the person said; open with the folder's reading.
 - documentFolderPremises is the premise proposal for organizing a folder. When proposed, each file read with what it
   is, of whom and of when, the registry, the open decisions and the vault appear in a card below your reply, each with
   its origin. Give the reading first: what the folder holds, which version of each document counts, and what was not
@@ -406,7 +409,8 @@ Rules:
   company. When its status is missing, ask for the missing items in one short list, each with the reason; an
   unreadable or protected file is asked as a legible copy, by its position and name. A file whose missing item ends in
   reading_pending is still being read: say how many files are in reading and that the inventory comes when they are
-  read; never ask the person for them.
+  read; never ask the person for them. A missing item ending in contradiction is a question answered two ways: ask which
+  answer holds, quoting both, and never pick one.
 - financingPathsPremises is the premise proposal for the financing paths on one basis. When proposed, the debt in
   force, the indenture and its basket, the projection, the variants of the investment, each instrument and each path
   appear in a card below your reply, each with its origin. Give the reading first: what happens without action, each
@@ -699,8 +703,12 @@ export async function processAgentOperationBriefJob(
       || !queue.loadPremiseEvidence || !queue.recordAgentResponseWithPremises);
     // One premise step per turn, in the precedence of premiseStepForTurn.
     // The person's earlier messages, without the one this turn answers.
-    const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id).map((message) => message.content);
-    const premiseStep = premiseStepOpen ? premiseStepForTurn(context.message, context.documents.length > 0, earlierUserMessages) : null;
+    // The system's continuation notices are not the person's words: they are never read as an answer or a request.
+    const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id && !isDocumentFolderResumeNotice(message.content))
+      .map((message) => message.content);
+    // A continuation the folder readings resumed (document_folder_resume) runs the folder step with the framing the person gave.
+    const folderResume = documentFolderResumeOf(job.payload.document_folder_resume);
+    const premiseStep = !premiseStepOpen ? null : folderResume ? "document_folder" : premiseStepForTurn(context.message, context.documents.length > 0, earlierUserMessages);
     const comparisonTurn = premiseStep === "comparison";
     const comparison = !comparisonTurn ? null : await proposeFinancingComparisonPremisesForTurn({
           message: context.message, hasAttachments: context.documents.length > 0,
@@ -788,6 +796,7 @@ export async function processAgentOperationBriefJob(
       // Each file is read in a reading job of its own, outside this turn and its budget; the turn reads what is ready
       // and names the rest as in reading.
       loadReadings: (request) => queue.loadDocumentFolderReadings!(job, request),
+      ...folderResume ? {resume: folderResume} : {},
       extract: folderExtract});
     const premises = premiseStep !== "investment" ? null
       : await proposeInvestmentPremisesForTurn({
@@ -838,8 +847,10 @@ export async function processAgentOperationBriefJob(
                 ? workspaceJourneyBlueprint(executionRoute.analysisScope)
                 : null,
               collaborativeAdvisoryPolicy,
-              recentConversation: context.recent_messages.map(({role, content}) => ({role, content})),
-              latestUserMessage: context.message,
+              recentConversation: context.recent_messages.filter((m) => !(m.role === "user" && isDocumentFolderResumeNotice(m.content))).map(({role, content}) => ({role, content})),
+              // A turn the folder readings resumed has no message of the person: the system continues it.
+              latestUserMessage: folderResume ? null : context.message,
+              systemContinuation: folderResume ? "document_folder_readings_completed" : null,
               investmentPremises: premises?.forAdvisor ?? null,
               comparisonPremises: comparison?.forAdvisor ?? null,
               capacityPremises: capacity?.forAdvisor ?? null,

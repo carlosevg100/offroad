@@ -4352,7 +4352,10 @@
       "awaitingPlanFallback": "Review the plan above and approve this version to begin the analysis. Adjust the scope or add documents before approving if needed.",
       "approvedPlanFallback": "The plan has been approved. Follow its progress here; results will appear as the work is completed.",
       "preparingPlanFallback": "The project has been created. Add context or documents while the work plan is being prepared.",
-      "startFallback": "The project has been created. Add context or documents to guide the work."
+      "startFallback": "The project has been created. Add context or documents to guide the work.",
+      "systemNotices": {
+        "documentFolderResume": "Folder reading completed. I resume the organization with the files read."
+      }
     },
     "integrationPreview": {
       "kicker": "Internal validation",
@@ -8912,6 +8915,7 @@
       "quarterlyProjection": "Cash and projection by period",
       "diCurve": "CDI curve",
       "taxRate": "Tax rate",
+      "taxLossTreatment": "Tax loss without a cash benefit",
       "stressCase": "Stress case",
       "postHorizonBase": "Annual base after the horizon",
       "soundingPlan": "Sounding trigger and dates",

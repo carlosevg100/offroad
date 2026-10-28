@@ -584,7 +584,7 @@
     },
     {
       "path": "apps/document-worker/src/queue.ts",
-      "sha256": "451f0b52d1b8791422372fdd2775f9089ac98e48d66514d73617d5dba2d2a3dd",
+      "sha256": "b113af5b0e9225d9881b47e05938ea04613d12c0ab0c7baae057e32968bd33d5",
       "entrypoint": false,
       "rpcs": [
         "worker_apply_institutional_assumption_answer_v1",
@@ -1210,7 +1210,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
-      "sha256": "a7edc916bf8a8457604e49b9fa9e9dde8e23f938cda8847aaa6a56e1e81a9b83",
+      "sha256": "b950d4b2a0e39bbe62d71c1e6e904c0df0ea598551990d80aa236908dd199c42",
       "entrypoint": false,
       "rpcs": [
         "read_advisor_execution_brief_approval_v1",

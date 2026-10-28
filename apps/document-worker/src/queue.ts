@@ -103,6 +103,8 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
     locale: z.enum(["pt-BR", "en-US"]),
     /** Set only on the recomputation of an institutional result the dependency graph scheduled (stage 18, increment 5A). */
     institutional_recompute_candidate_id: z.uuid().optional(),
+    /** Set only on a turn the folder readings resumed (ficha C09): the person's original message and framing. */
+    document_folder_resume: z.object({wait_id: z.uuid(), source_message_id: z.uuid(), framing: z.unknown()}).optional(),
   }),
 });
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
@@ -422,13 +424,13 @@ export type QueueClient = {
    * the work in arrival order with where its layer is stored, and the author and date of the turn's message. */
   loadDocumentFolder?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The stored reading of each named file of the work, ready, refused or pending, queuing one reading job per pending file. */
-  loadDocumentFolderReadings?(job: AgentOperationBriefJob, request: {readerVersion: string; context: unknown; files: {documentId: string}[]}): Promise<unknown>;
+  loadDocumentFolderReadings?(job: AgentOperationBriefJob, request: {readerVersion: string; context: unknown; files: {documentId: string}[]; framing: unknown}): Promise<unknown>;
   /** The reading job's file: the bytes it was queued for, its latest ready layer and the registry. */
   loadDocumentFolderReadingInput?(job: DocumentFolderReadingJob): Promise<unknown>;
   /** The layer of the reading job's file, as stored, under the job's own storage authority. */
   downloadDocumentFolderLayer?(job: DocumentFolderReadingJob, objectPath: string): Promise<Uint8Array>;
   /** The reading job's reading or its refusal by name, recorded once per organization, bytes, reader version and registry. */
-  recordDocumentFolderReading?(job: DocumentFolderReadingJob, outcome: {status: "ready"; reading: unknown} | {status: "refused"; refusalCode: string}): Promise<{recorded: boolean}>;
+  recordDocumentFolderReading?(job: DocumentFolderReadingJob, outcome: {status: "ready"; reading: unknown} | {status: "refused"; refusalCode: string}): Promise<{recorded: boolean; resumed: number}>;
   /** The latest completed folder inventory of the work, with its stored input and packet, for an update. */
   loadDocumentFolderPrior?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The latest completed result of each source method of the board material, with its release state. */
@@ -1292,7 +1294,7 @@ export function createQueueClient(
 
     async loadDocumentFolderReadings(job, request) {
       return call("worker_document_folder_readings_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token,
-        p_reader_version: request.readerVersion, p_context: request.context, p_files: request.files});
+        p_reader_version: request.readerVersion, p_context: request.context, p_files: request.files, p_framing: request.framing});
     },
 
     async loadDocumentFolderReadingInput(job) {
@@ -1309,7 +1311,7 @@ export function createQueueClient(
     async recordDocumentFolderReading(job, outcome) {
       const data = await call("worker_record_document_folder_reading_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token,
         p_status: outcome.status, p_reading: outcome.status === "ready" ? outcome.reading : null, p_refusal_code: outcome.status === "refused" ? outcome.refusalCode : null});
-      return z.object({recorded: z.boolean()}).parse(data);
+      return z.object({recorded: z.boolean(), resumed: z.number().int().min(0)}).parse(data);
     },
 
     async loadDocumentFolderPrior(job) {

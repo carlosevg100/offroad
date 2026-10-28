@@ -156,10 +156,10 @@ declare r jsonb;
 begin
  if private.worker_can_access_document_storage_v1('document-layers','20000000-0000-4000-8000-000000000711/layers/a.json',false) then raise exception 'the conversation reads a layer';end if;
  r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
-  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb,null);
  if r#>>'{files,0,status}'<>'pending' or (r->>'queued')::int<>1 then raise exception 'reading not queued: %',r;end if;
  r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
-  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb,null);
  if (r->>'queued')::int<>0 or (select count(*) from public.processing_jobs where organization_id='20000000-0000-4000-8000-000000000711' and kind='document_folder_reading')<>1
   then raise exception 'reading queued twice';end if;
  if (select payload->>'sha256' from public.processing_jobs where kind='document_folder_reading')<>repeat('1',64)
@@ -167,7 +167,7 @@ begin
   or (select authorization_subject_id from public.processing_jobs where kind='document_folder_reading')<>'10000000-0000-4000-8000-000000000711'
   or (select source_document_id from public.processing_jobs where kind='document_folder_reading') is not null then raise exception 'reading job wrong';end if;
  begin perform public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1','{}'::jsonb,
-  '[{"documentId":"a0000000-0000-4000-8000-000000000004"}]'::jsonb); raise exception 'another work file answered';
+  '[{"documentId":"a0000000-0000-4000-8000-000000000004"}]'::jsonb,null); raise exception 'another work file answered';
  exception when insufficient_privilege then null; end;
  raise notice 'PASS: readings asked by the conversation, one reading job per file';
 end $$;
@@ -199,13 +199,79 @@ do $$
 declare r jsonb;
 begin
  r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
-  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+  '{"registry":[{"id":"aurora","label":"Aurora","groupLabel":"Grupo Aurora"}]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb,null);
  if r#>>'{files,0,status}'<>'ready' or r#>>'{files,0,reading,pageCount}'<>'3' then raise exception 'ready reading not returned: %',r;end if;
  -- Another registry is another reading.
  r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',
-  '{"registry":[]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb);
+  '{"registry":[]}'::jsonb,'[{"documentId":"a0000000-0000-4000-8000-000000000001"}]'::jsonb,null);
  if r#>>'{files,0,status}'<>'pending' then raise exception 'reading of another registry reused';end if;
  raise notice 'PASS: the conversation reads the stored reading';
+end $$;
+
+-- 3b. Resuming the waiting turn without a new message: the turn's framing is kept while files are read; a file the limit
+-- left out is queued by the next reading's record; when every named file is read, a continuation turn of the
+-- conversation is queued with that framing, once.
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000711","role":"authenticated","aal":"aal1"}', true);
+insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,mime_type,byte_size,sha256,created_by,processing_status,created_at) values
+ ('a0000000-0000-4000-8000-000000000005','20000000-0000-4000-8000-000000000711','40000000-0000-4000-8000-000000000711','20000000-0000-4000-8000-000000000711/40000000-0000-4000-8000-000000000711/e.pdf','extrato.pdf','application/pdf',10,repeat('5',64),'10000000-0000-4000-8000-000000000711','ready',now());
+insert into private.source_version_verifications(organization_id,source_version_id,job_id,observed_sha256,observed_byte_size,receipt_id)
+values('20000000-0000-4000-8000-000000000711','a0000000-0000-4000-8000-000000000005',gen_random_uuid(),repeat('5',64),10,'synthetic-folder-e');
+select private.set_source_rights_v1('a0000000-0000-4000-8000-000000000005',0,array['read','process','store','derive','export'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
+insert into public.document_layers(organization_id,source_document_id,layer_kind,object_path,sha256) values
+ ('20000000-0000-4000-8000-000000000711','a0000000-0000-4000-8000-000000000005','pdf','20000000-0000-4000-8000-000000000711/layers/e.json',repeat('7',64));
+update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000711';
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000713","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare r jsonb;ctx jsonb:='{"registry":[]}'::jsonb;f0 jsonb:='{"mode":{"value":"organize_only","origin":"informed","source":"Só organiza"},"decisions":[],"informed":[]}';
+ files jsonb:='[{"documentId":"a0000000-0000-4000-8000-000000000001"},{"documentId":"a0000000-0000-4000-8000-000000000005"}]';j1 uuid;j5 uuid;m public.agent_messages;
+begin
+ r:=public.worker_document_folder_readings_v1('80000000-0000-4000-8000-000000000711',repeat('r',64),'document-folder-reading.2026.10.27-v1',ctx,files,f0);
+ -- The first file already has a reading job for this registry (section 2); the second gets one now.
+ if (r->>'queued')::int<>1 or (select count(*) from private.document_folder_reading_waits where resumed_at is null)<>1
+  or (select w.framing from private.document_folder_reading_waits w where w.resumed_at is null)<>f0 then raise exception 'wait not kept: %',r;end if;
+ select id into j1 from public.processing_jobs where kind='document_folder_reading' and payload->>'sha256'=repeat('1',64) and payload->'context'=ctx and status='queued';
+ select id into j5 from public.processing_jobs where kind='document_folder_reading' and payload->>'sha256'=repeat('5',64);
+ -- The limit left the second file out: its job is gone.
+ update public.processing_jobs set status='cancelled' where id=j5;
+ update public.processing_jobs set status='leased',attempts=1,leased_by='a3300000-0000-4000-8000-000000000711',leased_account_user_id='10000000-0000-4000-8000-000000000713',
+  lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('t',64),'sha256') where id=j1;
+ r:=public.worker_record_document_folder_reading_v1(j1,repeat('t',64),'refused',null,'unreadable');
+ if (r->>'resumed')::int<>0 then raise exception 'resumed before every file was read';end if;
+ select id into j5 from public.processing_jobs where kind='document_folder_reading' and payload->>'sha256'=repeat('5',64) and status='queued';
+ if j5 is null then raise exception 'the file left out was not queued again';end if;
+ update public.processing_jobs set status='leased',attempts=1,leased_by='a3300000-0000-4000-8000-000000000711',leased_account_user_id='10000000-0000-4000-8000-000000000713',
+  lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('u',64),'sha256') where id=j5;
+ r:=public.worker_record_document_folder_reading_v1(j5,repeat('u',64),'ready','{"extraction":{},"pageCount":1,"pagesWithoutText":[]}'::jsonb,null);
+ if (r->>'resumed')::int<>1 then raise exception 'turn not resumed: %',r;end if;
+ select * into m from public.agent_messages where metadata->>'kind'='document_folder_resume';
+ -- The continuation is the system's: marked origin system, written by the worker account, never authored by the person.
+ if m.id is null or m.status<>'queued' or m.metadata->>'origin'<>'system' or m.metadata ? 'framing' or m.content<>'Leitura da pasta concluída.'
+  or m.created_by='10000000-0000-4000-8000-000000000711' or m.human_author_id='10000000-0000-4000-8000-000000000711'
+  or m.created_by<>'10000000-0000-4000-8000-000000000713' or m.conversation_id<>'50000000-0000-4000-8000-000000000711' then raise exception 'continuation message wrong: %',to_jsonb(m);end if;
+ -- The brief job carries the resume itself: the person's original message and framing.
+ if not exists(select 1 from public.processing_jobs where kind='agent_operation_brief' and payload->>'message_id'=m.id::text and status='queued'
+   and authorization_subject_id='10000000-0000-4000-8000-000000000711' and payload#>'{document_folder_resume,framing}'=f0
+   and payload#>>'{document_folder_resume,source_message_id}'='60000000-0000-4000-8000-000000000712') then raise exception 'continuation turn not queued with its resume';end if;
+ if (select count(*) from private.document_folder_reading_waits where resumed_at is null)<>0
+  or (select w.resume_message_id from private.document_folder_reading_waits w where w.resume_message_id is not null)<>m.id then raise exception 'wait not closed';end if;
+ if has_table_privilege('authenticated','private.document_folder_reading_waits','SELECT') then raise exception 'waits exposed';end if;
+ raise notice 'PASS: the readings resume the waiting turn once, without a new message';
+end $$;
+
+-- 3c. The resumed turn's evidence names the person of the original message as the author, never the system's continuation.
+update public.processing_jobs set status='leased',attempts=1,leased_by='a3300000-0000-4000-8000-000000000711',leased_account_user_id='10000000-0000-4000-8000-000000000713',
+ lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('v',64),'sha256')
+ where kind='agent_operation_brief' and payload ? 'document_folder_resume';
+do $$
+declare j uuid:=(select id from public.processing_jobs where kind='agent_operation_brief' and payload ? 'document_folder_resume');ev jsonb;
+begin
+ ev:=public.worker_document_folder_evidence_v1(j,repeat('v',64));
+ if ev->>'author' is distinct from 'Mariana Souza, Controller' then raise exception 'resumed turn author wrong: %',ev->'author';end if;
+ -- Without the resume, a message of origin system names no author.
+ update public.processing_jobs set payload=payload-'document_folder_resume' where id=j;
+ ev:=public.worker_document_folder_evidence_v1(j,repeat('v',64));
+ if ev->'author'<>'null'::jsonb then raise exception 'system continuation read as the person: %',ev->'author';end if;
+ raise notice 'PASS: the continuation is never the person''s message';
 end $$;
 
 -- 4. The priors as the worker reads them: none yet; and every door refuses a forged capability.

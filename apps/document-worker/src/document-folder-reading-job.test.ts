@@ -22,7 +22,7 @@ function harness(bytes: Uint8Array, o: {answer?: () => unknown; layerSha?: strin
     loadDocumentFolderReadingInput: async () => ({sourceDocumentId: doc, sha256: o.inputSha ?? "1".repeat(64), mimeType: "application/pdf", readerVersion: version,
       contextFingerprint: "2".repeat(64), context, layerObjectPath: "org/layers/a.json", layerSha256: o.layerSha ?? sha(bytes)}),
     downloadDocumentFolderLayer: async () => bytes,
-    recordDocumentFolderReading: async (_j: unknown, outcome: unknown) => {recorded.push(outcome); return {recorded: true};},
+    recordDocumentFolderReading: async (_j: unknown, outcome: unknown) => {recorded.push(outcome); return {recorded: true, resumed: 0};},
     complete: async (_j: unknown, r: unknown) => {completed.push(r);}, fail: async (_j: unknown, _e: unknown, opts: {retryable?: boolean}) => {failed.push(opts);},
   } as unknown as QueueClient;
   const gateway = {complete: async (request: {input: {text: string}[]}) => {texts.push(request.input[0]!.text); return {output: (o.answer ?? (() => extraction))()};},

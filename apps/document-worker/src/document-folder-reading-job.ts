@@ -22,9 +22,10 @@ export async function processDocumentFolderReadingJob(job: DocumentFolderReading
 }): Promise<{status: "succeeded" | "failed"}> {
   const {queue, gateway, log} = dependencies;
   const finish = async (outcome: DocumentFolderReadingOutcome) => {
-    const {recorded} = await queue.recordDocumentFolderReading!(job, outcome.status === "ready" ? {status: "ready", reading: outcome.reading} : outcome);
-    await queue.complete(job, {status: outcome.status, recorded, spend: safeModelSpend(gateway.spent())});
-    log("document_folder_reading.finished", {job: job.job_id, status: outcome.status, ...(outcome.status === "refused" ? {refusal: outcome.refusalCode} : {}), recorded});
+    // Recording also carries the waiting turns on: it queues what the limit left out and resumes a turn whose files are all read.
+    const {recorded, resumed} = await queue.recordDocumentFolderReading!(job, outcome.status === "ready" ? {status: "ready", reading: outcome.reading} : outcome);
+    await queue.complete(job, {status: outcome.status, recorded, resumed, spend: safeModelSpend(gateway.spent())});
+    log("document_folder_reading.finished", {job: job.job_id, status: outcome.status, ...(outcome.status === "refused" ? {refusal: outcome.refusalCode} : {}), recorded, resumed});
     return {status: "succeeded" as const};
   };
   try {

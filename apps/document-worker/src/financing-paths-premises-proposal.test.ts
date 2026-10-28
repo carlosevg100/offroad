@@ -189,7 +189,14 @@ describe("financing paths premises from the ficha C32 conversation", {timeout: 9
     expect(Number(path("debenture-com-linha").netDebtAtHorizon) - Number(path("sem-linha-debenture").netDebtAtHorizon)).toBeGreaterThan(22);
     expect([path("bradesco-sem-linha").minimumCash.periodId, path("bradesco-sem-linha").shortfallVsPolicyMinimum.slice(0, 5)]).toEqual(["2028-06-30", "18.23"]);
     expect(proposal.summary.items.every((x) => summaryGroups.includes(x.group) && summaryOrigins.includes(x.origin))).toBe(true);
-    expect(proposal.summary.items.filter((x) => x.origin === "house").map((x) => x.labelKey)).toEqual(["stressCase", "issueQuantum", "withoutProject", "statusQuoPath"]);
+    expect(proposal.summary.items.filter((x) => x.origin === "house").map((x) => x.labelKey)).toEqual(["taxLossTreatment", "stressCase", "issueQuantum", "withoutProject", "statusQuoPath"]);
+    // Independent review, round 1: the rate comes from a document; the loss treatment is the house convention, with its own origin.
+    const reason = (end: string) => proposal.hypotheses.find((h) => h.fieldPath.endsWith(end))!.reason;
+    expect(reason(".tax.rate")).toMatch(/^Origem: documento\./);
+    expect(reason(".tax.lossTreatment")).toMatch(/^Origem: premissa da casa\./);
+    expect(proposal.summary.items.find((x) => x.labelKey === "taxRate")).toMatchObject({origin: "document"});
+    expect(proposal.summary.items.find((x) => x.labelKey === "taxLossTreatment")).toMatchObject({origin: "house"});
+    expect(proposal.summary.items.find((x) => x.labelKey === "taxRate")!.source).not.toMatch(/conven/);
     expect(proposal.hypotheses.every((h) => /^capital_paths\.[0-9a-f-]{36}\.[A-Za-z0-9_.-]{1,200}$/.test(h.fieldPath))).toBe(true);
     expect(proposal).toMatchObject({methodId: "evaluate-financing-paths", methodVersion: "2026.10.27-v1", summary: {situationId: "refinancing", referenceDate: "2026-06-30"}});
   });
