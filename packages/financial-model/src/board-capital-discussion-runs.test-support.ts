@@ -6,7 +6,7 @@ import {deterministicRunEvidenceFingerprint, type DeterministicMethodRun, type D
 import {readBoardSourcePath} from "./board-capital-discussion";
 import {boardCapitalDiscussionPacketOutputSchema, prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import type {AdoptionBasisEntry, AdoptionBasisSnapshot} from "@offroad/reconciliation";
-import {boardAlteredSource, boardRenamedReadings, boardRenamedSources, withBoardSources} from "./board-capital-discussion.test-support";
+import {boardAlteredSource, boardRenamedPacket, boardRenamedReadings, boardRenamedSources, withBoardSources} from "./board-capital-discussion.test-support";
 import {auroraBoardBasis, auroraMoneyScale, auroraBoardFacts, auroraBoardPending, debtTableWithPrincipal, debtTableAtReferenceDate, auroraRelativeCostPacket, auroraBoardReadings, auroraBoardSources, auroraCovenantPacket, debtTableWithCreditLineLabel, auroraInvestmentPacket, auroraPlanPacket, auroraProjectionPacket, auroraReceivablesPacket, auroraWeeklyPacket, covenantWithAdverseDebt, debtTableWithCreditor, withBoardSource, withExtraBoardSource, type BoardTurn} from "./board-capital-discussion.test-support";
 import {proposeBoardCapitalDiscussionHypotheses} from "./board-capital-discussion-premises";
 import {composeBoundBoardCapitalDiscussion} from "./board-capital-discussion-composer";
@@ -520,10 +520,41 @@ export function boardRoleAttempts(build: (turn: BoardTurn, edit: (c: CaseData) =
     ["two-alternative-weekly-cases-tied-at-the-lowest-cash", run("caixa-semanal", (p) => {const xs = (p.readings as {sensitivities: {caseId: string; minimum: string}[]}).sensitivities;
       xs.find((x) => x.caseId === "safra-30")!.minimum = xs.find((x) => x.caseId === "sem-linha")!.minimum;}),
       "board_capital_record_role_ambiguous:situation.cash_without_line:w:lowest_cash_alternative_case:safra-30,sem-linha"],
-    // The debt-table row and the plan instrument: the same final payment, another spread; the plan never registers the creditor.
+    // The debt-table row and the plan instrument: the same final payment, another spread, under the adopted identity.
     ["debt-table-row-whose-terms-differ-from-the-plan-instrument", run("tabela-divida", (p) => {
       (p.result as {table: {rows: {id: string; spread: string}[]}}).table.rows.find((x) => x.id === "ccb-bradesco")!.spread = "0.03";}),
-      "board_capital_record_role_absent:alternatives.moves.no_line_debenture:j:plan_instrument_of_row"],
+      "board_capital_record_link_mismatch:alternatives.moves.no_line_debenture:j:spread"],
+    ...boardLinkAttempts(build),
+  ];
+}
+/** The plan instrument of a debt-table row only by an adopted identity of the two records, never by coinciding terms; under
+ * the adopted identity, every contractual term both results register must agree. */
+export function boardLinkAttempts(build: (turn: BoardTurn, edit: (c: CaseData) => void) => unknown): [string, () => unknown, string][] {
+  type Row = {id: string; indexer: string; finalPayment: string; spread: string | null};
+  const row = (p: Record<string, unknown>) => (p.result as {table: {rows: Row[]}}).table.rows.find((x) => x.id === "ccb-bradesco")!;
+  const first = "alternatives.moves.no_line_debenture:j";
+  const unlinked = (c: CaseData) => {c.links = [];};
+  const altered = (edit: (r: Row) => void, caseEdit: (c: CaseData) => void = () => undefined) => () =>
+    withBoardSource("tabela-divida", boardAlteredSource("tabela-divida", (p) => edit(row(p))), () => build(2, caseEdit));
+  // The whole calibration renamed, the debt table replaced by its own method's execution with the Bradesco row under Itaú.
+  const renamedItau = (link: boolean) => () => {
+    const {packets, renames} = boardRenamedSources();
+    const itau = boardRenamedPacket("build-company-debt-table", debtTableWithCreditor("Itaú", "Bradesco"), "c47-roles").packet;
+    return withBoardSources({...packets, "tabela-divida": itau}, () => build(2, (c) => {boardRenamedReadings(renames)(c); if (!link) c.links = [];}));
+  };
+  return [
+    ["another-creditor-without-an-adopted-link", () => withBoardSource("tabela-divida", debtTableWithCreditor("Itaú", "Bradesco"), () => build(2, unlinked)),
+      `board_capital_record_link_absent:${first}:not_adopted`],
+    ["another-creditor-without-an-adopted-link-after-renaming-every-record", renamedItau(false), `board_capital_record_link_absent:${first}:not_adopted`],
+    ["same-terms-without-an-adopted-link", () => build(2, unlinked), `board_capital_record_link_absent:${first}:not_adopted`],
+    ["another-indexer-under-the-adopted-link", altered((r) => {r.indexer = "TLP";}), `board_capital_record_link_mismatch:${first}:index_rate`],
+    ["fixed-rate-row-under-the-adopted-link", altered((r) => {r.indexer = "fixed";}), `board_capital_record_link_mismatch:${first}:rate_kind`],
+    ["another-final-payment-under-the-adopted-link", altered((r) => {r.finalPayment = "2028-09-15";},
+      (c) => {c.extraReadings["bradesco-maturity"] = ["tabela-divida", "result.table.rows[id=ccb-bradesco].finalPayment", "month_long", "2028-09-15"];}), `board_capital_record_link_mismatch:${first}:final_payment`],
+    ["partial-registration-without-an-adopted-link", altered((r) => {r.spread = null;}, unlinked), `board_capital_record_link_absent:${first}:not_adopted`],
+    ["link-to-an-instrument-the-plan-does-not-hold-as-existing", () => build(2, (c) => {c.links[0]!.instrumentId = "ccb-alongamento";}), `board_capital_record_link_mismatch:${first}:instrument`],
+    ["link-naming-another-plan-source", () => build(2, (c) => {c.links[0]!.planSourceId = "linha-embalagem";}), `board_capital_record_link_mismatch:${first}:plan_source`],
+    ["one-row-linked-twice", () => build(2, (c) => {c.links.push({...c.links[0]!, id: "outro", instrumentId: "finame"});}), "board_capital_record_link_ambiguous:row"],
   ];
 }
 
@@ -681,9 +712,9 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
     ["largest-creditor-in-a-row-creditor-slot", () => build(2, (c) => {c.pages[3]!.lines[0] = "constraint.basket_usage|cesta=basket|ocupado=basket-used|credor=largest-creditor";}),
       "board_capital_slot_concept_mismatch:constraint.basket_usage:credor"],
     ["prepaid-creditor-the-plan-does-not-prepay", () => build(2, (c) => {finame(c); c.pages[8]!.lines[0] = "recommendation.debenture_cost|credor=finame-creditor|baixo=deb-cost-low|alto=deb-cost-high";}),
-      "board_capital_record_role_absent:recommendation.debenture_cost:j:plan_instrument_of_row"],
+      "board_capital_record_link_absent:recommendation.debenture_cost:j:not_adopted"],
     ["amended-creditor-the-plan-does-not-amend", () => build(2, (c) => {finame(c); c.pages[7]!.lines[6] = c.pages[7]!.lines[6]!.replace("credor=bradesco-creditor", "credor=finame-creditor");}),
-      "board_capital_record_role_absent:alternatives.moves.extend_bradesco:j:plan_instrument_of_row"],
+      "board_capital_record_link_absent:alternatives.moves.extend_bradesco:j:not_adopted"],
     ["question-and-answer-name-different-creditors", () => build(2, (c) => {finame(c); c.questions[0]!.question = "q.roll_bank|credor=finame-creditor";}), "board_capital_answer_mismatch:bradesco:credor"],
     // Review r9: exposure is the balance the chain owes, never the program's volume or the eligible capacity; a
     // contractual assertion holds only when the registered contract says so.

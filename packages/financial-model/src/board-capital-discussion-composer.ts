@@ -91,13 +91,14 @@ export function composeBoundBoardCapitalDiscussion(raw: unknown): BoardCapitalDi
   const questions = keys(new RegExp(`^question\\.(${k})\\.`), "order.questions").map((id) => ({id, question: select(`question.${id}.question`, "text", "text"), answer: select(`question.${id}.answer`, "text", "text")}));
   const omissions = keys(new RegExp(`^omission\\.(${k})$`), "order.omissions").map((id) => ({id, reading: select(`omission.${id}`, "identity", "list")}));
   const informed = keys(new RegExp(`^informed\\.(${k})$`), "order.informed").map((id) => ({id, reading: select(`informed.${id}`, "identity", "list")}));
+  const links = keys(new RegExp(`^link\\.(${k})$`), "order.links").map((id) => ({id, reading: select(`link.${id}`, "identity", "list")}));
   const discussion = {envelope: input.discussion.envelope, scope: input.discussion.scope, entityId: d.entityId!, perimeter: d.perimeter!, currency: d.currency!,
     openingDate: d.periodStart!, endDate: d.periodEnd!, numericInterpretations: [], analysisId, scenario: sc,
     meeting: {date: select("meeting.date", "date", "date"), askedOn: select("meeting.askedOn", "date", "date"), leadDays: select("meeting.leadDays", "days", "number"),
       minutesPerPage: select("meeting.minutesPerPage", "minutes", "number"), agendaMinutes: optional("meeting.agendaMinutes", "minutes", "number"),
       nextMeetingDate: optional("meeting.nextMeetingDate", "date", "date"), template: optional("meeting.template", "text", "text"), outlineConfirmed: select("meeting.outlineConfirmed", "convention", "boolean")},
     sources, topics, deliberations, figures, materialFigureIds: select("figures.material", "identity", "list"), indicative, pages,
-    summary: {opening: select("summary.opening", "text", "text"), closing: select("summary.closing", "text", "text")}, appendix, questions, omissions, informed};
+    summary: {opening: select("summary.opening", "text", "text"), closing: select("summary.closing", "text", "text")}, appendix, questions, omissions, informed, links};
   // A missing operand carries the lowest resolved definition so the reference is stable; the executor ignores it.
   const borrowed = [...definitions].sort((a, b) => a.definitionVersionId < b.definitionVersionId ? -1 : 1)[0];
   if (borrowed) for (const m of missing) {m.definitionVersionId = borrowed.definitionVersionId; m.definitionKind = borrowed.definitionKind;}

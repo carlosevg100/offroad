@@ -676,6 +676,8 @@ export function auroraBoardCase(turn: BoardTurn) {
     ],
     /** Facts informed in the conversation: the chair's strategic reason for the packaging line. */
     informed: [{id: "motivo-estrategico", origin: "informed", author: "chair", code: "reduce_single_supplier_dependence"}],
+    /** The CCB of the plan is the Bradesco row of the debt table: the identity adopted from the analysis of both results. */
+    links: [{id: "ccb-bradesco", planSourceId: "plano-2027", instrumentId: "ccb-bradesco", tableSourceId: "tabela-divida", rowId: "ccb-bradesco"}],
     /** Readings a test adds to the basis beside the calibration's own. */
     extraReadings: {} as Record<string, Reading>,
     /** Pending figures a test writes in place of the calibration's own (same ids). */
@@ -719,6 +721,7 @@ export function auroraBoardBasis(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     questions: c.questions.map((q) => ({id: q.id, question: text(`question.${q.id}.question`, q.question), answer: text(`question.${q.id}.answer`, q.answer)})),
     omissions: c.omissions.map((o) => ({id: o.id, reading: list(`omission.${o.id}`, [o.target, o.targetId, o.requestedBy])})),
     informed: c.informed.map((x) => ({id: x.id, reading: list(`informed.${x.id}`, [x.origin, x.author, x.code])})),
+    links: c.links.map((x) => ({id: x.id, reading: list(`link.${x.id}`, [x.planSourceId, x.instrumentId, x.tableSourceId, x.rowId])})),
   } as unknown as AdoptedBoardCapitalDiscussionInput;
   const seal = (): BoardCapitalDiscussionAnalyses => ({sources: auroraBoardSources().map((s) => ({id: s.id, packet: JSON.stringify(s.packet)})), discussion: {...input, envelope: f.seal()}});
   return {...f, input, case: c, seal};
@@ -748,6 +751,7 @@ export function auroraBoardFacts(turn: BoardTurn = 2, edit: (c: ReturnType<typeo
     questions: c.questions.map((q) => fact(q, "house", "perguntas prováveis do conselho")),
     omissions: c.omissions.map((o) => fact(o, "informed", "pedido do CFO na conversa")),
     informed: c.informed.map((x) => fact({id: x.id, author: x.author, code: x.code}, x.origin as "informed", "presidente do conselho na conversa sobre a linha de embalagem")),
+    links: c.links.map((x) => fact(x, "analysis", "a CCB do plano é a linha do Bradesco na tabela de dívida, conferida nos dois resultados")),
   } as unknown as BoardCapitalDiscussionFacts;
 }
 
@@ -841,5 +845,6 @@ export function boardRenamedReadings(renames: Record<string, Map<string, string>
   return (c: ReturnType<typeof auroraBoardCase>) => {
     for (const [id, r] of Object.entries({...auroraBoardReadings, ...c.extraReadings})) c.extraReadings[id] = [r[0], boardRenamedPath(r[1], bySource(r[0])), ...r.slice(2)] as Reading;
     for (const [id, r] of Object.entries(auroraBoardPending)) c.extraPending[id] = [r[0], boardRenamedPath(r[1], bySource(sourceOfMethod(r[0]))), r[2]];
+    c.links = c.links.map((l) => ({...l, instrumentId: bySource(l.planSourceId).get(l.instrumentId) ?? l.instrumentId, rowId: bySource(l.tableSourceId).get(l.rowId) ?? l.rowId}));
   };
 }

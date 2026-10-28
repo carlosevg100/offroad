@@ -331,9 +331,10 @@ export type BoardRole = {bind: string} & (
   | {role: "limit"; kind: "board_policy" | "contractual"}
   /** The alternative weekly case of strictly lowest minimum cash among the registered sensitivities. */
   | {role: "lowest_cash_alternative_case"}
-  /** The existing plan instrument identified with the debt-table row bound to the named variable, by the contractual terms
-   * both results register (final payment date; spread of an index-plus-spread rate): at least one, none differing, each the
-   * only match of the other. The plan registers no creditor. */
+  /** The existing plan instrument that the debt-table row bound to the named variable is, by the identity of the two
+   * records adopted in the discussion's basis (the plan registers no creditor), with no contractual term both results
+   * register differing (final payment date, rate kind, index level, spread). Without an adopted identity, or with a term
+   * that differs, refused by name (board_capital_record_link_absent, board_capital_record_link_mismatch). */
   | {role: "plan_instrument_of_row"; row: string});
 export type BoardRoleName = BoardRole["role"];
 /** The method each role is read from. */
@@ -939,7 +940,7 @@ export function boardRoleDescription(r: BoardRole): string {
     : r.role === "sensitivity_case" ? `o único caso de sensibilidade cujo objeto de entrada difere do caso de referência (o caso cujo cenário ele herda, em $${r.reference}) exatamente em ${r.changes.join(", ")}`
     : r.role === "limit" ? `o único limite de tipo ${r.kind} em vigor`
     : r.role === "lowest_cash_alternative_case" ? "o único caso alternativo de menor caixa mínimo entre as sensibilidades registradas"
-    : `o único instrumento existente do plano identificado com a linha $${r.row} da tabela de dívida pelos termos contratuais que as duas fontes registram (vencimento final; spread de taxa indexada mais spread): ao menos um, nenhum divergente, e vice-versa`;
+    : `o instrumento existente do plano que o vínculo adotado na base da discussão identifica com a linha $${r.row} da tabela de dívida, sem nenhum termo contratual registrado nas duas fontes divergente (vencimento final, espécie da taxa, nível do indexador, spread); sem vínculo adotado, ou com divergência, recusa pelo nome`;
   return `$${r.bind} := ${what} (${boardRoleMethods[r.role]})`;
 }
 

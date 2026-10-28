@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {prepareBoardCapitalDiscussionPacket, type BoardCapitalDiscussionPacketInput} from "./board-capital-discussion-packet";
 import {boardLiteralRecordIds, boardTemplates, checkBoardTemplateLibrary} from "./board-capital-discussion-templates";
-import {auroraBoardSources, boardRenamedSources} from "./board-capital-discussion.test-support";
+import {auroraBoardSources, boardAlteredSource, boardRenamedSources, withBoardSource} from "./board-capital-discussion.test-support";
 import {boardMaterialDigest, boardPacketInput, boardRenamedInput, boardRoleAttempts} from "./board-capital-discussion-runs.test-support";
 
 /** Records bound by the role their result registers, never by identifier (ficha C47, review of the bridge). */
@@ -54,6 +54,17 @@ describe("board discussion records bound by role", () => {
     // Another random renaming gives the same material again.
     expect(boardMaterialDigest(prepareBoardCapitalDiscussionPacket(boardRenamedInput(2, "another-seed")))).toBe(boardMaterialDigest(prepareBoardCapitalDiscussionPacket(boardPacketInput(2))));
   }, 600_000);
+
+  it("the plan instrument of a debt-table row is the adopted identity, never a coincidence; a term one result does not register refutes nothing", () => {
+    // Registered partially (the table without the spread), under the adopted identity: nothing differs, the same material.
+    const partial = boardAlteredSource("tabela-divida", (p) => {(p.result as {table: {rows: {id: string; spread: string | null}[]}}).table.rows.find((x) => x.id === "ccb-bradesco")!.spread = null;});
+    const p = withBoardSource("tabela-divida", partial, () => prepareBoardCapitalDiscussionPacket(boardPacketInput(2)));
+    expect(p.result.discussion!.versions.at(-1)!.pages).toEqual(prepareBoardCapitalDiscussionPacket(boardPacketInput(2)).result.discussion!.versions.at(-1)!.pages);
+    expect(p.result.discussion!.links).toEqual([{id: "ccb-bradesco", planSourceId: "plano-2027", instrumentId: "ccb-bradesco", tableSourceId: "tabela-divida", rowId: "ccb-bradesco"}]);
+    // The same partial table without the adopted identity: the cross-source sentences do not come out, by name.
+    expect(() => withBoardSource("tabela-divida", partial, () => prepareBoardCapitalDiscussionPacket(boardPacketInput(2, (c) => {c.links = [];}))))
+      .toThrow("board_capital_record_link_absent:alternatives.moves.no_line_debenture:j:not_adopted");
+  }, 300_000);
 
   it("a role the result does not register, or registers more than once, refuses the template by name; never chosen by order", () => {
     for (const [id, build, message] of boardRoleAttempts((turn, edit) => boardPacketInput(turn, edit))) {

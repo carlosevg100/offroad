@@ -50,7 +50,12 @@ export type BoardDiscussion = {
   omissions: {id: string; target: BoardOmissionTarget; targetId: string; requestedBy: string}[];
   /** Facts informed in the conversation and adopted with their author; shown only through a template that attributes them. */
   informed: BoardInformedFact[];
+  /** The adopted identity between an existing instrument of the plan and a row of the debt table (the plan registers no creditor). */
+  links: BoardInstrumentLink[];
 };
+/** An adopted identity between two records of two results: the existing instrument of the financing plan and the row of the
+ * debt table that are the same contract. Proposed by the bridge and confirmed by a person; never inferred by coincidence. */
+export type BoardInstrumentLink = {id: string; planSourceId: string; instrumentId: string; tableSourceId: string; rowId: string};
 /** A fact informed in the conversation, adopted as a code of the method's closed dictionary of reasons, with its author;
  * no text of the fact is ever adopted or shown. */
 export type BoardInformedFact = {id: string; origin: string; author: string; code: string};
@@ -198,6 +203,8 @@ export function boardConditionSlots(c: unknown): string[] {
 }
 export type BoardFigureDisplay = {display: string; unit: BoardFigureUnit; origin?: {sourceId: string; methodId: string; path: string; value: string; canonical?: string; fingerprint?: string; periodMonths?: string}; unnamed?: true} | {pending: true; methodId?: string; path?: string};
 type Context = {figures: Map<string, BoardFigureDisplay>; deliberations: BoardDeliberation[]; nextMeetingDate: string | null; sources?: BoardSourceReading[]; informed?: BoardInformedFact[];
+  /** The adopted identities between records of two results. */
+  links?: BoardInstrumentLink[];
   /** A library given to this one render (tests of a changed template); the material always renders with the frozen one. */
   library?: Readonly<Record<string, BoardTemplate>>;
   /** The canonical names of the debtors this text names, by the reading bound to the debtor slot. */
@@ -402,28 +409,45 @@ export function boardRoleRecords(r: BoardRole, sourceOf: (method: string) => Boa
     const lowest = cases.reduce((m, x) => new Exact(String(x.minimum)).lt(m) ? new Exact(String(x.minimum)) : m, new Exact(String(cases[0]!.minimum)));
     return ids(cases.filter((x) => new Exact(String(x.minimum)).eq(lowest)).map((x) => String(x.caseId)));
   }
-  // The plan instrument of a debt-table row: the plan registers no creditor, so the identity is the contractual terms both
-  // results register (final payment date; spread of an index-plus-spread rate): at least one must be registered by both,
-  // every one registered by both must agree, and the match is mutual and unique. The balance is not an identity term: the
-  // plan's opening principal is at the plan's start, which need not be the table's reference date.
-  if (!Object.hasOwn(vars, r.row)) return `variable_${r.row}`;
-  const table = sourceOf("build-company-debt-table"), plan = sourceOf(boardRoleMethods[r.role]);
-  const rows = ((table.packet as {result?: {table?: {rows?: unknown}}}).result?.table?.rows);
-  const tableRows = Array.isArray(rows) ? rows.filter((x): x is Record<string, unknown> => isRecord(x)) : [];
-  const contributions = contributionsOf(plan.packet);
-  const same = (row: Record<string, unknown>, id: string) => {
-    const terms = termOf(contributions, `instrument.${id}.terms`), rates = termOf(contributions, `instrument.${id}.rates`);
-    const final = termOf(contributions, `instrument.${id}.finalPaymentDate`);
-    if (!Array.isArray(terms)) return false;
-    const checks: boolean[] = [];
-    if (typeof final === "string" && typeof row.finalPayment === "string") checks.push(final === row.finalPayment);
-    if (terms[2] === "index_plus_spread" && Array.isArray(rates) && isNumeric(rates[0]) && isNumeric(row.spread)) checks.push(new Exact(String(rates[0])).eq(String(row.spread)));
-    return checks.length > 0 && checks.every(Boolean);
-  };
-  const row = tableRows.find((x) => x.id === vars[r.row]);
-  if (!row) return [];
-  const existing = registeredIds(contributions, "instrument", (v) => v[0] === "existing");
-  return ids(existing.filter((id) => same(row, id) && tableRows.filter((x) => same(x, id)).length === 1));
+  return `role_${r.role}`;
+}
+/** The plan instrument a debt-table row is, by the adopted identity of the two records, checked against every contractual
+ * term both results register: final payment date, rate kind (indexed or fixed), the level of the index (the plan's index
+ * rate against the table's rate of the row's indexer), and the spread or fixed rate. A term one result does not register
+ * neither proves nor refutes. Without an adopted identity, or with a term that differs, the template does not apply, by
+ * name (board_capital_record_link_absent, board_capital_record_link_mismatch with the term). Balances are not terms: the
+ * plan's opening principal is at the plan's start, which need not be the table's reference date. */
+export function boardLinkedInstrument(templateId: string, r: Extract<BoardRole, {role: "plan_instrument_of_row"}>, links: readonly BoardInstrumentLink[],
+  sourceOf: (method: string) => BoardSourceReading, vars: Readonly<Record<string, string>>): string {
+  const absent = (why: string) => new Error(`board_capital_record_link_absent:${templateId}:${r.bind}:${why}`);
+  const mismatch = (term: string) => new Error(`board_capital_record_link_mismatch:${templateId}:${r.bind}:${term}`);
+  if (!Object.hasOwn(vars, r.row)) throw absent(`variable_${r.row}`);
+  let table: BoardSourceReading, plan: BoardSourceReading;
+  try {table = sourceOf("build-company-debt-table"); plan = sourceOf(boardRoleMethods[r.role]);} catch (e) {if (e instanceof BoardIndefinite) throw absent("source"); throw e;}
+  const adopted = links.filter((l) => l.tableSourceId === table.id && l.rowId === vars[r.row]);
+  if (adopted.length !== 1) throw absent(adopted.length ? "several" : "not_adopted");
+  const link = adopted[0]!;
+  if (link.planSourceId !== plan.id) throw mismatch("plan_source");
+  const rows = (table.packet as {result?: {table?: {rows?: unknown}}}).result?.table?.rows;
+  const row = (Array.isArray(rows) ? rows : []).find((x) => isRecord(x) && x.id === link.rowId) as Record<string, unknown> | undefined;
+  if (!row) throw mismatch("row");
+  const plans = contributionsOf(plan.packet), tables = contributionsOf(table.packet);
+  const terms = termOf(plans, `instrument.${link.instrumentId}.terms`);
+  if (!Array.isArray(terms) || terms[0] !== "existing") throw mismatch("instrument");
+  const registered = (v: unknown): v is string => typeof v === "string" && v !== "";
+  const final = termOf(plans, `instrument.${link.instrumentId}.finalPaymentDate`);
+  if (registered(final) && registered(row.finalPayment) && final !== row.finalPayment) throw mismatch("final_payment");
+  const kind = registered(terms[2]) ? terms[2] : null, indexer = registered(row.indexer) ? row.indexer : null;
+  const tableKind = indexer === null ? null : indexer === "fixed" ? "fixed" : "index_plus_spread";
+  if (kind !== null && tableKind !== null && kind !== tableKind) throw mismatch("rate_kind");
+  if (kind === "index_plus_spread" && indexer !== null && indexer !== "other") {
+    const planIndex = termOf(plans, "index.byPeriod"), tableIndex = termOf(tables, `index_rate.${indexer}`);
+    const first = Array.isArray(planIndex) ? planIndex[0] : undefined;
+    if (isNumeric(first) && isNumeric(tableIndex) && !new Exact(String(first)).eq(String(tableIndex))) throw mismatch("index_rate");
+  }
+  const rates = termOf(plans, `instrument.${link.instrumentId}.rates`), rate = Array.isArray(rates) ? rates[0] : undefined;
+  if (isNumeric(rate) && isNumeric(row.spread) && !new Exact(String(rate)).eq(String(row.spread))) throw mismatch("spread");
+  return link.instrumentId;
 }
 
 /** Renders one text of the closed library. Each slot is checked against its concept before anything is written:
@@ -518,6 +542,8 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
   for (const r of template.roles ?? []) {
     if (pendingOnly.has(r.bind) && !readVars.has(r.bind)) continue;
     const named = (what: string, detail = "") => new Error(`board_capital_record_role_${what}:${templateId}:${r.bind}:${r.role}${detail}`);
+    // The plan instrument of a debt-table row: only by an adopted identity, never by coincidence of terms.
+    if (r.role === "plan_instrument_of_row") {vars[r.bind] = boardLinkedInstrument(templateId, r, context.links ?? [], (method) => sourceOf(method), vars); continue;}
     let found: BoardRoleRecord[] | string;
     // A role whose source is not in the material cannot be resolved: the template does not apply, by name.
     try {found = boardRoleRecords(r, (method) => sourceOf(method), vars);} catch (e) {if (e instanceof BoardIndefinite) throw named("absent", `:${e.message.split(":").at(-1)}`); throw e;}
@@ -1173,7 +1199,7 @@ const LIMITS = {title: 120, line: 240, lines: 7, summary: 1400};
  * the appendix and the questions. Every displayed field is rendered first and then verified number by number
  * on its final text; what a field shows (its markers) is what counts as shown, nothing else. */
 function renderVersion(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, removed: Removed, version: number, sources: BoardSourceReading[]) {
-  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed};
+  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed, links: d.links};
   const bindings: (BoardBinding & {field: string})[] = [];
   let verifiedNumbers = 0;
   const shown = (field: string, r: BoardRich) => {verifiedNumbers += verifyBoardRendered(field, r, figures); return r;};
@@ -1348,6 +1374,10 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   if (d.pages.filter((p) => p.role === "decisions").length !== 1) throw new Error("board_capital_material_without_decisions");
   const unique = (xs: string[], code: string) => {if (new Set(xs).size !== xs.length) throw new Error(code);};
   unique(d.deliberations.map((x) => x.id), "board_capital_duplicate_deliberation");
+  // One adopted identity per record: a row or an instrument linked twice is never chosen between.
+  unique(d.links.map((x) => x.id), "board_capital_duplicate_link");
+  unique(d.links.map((x) => `${x.tableSourceId}|${x.rowId}`), "board_capital_record_link_ambiguous:row");
+  unique(d.links.map((x) => `${x.planSourceId}|${x.instrumentId}`), "board_capital_record_link_ambiguous:instrument");
   // A text that says the alternative plan is presented in the material holds only when the material presents it.
   const refs = [...d.pages.flatMap((p) => [p.title, ...p.lines, p.recommendation ?? "", ...p.options]), ...d.questions.map((q) => q.answer)].filter(Boolean);
   const templateOf = (ref: string) => {try {return parseBoardTextRef(ref).templateId;} catch {return "";}};
@@ -1442,7 +1472,7 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
 }
 /** Every recommendation sentence of the discussion, as rendered, with the derived theme of its page or deliberation. */
 export function boardRecommendationSentences(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, sources: BoardSourceReading[]) {
-  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed};
+  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed, links: d.links};
   return [...d.pages.flatMap((p) => p.recommendation !== null ? [{ref: p.recommendation, theme: boardPageTheme(p)}] : []),
     ...d.deliberations.flatMap((x) => x.recommendation !== null ? [{ref: x.recommendation, theme: boardDeliberationTheme(x)}] : [])]
     .flatMap((r) => r.theme === null ? [] : [{theme: r.theme as string, text: renderBoardRef(r.ref, context).display}]);
@@ -1479,7 +1509,7 @@ export function boardSetsComplete(d: BoardDiscussion, sources: BoardSourceReadin
     if (parsed.templateId.startsWith("alternatives.moves.") && parsed.templateId !== "alternatives.moves.title") {
       // The line's path, by the record its moves condition names in the evaluation: the variable its role binds when it renders.
       const named = parsed.template.when.flatMap((c) => "pathMoves" in c ? [c.pathMoves[1]] : []);
-      const vars = named.length === 1 ? renderBoardRef(ref, {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed}).vars : {};
+      const vars = named.length === 1 ? renderBoardRef(ref, {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed, links: d.links}).vars : {};
       const id = named.length === 1 ? named[0]!.replace(/^\$([a-z]+)$/, (_x: string, k: string) => vars[k] ?? "\u0000") : null;
       const r = id ? boardResolvedRecord(fp.packet, `result.evaluation.paths[id=${id}].id`, "result.evaluation.paths") : null;
       return r ? String(r.record.id) : null;
@@ -1581,7 +1611,7 @@ export function resolveBoardFigures(d: BoardDiscussion, sources: BoardSourceRead
 /** The outline proposed before any material: the deliberations in urgency order, the narrative and
  * only the questions that change the material (template, time on the agenda, what the board has seen). */
 export function proposeBoardOutline(d: BoardDiscussion, figures: Map<string, BoardFigureDisplay>, sources: BoardSourceReading[] = []) {
-  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed};
+  const context = {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed, links: d.links};
   const deliberations = orderBoardDeliberations(d.deliberations).map((x, i) => {
     const r = renderBoardRef(x.recommendation ?? x.subject, context);
     const deadlines = x.deadlines.map((t) => ({id: t.id, date: t.date, rich: {display: dayMonth(t.date), spans: [{start: 0, end: dayMonth(t.date).length, kind: "deadline" as const, id: `${x.id}.${t.id}`, unit: null}]},
@@ -1623,7 +1653,7 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   const current = second ?? first;
   const used = new Set(current ? [...current.material.pages.flatMap((p) => p.figureIds), ...current.material.questions.flatMap((q) => q.figureIds),
     ...current.material.deliberations.flatMap((x) => x.figureIds), ...current.material.summaryFigureIds] : []);
-  const shownText = (ref: string) => renderBoardRef(ref, {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed}).display;
+  const shownText = (ref: string) => renderBoardRef(ref, {figures, deliberations: d.deliberations, nextMeetingDate: d.nextMeetingDate, sources, informed: d.informed, links: d.links}).display;
   const pending = {
     indicative: d.indicative.filter((x) => used.has(x.figureId)).map((x) => ({figureId: x.figureId, reason: shownText(x.reason)})),
     sources: sources.filter((s) => s.status !== "prepared_for_human_review").map((s) => ({sourceId: s.id, methodId: s.methodId, status: s.status, reasons: [...new Set(s.gaps.map((g) => g.reason))]})),
@@ -1633,7 +1663,7 @@ export function prepareBoardCapitalDiscussion(d: BoardDiscussion, sources: Board
   return {version: boardCapitalDiscussionVersion, stage: produce ? "material" as const : "outline" as const, timeToAlign, daysBefore, outline,
     identity: checks, omissions: decisions.map((o) => ({...o, requestedBy: shownText(o.requestedBy)})), versions: [first, second].flatMap((v) => v ? [v.material] : []), gaps: current?.gaps ?? [], pending,
     pendingFigures: d.figures.flatMap((f) => f.kind === "pending" ? [{figureId: f.id, methodId: f.requiredMethodId, path: f.requiredPath, reason: shownText(f.reason)}] : []),
-    materialFacts: boardMaterialFacts(d, figures), informed: d.informed.map((x) => ({...x})), priorVersionsKept: true as const, sentToThirdParties: false as const, presented: false as const};
+    materialFacts: boardMaterialFacts(d, figures), informed: d.informed.map((x) => ({...x})), links: d.links.map((x) => ({...x})), priorVersionsKept: true as const, sentToThirdParties: false as const, presented: false as const};
 }
 
 // The vocabularies of the core are frozen as well.

@@ -45,6 +45,9 @@ export const boardCapitalDiscussionFactsSchema = z.strictObject({
   omissions: z.array(fact(z.strictObject({id: key, target: z.enum(boardOmissionTargets), targetId: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,80}$/), requestedBy: text}))).max(12),
   /** Facts informed in the conversation, with the person who stated them; the origin travels into the basis. */
   informed: z.array(fact(z.strictObject({id: key, author: z.enum(boardInformedAuthors), code: z.string().regex(/^[a-z][a-z_]{0,59}$/)}))).max(12).default([]),
+  /** The identity of an existing instrument of the plan and a row of the debt table, proposed by the bridge and confirmed by
+   * a person (the plan registers no creditor); never inferred from coinciding terms. */
+  links: z.array(fact(z.strictObject({id: key, planSourceId: key, instrumentId: key, tableSourceId: key, rowId: key}))).max(12).default([]),
 }).superRefine((f, ctx) => {
   const fail = (message: string) => ctx.addIssue({code: "custom", message});
   if (f.meetingDate.value < f.askedOn.value) fail("The meeting must not precede the request");
@@ -52,10 +55,13 @@ export const boardCapitalDiscussionFactsSchema = z.strictObject({
   unique(f.sources.map((s) => s.value.id), "source"); unique(f.topics.map((t) => t.value.id), "topic"); unique(f.deliberations.map((d) => d.value.id), "deliberation");
   unique(f.figures.map((x) => x.value.id), "figure"); unique(f.pages.map((p) => p.value.id), "page"); unique(f.questions.map((q) => q.value.id), "question");
   unique(f.appendix.map((a) => a.value.id), "appendix item"); unique(f.omissions.map((o) => o.value.id), "omission"); unique(f.informed.map((x) => x.value.id), "informed fact");
+  unique(f.links.map((x) => x.value.id), "link"); unique(f.links.map((x) => `${x.value.tableSourceId}|${x.value.rowId}`), "link of a row");
+  unique(f.links.map((x) => `${x.value.planSourceId}|${x.value.instrumentId}`), "link of an instrument");
   const sources = new Set(f.sources.map((s) => s.value.id)), figures = new Set(f.figures.map((x) => x.value.id)), topics = new Set(f.topics.map((t) => t.value.id));
   for (const {value: x} of f.figures) if (x.kind === "reading" && !sources.has(x.reading[0])) fail(`Figure ${x.id} reads a result the discussion does not name`);
   for (const id of [...f.materialFigureIds.value, ...f.indicative.map((x) => x.value.figureId)]) if (!figures.has(id)) fail(`Unknown figure ${id}`);
   for (const {value: a} of f.appendix) if (!a.sourceIds.every((s) => sources.has(s))) fail(`Appendix item ${a.id} cites a result the discussion does not name`);
+  for (const {value: l} of f.links) if (!sources.has(l.planSourceId) || !sources.has(l.tableSourceId)) fail(`Link ${l.id} names a result the discussion does not name`);
   // Themes are the library's closed set; the theme each text derives is checked against its templates downstream.
   // The theme is derived from the templates and never adopted: a fact's topic must be the theme of its own texts.
   for (const {value: t} of f.topics) if (!(boardThemes as readonly string[]).includes(t.id)) fail(`Unknown topic ${t.id}`);
@@ -105,7 +111,8 @@ export function proposeBoardCapitalDiscussionHypotheses(raw: unknown): ProposedH
     txt(p + "title", v.title, r); txt(p + "subject", v.subject, r); if (v.recommendation !== null) txt(p + "recommendation", v.recommendation, r);
     list(p + "authority", v.authorityBasis === null ? [v.authority] : [v.authority, v.authorityBasis], r);
     for (const x of v.deadlines) list(`${p}deadline.${x.id}`, [x.date, x.action], r);
-    if (v.deadlines.length) list(p + "order.deadlines", v.deadlines.map((x) => x.id), house("Ordem dos prazos como informada"));
+    // A single deadline has no order to adopt; the composer reads it from its field path.
+    if (v.deadlines.length > 1) list(p + "order.deadlines", v.deadlines.map((x) => x.id), house("Ordem dos prazos como informada"));
   }
   for (const x of f.figures) list(`figure.${x.value.id}.${x.value.kind}`, [...x.value.reading], why(x));
   list("figures.material", f.materialFigureIds.value, why(f.materialFigureIds));
@@ -121,6 +128,7 @@ export function proposeBoardCapitalDiscussionHypotheses(raw: unknown): ProposedH
   for (const q of f.questions) {txt(`question.${q.value.id}.question`, q.value.question, why(q)); txt(`question.${q.value.id}.answer`, q.value.answer, why(q));}
   for (const o of f.omissions) list(`omission.${o.value.id}`, [o.value.target, o.value.targetId, o.value.requestedBy], why(o));
   for (const x of f.informed) list(`informed.${x.value.id}`, [x.origin, x.value.author, x.value.code], why(x));
+  for (const x of f.links) list(`link.${x.value.id}`, [x.value.planSourceId, x.value.instrumentId, x.value.tableSourceId, x.value.rowId], why(x));
   const order = (name: string, ids: string[], what: string) => {if (ids.length) list(`order.${name}`, ids, house(`Ordem ${what} como informada`));};
   order("sources", f.sources.map((s) => s.value.id), "dos resultados"); order("topics", f.topics.map((t) => t.value.id), "dos temas");
   order("deliberations", f.deliberations.map((d) => d.value.id), "das deliberações"); order("figures", f.figures.map((x) => x.value.id), "dos números");
