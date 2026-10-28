@@ -349,6 +349,11 @@ function goldCases(): Case[] {
       {volume: true, own: false},
       (p) => ({volume: current(p).questions.find((q) => q.id === "rede-a")!.answer.includes("um programa de antecipação aceita R$ 19,8 milhões desses recebíveis"),
         own: boardShownTexts(p).some((t) => /próprio dele|23,5 milhões desses/.test(t))})),
+    // Review r34: the annual projection keeps "EBITDA de 2027".
+    observe("annual-projection-row-shown-as-the-year", (() => {
+      const packet = auroraProjectionPacket() as unknown as Record<string, unknown>;
+      return withBoardSource("projecao", packet, () => boardPacketInput(2, boardRestateSource("projecao", "build-operating-projection", packet)));
+    })(), {line: "No cenário do trigo 15% mais caro com repasse em 4 meses, o EBITDA de 2027 fica em cerca de R$ 52,6 milhões."}, (p) => ({line: pageOf(p, "mudaria").lines[1]})),
     // Audit after r33: the rating benefit net of the known costs, said as such, and a unique largest creditor.
     observe("rating-benefit-net-of-known-costs-with-incomplete-coverage", withBoardSource("custo-relativo", auroraRelativeCostPacket({ratingCostCoverage: "incomplete"}),
       () => boardPacketInput(2, (c) => {const q = c.questions.find((x) => x.id === "rating")!; q.answer = q.answer.replace("a.rating|", "a.rating_known_costs|");})),
@@ -609,6 +614,14 @@ export function boardConceptAttempts(build: (turn: BoardTurn, edit: (c: CaseData
       const packet = auroraInvestmentPacket({deferralLastPeriodEnd: end}) as unknown as Record<string, unknown>;
       return withBoardSource("linha-embalagem", packet, () => build(turn, (c) => {boardDeferralReadings(packet)(c); boardStrictDeferral(c);}));
     }, "board_capital_template_condition_failed:topic.project_wait_quotes:1"] as [string, () => unknown, string])),
+    // Review r34: a half-year or a quarter row shown as a year; a page given another role than its templates'.
+    ...([2, 3] as const).flatMap((turn) => [
+      ...([["half-year", ["2026-12-31", "2027-06-30", "2027-12-31"]], ["quarter", ["2026-12-31", "2027-09-30", "2027-12-31"]]] as const).map(([kind, ends]) => [`${kind}-row-shown-as-ebitda-of-2027-turn-${turn}`, () => {
+        const packet = auroraProjectionPacket({periodEnds: ends}) as unknown as Record<string, unknown>;
+        return withBoardSource("projecao", packet, () => build(turn, boardRestateSource("projecao", "build-operating-projection", packet)));
+      }, "board_capital_template_condition_failed:what_changes.wheat:3"]),
+      [`recommendation-page-given-the-situation-role-turn-${turn}`, () => build(turn, (c) => {c.pages.find((x) => x.id === "recomendacao")!.role = "situation";}), "board_capital_page_role_mismatch:recomendacao:situation"],
+    ] as [string, () => unknown, string][]),
     // Review r33 and the audit of every claim: the whole plan, the cost coverage, the program count, the alternative
     // presented and a unique largest creditor.
     ...([2, 3] as const).flatMap((turn) => [

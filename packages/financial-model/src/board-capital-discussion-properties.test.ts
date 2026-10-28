@@ -25,7 +25,7 @@ const shown = (p: Packet) => {
   const v = current(p);
   return new Set([...v.pages.flatMap((x) => x.figureIds), ...v.questions.flatMap((x) => x.figureIds), ...v.deliberations.flatMap((x) => x.figureIds), ...v.summaryFigureIds]);
 };
-const refusal = /board_capital_(reading_presentation_not_unique|template_condition_undefined|rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
+const refusal = /board_capital_(page_role_mismatch|reading_presentation_not_unique|template_condition_undefined|rendered_number_invalid|number_without_origin|unknown_token|date_without_preposition|preposition_on_value|currency_not_supported|field_not_registered|figure_without_origin|figure_diverges|figure_without_statement|figure_reading_invalid|text_reading_not_a_label|text_ref_invalid|template_unknown|slot_invalid|slot_unbound|slot_type_mismatch|template_invalid|title_without_number|answer_without_number|page_without_number|material_fact_not_shown|slot_concept_mismatch|template_condition_failed|template_condition_unverified|deadline_action_mismatch|deliberation_text_mismatch|template_use_invalid|answer_mismatch|source_method_repeated|source_mixed|informed_fact_mismatch|informed_fact_invalid)|Invalid option|Too big|Invalid input|Invalid string|states its value/;
 
 /** Every generated text field of the case, as a setter, so a number can be written into any of them. */
 function textFields(c: CaseData): [string, (v: string) => void, string][] {
@@ -612,6 +612,20 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const coverage = (rcPacket?.levers ?? []).filter((l) => l.role === "rating").map((l) => rcPacket?.result?.actions?.find((a) => a.actionId === l.actionId)?.result.operands.costCoverage);
     if (texts.some((t) => /o ganho líquido fica entre/.test(t)) && coverage.some((c) => c !== "complete_for_stated_horizon")) bad.push("rating_coverage");
     if (texts.some((t) => /plano alternativo apresentado no material/.test(t)) && !texts.some((t) => /^Plano alternativo:/.test(t))) bad.push("alternative_not_presented");
+  }
+  // Period of a projected flow, against the source's own dates: the row shown for a year covers exactly that year; and
+  // every page holds only templates of its own role.
+  {
+    const op = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "build-operating-projection")?.packetFingerprint)?.packet as
+      {result?: {projection?: {projection?: {base?: {periodId: string; startDate: string; endDate: string}[]; scenarios?: {id: string; rows: {periodId: string; startDate: string; endDate: string}[]}[]}}}} | undefined;
+    for (const x of d.identity.filter((i) => /^readings\.projected\.scenarios\[id=[^\]]+\]\.rows\[periodId=/.test(i.path))) {
+      const m = /scenarios\[id=([^\]&]+)\]\.rows\[periodId=([^\]&]+)\]/.exec(x.path)!, rows = m[1] === "base" ? op?.result?.projection?.projection?.base : op?.result?.projection?.projection?.scenarios?.find((y) => y.id === m[1])?.rows;
+      const row = rows?.find((r) => r.periodId === m[2]), year = m[2]!.slice(0, 4);
+      if (!row || row.startDate !== `${year}-01-01` || row.endDate !== `${year}-12-31`) bad.push(`flow_period:${x.figureId}`);
+    }
+    const family: Record<string, string> = {decisions: "page.", situation: "situation.", constraint: "constraint.", topic: "topic.", alternatives: "alternatives.", recommendation: "recommendation.", risk: "risk.", what_changes: "what_changes.", next_steps: "next_steps."};
+    for (const page of v.pages) for (const b of v.bindings.filter((x) => x.field.startsWith(`page.${page.id}.`) && !x.field.includes(".option.")))
+      if (!b.templateId.startsWith(family[page.role] ?? "")) bad.push(`page_role:${page.id}:${b.templateId}`);
   }
   // Coherence across fields: a text that puts every measurement below the policy holds for every measurement shown
   // anywhere in the material, at its one presentation.
@@ -1478,6 +1492,26 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
     const forgedAlternative = structuredClone(full(2, () => undefined));
     for (const v of forgedAlternative.result.discussion!.versions) {for (const pg of v.pages) pg.lines = pg.lines.filter((l) => !l.startsWith("Plano alternativo:")); v.questions = v.questions.filter((x) => !x.answer.startsWith("Plano alternativo:"));}
     expect(oracle(forgedAlternative).bad).toContain("alternative_not_presented");
+  });
+  it("regression r34: a flow shown for a year covers exactly that year; a page holds only templates of its role (full path, oracle not vacuous)", () => {
+    const line = (p: Packet) => p.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "mudaria")!.lines[1];
+    for (const turn of [2, 3] as const) {
+      for (const ends of [["2026-12-31", "2027-06-30", "2027-12-31"], ["2026-12-31", "2027-09-30", "2027-12-31"]]) {
+        const packet = auroraProjectionPacket({periodEnds: ends}) as unknown as Record<string, unknown>;
+        expect(() => withBoardSource("projecao", packet, () => full(turn, boardRestateSource("projecao", "build-operating-projection", packet))), ends[1]).toThrow("board_capital_template_condition_failed:what_changes.wheat:3");
+        const forged = {...packet, fingerprint: (auroraBoardSources().find((x) => x.id === "projecao")!.packet as {fingerprint: string}).fingerprint};
+        expect(oracle(full(turn, () => undefined), [{packet: forged}, ...auroraBoardSources().filter((x) => x.id !== "projecao")]).bad.some((x) => x.startsWith("flow_period:")), ends[1]).toBe(true);
+      }
+      const annual = auroraProjectionPacket() as unknown as Record<string, unknown>;
+      const p = withBoardSource("projecao", annual, () => full(turn, boardRestateSource("projecao", "build-operating-projection", annual)));
+      expect(line(p)).toBe("No cenário do trigo 15% mais caro com repasse em 4 meses, o EBITDA de 2027 fica em cerca de R$ 52,6 milhões.");
+      expect(oracle(p, [{packet: annual}, ...auroraBoardSources()])).toEqual({bad: [], missing: []});
+      // The recommendation page given the role of a situation page: refused; the oracle reads the page against its role.
+      expect(() => full(turn, (c) => {c.pages.find((x) => x.id === "recomendacao")!.role = "situation";})).toThrow("board_capital_page_role_mismatch:recomendacao:situation");
+      const forged = structuredClone(full(turn, () => undefined));
+      forged.result.discussion!.versions.at(-1)!.pages.find((x) => x.id === "recomendacao")!.role = "situation";
+      expect(oracle(forged).bad.some((x) => x.startsWith("page_role:recomendacao:"))).toBe(true);
+    }
   });
   it("property: changing any single field of a named case's input object (enumerated from the case schema) refuses the named sentence; likewise a scenario's and a path's", () => {
     const original = auroraBoardSources().find((x) => x.methodId === "analyze-investment-project")!.packet as {cases: {id: string; result: {contributions: {fieldPath: string; value: {type: string; value: unknown}}[]}}[]};

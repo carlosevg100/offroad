@@ -1,3 +1,4 @@
+import {boardFieldOf} from "./board-capital-discussion-sources";
 /** The closed library of texts a board discussion can show. A contribution never writes text: it picks a
  * template by id and binds each slot to a registered reading, a deadline of a deliberation, or nothing when the
  * template has no slot. Every text here is fixed and reviewed; numbers, units, scales, currencies, periodicity and
@@ -272,6 +273,8 @@ type BoardConditionBody =
   | {testsLimit: readonly [string, string | null, string]}
   /** Over every element of a list (not the first N), the number joining a target whose field takes one of the given values. */
   | {joinedCount: readonly [string, string, string, string, string, readonly string[]]; count: number}
+  /** A flow shown with a year: the interval its row registers is exactly that calendar year. */
+  | {coversYear: readonly [string, string]}
   /** Grouped over every element of a list, the group with the largest total is unique and is the one given. */
   | {largestGroup: readonly [string, string, string, string]; equals: BoardOperand}
   /** The two shown figures cover the same period: the period the method fixes, or the same horizon the source registers. */
@@ -765,6 +768,13 @@ for (const template of Object.values(boardTemplates)) {
   const added: BoardCondition[] = [
     ...measured.flatMap((id) => claim("a medição mostrada é um teste registrado, não um contraste", cmp(at(CV, `result.headroom.measurements[id=${id}].role`), "eq", {value: "test"}))),
     ...paths.some((x) => x.startsWith("comparison.metrics[caseId=base].")) ? claim("o caso mostrado como seguir agora é o caso de papel base registrado", cmp(at(IP, "comparison.metrics[caseId=base].role"), "eq", {value: "base"})) : []];
+  // A flow whose registry gives its row's interval, in a sentence that announces a year: the interval is that year.
+  const yearSlots = Object.entries(template.slots).filter(([, x]) => x.year !== undefined).map(([k]) => k);
+  for (const [slot, spec] of Object.entries(template.slots)) {
+    const [method, path] = spec.from?.[0] ?? [];
+    if (method && path && boardFieldOf(method, path.replace(/\[[^\]]+\]/g, "[*]"))?.interval && yearSlots.length === 1)
+      added.push(...claim("o intervalo registrado do fluxo é exatamente o ano anunciado", {coversYear: [slot, yearSlots[0]!]}));
+  }
   if (added.length) template.when = [...template.when, ...added];
 }
 
@@ -787,6 +797,7 @@ export function boardTemplateClaims() {
     : "contributedHas" in c ? `termo adotado ${c.contributedHas[0]} ${c.contributedHas[1]} ${c.none ? "não contém" : c.only ? "é só" : "contém"} ${describe(c.value)}`
     : "atMost" in c ? `${c.atMost[0]} ${c.atMost[1]} tem no máximo ${c.count}`
     : "changedOnly" in c ? `objeto de entrada inteiro ${c.changedOnly[0]} ${c.changedOnly[1]} difere de ${c.changedOnly[2]} exatamente em ${c.fields.join(", ")}; ignorados: ${boardInputIgnored.join(", ")}`
+    : "coversYear" in c ? `o intervalo registrado da linha de ${c.coversYear[0]} (início e fim) é exatamente o ano de ${c.coversYear[1]}`
     : "largestGroup" in c ? `agrupando todos os elementos de ${c.largestGroup[0]} ${c.largestGroup[1]} por ${c.largestGroup[2]}, o maior total de ${c.largestGroup[3]} é único e é ${describe(c.equals)}`
     : "joinedCount" in c ? `exatamente ${c.count} elementos de ${c.joinedCount[0]} ${c.joinedCount[1]} (todos, não só os primeiros) apontam, por ${c.joinedCount[2]}, para ${c.joinedCount[3]} com ${c.joinedCount[4]} em [${c.joinedCount[5].join(", ")}]`
     : "samePeriod" in c ? `as posições ${c.samePeriod[0]} e ${c.samePeriod[1]} cobrem o mesmo período registrado`
@@ -903,11 +914,11 @@ export function checkBoardTemplateLibrary() {
     }
     for (const c of x.when) {if ("bind" in c) vars.add(c.bind); if (!c.claim) problems.push(`${id}:claim_missing`);}
     const operands: BoardOperand[] = x.when.flatMap((c) => "compare" in c ? [c.compare[0], c.compare[2]] : "every" in c ? [c.than] : "bind" in c ? [c.to] : "includes" in c ? [c.value]
-      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "testsLimit" in c || "samePeriod" in c || "joinedCount" in c || "largestGroup" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
+      : "atLeast" in c || "dominates" in c || "atMost" in c || "changedOnly" in c || "deferredBy" in c || "planDeferred" in c || "testsLimit" in c || "samePeriod" in c || "joinedCount" in c || "largestGroup" in c || "coversYear" in c || "scenarioDefines" in c || "startsLater" in c || "pathMoves" in c || "extendsDebt" in c || "sameObject" in c || "registeredTerm" in c ? [] : "contributedHas" in c ? [c.value]
       : "atKey" in c ? [c.key] : [c.equals]);
     const paths = x.when.flatMap((c) => "includes" in c ? [c.includes[1]] : "atLeast" in c ? [c.atLeast[1]] : "every" in c ? [c.every[1]]
       : "dominates" in c ? c.dominates.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
-      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]] : "testsLimit" in c ? ["result.headroom.measurements"] : "samePeriod" in c ? [] : "joinedCount" in c ? [c.joinedCount[1], c.joinedCount[3]] : "largestGroup" in c ? [c.largestGroup[1]]
+      : "contributedHas" in c ? [c.contributedHas[1]] : "atMost" in c ? [c.atMost[1]] : "changedOnly" in c ? [c.changedOnly[1], c.changedOnly[2]] : "deferredBy" in c ? [c.deferredBy[1], c.deferredBy[2]] : "planDeferred" in c ? [c.planDeferred[1], c.planDeferred[2]] : "testsLimit" in c ? ["result.headroom.measurements"] : "samePeriod" in c ? [] : "joinedCount" in c ? [c.joinedCount[1], c.joinedCount[3]] : "largestGroup" in c ? [c.largestGroup[1]] : "coversYear" in c ? []
       : "atKey" in c ? c.atKey.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1])
       : "startsLater" in c ? c.startsLater.map((d) => "list" in d ? d.list[1] : "contributed" in d ? d.contributed[1] : "projectionRows" in d ? d.projectionRows[1] : d.projectionDriver[1]) : []);
     for (const path of paths) for (const m of path.matchAll(/\$([a-z]+)/g)) if (!vars.has(m[1]!)) problems.push(`${id}:path:${m[1]}`);

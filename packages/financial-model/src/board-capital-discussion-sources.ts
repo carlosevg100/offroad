@@ -71,6 +71,9 @@ export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" 
   /** For a period that the method does not fix: the horizon of the same row in months, read from registered fields of
    * the source (never recalculated); null when it cannot be read. */
   horizonMonths?: (packet: unknown, path: string) => string | null;
+  /** For a flow selected by period: the interval its row registers (start and end dates), read from the source; a
+   * sentence that announces a period for the flow must announce exactly this interval. */
+  interval?: (packet: unknown, path: string) => {start: string; end: string} | null;
   /** The economic concept of the field where a method holds several of the same kind that must never stand for one another. */
   concept?: string;
   /** For money: a balance (a position at a date), a flow (a change or an amount over a period) or a value (a present value or an amount to issue). */
@@ -94,6 +97,15 @@ function leverHorizonMonths(packet: unknown, path: string): string | null {
   if (!fractions?.length || fractions.some((x) => typeof x !== "string")) return null;
   const months = (fractions as string[]).reduce((sum: number, x) => sum + Number(x) * 12, 0), whole = Math.round(months);
   return Math.abs(months - whole) < 1e-9 && whole > 0 ? String(whole) : null;
+}
+/** A projected row's interval: the scenario's row of the same period in the projection result, with its registered dates. */
+function projectionInterval(packet: unknown, path: string): {start: string; end: string} | null {
+  const m = /^readings\.projected\.scenarios\[id=([^\]&]+)\]\.rows\[periodId=([^\]&]+)\]/.exec(path);
+  if (!m) return null;
+  const projection = (packet as {result?: {projection?: {projection?: {base?: unknown[]; scenarios?: {id: string; rows?: unknown[]}[]}}}})?.result?.projection?.projection;
+  const rows = m[1] === "base" ? projection?.base : projection?.scenarios?.find((x) => x.id === m[1])?.rows;
+  const row = (rows ?? []).find((r) => (r as {periodId?: unknown}).periodId === m[2]) as {startDate?: unknown; endDate?: unknown} | undefined;
+  return row && typeof row.startDate === "string" && typeof row.endDate === "string" ? {start: row.startDate, end: row.endDate} : null;
 }
 const money = (scale: "reais" | "millions", period: "annual" | "none" = "none"): BoardFieldSpec => ({kind: "money", scale, period, formats: []});
 const rate = (period: "annual" | "none"): BoardFieldSpec => ({kind: "rate", scale: "ratio", period, formats: []});
@@ -125,8 +137,8 @@ export const boardFieldRegistry: Partial<Record<BoardSourceMethodId, Record<stri
     "result.projection.projection.scenarios[*].label": plain("label"),
     "result.projection.projection.scenarios[*].inputCostShock.rate": rate("none"),
     "result.projection.projection.scenarios[*].inputCostShock.passThroughLagMonths": plain("months"),
-    "readings.projected.scenarios[*].rows[*].ebitda": {...money("millions"), nature: "flow"},
-    "readings.projected.scenarios[*].rows[*].effects.changeInWorkingCapital": {...money("millions"), nature: "flow"}},
+    "readings.projected.scenarios[*].rows[*].ebitda": {...money("millions"), nature: "flow", interval: projectionInterval},
+    "readings.projected.scenarios[*].rows[*].effects.changeInWorkingCapital": {...money("millions"), nature: "flow", interval: projectionInterval}},
   "challenge-financial-projection": {"readings.gap.plan.ebitda": {...money("millions"), nature: "flow"}, "readings.gap.reference.ebitda": {...money("millions"), nature: "flow"}},
   // Receivables (C35): balance owed by each debtor, eligible capacity, program volume and sublimit are distinct concepts.
   "monetize-receivables-for-working-capital": {

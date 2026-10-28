@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T03:20:27.609Z",
-    "finishedAt": "2026-10-28T03:23:07.830Z"
+    "startedAt": "2026-10-28T04:15:03.782Z",
+    "finishedAt": "2026-10-28T04:17:44.836Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,14 @@
       "passed": true
     },
     {
+      "id": "annual-projection-row-shown-as-the-year",
+      "expectation": "{\"line\":\"No cenário do trigo 15% mais caro com repasse em 4 meses, o EBITDA de 2027 fica em cerca de R$ 52,6 milhões.\"}",
+      "observed": "{\"line\":\"No cenário do trigo 15% mais caro com repasse em 4 meses, o EBITDA de 2027 fica em cerca de R$ 52,6 milhões.\"}",
+      "inputFingerprint": "b728f21e112ae936a6629fda96648028195ad924ffa96578c4d67e0803c3c0fc",
+      "outputFingerprint": "af081ab5c558cf243cbcc2ade307d834a66482c4a1278bfb3f39182526a69016",
+      "passed": true
+    },
+    {
       "id": "rating-benefit-net-of-known-costs-with-incomplete-coverage",
       "expectation": "{\"qualified\":true}",
       "observed": "{\"qualified\":true}",
@@ -663,6 +671,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "76533a3f66228fbf00b5ffe8affe59a3c4c0358ac9a7a4c5acf6dc6ee0571437",
+  "evidenceFingerprint": "bbce18b56c71df8db5bd11e4df6af2d129ede423d060959e33a43c8b19b992b7",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -245,8 +245,15 @@ function c32WithMislabelledEconomy() {
 }
 /** C24 with the CFO's informed scenario. The variant (regressions only) makes the scenario prazo-60 lengthen inventory
  * days instead of the chains' receivable days, which stay as in the base. */
-export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true; shockFrom2028?: true; receivablesOnlyIn2027?: true; shockLabel?: string} = {}) {
+export function auroraProjectionPacket(variant: {inventoryInsteadOfReceivables?: true; shorterThanParentWithInventory?: true; shockFrom2028?: true; receivablesOnlyIn2027?: true; shockLabel?: string;
+  periodEnds?: readonly string[]} = {}) {
   const b = operatingProjectionBasis({informed: true});
+  // Regressions only: the second and third periods end mid-2027 and at the end of 2027 (a half-year or a quarter row).
+  if (variant.periodEnds) {
+    const end = variant.periodEnds.at(-1)!;
+    for (const e of b.entries) {if (e.fieldPath.endsWith(".periodEnds")) e.value = {type: "list", value: [...variant.periodEnds]}; if (e.dimensions.periodEnd) e.dimensions.periodEnd = end;}
+    (b.input as unknown as {endDate: string}).endDate = end;
+  }
   // The same shock registered under another input: only the scenario's label changes.
   if (variant.shockLabel) (b.input as unknown as {scenarios: {id: string; label: string}[]}).scenarios.find((x) => x.id === "informado-trigo-4m")!.label = variant.shockLabel;
   if (variant.shockFrom2028) b.entries.find((e) => e.fieldPath.endsWith("scenario.informado-trigo-4m.shock.fromPeriodEnd"))!.value = {type: "date", value: "2028-12-31"};

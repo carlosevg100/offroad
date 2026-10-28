@@ -671,6 +671,14 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       }
       return true;
     }
+    if ("coversYear" in c) {
+      const f = context.figures.get(bindings[c.coversYear[0]]!), year = values[c.coversYear[1]];
+      if (!f || "pending" in f || !f.origin || !year) throw indefinite("flow_or_year_absent");
+      const interval = boardFieldOf(f.origin.methodId, f.origin.path)?.interval?.(sourceOf(f.origin.methodId).packet, f.origin.path);
+      if (!interval) throw indefinite(`interval_${f.origin.path}`);
+      const y = year.value.slice(0, 4);
+      return interval.start === `${y}-01-01` && interval.end === `${y}-12-31`;
+    }
     if ("largestGroup" in c) {
       const [method, listPath, group, field] = c.largestGroup, xs = read(method, listPath), equals = operand(c.equals);
       if (!Array.isArray(xs) || !xs.length) throw indefinite("list_absent");
@@ -1217,6 +1225,19 @@ export function validateBoardDiscussion(d: BoardDiscussion, shown?: Map<string, 
   }
   for (const q of d.questions) if (!hasEconomic([q.answer])) throw new Error(`board_capital_answer_without_number:${q.id}`);
   for (const a of d.appendix) if (!a.sourceIds.length) throw new Error(`board_capital_appendix_without_source:${a.id}`);
+  // A page's role is the role of the templates it holds: its title and lines belong to that role's family, its options
+  // are options; the role decides the page's place in the order (support before the recommendation).
+  const family: Record<string, string> = {decisions: "page.", situation: "situation.", constraint: "constraint.", topic: "topic.", alternatives: "alternatives.",
+    recommendation: "recommendation.", risk: "risk.", what_changes: "what_changes.", next_steps: "next_steps."};
+  for (const p of d.pages) {
+    const prefix = family[p.role];
+    if (!prefix) continue;
+    const idOf = (ref: string) => {try {return parseBoardTextRef(ref).templateId;} catch {return "";}};
+    const texts = [p.title, ...p.lines, ...p.recommendation ? [p.recommendation] : []];
+    // A text that does not parse is refused later by its own check; only parsed templates are confronted with the role.
+    const wrong = (x: string, family: string) => {const id = idOf(x); return id !== "" && !id.startsWith(family);};
+    if (texts.some((x) => wrong(x, prefix)) || p.options.some((x) => wrong(x, "option."))) throw new Error(`board_capital_page_role_mismatch:${p.id}:${p.role}`);
+  }
 }
 
 /** Resolves every figure against the reviewed results: a reading that does not resolve is refused as a

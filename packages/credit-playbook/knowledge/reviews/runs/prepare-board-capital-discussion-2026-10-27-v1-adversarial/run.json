@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T03:20:27.609Z",
-    "finishedAt": "2026-10-28T03:23:07.831Z"
+    "startedAt": "2026-10-28T04:15:03.782Z",
+    "finishedAt": "2026-10-28T04:17:44.837Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -782,6 +782,54 @@
       "passed": true
     },
     {
+      "id": "half-year-row-shown-as-ebitda-of-2027-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "57e4eb3a4c885ad16a0ec2f8cf39b64aba26822d5c7243c18f8d5b55336decd4",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "quarter-row-shown-as-ebitda-of-2027-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "6fb7e049ff2def43ce53512111e3efe376d611d9318b3a66a193b1a0f1c91e8a",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "recommendation-page-given-the-situation-role-turn-2",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "34d197742c5977cb42684cb00281bdb1103ef15927f800141841104794d326bb",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "half-year-row-shown-as-ebitda-of-2027-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "56242df5b568b075b98508e4f35b7d7d8d92e11d5bc41b105c2bb6c160120655",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "quarter-row-shown-as-ebitda-of-2027-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "acf9469dd38411396a263133d52571cad0f8e1feabef448639a7362314a6d4ba",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "recommendation-page-given-the-situation-role-turn-3",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a9cfa6d7c515c3dd10793935be5f1cef95df6d3926e78c6e5d7e01d9dc46e9c7",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "bank-discount-after-the-programs-peak-25-turn-2",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1415,6 +1463,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "ad50bbc91531b107cf0f6c1213b4e9aa2c50cb2577a5682e02438b05553b117a",
+  "evidenceFingerprint": "5dfce9ba904b9f227944aae2a5a09255084895213bb9a8b403128d137581536d",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
