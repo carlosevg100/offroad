@@ -226,6 +226,36 @@ const receivablesMethod = "monetize-receivables-for-working-capital";
 function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = auroraBoardSources()) {
   const v = current(p), d = p.result.discussion!;
   const D = Decimal.clone({precision: 60, rounding: Decimal.ROUND_HALF_UP});
+  // The oracle's own resolver, written apart from the method's: it walks a path in its packet, each selector (an index, or
+  // conditions joined by &) choosing exactly one element. Every identification of a record (a limit, a measurement, a
+  // row, a lever, a profile) goes through the element it resolves to, never through the text of a selector; concepts
+  // are matched on the resolved text, each selector reduced to its shortest leading conditions selecting the same element.
+  const ownWalk = (root: unknown, path: string) => {
+    const out: {key: string; element: Record<string, unknown> | undefined; text: string}[] = []; let node: unknown = root;
+    for (const part of path.split(/\.(?![^[]*\])/)) {
+      const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(part); if (!m) return null;
+      node = (node as Record<string, unknown> | undefined)?.[m[1]!]; let text = m[1]!, element: Record<string, unknown> | undefined;
+      for (const sel of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
+        if (!Array.isArray(node)) return null;
+        const body = sel.slice(1, -1), pick = (conds: string[]) => node && Array.isArray(node) ? node.filter((x) => conds.every((c) => {const k = c.indexOf("="); return String((x as Record<string, unknown>)?.[c.slice(0, k)]) === c.slice(k + 1);})) : [];
+        const hits = /^\d+$/.test(body) ? [node[Number(body)]] : pick(body.split("&"));
+        if (hits.length !== 1 || hits[0] === undefined) return null;
+        const conds = /^\d+$/.test(body) ? [] : body.split("&"), keep = conds.findIndex((_, n) => {const h = pick(conds.slice(0, n + 1)); return h.length === 1 && h[0] === hits[0];});
+        text += conds.length ? `[${conds.slice(0, keep + 1).join("&")}]` : sel;
+        node = hits[0]; element = node as Record<string, unknown>;
+      }
+      out.push({key: m[1]!, element, text});
+    }
+    return node === undefined ? null : out;
+  };
+  type Identity = (typeof d.identity)[number];
+  const packetOf = (x: Identity) => sources.find((y) => y.packet.fingerprint === x.packetFingerprint)?.packet;
+  /** The element of the list named by key that an identity's path resolves to, and the field read after it. */
+  const resolved = (x: Identity | undefined, key: string) => {
+    const walk = x ? ownWalk(packetOf(x), x.path) : null, at = walk ? walk.findIndex((w) => w.key === key && w.element) : -1;
+    return walk && at >= 0 ? {element: walk[at]!.element!, field: walk.slice(at + 1).map((w) => w.text).join(".")} : null;
+  };
+  const resolvedText = (x: Identity) => {const walk = ownWalk(packetOf(x), x.path); return walk ? walk.map((w) => w.text).join(".") : x.path;};
   const short = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
   const long = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
   const reformat = (x: (typeof d.identity)[number]) => {
@@ -248,10 +278,9 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   const bad: string[] = d.identity.filter((x) => reformat(x) !== x.display).map((x) => `format:${x.figureId}`);
   // Period against the source's own operands: a lever's benefit is nominal over its action's exposure, so its period is
   // the sum of that exposure's registered year fractions, in months; a figure claimed per year must cover twelve.
-  for (const x of d.identity.filter((i) => i.methodId === "analyze-relative-debt-cost" && /netOfKnownCosts$/.test(i.path))) {
+  for (const x of d.identity.filter((i) => i.methodId === "analyze-relative-debt-cost" && resolved(i, "levers")?.field === "netOfKnownCosts")) {
     const rc = sources.find((y) => y.packet.fingerprint === x.packetFingerprint)?.packet as {levers?: {role: string; scenario: string; actionId: string}[]; result?: {actions?: {actionId: string; result: {operands: {exposure: {yearFraction: string}[]}}}[]}} | undefined;
-    const sel = /levers\[([^\]]+)\]/.exec(x.path)?.[1] ?? "";
-    const lever = rc?.levers?.find((l) => sel.split("&").every((c) => String((l as Record<string, unknown>)[c.split("=")[0]!]) === c.slice(c.indexOf("=") + 1)));
+    const lever = resolved(x, "levers")?.element as {actionId?: string} | undefined;
     const exposure = rc?.result?.actions?.find((a) => a.actionId === lever?.actionId)?.result.operands.exposure ?? [];
     const months = exposure.reduce((sum, e) => sum.plus(new D(e.yearFraction).times(12)), new D(0));
     if (!exposure.length || x.period !== `months_${months.toFixed(0)}` || !months.eq(months.toDecimalPlaces(0))) bad.push(`period:${x.figureId}`);
@@ -319,7 +348,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       if (!pendingFigure || !pattern(want).test(`${pendingFigure.methodId}|${pendingFigure.path}`)) bad.push(`concept_pending:${b.field}:${b.slot}`);
       g.complete = false; continue;
     }
-    const ok = want === "year" ? x.unit === "calendar" : pattern(want).test(`${x.methodId}|${x.path}`);
+    const ok = want === "year" ? x.unit === "calendar" : pattern(want).test(`${x.methodId}|${resolvedText(x)}`);
     if (!ok) bad.push(`concept:${b.field}:${b.slot}:${b.figureId}`);
     if (/^-?\d+(\.\d+)?$/.test(x.value)) g.values[b.slot] = new D(x.value);
   }
@@ -339,7 +368,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     if (vocabularyOf(x)) continue;
     if (names.has(x.value)) continue;
     // A debtor's free label is never shown; the debtor is named by its registered key (checked against the receivables result below).
-    if (/portfolio\.items\[/.test(x.path)) {if (texts.some((t) => t.includes(x.value))) bad.push(`name_shown:${x.figureId}`); continue;}
+    if (resolved(x, "items")?.field === "label") {if (texts.some((t) => t.includes(x.value))) bad.push(`name_shown:${x.figureId}`); continue;}
     if (texts.some((t) => t.includes(x.value) || t.includes(x.value.normalize("NFKC")))) bad.push(`name_shown:${x.figureId}`);
     if (v.bindings.some((b) => b.figureId === x.figureId) && !d.gaps.some((g) => g.reason === "label_not_in_dictionary" && g.item.endsWith(`.label.${x.figureId}`))) bad.push(`name_gap:${x.figureId}`);
   }
@@ -374,7 +403,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     if (new Set(d.identity.filter((x) => x.methodId === method).map((x) => `${x.sourceId}|${x.packetFingerprint}`)).size !== 1) bad.push(`packages_mixed:${method}`);
   const rowsOf = new Map<string, Set<string>>();
   for (const b of v.bindings) {
-    const x = b.figureId === null ? undefined : byId.get(b.figureId), row = x && x.methodId === "build-company-debt-table" ? /^result\.table\.rows\[id=([^\]]+)\]/.exec(x.path)?.[1] : undefined;
+    const x = b.figureId === null ? undefined : byId.get(b.figureId), row = x && x.methodId === "build-company-debt-table" ? resolved(x, "rows")?.element.id as string | undefined : undefined;
     if (row) {const key = `${b.field}|${b.templateId}`; rowsOf.set(key, (rowsOf.get(key) ?? new Set()).add(row));}
   }
   for (const [key, rows] of rowsOf) if (rows.size > 1) bad.push(`creditor_row:${key}`);
@@ -699,9 +728,10 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   {
     const op = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "build-operating-projection")?.packetFingerprint)?.packet as
       {result?: {projection?: {projection?: {base?: {periodId: string; startDate: string; endDate: string}[]; scenarios?: {id: string; rows: {periodId: string; startDate: string; endDate: string}[]}[]}}}} | undefined;
-    for (const x of d.identity.filter((i) => /^readings\.projected\.scenarios\[id=[^\]]+\]\.rows\[periodId=/.test(i.path))) {
-      const m = /scenarios\[id=([^\]&]+)\]\.rows\[periodId=([^\]&]+)\]/.exec(x.path)!, rows = m[1] === "base" ? op?.result?.projection?.projection?.base : op?.result?.projection?.projection?.scenarios?.find((y) => y.id === m[1])?.rows;
-      const row = rows?.find((r) => r.periodId === m[2]), year = m[2]!.slice(0, 4);
+    for (const x of d.identity.filter((i) => i.methodId === "build-operating-projection" && resolved(i, "scenarios") && resolved(i, "rows"))) {
+      const scenarioId = String(resolved(x, "scenarios")!.element.id), periodId = String(resolved(x, "rows")!.element.periodId);
+      const rows = scenarioId === "base" ? op?.result?.projection?.projection?.base : op?.result?.projection?.projection?.scenarios?.find((y) => y.id === scenarioId)?.rows;
+      const row = rows?.find((r) => r.periodId === periodId), year = periodId.slice(0, 4);
       if (!row || row.startDate !== `${year}-01-01` || row.endDate !== `${year}-12-31`) bad.push(`flow_period:${x.figureId}`);
     }
     const family: Record<string, string> = {decisions: "page.", situation: "situation.", constraint: "constraint.", topic: "topic.", alternatives: "alternatives.", recommendation: "recommendation.", risk: "risk.", what_changes: "what_changes.", next_steps: "next_steps."};
@@ -719,7 +749,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
       {result?: {headroom?: {measurements?: {id: string; ratio: string | null}[]}}} | undefined;
     for (const m of covenantPacket?.result?.headroom?.measurements ?? []) {
       if (m.ratio === null) continue;
-      const shown = d.identity.find((i) => i.path === `result.headroom.measurements[id=${m.id}].ratio`);
+      const shown = d.identity.find((i) => i.methodId === "measure-covenant-headroom" && resolved(i, "measurements")?.element.id === m.id && resolved(i, "measurements")?.field === "ratio");
       const value = shown ? new D(/-?[\d.]+(?:,\d+)?/.exec(shown.display)![0].replace(/\./g, "").replace(",", ".")) : new D(m.ratio);
       if (!value.lt(limit)) bad.push(`order_across_fields:${shown?.figureId ?? m.id}`);
     }
@@ -732,8 +762,8 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const tests = fpSource?.result?.evaluation?.paths?.find((p) => p.id === fpSource.readings?.recommendation?.pathId)?.amortizationTests ?? [];
     const last = (id: string) => {const ys = tests.find((x) => x.profileId === id)?.years ?? []; const paid = ys.filter((y) => !new D(y.scheduledAmortization).eq(0)); return {last: paid.at(-1)?.year, listed: ys.at(-1)?.year};};
     // The profile read is the one the shown amortization comes from, by its registered path.
-    const field = v.bindings.find((b) => b.templateId === "a.term" && b.slot === "amortizacao")?.figureId, readPath = d.identity.find((i) => i.figureId === field)?.path ?? "";
-    const readId = /amortizationTests\[profileId=([^\]]+)\]/.exec(readPath)?.[1] ?? "", tested = last(readId), adopted = last("adopted");
+    const field = v.bindings.find((b) => b.templateId === "a.term" && b.slot === "amortizacao")?.figureId;
+    const readId = String(resolved(d.identity.find((i) => i.figureId === field), "amortizationTests")?.element.profileId ?? ""), tested = last(readId), adopted = last("adopted");
     if (!(tested.last !== undefined && adopted.last !== undefined && tested.last < adopted.last && tested.last < tested.listed!)) bad.push(`term_last_payment:${t.slice(0, 60)}`);
     // Superlative lens: "mais curto" quantifies over every registered profile; the one read must end strictly first.
     if (/mais curto/.test(t) && tests.some((x) => x.profileId !== readId && x.profileId !== "adopted" && (last(x.profileId).last ?? Infinity) <= (tested.last ?? -Infinity))) bad.push(`superlative_term:${t.slice(0, 60)}`);
@@ -745,7 +775,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const cvt = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
       {result?: {headroom?: {measurements?: {id: string; date: string; role: string; tests?: {limitId: string; breached: boolean}[]}[]}}} | undefined;
     const records = cvt?.result?.headroom?.measurements ?? [];
-    const idOf = (figureId: string | null) => {const x = d.identity.find((i) => i.figureId === figureId); const m = x ? /measurements\[id=([^\]&]+)\]\.(\w+)/.exec(x.path) : null; return m ? {id: m[1]!, field: m[2]!} : null;};
+    const idOf = (figureId: string | null) => {const r = resolved(d.identity.find((i) => i.figureId === figureId), "measurements"); return r ? {id: String(r.element.id), field: r.field} : null;};
     for (const field of [...new Set(v.bindings.map((b) => b.field))]) {
       const bound = v.bindings.filter((b) => b.field === field);
       const years = bound.flatMap((b) => {const x = d.identity.find((i) => i.figureId === b.figureId); return x && x.unit === "calendar" ? [x.value] : [];});
@@ -757,9 +787,9 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
         if (!date || !(years.includes(date.slice(0, 4)) || shownDates.includes(date))) bad.push(`period:${field}:${r.id}`);
       }
     }
-    const shownLimits = new Set(d.identity.flatMap((i) => {const m = i.methodId === "measure-covenant-headroom" ? /limits\[id=([a-z0-9-]+)\]\.maximumRatio/.exec(i.path) : null; return m ? [m[1]!] : [];}));
+    const shownLimits = new Set(d.identity.flatMap((i) => {const r = i.methodId === "measure-covenant-headroom" ? resolved(i, "limits") : null; return r && r.field === "maximumRatio" ? [String(r.element.id)] : [];}));
     for (const m of records.filter((x) => x.role === "test")) for (const t of (m.tests ?? []).filter((x) => x.breached && shownLimits.has(x.limitId))) {
-      const ratios = d.identity.filter((i) => i.path === `result.headroom.measurements[id=${m.id}].ratio`).map((i) => i.display);
+      const ratios = d.identity.filter((i) => i.methodId === "measure-covenant-headroom" && resolved(i, "measurements")?.element.id === m.id && resolved(i, "measurements")?.field === "ratio").map((i) => i.display);
       const verb = t.limitId === "aditamento" ? "passa o covenant de" : "passa a política de";
       if (!texts.some((x) => x.includes(verb) && ratios.some((r) => x.includes(r)))) bad.push(`breach_omitted:${t.limitId}:${m.id}`);
     }
@@ -771,8 +801,8 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
     const cvb = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
       {result?: {headroom?: {measurements?: Record<string, unknown>[]}}} | undefined;
     const recordOf = (templateId: string, slot: string, field: string) => {
-      const figure = v.bindings.find((b) => b.templateId === templateId && b.slot === slot && b.field === field)?.figureId, path = d.identity.find((i) => i.figureId === figure)?.path ?? "";
-      const id = /measurements\[id=([^\]&]+)/.exec(path)?.[1]; return cvb?.result?.headroom?.measurements?.find((m) => m.id === id);};
+      const figure = v.bindings.find((b) => b.templateId === templateId && b.slot === slot && b.field === field)?.figureId;
+      const id = resolved(d.identity.find((i) => i.figureId === figure), "measurements")?.element.id; return cvb?.result?.headroom?.measurements?.find((m) => m.id === id);};
     const same = (a: Record<string, unknown> | undefined, b: Record<string, unknown> | undefined, keys: ((m: Record<string, unknown>) => unknown)[]) =>
       !!a && !!b && keys.every((k) => JSON.stringify(k(a)) === JSON.stringify(k(b)));
     for (const field of [...new Set(v.bindings.filter((b) => b.templateId === "risk.policy_readings").map((b) => b.field))])
@@ -789,7 +819,7 @@ function oracle(p: Packet, sources: {packet: Record<string, unknown>}[] = aurora
   {
     const cv = sources.find((x) => x.packet.fingerprint === d.identity.find((i) => i.methodId === "measure-covenant-headroom")?.packetFingerprint)?.packet as
       {result?: {headroom?: {limits?: {id: string; kind: string; status: string}[]; measurements?: {id: string; role: string; scenario: string; adjustments: unknown[]; tests: {limitId: string; kind: string}[]}[]}; definitions?: {limitId: string; definition: string | null}[]}} | undefined;
-    const record = (figureId: string | undefined) => {const x = d.identity.find((i) => i.figureId === figureId); const id = x ? /measurements\[id=([^\]&]+)/.exec(x.path)?.[1] : undefined; return cv?.result?.headroom?.measurements?.find((m) => m.id === id);};
+    const record = (figureId: string | undefined) => {const id = resolved(d.identity.find((i) => i.figureId === figureId), "measurements")?.element.id; return cv?.result?.headroom?.measurements?.find((m) => m.id === id);};
     for (const b of v.bindings) {
       const m = record(b.figureId ?? undefined);
       if (!m) continue;
@@ -2036,6 +2066,38 @@ describe("board discussion properties (fixed seed)", {timeout: 900000}, () => {
       const lev = shifted.result.discussion!.identity.find((i) => i.figureId === "lev-adv27")!; lev.path = "result.headroom.measurements[id=dez26-adverso].ratio";
       expect(oracle(shifted).bad.some((x) => x.startsWith("period:question.trigo.answer:dez26-adverso")), `${turn}`).toBe(true);
       expect(oracle(calibrated), `${turn}`).toEqual({bad: [], missing: []});
+    }
+  });
+  it("regression r42: equivalent selectors are the same limit and measurement under the same fiscalization (full path, turns 2 and 3, oracle not vacuous)", () => {
+    // Covenant of 2,4x and the adverse stress test of December 2027 at 2,45x (debt registered so that the ratio is 2,45).
+    const stress = auroraCovenantPacket({covenantMaximum: "2.4", adverseDebt: "123.57599438"}) as unknown as Record<string, unknown>;
+    const ratio = ((stress as {result: {headroom: {measurements: {id: string; ratio: string}[]}}}).result.headroom.measurements.find((m) => m.id === "dez27-adverso")!).ratio;
+    expect(new Decimal(ratio).toDecimalPlaces(2).toFixed(2)).toBe("2.45");
+    const selectors = {simple: ["result.headroom.limits[id=aditamento].maximumRatio", "result.headroom.measurements[id=dez27-adverso].ratio"],
+      composite: ["result.headroom.limits[id=aditamento&kind=contractual].maximumRatio", "result.headroom.measurements[id=dez27-adverso&scenario=adverse].ratio"]} as const;
+    const base = (form: keyof typeof selectors) => (c: CaseData) => {
+      boardRestateSource("covenant", "measure-covenant-headroom", stress)(c);
+      c.extraReadings["cov-limit"] = ["covenant", selectors[form][0], "1", "2.4"];
+      c.extraReadings["lev-adv27"] = ["covenant", selectors[form][1], "2", "2.45"];
+    };
+    const disclosed = (form: keyof typeof selectors) => (c: CaseData) => {
+      base(form)(c);
+      c.extraReadings["adv27-date"] = ["covenant", "result.headroom.measurements[id=dez27-adverso].date", "month_long", "2027-12-31"];
+      c.questions = c.questions.filter((q) => q.id !== "trigo");
+      c.pages.find((x) => x.id === "alavancagem")!.lines.push("risk.leverage_breach_covenant|ebitda=ebitda-adv27|data=adv27-date|alavancagem=lev-adv27|covenant=cov-limit");
+    };
+    const others = () => auroraBoardSources().filter((x) => x.id !== "covenant");
+    for (const turn of [2, 3] as const) for (const form of ["simple", "composite"] as const) {
+      // Without the breach sentence: refused, whatever the selector's text.
+      expect(() => withBoardSource("covenant", stress, () => full(turn, base(form))), `${turn}:${form}`).toThrow("board_capital_breach_not_disclosed:aditamento:dez27-adverso");
+      // With it: accepted, the fact kept, and the oracle (resolving the selectors itself) reads it clean.
+      const p = withBoardSource("covenant", stress, () => full(turn, disclosed(form)));
+      expect(current(p).pages.find((x) => x.id === "alavancagem")!.lines, `${turn}:${form}`).toContain("Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,45x e passa o covenant de 2,4x.");
+      expect(oracle(p, [{packet: stress}, ...others()]), `${turn}:${form}`).toEqual({bad: [], missing: []});
+      // Not vacuous: the breach line removed is flagged through the composite selectors as through the simple ones.
+      const removed = structuredClone(p), page = current(removed).pages.find((x) => x.id === "alavancagem")!;
+      page.lines = page.lines.filter((l) => !l.includes("passa o covenant"));
+      expect(oracle(removed, [{packet: stress}, ...others()]).bad, `${turn}:${form}`).toContain("breach_omitted:aditamento:dez27-adverso");
     }
   });
 });

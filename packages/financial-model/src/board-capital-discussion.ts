@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
-import {boardFieldOf, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
+import {boardCanonicalPath, boardContributionTexts, boardFieldOf, boardFillVariables, boardResolvedRecord, readBoardSourcePath, type BoardFieldKind, type BoardFieldSpec} from "./board-capital-discussion-sources";
 import {boardThemeOfRefs, boardThemes, type BoardObjectForm, boardObjectGenerics, boardCanonicalInputs, boardIsUniformDeferral, boardIsUniformPlanDeferral, boardIgnoredInputKey, type BoardCanonicalInput, boardDebtorNames, boardBoundaries, boardInformedReasons, boardObjectTerm, boardShortTermYears, boardVocabularies, boardMatchPath, boardMatchValue, boardNameDictionary, boardRefReadingIds, parseBoardTextRef, type BoardComparison, type BoardCondition, type BoardOperand, type BoardSeries, type BoardSlotType, type BoardTemplate, type BoardTextUse} from "./board-capital-discussion-templates";
 
 /** Board discussion of a capital decision (ficha C47). Nothing here recalculates an analysis: every
@@ -72,74 +72,7 @@ export function boardVersionFingerprint(version: Record<string, unknown>) {
   return fingerprintOf(body);
 }
 
-/** Reads one value of a reviewed result by path: dotted keys, `[n]` for a position and `[field=value]`
- * for the one element whose field equals the value. Anything else, or a selector matching zero or
- * several elements, is unresolved. */
-/** The canonical identity of a path in a packet: the field it effectively resolves to, every selector replaced by the
- * index of the one element it selects (so equivalent selectors give the same identity); null when it does not resolve. */
-export function boardCanonicalPath(root: unknown, path: string, form: "index" | "text" = "index"): string | null {
-  const segments = path.split(/\.(?![^[]*\])/);
-  let node: unknown = root;
-  const out: string[] = [];
-  for (const raw of segments) {
-    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
-    if (!m) return null;
-    node = isRecord(node) && Object.hasOwn(node, m[1]!) ? node[m[1]!] : undefined;
-    let part = m[1]!;
-    for (const selector of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
-      const body = selector.slice(1, -1);
-      if (!Array.isArray(node)) return null;
-      let index: number;
-      if (/^\d+$/.test(body)) index = Number(body);
-      else {
-        const conditions = body.split("&").map((x) => {const k = x.indexOf("="); return [x.slice(0, k), x.slice(k + 1)] as const;});
-        const hits = node.flatMap((x, i) => isRecord(x) && conditions.every(([f, v]) => (typeof x[f] === "string" || typeof x[f] === "number") && String(x[f]) === v) ? [i] : []);
-        if (hits.length !== 1) return null;
-        index = hits[0]!;
-      }
-      const element = node[index];
-      // The "text" form keeps the selector's text, reduced to its shortest leading conditions that still select the same
-      // one element (so a redundant condition never makes a second text for the same field).
-      if (form === "text") {
-        const conditions = /^\d+$/.test(body) ? [] : body.split("&");
-        let kept = conditions.length ? conditions.length : 0;
-        for (let n = 1; n < conditions.length; n++) {
-          const sub = conditions.slice(0, n).map((x) => {const k = x.indexOf("="); return [x.slice(0, k), x.slice(k + 1)] as const;});
-          const hits = (node as unknown[]).flatMap((x, i) => isRecord(x) && sub.every(([f, v]) => (typeof x[f] === "string" || typeof x[f] === "number") && String(x[f]) === v) ? [i] : []);
-          if (hits.length === 1 && hits[0] === index) {kept = n; break;}
-        }
-        part += conditions.length ? `[${conditions.slice(0, kept).join("&")}]` : selector;
-      } else part += `[${index}]`;
-      node = element;
-    }
-    if (node === undefined) return null;
-    out.push(part);
-  }
-  return out.join(".");
-}
-export function readBoardSourcePath(root: unknown, path: string): unknown {
-  const segments = path.split(/\.(?![^[]*\])/);
-  let node: unknown = root;
-  for (const raw of segments) {
-    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
-    if (!m) throw new Error("board_capital_path_invalid");
-    node = isRecord(node) && Object.hasOwn(node, m[1]!) ? node[m[1]!] : undefined;
-    for (const selector of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
-      const body = selector.slice(1, -1);
-      if (!Array.isArray(node)) return undefined;
-      if (/^\d+$/.test(body)) {node = node[Number(body)]; continue;}
-      const at = body.indexOf("=");
-      if (at < 1) throw new Error("board_capital_path_invalid");
-      // One selector may hold several conditions joined by &: every one must hold on the element.
-      const conditions = body.split("&").map((part) => {const k = part.indexOf("="); if (k < 1) throw new Error("board_capital_path_invalid"); return [part.slice(0, k), part.slice(k + 1)] as const;});
-      const hits = node.filter((x) => isRecord(x) && conditions.every(([field, value]) => (typeof x[field] === "string" || typeof x[field] === "number") && String(x[field]) === value));
-      if (hits.length !== 1) return undefined;
-      node = hits[0];
-    }
-    if (node === undefined) return undefined;
-  }
-  return node;
-}
+export {boardCanonicalPath, boardContributionTexts, boardFillVariables, boardResolvedRecord, readBoardSourcePath} from "./board-capital-discussion-sources";
 
 const dayMonth = (iso: string) => `${Number(iso.slice(8, 10))}/${months[Number(iso.slice(5, 7)) - 1]}`;
 const monthYear = (iso: string) => `${months[Number(iso.slice(5, 7)) - 1]}/${iso.slice(2, 4)}`;
@@ -445,10 +378,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if (Object.values(values).some((v) => v !== null && v.methodId === method && v.sourceId !== all[0]!.id)) throw new Error(`board_capital_source_mixed:${templateId}:${method}`);
     return all[0]!;
   };
-  const read = (method: string, path: string) => {
-    const filled = path.replace(/\$([a-z]+)/g, (_, k: string) => {if (!Object.hasOwn(vars, k)) throw unverified(`variable_${k}`); return vars[k]!;});
-    return readBoardSourcePath(sourceOf(method).packet, filled);
-  };
+  const read = (method: string, declared: string) => readBoardSourcePath(sourceOf(method).packet, boardFillVariables(declared, vars, (k) => unverified(`variable_${k}`)));
   const scalar = (raw: unknown, why: string) => {
     if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean") return String(raw);
     throw unverified(why);
@@ -634,7 +564,7 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         return typeof later === "string" && typeof before === "string" && later > before && a.length === o.length && a.length > 0
           && a.every((x, i) => new Exact(x).lte(o[i]!)) && a.some((x, i) => new Exact(x).lt(o[i]!));
       }
-      const path = fill(c.pathMoves[1]);
+      const pathId = fill(c.pathMoves[1]);
       const quo = contributions.flatMap((e) => {
         const m = typeof e.fieldPath === "string" ? /\.path\.([a-z0-9-]+)\.terms$/.exec(e.fieldPath) : null, v = e.value?.value;
         return m && Array.isArray(v) && v[0] === "status_quo" ? [m[1]!] : [];
@@ -645,12 +575,12 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
         return m && Array.isArray(v) && v[0] === "existing" ? [m[1]!] : [];
       });
       if (!existing.length) throw unverified("existing_debt");
-      const mine = list(`path.${path}.instruments`);
-      if (!mine.length) throw indefinite(`path_${path}_absent`);
+      const mine = list(`path.${pathId}.instruments`);
+      if (!mine.length) throw indefinite(`path_${pathId}_absent`);
       // The whole path object: every field the plan records for the path is read here; the label is its name.
-      const pathFields = contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? new RegExp(`\\.path\\.${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null; return m ? [m[1]!] : [];});
+      const pathFields = contributions.flatMap((e) => {const m = typeof e.fieldPath === "string" ? new RegExp(`\\.path\\.${pathId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(.+)$`).exec(e.fieldPath) : null; return m ? [m[1]!] : [];});
       if (pathFields.some((f) => !["terms", "label", "instruments", "prepayments", "chargeSlots", "chargeAmounts"].includes(f))) return false;
-      if (list(`path.${path}.terms`).length !== 2 || list(`path.${path}.chargeAmounts`).length !== list(`path.${path}.chargeSlots`).length) return false;
+      if (list(`path.${pathId}.terms`).length !== 2 || list(`path.${pathId}.chargeAmounts`).length !== list(`path.${pathId}.chargeSlots`).length) return false;
       // The kind of a new or amended instrument, from its terms: amendment, debenture, development bank, bank credit without
       // a scheduled amortization after the horizon (no term implied), bank credit with one. "Curto prazo" is never a kind.
       const kind = (id: string) => {
@@ -667,11 +597,11 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
       const want = (xs: readonly string[]) => set(xs.map((x) => x === "$i" ? "$i" : x));
       const added = set(mine.filter((x) => !existing.includes(x)).map(kind));
       const removed = set(existing.filter((x) => !mine.includes(x)).map(touched));
-      const prepaid = set(list(`path.${path}.prepayments`).map((x) => touched(x.split("|")[0]!)));
-      const charges = set(list(`path.${path}.chargeSlots`).map((x) => {const [k, id] = x.split("|"); return `${k}|${touched(id!)}`;}));
+      const prepaid = set(list(`path.${pathId}.prepayments`).map((x) => touched(x.split("|")[0]!)));
+      const charges = set(list(`path.${pathId}.chargeSlots`).map((x) => {const [k, id] = x.split("|"); return `${k}|${touched(id!)}`;}));
       const variantOf = (id: string) => list(`path.${id}.terms`)[1];
       return added === want(c.added) && removed === want(c.removed) && prepaid === want(c.prepaid) && charges === want(c.charges)
-        && (c.variant === "same" ? variantOf(path) === variantOf(quo[0]!) : variantOf(path) !== variantOf(quo[0]!));
+        && (c.variant === "same" ? variantOf(pathId) === variantOf(quo[0]!) : variantOf(pathId) !== variantOf(quo[0]!));
     }
     if ("sameBase" in c) {
       const [method, pa, pb] = c.sameBase;
@@ -810,17 +740,12 @@ export function renderBoardRef(ref: string, context: Context): Resolved & {bindi
     if ("sameObject" in c || "registeredTerm" in c) {
       // The registered texts: a field of the packet by path, or (path starting with ~) contributions whose field path ends so.
       const [method, rawPath] = "sameObject" in c ? c.sameObject : c.registeredTerm;
-      const path = rawPath.replace(/\$([a-z]+)/g, (_, k: string) => vars[k] ?? "\u0000");
+      const declared = boardFillVariables(rawPath, vars, () => null);
       const packet = sourceOf(method).packet as {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}};
       let texts: string[];
-      if (path.startsWith("~")) {
-        const pattern = new RegExp(`\\.${path.slice(1).split("*").map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]+")}$`);
-        const all = packet.result?.contributions ?? [];
-        // Only the entries whose sibling field holds the given value (the plan's variants that carry the project).
-        const kept = (path: string) => !("sameObject" in c && c.where) || all.some((e) => e.fieldPath === path.replace(/\.[a-zA-Z]+$/, `.${c.where![0]}`) && e.value?.value === c.where![1]);
-        texts = all.flatMap((e) => typeof e.fieldPath === "string" && pattern.test(e.fieldPath) && typeof e.value?.value === "string" && kept(e.fieldPath) ? [e.value.value] : []);
-      } else {
-        const v = readBoardSourcePath(packet, path);
+      if (declared.slice(0, 1) === "~") texts = boardContributionTexts(packet, declared.slice(1), "sameObject" in c && c.where ? c.where : null);
+      else {
+        const v = readBoardSourcePath(packet, declared);
         texts = typeof v === "string" ? [v] : [];
       }
       if (texts.length === 0) throw indefinite("registered_text_absent");
@@ -1377,9 +1302,12 @@ export type BoardVersionTexts = {summary: string; deliberations: {text: string}[
 export function boardBreachesDisclosed(d: BoardDiscussion, sources: BoardSourceReading[]) {
   const cv = sources.find((x) => x.methodId === "measure-covenant-headroom");
   if (!cv) return;
+  // Limits and measurements by canonical identity in the covenant result: the record each reading resolves to, never the
+  // text of its selector (equivalent selectors are the same limit, under the same fiscalization).
   const figureById = new Map(d.figures.map((f) => [f.id, f]));
-  const pathOf = (id: string) => {const f = figureById.get(id); return f && f.kind === "reading" && f.sourceId === cv.id ? f.path : null;};
-  const shownLimits = new Set(d.figures.flatMap((f) => {const m = f.kind === "reading" && f.sourceId === cv.id ? /^result\.headroom\.limits\[id=([a-z0-9-]+)\]\.maximumRatio$/.exec(f.path) : null; return m ? [m[1]!] : [];}));
+  const recordOf = (id: string, list: string, field: string) => {const f = figureById.get(id); if (!f || f.kind !== "reading" || f.sourceId !== cv.id) return null;
+    const r = boardResolvedRecord(cv.packet, f.path, list); return r && r.field === field ? String(r.record.id) : null;};
+  const shownLimits = new Set(d.figures.flatMap((f) => {const id = recordOf(f.id, "result.headroom.limits", "maximumRatio"); return id === null ? [] : [id];}));
   const measurements = ((cv.packet as {result?: {headroom?: {measurements?: {id: string; role: string; tests?: {limitId: string; breached: boolean}[]}[]}}}).result?.headroom?.measurements) ?? [];
   const breaches = measurements.flatMap((m) => m.role !== "test" ? [] : (m.tests ?? []).filter((t) => t.breached === true && shownLimits.has(t.limitId)).map((t) => ({limit: t.limitId, measurement: m.id})));
   const byLimit: Record<string, string> = {aditamento: "risk.leverage_breach_covenant", politica: "risk.leverage_breach_policy"};
@@ -1389,7 +1317,7 @@ export function boardBreachesDisclosed(d: BoardDiscussion, sources: BoardSourceR
       const parsed = (() => {try {return parseBoardTextRef(r);} catch {return null;}})();
       if (!parsed || parsed.templateId !== byLimit[b.limit]) return false;
       const ratio = parsed.bindings.alavancagem;
-      return ratio !== undefined && pathOf(ratio) === `result.headroom.measurements[id=${b.measurement}].ratio`;
+      return ratio !== undefined && recordOf(ratio, "result.headroom.measurements", "ratio") === b.measurement;
     });
     if (!disclosed) throw new Error(`board_capital_breach_not_disclosed:${b.limit}:${b.measurement}`);
   }

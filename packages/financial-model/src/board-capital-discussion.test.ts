@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {boardFreeTextIssue, boardNumberTokens, formatBoardReading, renderBoardRef, verifyBoardRendered, checkBoardText, orderBoardDeliberations, orderBoardPages, readBoardSourcePath, renderBoardTemplate,
@@ -240,5 +242,40 @@ describe("board discussion core", () => {
       }
     }
     expect(checked).toBe(kinds.length * 2);
+  });
+  it("guard: no production decision on the raw text of a reading path; identity goes through the canonical resolution", () => {
+    // Patterns of a decision taken on the text of a path (a selector's text, a suffix, a prefix), in the production files.
+    const patterns = [/\bpath\.(?:match|matchAll|includes|startsWith|endsWith|split|replace|slice|indexOf)\(/, /\.path\.(?:match|matchAll|includes|startsWith|endsWith|split|replace|slice|indexOf)\(/,
+      /\.(?:exec|test)\([^)]*\b(?:path|f\.path|x\.path|origin\.path)\)/];
+    // The minimal exceptions, each justified: the resolver itself (it parses the path to resolve it), the registry lookup
+    // that blanks every selector (no decision depends on a selector's text), and the library's static declarations
+    // (template paths with variables, checked at definition time; readings resolve through the canonical identity).
+    const exceptions = new Map([
+      ["board-capital-discussion-sources.ts:boardCanonicalPath", "the canonical resolver: parses a path to resolve every selector to the element it selects"],
+      ["board-capital-discussion-sources.ts:readBoardSourcePath", "the reader: parses a path to read the one element each selector selects"],
+      ["board-capital-discussion-sources.ts:boardFieldOf", "registry lookup with every selector blanked to [*]: no decision depends on a selector's text"],
+      ["board-capital-discussion-templates.ts:boardPathSegments", "parser of the library's declared path patterns"],
+      ["board-capital-discussion-templates.ts:boardTemplates", "the library's declared paths, completed at definition time (roles and intervals by declaration)"],
+      ["board-capital-discussion-templates.ts:checkBoardTemplateLibrary", "the self-check of the library's declarations, at definition time"],
+    ]);
+    const scan = (file: string, source: string) => {
+      const lines = source.split("\n"), found: string[] = [];
+      lines.forEach((line, i) => {
+        if (!patterns.some((re) => re.test(line))) return;
+        let name = "?";
+        for (let j = i; j >= 0; j--) {const m = /^(?:export )?(?:function (\w+)|const (\w+)\b)/.exec(lines[j]!); if (m) {name = m[1] ?? m[2]!; break;}}
+        found.push(`${file}:${name}`);
+      });
+      return found;
+    };
+    const files = ["board-capital-discussion.ts", "board-capital-discussion-templates.ts", "board-capital-discussion-sources.ts", "board-capital-discussion-composer.ts",
+      "board-capital-discussion-premises.ts", "adopted-board-capital-discussion.ts", "board-capital-discussion-packet.ts", "board-capital-discussion-results.ts", "board-capital-discussion-contracts.ts"];
+    const found = files.flatMap((f) => scan(f, readFileSync(resolve(import.meta.dirname, f), "utf8")));
+    expect([...new Set(found.filter((x) => !exceptions.has(x)))]).toEqual([]);
+    // No stale exception: each is still where the guard finds a parse of a path.
+    expect([...exceptions.keys()].filter((x) => !found.includes(x))).toEqual([]);
+    // Not vacuous: the r42 defect (a regular expression over a figure's raw path) is caught.
+    expect(scan("x.ts", "export function shown(f: {path: string}) {\n  const m = /^result\\.headroom\\.limits\\[id=([a-z0-9-]+)\\]/.exec(f.path);\n}")).toEqual(["x.ts:shown"]);
+    expect(scan("x.ts", "const limit = (path: string) => path.startsWith(\"result.headroom.limits\");")).toEqual(["x.ts:limit"]);
   });
 });

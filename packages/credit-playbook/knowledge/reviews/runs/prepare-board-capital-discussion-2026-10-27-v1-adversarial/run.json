@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T09:33:06.255Z",
-    "finishedAt": "2026-10-28T09:36:52.416Z"
+    "startedAt": "2026-10-28T10:13:33.156Z",
+    "finishedAt": "2026-10-28T10:17:19.358Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -1318,6 +1318,14 @@
       "passed": true
     },
     {
+      "id": "covenant-of-2-4-read-by-a-composite-selector-breached-at-2-45-not-stated",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "501c7bd82ee24258141efd57d116984b9dfe743e569c018b1fa3c8f44ffd9d64",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
       "id": "wheat-answer-for-2027-with-the-adverse-measurement-of-2026",
       "expectation": "rejected by expected boundary",
       "observed": "rejected by expected boundary",
@@ -1559,6 +1567,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "7acc2139a19995fdf84716ecce9f0fe6a3bb1f4e1fc1ed489072b0dcaf38fdca",
+  "evidenceFingerprint": "20a92a4fae9a61141eb580d05ec3da898a88faee8f2b2a2c18dbe46b45567561",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }

@@ -14,6 +14,105 @@ import {quarterUpdatePacketOutputSchema} from "./quarter-update-packet";
 import {capitalPathsPacketOutputSchema} from "./capital-structure-paths-packet";
 import type {BoardSourceReading} from "./board-capital-discussion";
 
+const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
+/** Reads one value of a reviewed result by path: dotted keys, `[n]` for a position and `[field=value]`
+ * for the one element whose field equals the value. Anything else, or a selector matching zero or
+ * several elements, is unresolved. */
+/** The canonical identity of a path in a packet: the field it effectively resolves to, every selector replaced by the
+ * index of the one element it selects (so equivalent selectors give the same identity); null when it does not resolve. */
+export function boardCanonicalPath(root: unknown, path: string, form: "index" | "text" = "index"): string | null {
+  const segments = path.split(/\.(?![^[]*\])/);
+  let node: unknown = root;
+  const out: string[] = [];
+  for (const raw of segments) {
+    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
+    if (!m) return null;
+    node = isRecord(node) && Object.hasOwn(node, m[1]!) ? node[m[1]!] : undefined;
+    let part = m[1]!;
+    for (const selector of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
+      const body = selector.slice(1, -1);
+      if (!Array.isArray(node)) return null;
+      let index: number;
+      if (/^\d+$/.test(body)) index = Number(body);
+      else {
+        const conditions = body.split("&").map((x) => {const k = x.indexOf("="); return [x.slice(0, k), x.slice(k + 1)] as const;});
+        const hits = node.flatMap((x, i) => isRecord(x) && conditions.every(([f, v]) => (typeof x[f] === "string" || typeof x[f] === "number") && String(x[f]) === v) ? [i] : []);
+        if (hits.length !== 1) return null;
+        index = hits[0]!;
+      }
+      const element = node[index];
+      // The "text" form keeps the selector's text, reduced to its shortest leading conditions that still select the same
+      // one element (so a redundant condition never makes a second text for the same field).
+      if (form === "text") {
+        const conditions = /^\d+$/.test(body) ? [] : body.split("&");
+        let kept = conditions.length ? conditions.length : 0;
+        for (let n = 1; n < conditions.length; n++) {
+          const sub = conditions.slice(0, n).map((x) => {const k = x.indexOf("="); return [x.slice(0, k), x.slice(k + 1)] as const;});
+          const hits = (node as unknown[]).flatMap((x, i) => isRecord(x) && sub.every(([f, v]) => (typeof x[f] === "string" || typeof x[f] === "number") && String(x[f]) === v) ? [i] : []);
+          if (hits.length === 1 && hits[0] === index) {kept = n; break;}
+        }
+        part += conditions.length ? `[${conditions.slice(0, kept).join("&")}]` : selector;
+      } else part += `[${index}]`;
+      node = element;
+    }
+    if (node === undefined) return null;
+    out.push(part);
+  }
+  return out.join(".");
+}
+/** A library-declared path instantiated with the variables bound so far ($name); a missing variable is refused by the
+ * caller's error, or written as an impossible character when the caller asks for none. It decides nothing by itself. */
+export function boardFillVariables(declared: string, vars: Record<string, string>, missing: (k: string) => Error | null): string {
+  return declared.replace(/\$([a-z]+)/g, (_m: string, k: string) => {if (Object.hasOwn(vars, k)) return vars[k]!; const e = missing(k); if (e) throw e; return "\u0000";});
+}
+/** The texts of the adopted contributions of a result whose key ends in the declared key pattern (a contribution key is
+ * the source's own canonical key: dotted names and ids, never a selector), optionally only those whose sibling field
+ * holds a given value. */
+export function boardContributionTexts(packet: {result?: {contributions?: {fieldPath?: unknown; value?: {value?: unknown}}[]}}, keyPattern: string, where: readonly [string, string] | null) {
+  const pattern = new RegExp(`\\.${keyPattern.split("*").map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[a-z0-9-]+")}$`);
+  const all = packet.result?.contributions ?? [];
+  const kept = (key: string) => !where || all.some((e) => e.fieldPath === key.replace(/\.[a-zA-Z]+$/, `.${where[0]}`) && e.value?.value === where[1]);
+  return all.flatMap((e) => typeof e.fieldPath === "string" && pattern.test(e.fieldPath) && typeof e.value?.value === "string" && kept(e.fieldPath) ? [e.value.value] : []);
+}
+/** The record of a list that a path reads, by canonical identity: the path and the list are both resolved (every selector
+ * replaced by the index of the one element it selects), and the record is the element at that index of the list, with
+ * the field read after it. Equivalent selectors give the same record; nothing is decided on the selector's text. */
+export function boardResolvedRecord(root: unknown, path: string, listPath: string): {index: number; record: Record<string, unknown>; field: string} | null {
+  const canonical = boardCanonicalPath(root, path), list = boardCanonicalPath(root, listPath);
+  if (canonical === null || list === null) return null;
+  const head = `${list}[`;
+  if (canonical.slice(0, head.length) !== head) return null;
+  const close = canonical.indexOf("]", head.length), index = Number(canonical.slice(head.length, close));
+  const items = readBoardSourcePath(root, list), record = Array.isArray(items) ? items[index] : undefined;
+  if (!Number.isInteger(index) || !isRecord(record)) return null;
+  const rest = canonical.slice(close + 1);
+  return {index, record, field: rest.slice(0, 1) === "." ? rest.slice(1) : rest};
+}
+export function readBoardSourcePath(root: unknown, path: string): unknown {
+  const segments = path.split(/\.(?![^[]*\])/);
+  let node: unknown = root;
+  for (const raw of segments) {
+    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(raw);
+    if (!m) throw new Error("board_capital_path_invalid");
+    node = isRecord(node) && Object.hasOwn(node, m[1]!) ? node[m[1]!] : undefined;
+    for (const selector of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
+      const body = selector.slice(1, -1);
+      if (!Array.isArray(node)) return undefined;
+      if (/^\d+$/.test(body)) {node = node[Number(body)]; continue;}
+      const at = body.indexOf("=");
+      if (at < 1) throw new Error("board_capital_path_invalid");
+      // One selector may hold several conditions joined by &: every one must hold on the element.
+      const conditions = body.split("&").map((part) => {const k = part.indexOf("="); if (k < 1) throw new Error("board_capital_path_invalid"); return [part.slice(0, k), part.slice(k + 1)] as const;});
+      const hits = node.filter((x) => isRecord(x) && conditions.every(([field, value]) => (typeof x[field] === "string" || typeof x[field] === "number") && String(x[field]) === value));
+      if (hits.length !== 1) return undefined;
+      node = hits[0];
+    }
+    if (node === undefined) return undefined;
+  }
+  return node;
+}
+
+
 /** The released methods whose reviewed results a board material may read, each pinned to the released
  * method version, executor version and packet schema. A result of any other method or version is refused. */
 export const boardReleasedSources = {
@@ -84,16 +183,9 @@ export type BoardFieldSpec = {kind: BoardFieldKind; scale: "reais" | "millions" 
 /** A lever's benefit is the nominal benefit over its action's exposure: the horizon is the sum of the registered year
  * fractions of that action's exposure, in months (an integer number of months, or nothing). */
 function leverHorizonMonths(packet: unknown, path: string): string | null {
-  const lever = path.replace(/\.netOfKnownCosts$/, "").split(/\.(?![^[]*\])/).reduce<unknown>((node, seg) => {
-    const m = /^([A-Za-z0-9_]+)((?:\[[^\]]+\])*)$/.exec(seg); if (!m) return undefined;
-    let n = (node as Record<string, unknown> | undefined)?.[m[1]!];
-    for (const sel of m[2]!.match(/\[[^\]]+\]/g) ?? []) {
-      const conds = sel.slice(1, -1).split("&").map((x) => [x.slice(0, x.indexOf("=")), x.slice(x.indexOf("=") + 1)] as const);
-      const hits = Array.isArray(n) ? n.filter((x) => conds.every(([k, v]) => String((x as Record<string, unknown>)?.[k]) === v)) : [];
-      n = hits.length === 1 ? hits[0] : undefined;
-    }
-    return n;
-  }, packet) as {actionId?: unknown} | undefined;
+  // The lever is the record the path resolves to, by canonical identity.
+  const resolved = boardResolvedRecord(packet, path, "levers");
+  const lever = resolved && resolved.field === "netOfKnownCosts" ? resolved.record as {actionId?: unknown} : undefined;
   const actions = ((packet as {result?: {actions?: {actionId?: unknown; result?: {operands?: {exposure?: {yearFraction?: unknown}[]}}}[]}})?.result?.actions ?? []);
   const action = actions.find((a) => a.actionId === lever?.actionId);
   const fractions = action?.result?.operands?.exposure?.map((x) => x.yearFraction);
@@ -103,11 +195,13 @@ function leverHorizonMonths(packet: unknown, path: string): string | null {
 }
 /** A projected row's interval: the scenario's row of the same period in the projection result, with its registered dates. */
 function projectionInterval(packet: unknown, path: string): {start: string; end: string} | null {
-  const m = /^readings\.projected\.scenarios\[id=([^\]&]+)\]\.rows\[periodId=([^\]&]+)\]/.exec(path);
-  if (!m) return null;
+  // The scenario and the row the path reads, by canonical identity; then the same scenario and period in the result.
+  const scenario = boardResolvedRecord(packet, path, "readings.projected.scenarios");
+  const read = scenario ? boardResolvedRecord(packet, path, `readings.projected.scenarios[${scenario.index}].rows`) : null;
+  if (!scenario || !read) return null;
   const projection = (packet as {result?: {projection?: {projection?: {base?: unknown[]; scenarios?: {id: string; rows?: unknown[]}[]}}}})?.result?.projection?.projection;
-  const rows = m[1] === "base" ? projection?.base : projection?.scenarios?.find((x) => x.id === m[1])?.rows;
-  const row = (rows ?? []).find((r) => (r as {periodId?: unknown}).periodId === m[2]) as {startDate?: unknown; endDate?: unknown} | undefined;
+  const rows = scenario.record.id === "base" ? projection?.base : projection?.scenarios?.find((x) => x.id === scenario.record.id)?.rows;
+  const row = (rows ?? []).find((r) => (r as {periodId?: unknown}).periodId === read.record.periodId) as {startDate?: unknown; endDate?: unknown} | undefined;
   return row && typeof row.startDate === "string" && typeof row.endDate === "string" ? {start: row.startDate, end: row.endDate} : null;
 }
 const money = (scale: "reais" | "millions", period: "annual" | "none" = "none"): BoardFieldSpec => ({kind: "money", scale, period, formats: []});

@@ -16,8 +16,8 @@
     "exportName": "buildBoardCapitalDiscussionRuns"
   },
   "run": {
-    "startedAt": "2026-10-28T09:33:06.255Z",
-    "finishedAt": "2026-10-28T09:36:52.414Z"
+    "startedAt": "2026-10-28T10:13:33.156Z",
+    "finishedAt": "2026-10-28T10:17:19.357Z"
   },
   "modelCalls": 0,
   "cases": [
@@ -518,6 +518,14 @@
       "passed": true
     },
     {
+      "id": "covenant-of-2-4-read-by-composite-selectors-breach-stated",
+      "expectation": "{\"line\":\"Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,45x e passa o covenant de 2,4x.\"}",
+      "observed": "{\"line\":\"Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,45x e passa o covenant de 2,4x.\"}",
+      "inputFingerprint": "5fe75780ddbae2e2057a04b3213386a0406a1dbb0afad5ed672ad593e6b150d3",
+      "outputFingerprint": "d21bc7720f2d4eb91a924afb189ee85c5b49cf7757efbf43b592c70b6e0ccf57",
+      "passed": true
+    },
+    {
       "id": "covenant-of-2-35-breached-in-2027-stated-with-limit-measurement-and-date",
       "expectation": "{\"line\":\"Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,37x e passa o covenant de 2,35x.\"}",
       "observed": "{\"line\":\"Com EBITDA de R$ 48,1 milhões em dezembro de 2027, a alavancagem chega a 2,37x e passa o covenant de 2,35x.\"}",
@@ -743,6 +751,6 @@
     }
   ],
   "result": "pass",
-  "evidenceFingerprint": "97b3c1fdb59930a37ac2cc170ffbc0585f913a4f1e4970652f7964a8ff69ca06",
+  "evidenceFingerprint": "895c1607de08d05b745b33e676a316d97fa2b08ffade07037048b395235f6608",
   "notes": "Synthetic deterministic execution calibrated on ficha C47 over the published calibrations of the released methods. Numerical expectations do not constitute independent review, content approval, live access verification or publication."
 }
