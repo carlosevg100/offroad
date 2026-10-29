@@ -33,13 +33,13 @@ export const DOCUMENT_ALLOWED_EXTENSIONS = new Set([
   "doc", "ppt", "rtf", "odt", "odp", "wpd",
 ]);
 export const DOCUMENT_MAX_BYTES = 52_428_800;
-export const DOCUMENT_MAX_FILES_PER_BATCH = 20;
 export const DOCUMENT_ACCEPT = [...DOCUMENT_ALLOWED_EXTENSIONS].map((extension) => `.${extension}`).join(",");
 
 export type UploadFailure = "invalid" | "upload" | "register";
 
 export type UploadResult = {
   uploaded: IntakeDocumentSummary[];
+  failed: {original_name: string; reason: UploadFailure}[];
   /** Files already present in the same scope. They are not re-registered or shown as errors. */
   duplicateCount: number;
   /** First failure code, if any (the UI shows one message; every valid file is still attempted). */
@@ -97,23 +97,58 @@ export async function uploadDocuments(input: {
   const {supabase, organizationId, userId, scope} = input;
   const scopeId = scope.kind === "session" ? scope.sessionId : scope.opportunityId;
   const uploaded: IntakeDocumentSummary[] = [];
+  const failed: UploadResult["failed"] = [];
   let duplicateCount = 0;
   let failure: UploadFailure | null = null;
+  const recordFailure = (file: File, reason: UploadFailure) => {
+    failure ??= reason;
+    failed.push({original_name: file.name, reason});
+  };
+  // Read back only this attempt's identity in its authorized scope. An ambiguous response
+  // is not a reason to erase a source, nor proof that the command failed to commit.
+  const recoverRegistration = async (attempt: {documentId: string; objectPath: string; fileHash: string}) => {
+    try {
+      const result = await supabase.from("source_documents")
+        .select("id, original_name, byte_size, object_path, sha256")
+        .eq("organization_id", organizationId)
+        .eq(scope.kind === "session" ? "intake_session_id" : "opportunity_id", scopeId)
+        .eq("id", attempt.documentId)
+        .maybeSingle();
+      if (result.error || result.data?.object_path !== attempt.objectPath || result.data.sha256 !== attempt.fileHash) return null;
+      return registrationPayload(result.data);
+    } catch {
+      return null;
+    }
+  };
+  const discardTemporaryObject = async (objectPath: string) => {
+    try {
+      await supabase.storage.from("opportunity-documents").remove([objectPath]);
+    } catch {
+      // The existing source is confirmed. A temporary-object cleanup failure must not ask
+      // the person to upload that source again or prevent subsequent files from advancing.
+    }
+  };
 
-  for (const file of input.files.slice(0, DOCUMENT_MAX_FILES_PER_BATCH)) {
+  // Process the entire selection one file at a time, without buffering a whole folder.
+  for (const file of input.files) {
     if (!isAcceptedDocument(file)) {
-      failure ??= "invalid";
+      recordFailure(file, "invalid");
       continue;
     }
-    const documentId = crypto.randomUUID();
-    const objectPath = `${organizationId}/${scopeId}/${documentId}-${safeObjectName(file.name)}`;
-    const fileHash = await sha256Hex(file);
-    const {error: uploadError} = await supabase.storage.from("opportunity-documents").upload(objectPath, file, {upsert: false, contentType: file.type || "application/octet-stream"});
-    if (uploadError) {
-      failure ??= "upload";
-      continue;
-    }
-    const registration = scope.kind === "session"
+    let stage: UploadFailure = "upload";
+    let attempt: {documentId: string; objectPath: string; fileHash: string} | null = null;
+    try {
+      const documentId = crypto.randomUUID();
+      const objectPath = `${organizationId}/${scopeId}/${documentId}-${safeObjectName(file.name)}`;
+      const fileHash = await sha256Hex(file);
+      const {error: uploadError} = await supabase.storage.from("opportunity-documents").upload(objectPath, file, {upsert: false, contentType: file.type || "application/octet-stream"});
+      if (uploadError) {
+        recordFailure(file, "upload");
+        continue;
+      }
+      stage = "register";
+      attempt = {documentId, objectPath, fileHash};
+      const registration = scope.kind === "session"
       ? await supabase.rpc("register_intake_document_command", {
           p_organization_id: organizationId,
           p_session_id: scope.sessionId,
@@ -143,31 +178,47 @@ export async function uploadDocuments(input: {
           created_by: userId,
         }).select("id, original_name, byte_size").single();
 
-    const data = registrationPayload(registration.data);
-    const insertError = registration.error;
-    if (insertError || !data) {
-      await supabase.storage.from("opportunity-documents").remove([objectPath]);
-      if (insertError?.code === "23505") {
-        const existing = await supabase.from("source_documents")
-          .select("id")
-          .eq("organization_id", organizationId)
-          .eq(scope.kind === "session" ? "intake_session_id" : "opportunity_id", scopeId)
-          .eq("sha256", fileHash)
-          .maybeSingle();
-        if (existing.data?.id) {
-          duplicateCount += 1;
+      const data = registrationPayload(registration.data);
+      const insertError = registration.error;
+      if (insertError || !data) {
+        const recovered = await recoverRegistration(attempt);
+        if (recovered) {
+          uploaded.push({id: recovered.id, original_name: recovered.original_name, byte_size: recovered.byte_size});
           continue;
         }
+        if (insertError?.code === "23505") {
+          const existing = await supabase.from("source_documents")
+            .select("id")
+            .eq("organization_id", organizationId)
+            .eq(scope.kind === "session" ? "intake_session_id" : "opportunity_id", scopeId)
+            .eq("sha256", fileHash)
+            .maybeSingle();
+          if (existing.data?.id && existing.data.id !== documentId) {
+            // Remove only after confirming another registered source owns these bytes.
+            await discardTemporaryObject(objectPath);
+            duplicateCount += 1;
+            continue;
+          }
+        }
+        // Keep bytes when the registration might have committed before its response was lost.
+        recordFailure(file, "register");
+        continue;
       }
-      failure ??= "register";
-      continue;
+      if (data.duplicate && data.id !== documentId) {
+        await discardTemporaryObject(objectPath);
+        duplicateCount += 1;
+        continue;
+      }
+      uploaded.push({id: data.id, original_name: data.original_name, byte_size: data.byte_size});
+    } catch {
+      const recovered = attempt && await recoverRegistration(attempt);
+      if (recovered) {
+        uploaded.push({id: recovered.id, original_name: recovered.original_name, byte_size: recovered.byte_size});
+        continue;
+      }
+      // A failed file does not abandon the rest of the selection or leak provider details.
+      recordFailure(file, stage);
     }
-    if (data.duplicate) {
-      await supabase.storage.from("opportunity-documents").remove([objectPath]);
-      duplicateCount += 1;
-      continue;
-    }
-    uploaded.push({id: data.id, original_name: data.original_name, byte_size: data.byte_size});
   }
-  return {uploaded, duplicateCount, failure};
+  return {uploaded, failed, duplicateCount, failure};
 }
