@@ -31,11 +31,11 @@ export function sectorIntentForObjective(message: string): EconomicContextCompil
   const kind = compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind;
   if (kind === "factual_question") return "factual_answer";
   if (kind === "capital_matching" || kind === "market_mapping") return "market_matching";
-  if (kind === "operation_review" || kind === "proposal_comparison") return "contract_review";
-  if (kind === "capital_strategy" || kind === "board_decision") return "financing_comparison";
+  if (kind === "operation_review" || kind === "proposal_comparison" || kind === "received_proposal") return "contract_review";
+  if (kind === "capital_strategy" || kind === "board_decision" || kind === "financing_paths" || kind === "board_capital_discussion") return "financing_comparison";
   if (["company_analysis", "risk_matrix", "documents_to_case", "debt_capacity", "relative_debt_cost", "debt_table", "covenant_headroom", "weekly_cash",
     "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"].includes(kind)) return "financial_analysis";
-  // Preparing material, monitoring or an ambiguous request does not authorize fresh analysis.
+  // Preparing material, organizing a folder, monitoring or an ambiguous request does not authorize fresh analysis.
   return null;
 }
 

@@ -11,6 +11,13 @@ import operatingProjectionPacketFixture from "../../../../../packages/domain-con
 import projectionChallengePacketFixture from "../../../../../packages/domain-contracts/src/fixtures/projection-challenge-result-packet.json";
 import receivablesFundingPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/receivables-funding-result-packet.json";
 import quarterUpdatePacketFixture from "../../../../../packages/domain-contracts/src/fixtures/quarter-update-result-packet.json";
+import {boardMaterialPacketBlocks, documentFolderPacketBlocks, financingPathsPacketBlocks, readBoardMaterialPacketBlocks, readDocumentFolderPacketBlocks, readFinancingPathsPacketBlocks,
+  readReceivedProposalPacketBlocks, receivedProposalPacketBlocks, type BoardMaterialPacketLike, type DocumentFolderPacketLike, type FinancingPathsPacketLike,
+  type ReceivedProposalPacketLike} from "@offroad/domain-contracts";
+import documentFolderPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/document-folder-result-packet.json";
+import receivedProposalPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/received-proposal-result-packet.json";
+import financingPathsPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/financing-paths-result-packet.json";
+import boardMaterialPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/board-material-result-packet.json";
 import investmentPacketFixture from "../../../../../packages/domain-contracts/src/fixtures/investment-result-packet.json";
 // The packet the SQL producer and the contract mapping are proved against.
 import packetFixture from "../../../../../packages/domain-contracts/src/fixtures/execution-result-packet.json";
@@ -106,6 +113,30 @@ describe("the registered revision of an execution result", () => {
       const state = executionRevisionFromRead(parsed(recorded({traces: kindTraces, blocks: kindBlocks})), executionId);
       expect(state.state === "ready" && state.revision.kind).toBe(k.kind);
       expect(state.state === "ready" && state.revision.pins.packetFingerprint).toBe(k.packet.fingerprint);
+      expect(state.state === "ready" && (state.revision as unknown as Record<string, unknown>)[k.field]).toEqual(k.read(kindBlocks as never));
+      expect(executionRevisionFromRead(parsed(recorded({traces: kindTraces})), executionId)).toEqual({state: "unavailable"});
+    }
+  });
+
+  it("reads each lote 4 result by its packet trace, with its own reader and pins", () => {
+    type Blocks = NonNullable<Parameters<typeof artifactReadFixture>[0]["blocks"]>;
+    const kinds = [
+      {prefix: "document-folder-inventory-packet:", kind: "document_folder", field: "documentFolder", packet: documentFolderPacketFixture as unknown as DocumentFolderPacketLike,
+        map: (p: unknown) => documentFolderPacketBlocks(p as DocumentFolderPacketLike), read: readDocumentFolderPacketBlocks},
+      {prefix: "received-proposal-packet:", kind: "received_proposal", field: "receivedProposal", packet: receivedProposalPacketFixture as unknown as ReceivedProposalPacketLike,
+        map: (p: unknown) => receivedProposalPacketBlocks(p as ReceivedProposalPacketLike), read: readReceivedProposalPacketBlocks},
+      {prefix: "capital-structure-paths-packet:", kind: "financing_paths", field: "financingPaths", packet: financingPathsPacketFixture as unknown as FinancingPathsPacketLike,
+        map: (p: unknown) => financingPathsPacketBlocks(p as FinancingPathsPacketLike), read: readFinancingPathsPacketBlocks},
+      {prefix: "board-capital-discussion-packet:", kind: "board_material", field: "boardMaterial", packet: boardMaterialPacketFixture as unknown as BoardMaterialPacketLike,
+        map: (p: unknown) => boardMaterialPacketBlocks(p as BoardMaterialPacketLike), read: readBoardMaterialPacketBlocks},
+    ] as const;
+    for (const k of kinds) {
+      const kindBlocks = k.map(k.packet) as unknown as Blocks;
+      const fingerprint = (k.packet as unknown as {fingerprint: string}).fingerprint;
+      const kindTraces = [`${k.prefix}${fingerprint}`, `execution-gates:${"f".repeat(64)}`];
+      const state = executionRevisionFromRead(parsed(recorded({traces: kindTraces, blocks: kindBlocks})), executionId);
+      expect(state.state === "ready" && state.revision.kind).toBe(k.kind);
+      expect(state.state === "ready" && state.revision.pins.packetFingerprint).toBe(fingerprint);
       expect(state.state === "ready" && (state.revision as unknown as Record<string, unknown>)[k.field]).toEqual(k.read(kindBlocks as never));
       expect(executionRevisionFromRead(parsed(recorded({traces: kindTraces})), executionId)).toEqual({state: "unavailable"});
     }

@@ -9,7 +9,12 @@ import {operatingProjectionPacketBlocks, projectionChallengePacketBlocks, quarte
   readQuarterUpdatePacketBlocks, readReceivablesFundingPacketBlocks, receivablesFundingPacketBlocks, type OperatingProjectionPacketLike, type OperatingProjectionResultBlocksView,
   type ProjectionChallengePacketLike, type ProjectionChallengeResultBlocksView, type QuarterUpdatePacketLike, type QuarterUpdateResultBlocksView,
   type ReceivablesFundingPacketLike, type ReceivablesFundingResultBlocksView} from "@offroad/domain-contracts";
+import {boardMaterialPacketBlocks, documentFolderPacketBlocks, readBoardMaterialPacketBlocks, readDocumentFolderPacketBlocks, readReceivedProposalPacketBlocks, receivedProposalPacketBlocks,
+  type BoardMaterialPacketLike, type BoardMaterialResultBlocksView, type DocumentFolderPacketLike, type DocumentFolderResultBlocksView, type FinancingPathsResultBlocksView,
+  type ReceivedProposalPacketLike, type ReceivedProposalResultBlocksView} from "@offroad/domain-contracts";
 import {covenantHeadroomPacketOutputSchema, debtTablePacketOutputSchema, weeklyCashPacketOutputSchema} from "@offroad/financial-model";
+import {boardCapitalDiscussionPacketOutputSchema, documentFolderInventoryPacketOutputSchema, receivedProposalPacketOutputSchema} from "@offroad/financial-model";
+import {readFinancingPathsResult} from "./financing-paths-read";
 import {operatingProjectionPacketOutputSchema, projectionChallengePacketOutputSchema, quarterUpdatePacketOutputSchema, receivablesFundingPacketOutputSchema} from "@offroad/financial-model";
 import {capitalProcedurePacketV2OutputSchema, debtCapacityPacketOutputSchema, deriveCapitalChartSeries, evaluateMdTest, financingComparisonPacketOutputSchema, investmentDecisionPacketOutputSchema, type CapitalMdTestGates} from "@offroad/financial-model";
 import type {ExecutionRevision, ExecutionRevisionState} from "./revision";
@@ -93,6 +98,14 @@ export type WorkExecutionView = {
       receivablesFunding?: ReceivablesFundingResultBlocksView | null;
       /** The quarter close carried into the weekly cash and the covenant test (ficha C54). */
       quarterUpdate?: QuarterUpdateResultBlocksView | null;
+      /** The folder inventory with versions, findings and gaps by purpose (ficha C09). */
+      documentFolder?: DocumentFolderResultBlocksView | null;
+      /** A received proposal against the use, the cash, the limits and the price (ficha C01). */
+      receivedProposal?: ReceivedProposalResultBlocksView | null;
+      /** The financing paths on one basis (the 2027 plan of ficha C32). */
+      financingPaths?: FinancingPathsResultBlocksView | null;
+      /** The board's capital structure discussion (ficha C47). */
+      boardMaterial?: BoardMaterialResultBlocksView | null;
       revision: {revisionNo: number; recordedAt: string; freshness: "current" | "stale" | "unknown"} | null};
 };
 export type WorkExecutionListItem = {executionId: string; createdAt: string; state: WorkExecutionState; outcome: string | null; reason: string | null; purpose: string | null};
@@ -193,6 +206,31 @@ export function readQuarterUpdateResult(canonicalResult: string): QuarterUpdateR
     return parsed.success ? readQuarterUpdatePacketBlocks(quarterUpdatePacketBlocks(parsed.data as unknown as QuarterUpdatePacketLike)) : null;
   } catch { return null; }
 }
+
+/** The committed bytes of a folder inventory, read through the same blocks its revision carries. */
+export function readDocumentFolderResult(canonicalResult: string): DocumentFolderResultBlocksView | null {
+  try {
+    const parsed = documentFolderInventoryPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readDocumentFolderPacketBlocks(documentFolderPacketBlocks(parsed.data as unknown as DocumentFolderPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a received proposal reading, read through the same blocks its revision carries. */
+export function readReceivedProposalResult(canonicalResult: string): ReceivedProposalResultBlocksView | null {
+  try {
+    const parsed = receivedProposalPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readReceivedProposalPacketBlocks(receivedProposalPacketBlocks(parsed.data as unknown as ReceivedProposalPacketLike)) : null;
+  } catch { return null; }
+}
+
+/** The committed bytes of a board capital discussion, read through the same blocks its revision carries. */
+export function readBoardMaterialResult(canonicalResult: string): BoardMaterialResultBlocksView | null {
+  try {
+    const parsed = boardCapitalDiscussionPacketOutputSchema.safeParse(JSON.parse(canonicalResult));
+    return parsed.success ? readBoardMaterialPacketBlocks(boardMaterialPacketBlocks(parsed.data as unknown as BoardMaterialPacketLike)) : null;
+  } catch { return null; }
+}
+export {readFinancingPathsResult};
 
 function packetView(data: PacketOutput): WorkExecutionPacket {
   const d = data.decision;
@@ -301,7 +339,9 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
       : revision.kind === "debt_table" ? {debtTable: revision.debtTable} : revision.kind === "covenant_headroom" ? {covenantHeadroom: revision.covenantHeadroom}
       : revision.kind === "weekly_cash" ? {weeklyCash: revision.weeklyCash}
       : revision.kind === "operating_projection" ? {operatingProjection: revision.operatingProjection} : revision.kind === "projection_challenge" ? {projectionChallenge: revision.projectionChallenge}
-      : revision.kind === "receivables_funding" ? {receivablesFunding: revision.receivablesFunding} : revision.kind === "quarter_update" ? {quarterUpdate: revision.quarterUpdate} : {};
+      : revision.kind === "receivables_funding" ? {receivablesFunding: revision.receivablesFunding} : revision.kind === "quarter_update" ? {quarterUpdate: revision.quarterUpdate}
+      : revision.kind === "document_folder" ? {documentFolder: revision.documentFolder} : revision.kind === "received_proposal" ? {receivedProposal: revision.receivedProposal}
+      : revision.kind === "financing_paths" ? {financingPaths: revision.financingPaths} : revision.kind === "board_material" ? {boardMaterial: revision.boardMaterial} : {};
     result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: null, marker: null,
       mdTest: null, decisiveNumbers: null, ...view,
       revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
@@ -324,9 +364,14 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
     const projectionChallenge = before || operatingProjection ? null : readProjectionChallengeResult(r.result.canonicalResult);
     const receivablesFunding = before || operatingProjection || projectionChallenge ? null : readReceivablesFundingResult(r.result.canonicalResult);
     const quarterUpdate = before || operatingProjection || projectionChallenge || receivablesFunding ? null : readQuarterUpdateResult(r.result.canonicalResult);
+    const lote3 = before || operatingProjection || projectionChallenge || receivablesFunding || quarterUpdate;
+    const documentFolder = lote3 ? null : readDocumentFolderResult(r.result.canonicalResult);
+    const receivedProposal = lote3 || documentFolder ? null : readReceivedProposalResult(r.result.canonicalResult);
+    const financingPaths = lote3 || documentFolder || receivedProposal ? null : readFinancingPathsResult(r.result.canonicalResult);
+    const boardMaterial = lote3 || documentFolder || receivedProposal || financingPaths ? null : readBoardMaterialResult(r.result.canonicalResult);
     result = {withheld: false, source: "packet", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: data ? packetView(data) : null, marker,
       mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, investment, comparison, capacity, debtTable, covenantHeadroom, weeklyCash,
-      operatingProjection, projectionChallenge, receivablesFunding, quarterUpdate, revision: null};
+      operatingProjection, projectionChallenge, receivablesFunding, quarterUpdate, documentFolder, receivedProposal, financingPaths, boardMaterial, revision: null};
   }
   return {executionId: r.executionId, workId: r.workId, requestId: r.requestId, processingRunId: r.processingRunId, createdAt: r.createdAt,
     state: workExecutionState({withheld: result?.withheld, outcome: r.result?.outcome ?? null, jobStatus: r.job?.status ?? null}),

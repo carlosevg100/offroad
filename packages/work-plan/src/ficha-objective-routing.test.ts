@@ -1,9 +1,9 @@
 import {describe, expect, it} from "vitest";
 import {compileAdvisorStartingPlan} from "./advisor-starting-plan";
 import {inferCapitalProjectJob} from "./job-inference";
-import {compileObjectiveToPlan, lote3FichaExceptions, objectiveToPlanDecisionSchema} from "./objective-plan";
+import {compileObjectiveToPlan, lote3FichaExceptions, lote4FichaExceptions, objectiveToPlanDecisionSchema} from "./objective-plan";
 
-// Canonical paraphrases from outputs/fichas-ensaio-2026-10/{C02,C03,C04,C32}/corpo.html.
+// Canonical paraphrases from outputs/fichas-ensaio-2026-10/{C02,C03,C04,C09,C32,C47}/corpo.html and the C01 procedure.
 // These IDs belong to the fichas, not to the historical coverage catalogue or TaskSpecs.
 const fichas = [
   {id: "C02", kind: "proposal_comparison", messages: [
@@ -66,25 +66,53 @@ const fichas = [
     "Saiu o balancete de setembro, atualiza a projeção e o covenant.",
     "O que mudou com o resultado do terceiro trimestre?",
   ]},
-  {id: "C32", kind: "capital_strategy", messages: [
+  {id: "C32", kind: "financing_paths", messages: [
     "Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?",
     "Vence muita coisa ano que vem e ainda quero fazer o investimento. O que eu faço?",
     "Como financio a expansão sem apertar o caixa?",
     "Quero alongar a dívida e fazer o capex. Por onde começo?",
     "Não quero recomendação ainda, só me mostre os caminhos para a dívida de 2027.",
   ]},
+  {id: "C01", kind: "received_proposal", messages: [
+    "O Itaú mandou proposta de CCB de R$ 30 milhões, três anos, CDI mais 2,1, com cessão fiduciária de recebíveis. É boa?",
+    "Recebi uma proposta do Itaú, é boa?",
+    "O banco mandou um term sheet. Vale a pena?",
+    "Devo aceitar a proposta do Itaú?",
+    "O gerente do Santander ofereceu uma linha de giro a CDI mais 1,8. O que você acha?",
+  ]},
+  {id: "C09", kind: "document_folder", messages: [
+    "Joguei aqui a pasta do último ano. Organiza e me diz o que tem.",
+    "Só organiza, não analisa ainda.",
+    "O que tem nesses arquivos?",
+    "Organiza o material para discutirmos a dívida.",
+    "Subi tudo que o financeiro tinha. Dá uma olhada e me fala o que falta.",
+  ]},
+  {id: "C47", kind: "board_capital_discussion", messages: [
+    "Conselho na quarta. Prepara a discussão de estrutura de capital.",
+    "Faz uma página para o conselho com o plano de financiamento.",
+    "Prepara a discussão de estrutura de capital para o conselho de quarta",
+    "Monta o material do conselho sobre a estrutura de capital.",
+    "Monta o deck do conselho com o plano de financiamento.",
+  ]},
 ] as const;
 
 import originMainRouting from "./routing-regression.origin-main.json";
 import foldedProbes from "./routing-regression.folded-probes.origin-main.json";
+import lote3MainRouting from "./routing-regression.lote3-main.json";
+import lote4Probes from "./routing-regression.folded-probes.lote4.json";
+import lote4VetoesMain from "./routing-regression.lote4-vetoes-main.json";
+import {lote4AddressedRequests, lote4OwnIntroducedRequests, lote4VetoFamily} from "./lote4-veto-family";
 
 describe("canonical ficha objective routing", () => {
   // The replays compile thousands of plans; on shared CI runners they exceed the default 5 s, so each has 60 s.
   // Every routing test phrase of lotes 1 and 2 (all strings of the work-plan tests at origin/main), with and
   // without attachments, keeps the kind origin/main gave it: lote 3 never takes an existing route.
   it("keeps every lote 1 and lote 2 routing phrase on its origin/main kind", () => {
+    // Lote 4 takes only its enumerated ficha phrasings, the five C32 openings among them.
+    const fold = (m: string) => m.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, " ");
     const changed = (originMainRouting as {message: string; hasAttachments: boolean; kind: string}[])
-      .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind);
+      .filter((row) => compileObjectiveToPlan({message: row.message, hasAttachments: row.hasAttachments}).objectiveKind !== row.kind)
+      .filter((row) => !lote4FichaExceptions.some((e) => e.from === row.kind && e.pattern.test(fold(row.message))));
     expect(changed).toEqual([]);
   }, 60_000);
   // Each signal of the existing folded patterns (risk matrix, material, operation review, board, meeting, market,
@@ -214,9 +242,201 @@ describe("canonical ficha objective routing", () => {
     const rows = [...originMainRouting, ...foldedProbes] as {message: string; hasAttachments: boolean; kind: string}[];
     const departures = rows.filter((r) => r.kind !== "ambiguous" && r.kind !== "documents_to_case")
       .filter((r) => compileObjectiveToPlan({message: r.message, hasAttachments: r.hasAttachments}).objectiveKind !== r.kind);
-    const allowed = departures.filter((r) => lote3FichaExceptions.some((e) => e.from === r.kind && e.pattern.test(fold(r.message))));
+    const allowed = departures.filter((r) => [...lote3FichaExceptions, ...lote4FichaExceptions].some((e) => e.from === r.kind && e.pattern.test(fold(r.message).replace(/\s+/g, " "))));
     expect(departures).toEqual(allowed);
+    // Lote 4: only the five C32 openings, each with and without attachments, leave the route origin/main gives them.
+    expect(departures.map((r) => [r.message, r.kind, compileObjectiveToPlan(r).objectiveKind]).sort()).toEqual(
+      fichas.find((f) => f.id === "C32")!.messages.flatMap((m) => [[m, "capital_strategy", "financing_paths"], [m, "capital_strategy", "financing_paths"]]).sort());
+  });
+  // Lote 4 replays: every string of the work-plan tests at origin/main after lote 3 (those not already in the replay
+  // above) and each folded-pattern signal of the probes joined to a lote 4 object, with and without attachments, keep
+  // the kind origin/main gave them whenever it gave a specific one; only the enumerated lote 4 ficha phrasings may leave it.
+  it("keeps every lote 3 routing phrase and every lote 4 probe on its origin/main route", () => {
+    const fold = (m: string) => m.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, " ");
+    const rows = [...lote3MainRouting, ...lote4Probes] as {message: string; hasAttachments: boolean; kind: string}[];
+    const departures = rows.filter((r) => r.kind !== "ambiguous" && r.kind !== "documents_to_case")
+      .filter((r) => compileObjectiveToPlan({message: r.message, hasAttachments: r.hasAttachments}).objectiveKind !== r.kind)
+      .filter((r) => !lote4FichaExceptions.some((e) => e.from === r.kind && e.pattern.test(fold(r.message))));
     expect(departures).toEqual([]);
+  }, 60_000);
+  it.each([
+    ["Precisamos financiar a linha nova de embalagem e reduzir a pressão dos vencimentos dos próximos dois anos. Que caminhos fazem sentido?", "capital_strategy", "financing_paths"],
+    ["Vence muita coisa ano que vem e ainda quero fazer o investimento. O que eu faço?", "capital_strategy", "financing_paths"],
+    ["Como financio a expansão sem apertar o caixa?", "capital_strategy", "financing_paths"],
+    ["Quero alongar a dívida e fazer o capex. Por onde começo?", "capital_strategy", "financing_paths"],
+    ["Não quero recomendação ainda, só me mostre os caminhos para a dívida de 2027.", "capital_strategy", "financing_paths"],
+    ["O que tem nesses arquivos?", "factual_question", "document_folder"],
+    ["Organiza o material para discutirmos a dívida.", "capital_strategy", "document_folder"],
+    ["Monta o material do conselho sobre a estrutura de capital.", "material_preparation", "board_capital_discussion"],
+    ["Monta o deck do conselho com o plano de financiamento.", "material_preparation", "board_capital_discussion"],
+    ["Prepare o material para o conselho sobre a estrutura de capital.", "material_preparation", "board_capital_discussion"],
+  ] as const)("enumerated lote 4 ficha exception: %s (origin/main %s)", (message, from, to) => {
+    const folded = message.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    expect(lote4FichaExceptions.filter((e) => e.from === from && e.to === to && e.pattern.test(folded))).toHaveLength(1);
+    for (const hasAttachments of [false, true]) expect(compileObjectiveToPlan({message, hasAttachments}).objectiveKind).toBe(to);
+  });
+  // Independent reviews, rounds 4 to 9: the lote 4 vetoes are conservative (lote4-request.ts): only a request addressed to
+  // the advisor promotes, and a negation, a refusal or a request for guidance anywhere in the message keeps origin/main's route. The reviewer's three phrasings and
+  // the whole family generated by combination (each refusal and each request for guidance, over every request verb and
+  // object of C47, C01 and C09), with and without files, keep the route origin/main gave them
+  // (routing-regression.lote4-vetoes-main.json, recorded from origin/main's router); none takes a lote 4 kind.
+  it("keeps every refusal and every request for guidance of a lote 4 action on its origin/main route", () => {
+    const reviewed = ["Não estou pedindo que prepare a discussão da dívida para o conselho", "Como avaliar essa proposta de crédito do banco?",
+      "Me diga como avaliar essa proposta de crédito do banco",
+      // Round 5: a refusal after the action, and one between its parts.
+      "Preparar a discussão da dívida para o conselho não é o que eu quero", "Avaliar essa proposta de crédito do banco não é o que eu pedi",
+      "Não é necessário, por enquanto, preparar a discussão da dívida para o conselho",
+      // Round 6: the action of someone else (a factual question, a report), and a direct refusal.
+      "Quando o banco vai avaliar essa proposta de crédito que recebemos?", "A diretoria vai preparar a discussão da dívida para o conselho.",
+      "Recuso avaliar essa proposta de crédito do banco.", "Desista de preparar a discussão da dívida para o conselho.",
+      // Round 7: a modal whose subject is someone else, and an evaluation reported from someone else.
+      "Quando o banco pode avaliar essa proposta de crédito que recebemos?", "A diretoria pode preparar a discussão da dívida para o conselho.",
+      "O banco disse que a proposta de crédito que recebemos é boa.",
+      // Round 8: a wanting verb after a third-party subject, and a modal addressed to "você" inside reported speech.
+      "O banco gostaria de avaliar essa proposta de crédito que recebemos.", "A diretoria gostaria de preparar a discussão da dívida para o conselho.",
+      "O banco disse que você pode avaliar essa proposta de crédito que recebemos.",
+      // Round 9: speech reported with a colon.
+      "O banco disse: pode avaliar essa proposta de crédito que recebemos.", "A diretoria pediu: prepare a discussão da dívida para o conselho."];
+    const rows = lote4VetoesMain as {message: string; hasAttachments: boolean; kind: string}[];
+    const family = [...new Set([...reviewed, ...lote4VetoFamily()])];
+    expect(rows.map((r) => r.message).filter((m, i, all) => all.indexOf(m) === i)).toEqual(family);
+    expect(rows.map((r) => `${r.message}|${r.hasAttachments}`).sort()).toEqual(family.flatMap((m) => [`${m}|false`, `${m}|true`]).sort());
+    const lote4Kinds = ["board_capital_discussion", "received_proposal", "document_folder", "financing_paths"];
+    const departures = rows.filter((r) => compileObjectiveToPlan({message: r.message, hasAttachments: r.hasAttachments}).objectiveKind !== r.kind);
+    expect(departures).toEqual([]);
+    expect(rows.filter((r) => lote4Kinds.includes(r.kind))).toEqual([]);
+  }, 60_000);
+
+  // Round 7: a request addressed to the advisor still promotes: an imperative, a modal that opens the clause or has
+  // "você" as its subject, a first person request, and the ficha's direct question.
+  it.each([
+    ["Prepare a discussão da dívida para o conselho", false, "board_capital_discussion"],
+    ["Prepare a discussão da dívida para o conselho", true, "board_capital_discussion"],
+    ["Avalie essa proposta de crédito do banco que o Itaú mandou", false, "received_proposal"],
+    ["Avalie essa proposta de crédito do banco que o Itaú mandou", true, "received_proposal"],
+    ["O Itaú mandou essa proposta de CCB, é boa?", false, "received_proposal"],
+    ["O Itaú mandou essa proposta de CCB, é boa?", true, "received_proposal"],
+    ["Quero que você prepare a discussão da dívida para o conselho", false, "board_capital_discussion"],
+    ["Quero que você prepare a discussão da dívida para o conselho", true, "board_capital_discussion"],
+    ["Pode avaliar a proposta de crédito que o Bradesco mandou?", false, "received_proposal"],
+    ["Pode avaliar a proposta de crédito que o Bradesco mandou?", true, "received_proposal"],
+    ["Você consegue preparar a discussão da dívida para o conselho?", false, "board_capital_discussion"],
+    ["Você consegue preparar a discussão da dívida para o conselho?", true, "board_capital_discussion"],
+    ["Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?", false, "received_proposal"],
+    ["Por favor, pode me ajudar a avaliar a proposta de crédito do Itaú?", true, "received_proposal"],
+    ["Conselho na quinta, prepare a discussão da dívida.", false, "board_capital_discussion"],
+    ["Conselho na quinta, prepare a discussão da dívida.", true, "board_capital_discussion"],
+    ["Preciso preparar a discussão da dívida para o conselho", false, "board_capital_discussion"],
+    ["Preciso preparar a discussão da dívida para o conselho", true, "board_capital_discussion"],
+    ["O Itaú mandou proposta de CCB de R$ 30 milhões, três anos, CDI mais 2,1, com cessão fiduciária de recebíveis. É boa?", false, "received_proposal"],
+    ["O Itaú mandou proposta de CCB de R$ 30 milhões, três anos, CDI mais 2,1, com cessão fiduciária de recebíveis. É boa?", true, "received_proposal"],
+    ["Recebi uma proposta de CCB do Bradesco. Vale a pena?", false, "received_proposal"],
+    ["Recebi uma proposta de CCB do Bradesco. Vale a pena?", true, "received_proposal"]
+  ] as const)("lote 4 request addressed to the advisor promotes: %s (attachments %s)", (message, hasAttachments, kind) => {
+    expect(compileObjectiveToPlan({message, hasAttachments}).objectiveKind).toBe(kind);
+  });
+
+  // Round 8: every request addressed to the advisor that the family reports from a third party promotes when asked
+  // directly, with and without files.
+  // Round 9: a first person introducer ("Eu disse:", "Falei:") keeps the request the person's own.
+  it.each([...lote4AddressedRequests, ...lote4OwnIntroducedRequests].flatMap((m) => [[m, false], [m, true]] as const))("addressed request promotes: %s (attachments %s)", (message, hasAttachments) => {
+    expect(["board_capital_discussion", "received_proposal"]).toContain(compileObjectiveToPlan({message, hasAttachments}).objectiveKind);
+  });
+
+  // Round 10: a quote after a colon or a dash ends the reported segment at its closing quote. A request after the quote
+  // is the person's and promotes; the same request inside the quote does not, for every quote style.
+  const quoteStyles: [string, string][] = [['"', '"'], ["'", "'"], ["“", "”"], ["‘", "’"], ["«", "»"]];
+  const lote4Kinds = ["board_capital_discussion", "received_proposal", "document_folder", "financing_paths"];
+  it.each(quoteStyles.flatMap(([o, c]) => [":", " \u2014"].flatMap((lead) => [false, true].map((a) => [o, c, lead, a] as const))))(
+    "quoted report %s%s after%s: only what follows the quote counts (attachments %s)", (o, c, lead, hasAttachments) => {
+      const after = `O diretor escreveu${lead} ${o}Os documentos estão prontos${c}. Prepare a discussão da dívida para o conselho.`;
+      const inside = `O diretor escreveu${lead} ${o}Prepare a discussão da dívida para o conselho${c}.`;
+      const proposal = `O gerente disse${lead} ${o}A proposta chegou ontem${c}. Pode avaliar a proposta de crédito que o Bradesco mandou?`;
+      const proposalInside = `O gerente disse${lead} ${o}Pode avaliar a proposta de crédito que o Bradesco mandou?${c}`;
+      expect(compileObjectiveToPlan({message: after, hasAttachments}).objectiveKind).toBe("board_capital_discussion");
+      expect(compileObjectiveToPlan({message: proposal, hasAttachments}).objectiveKind).toBe("received_proposal");
+      expect(lote4Kinds).not.toContain(compileObjectiveToPlan({message: inside, hasAttachments}).objectiveKind);
+      expect(lote4Kinds).not.toContain(compileObjectiveToPlan({message: proposalInside, hasAttachments}).objectiveKind);
+    });
+
+  // The neighbours of the lote 4 methods keep the route origin/main gives them (plain, with attachments).
+  it.each([
+    // C01: several proposals, a comparison, a concept, a non-financing proposal, a bare proposal, only reading the term sheet.
+    ["Recebemos duas propostas, qual a melhor?", "proposal_comparison", "proposal_comparison"],
+    ["Compare a proposta do Itaú com a do Bradesco", "operation_review", "operation_review"],
+    ["O que é uma CCB?", "factual_question", "factual_question"],
+    ["Recebi uma proposta de compra da empresa, é boa?", "factual_question", "documents_to_case"],
+    ["A proposta é boa?", "factual_question", "documents_to_case"],
+    ["Organiza o term sheet do Itaú", "ambiguous", "documents_to_case"],
+    // C09: a source index, a data room for the bank, a diligence list, the debt table, one contract, an agenda.
+    ["Organiza a pasta de documentos", "information_organization", "information_organization"],
+    ["Organiza esses arquivos da Aurora por tipo e período", "information_organization", "information_organization"],
+    ["Organize os documentos do data room para o banco", "information_organization", "information_organization"],
+    ["Quais documentos faltam para a diligência?", "factual_question", "documents_to_case"],
+    ["Organiza a tabela de dívida", "debt_table", "debt_table"],
+    ["Lê esse contrato e me diz as cláusulas", "ambiguous", "documents_to_case"],
+    ["Organiza minha agenda", "ambiguous", "documents_to_case"],
+    // C32: any other capital strategy request, capacity, a project's return, formal drafts, a what-if alone.
+    ["Preciso financiar a fábrica nova. Qual o melhor caminho?", "capital_strategy", "capital_strategy"],
+    ["Quanto de dívida cabe para a linha nova?", "debt_capacity", "debt_capacity"],
+    ["A linha de embalagem se paga?", "factual_question", "documents_to_case"],
+    ["Prepare a decisão de estrutura de capital com as minutas para o banco.", "capital_strategy", "capital_strategy"],
+    ["Uma debênture de R$ 80 milhões me parece grande para a gente. E se eu só alongar o Bradesco com ele mesmo, por mais dois anos?", "capital_strategy", "capital_strategy"],
+    // C47: a decision brought to the board, a memo, an answer to a board question, the debt table, material without the capital topic.
+    ["Preciso levar ao conselho uma decisão sobre estrutura de capital e alternativas.", "board_decision", "board_decision"],
+    ["Prepara o memorando do trimestre para o conselho.", "material_preparation", "material_preparation"],
+    ["Prepara a resposta para o conselho sobre por que pagamos mais que a Serra Verde.", "relative_debt_cost", "relative_debt_cost"],
+    ["Preciso do endividamento atualizado para o conselho.", "debt_table", "debt_table"],
+    ["Monta o material do conselho com a tabela de dívida.", "debt_table", "debt_table"],
+    ["Monta o material do conselho.", "material_preparation", "material_preparation"],
+    ["Monta o material do conselho sobre a safra.", "material_preparation", "material_preparation"],
+    ["Prepare a reunião com o banco sobre a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Prepara a pauta do conselho sobre a política de remuneração", "board_decision", "board_decision"],
+    // Independent review, round 2: one set of vetoes for the four lote 4 promotions (refusing the action or the need,
+    // avoiding or dispensing with it, asking to understand it) keeps the route origin/main gives, with and without files.
+    ["Não preciso preparar a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Dispense preparar a discussão de dívida para o conselho", "board_decision", "board_decision"],
+    ["Me explique como avaliar essa proposta de crédito do banco", "factual_question", "documents_to_case"],
+    ["Evite organizar o material", "ambiguous", "documents_to_case"],
+    ["Não quero que você organize a pasta", "information_organization", "information_organization"],
+    ["Dispense a organização da pasta", "ambiguous", "documents_to_case"],
+    ["Não precisa avaliar a proposta do Itaú, é boa?", "factual_question", "documents_to_case"],
+    ["Evite avaliar a proposta do banco. Vale a pena?", "factual_question", "documents_to_case"],
+    ["O que significa avaliar uma proposta do banco? É boa?", "factual_question", "factual_question"],
+    ["Não vamos financiar a linha nova e reduzir os vencimentos", "capital_strategy", "capital_strategy"],
+    ["Explique como financio a expansão sem apertar o caixa?", "capital_strategy", "capital_strategy"],
+    // Independent review, round 3: the whole family (wishing, wanting, intending it, negated; asking how one should do it,
+    // to be taught, oriented or shown the steps) keeps origin/main's route, with and without files.
+    ["Não desejo preparar a discussão de dívida para o conselho", "board_decision", "board_decision"],
+    ["Não gostaria de preparar a discussão de dívida para o conselho", "board_decision", "board_decision"],
+    ["Não pretendo organizar a pasta agora", "information_organization", "information_organization"],
+    ["Quero saber como avaliar essa proposta de crédito do banco", "factual_question", "documents_to_case"],
+    ["Gostaria de saber como avaliar a proposta do Itaú", "factual_question", "documents_to_case"],
+    ["Como devo avaliar essa proposta de crédito do banco?", "factual_question", "documents_to_case"],
+    ["Como posso preparar a discussão da dívida para o conselho?", "board_decision", "board_decision"],
+    ["Ensine como preparar a discussão da dívida para o conselho", "board_decision", "board_decision"],
+    ["Me ensine a organizar a pasta de documentos", "information_organization", "information_organization"],
+    ["Me oriente sobre como avaliar a proposta do banco", "factual_question", "documents_to_case"],
+    ["Me explique como preparar a discussão de dívida para o conselho", "board_decision", "board_decision"],
+    ["Qual a melhor forma de organizar a pasta?", "information_organization", "information_organization"],
+    ["Como se avalia uma proposta de crédito do banco?", "factual_question", "documents_to_case"],
+    ["Passo a passo para buscar financiamento para a expansão", "capital_strategy", "capital_strategy"],
+    ["Como devo financiar a expansão sem apertar o caixa?", "capital_strategy", "capital_strategy"],
+    ["Não desejo buscar financiamento para a expansão", "capital_strategy", "capital_strategy"],
+    ["Quero aprender como organizar os documentos da pasta", "information_organization", "information_organization"],
+    ["Nunca monte o material do conselho sobre a estrutura de capital.", "material_preparation", "material_preparation"],
+    ["Evite fazer a página do conselho com o plano de financiamento", "board_decision", "board_decision"],
+    ["Não organiza a pasta, só me diz o que tem nos arquivos", "information_organization", "information_organization"],
+    // Independent review, round 1: a refusal or a request to understand keeps the board decision.
+    ["Não prepare a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Explique como preparar a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Não quero que você prepare a discussão de estrutura de capital para o conselho", "board_decision", "board_decision"],
+    ["Evite preparar o material do conselho sobre o financiamento", "material_preparation", "material_preparation"],
+    ["Me explica como montar a pauta do conselho sobre a dívida", "board_decision", "board_decision"],
+    ["Quero entender como fazer a página do conselho com o plano de financiamento", "board_decision", "board_decision"],
+  ] as const)("lote 4 neighbour keeps its origin/main route: %s", (message, plain, attached) => {
+    expect(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind).toBe(plain);
+    expect(compileObjectiveToPlan({message, hasAttachments: true}).objectiveKind).toBe(attached);
   });
   it.each([
     ["Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?", "capital_strategy", "receivables_funding"],
@@ -575,7 +795,7 @@ describe("canonical ficha objective routing", () => {
       expect(entry.plan.taskSpecs.map((task) => task.id)).not.toEqual(["Q01", "Q02", "Q03"]);
       expect(inferCapitalProjectJob({message, hasAttachments}).job).toBe(plan.entryJob);
       expect(plan.outputTerminal).not.toBe("preliminary_case");
-      expect(plan.outputTerminal).not.toBe("board_decision_pack");
+      if (ficha.id !== "C47") expect(plan.outputTerminal).not.toBe("board_decision_pack");
       expect(plan.taskGraph.tasks.every((task) => task.effect !== "external")).toBe(true);
       expect(objectiveToPlanDecisionSchema.safeParse(plan).success).toBe(true);
     });

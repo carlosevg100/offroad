@@ -40,6 +40,12 @@ export const releasedMethodReferenceDataKeys: Readonly<Record<string, readonly s
   "challenge-financial-projection@2026.10.26-v1": [],
   "monetize-receivables-for-working-capital@2026.10.26-v1": [],
   "update-after-quarter-close@2026.10.26-v1": [],
+  // Lote 4 reads only the adopted basis (and, for the board material and the folder update, completed results of the
+  // same work); the credit IOF, calendars, stress cases and conventions are adopted premises, never reference data.
+  "organize-document-folder@2026.10.27-v1": [],
+  "evaluate-received-proposal@2026.10.27-v1": [],
+  "evaluate-financing-paths@2026.10.27-v1": [],
+  "prepare-board-capital-discussion@2026.10.27-v1": [],
 };
 
 export function referenceDataKeysOf(method: MethodIdentity): readonly string[] | null {

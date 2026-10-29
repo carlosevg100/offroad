@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "evaluate-received-proposal-2026.10.27-v1",
+    "artifactHash": "9e8d6f377fd478e85acf748f5e7059b553d4fa45dc97f3fb4dc07fd48644a812",
+    "profileFingerprint": "05c14cc80307d3a0a1fed190ce86f594923fb245fedb616d96b85dea8d0d2bcf"
+  },
+  "subjectCommit": "476332feaf270b686fc6c007578e8a48e69fea1f",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-28T19:14:10.022Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0",
+    "manifestFileHash": "a9100642e3e293bc30afe1f1bcfdac8b91d6bc9a970f7cf96ee144e40e63b1f6",
+    "canonicalProfileTextSha256": "72f0f9c45b8f647b88d918c3cd75d83df18e7525149a92e5fed8759e4a7d701c",
+    "canonicalProfileTextBytes": 1446,
+    "reviewedWorktreeHead": "476332feaf270b686fc6c007578e8a48e69fea1f",
+    "originMainHead": "ee5ca744ff3c45461425e295d1b9d5314ef85dd6",
+    "checksPerformed": [
+      "adapterReviewSchema lido primeiro. Blobs e hashes do adaptador e do serializador obtidos em HEAD; último commit do serializador identificado com git log. Worktree limpo antes e depois; nenhum arquivo rastreado alterado e nenhum banco acessado.",
+      "git merge-base --is-ancestor confirmou sourceCommit ee5ca744ff3c45461425e295d1b9d5314ef85dd6 como ancestral de HEAD. Os 450 executorSources conferem com os bytes nesse commit e no snapshot; pins do compilador, evidências e parseOnlySources também conferem.",
+      "SHA-256 do snapshot recalculado: e99cb1dddc4c969271c497f124dae87d8770131c896cebf607e85b7eed906d54. Manifesto no sourceCommit, HEAD, worktree e snapshot idêntico; manifestFileHash a9100642e3e293bc30afe1f1bcfdac8b91d6bc9a970f7cf96ee144e40e63b1f6 confirmado. deriveExecutionProfile validou o manifestHash pelo conteúdo.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs terminou com exit 0. Duas reconstruções adicionais em memória produziram bytes idênticos entre si e ao CJS instalado: 1757798 bytes, SHA-256 9e8d6f377fd478e85acf748f5e7059b553d4fa45dc97f3fb4dc07fd48644a812.",
+      "apps/document-worker/src/released-methods.generated.ts passou pela comparação integral do build com os locks. Verificação adicional confirmou uma única entrada da release, com platformReleaseId, methodId, methodVersion, manifestHash e artifactHash corretos.",
+      "deriveExecutionProfile e executionCanonicalText produziram texto idêntico byte a byte a /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote4-2026-10-27/perfil/profile-evaluate-received-proposal.txt: 1446 bytes UTF-8, SHA-256 72f0f9c45b8f647b88d918c3cd75d83df18e7525149a92e5fed8759e4a7d701c.",
+      "Fingerprint interno recalculado independentemente sobre o perfil sem fingerprint: 05c14cc80307d3a0a1fed190ce86f594923fb245fedb616d96b85dea8d0d2bcf, igual ao lock. grantsExecution=false, custo e chamadas de modelo zero, tools=[], allowedEffects=[read_only]; manifesto com maximumEffect=none.",
+      "Exatamente um executor no manifesto: @offroad/financial-model#prepareReceivedProposalPacket, versão 2026.10.27-v1; selectedComponentId=received-proposal.packet; duração máxima 61000 ms. Identidades conferem nas tabelas de adaptação do build e do worker.",
+      "Em apps/document-worker: npx vitest run src/released-lote4-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts. Exit 0; 4 arquivos e 24 testes aprovados; duração 36.48 s. Transporte usa mocks, sem banco.",
+      "supabase/migrations/20261028120400_lote4_payload_provenance.sql: linha 26 recusa método nulo; linhas 90 a 92 vinculam evaluate-received-proposal à versão 2026.10.27-v1, manifestHash 4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0 e schema received-proposal-packet-input.v1. Arquivo sem newline final; MD5 49a67c3d64dcd53dff32ea12be4b6073.",
+      "Comparação independente com 20261027010426_lote3_quarter_update_priors.sql: removidas somente as 28 linhas exclusivas do lote 4 e seus quatro métodos da lista, a função anterior é recuperada byte a byte. Os novos ramos são exclusivos desses métodos; capital, investimento e lotes 1, 2 e 3 preservam comportamento. Verificação estática, sem executar SQL.",
+      "Em packages/execution-request: npx vitest run src/lote4-payload-provenance-regression.test.ts terminou com exit 0; 1 arquivo e 3 testes aprovados. Confirmou preservação da função anterior, vínculos da publicação e recusa de método nulo.",
+      "JSON final validado com adapterReviewSchema.parse por comando node executado em packages/credit-playbook."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado tecnicamente no escopo revisado. Fontes fixadas, hashes, reconstrução determinística, identidade instalada, perfil canônico, política e vinculação SQL conferem. Os 24 testes do worker e os 3 testes de regressão da migração passaram. Nenhum arquivo rastreado foi alterado e nenhum banco foi acessado. Esta revisão não comprova registro ou implantação e não concede autorização de execução."
+}

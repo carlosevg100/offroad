@@ -28,7 +28,8 @@ begin
       last_error = coalesce(p_error, '{}'::jsonb)
   where id = job_row.id;
 
-  if not will_retry then
+  -- A folder reading job reads a file the document pipeline owns: its end never moves the file or the session.
+  if not will_retry and job_row.kind <> 'document_folder_reading' then
     update public.source_documents
     set processing_status = 'failed'
     where organization_id = job_row.organization_id
@@ -57,11 +58,13 @@ begin
       completed_at = case when pending = 0 then now() else completed_at end
   where organization_id = job_row.organization_id and id = job_row.processing_run_id;
 
-  if pending = 0 and failed > 0 and job_row.kind <> 'agent_operation_brief' then
+  -- Only the run the session follows may fail it; a job of another run (a folder reading among them) never does.
+  if pending = 0 and failed > 0 and job_row.kind not in ('agent_operation_brief', 'document_folder_reading') then
     update public.document_intake_sessions
     set status = 'failed'
     where organization_id = job_row.organization_id
       and id = job_row.intake_session_id
+      and (current_run_id is null or current_run_id = job_row.processing_run_id)
       and status = 'processing';
   end if;
 

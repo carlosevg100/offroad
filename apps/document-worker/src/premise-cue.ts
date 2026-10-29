@@ -18,15 +18,17 @@ export function asksOrExplains(message: string): boolean {
 
 /** The objectives of the premise methods: an answer that compiles to another one is that method's. */
 const premiseKinds = new Set(["proposal_comparison", "relative_debt_cost", "debt_capacity", "debt_table", "covenant_headroom", "weekly_cash",
-  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
+  "operating_projection", "projection_challenge", "receivables_funding", "quarter_update",
+  "document_folder", "received_proposal", "financing_paths", "board_capital_discussion"]);
 
 export type PremiseCueKind = "debt_capacity" | "debt_table" | "covenant_headroom" | "weekly_cash" | "operating_projection" | "projection_challenge" | "receivables_funding"
-  | "quarter_update";
-const cueKinds = new Set<string>(["debt_table", "covenant_headroom", "weekly_cash", "operating_projection", "projection_challenge", "receivables_funding", "quarter_update"]);
+  | "quarter_update" | "document_folder" | "received_proposal" | "financing_paths" | "board_capital_discussion";
+const cueKinds = new Set<string>(["debt_table", "covenant_headroom", "weekly_cash", "operating_projection", "projection_challenge", "receivables_funding", "quarter_update",
+  "document_folder", "received_proposal", "financing_paths", "board_capital_discussion"]);
 /** Asking only how to start a projection is answered with orientation; the first version is offered, not produced. */
 const orientationOnly = /\bcomo (?:comec\w*|inicio|iniciar)\b/;
-/** The premise step a message asks for on its own: the capacity cue first, then the router's lote 2 and
- * lote 3 objectives. A conceptual question routes elsewhere and asks for none. The quarter close's step
+/** The premise step a message asks for on its own: the capacity cue first, then the router's lote 2, lote 3
+ * and lote 4 objectives. A conceptual question routes elsewhere and asks for none. The quarter close's step
  * proposes only when the work has its prior completed weekly cash and covenant results. */
 export function premiseCueKind(message: string, hasAttachments: boolean): PremiseCueKind | null {
   const kind = compileObjectiveToPlan({message, hasAttachments}).objectiveKind;

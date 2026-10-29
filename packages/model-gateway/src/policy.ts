@@ -116,6 +116,14 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   receivables_funding_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 10_000, timeoutMs: 120_000},
   // The quarter close carries its lines, causes, stream updates and dependents: up to 16k output, like weekly cash.
   quarter_update_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
+  // The lote 4 premise extractions. A received proposal carries its readings, the company's calendar and its limits
+  // (16k, like weekly cash); the 2027 financing paths carry every instrument and path with the projection (24k); the
+  // folder's turn and the board material read only the conversation (4k), and each file of a folder is read alone (16k).
+  received_proposal_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
+  document_folder_reading: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 16_000, timeoutMs: 180_000},
+  document_folder_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 4_000, timeoutMs: 60_000},
+  financing_paths_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 24_000, timeoutMs: 240_000},
+  board_material_extraction: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 4_000, timeoutMs: 120_000},
   // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
   preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // The banker's synthesis of the signed objects: prose whose numbers are checked against the objects afterwards.

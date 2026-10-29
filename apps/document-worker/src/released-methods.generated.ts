@@ -90,5 +90,33 @@ export const releasedMethodArtifacts = [
     "methodVersion": "2026.10.26-v1",
     "manifestHash": "f09b5f5227bf74f31e6c4f65a132f990ea2fadfca86e9be0fedf9723fa8c5729",
     "artifactHash": "e4961292d9ef18e94e0d47011edd8a7f32788eb952e121e0c4f78e5169341f89"
+  },
+  {
+    "platformReleaseId": "organize-document-folder-2026.10.27-v1",
+    "methodId": "organize-document-folder",
+    "methodVersion": "2026.10.27-v1",
+    "manifestHash": "4378d63bf0b7465838fefe7e3463dbc755cd6c022803a60ac7fe32d368f75248",
+    "artifactHash": "464cbab8bb3ee9ccbf98b1800b66987601867ad0a110c5d53151887136b26f02"
+  },
+  {
+    "platformReleaseId": "evaluate-received-proposal-2026.10.27-v1",
+    "methodId": "evaluate-received-proposal",
+    "methodVersion": "2026.10.27-v1",
+    "manifestHash": "4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0",
+    "artifactHash": "9e8d6f377fd478e85acf748f5e7059b553d4fa45dc97f3fb4dc07fd48644a812"
+  },
+  {
+    "platformReleaseId": "evaluate-financing-paths-2026.10.27-v1",
+    "methodId": "evaluate-financing-paths",
+    "methodVersion": "2026.10.27-v1",
+    "manifestHash": "e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4",
+    "artifactHash": "9c30e707f5651248e691ad93100765bafcc0f6228c8e6c8ec99e24cb3ed556b5"
+  },
+  {
+    "platformReleaseId": "prepare-board-capital-discussion-2026.10.27-v1",
+    "methodId": "prepare-board-capital-discussion",
+    "methodVersion": "2026.10.27-v1",
+    "manifestHash": "48a38410ef49409ebd2ea5f017a25c498443c337da193ac4a0a931f843094a98",
+    "artifactHash": "824d7bb8163b45c43829b161568bb24f29e0dfed8f554ddcde400ba2fc156d38"
   }
 ] as const;

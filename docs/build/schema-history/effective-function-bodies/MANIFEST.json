@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-10-05T18:37:54Z",
-  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten",
+  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten; lote 4 bridge: private.bind_job_authority_v1() and private.worker_fail_job() identical to live production after the lote 4 migrations through 20261029000608 (folder reading waits)",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -45,7 +45,7 @@
     {
       "signature": "private.bind_job_authority_v1()",
       "file": "private.bind_job_authority_v1().sql",
-      "sha256": "abbf6365d9a52feec8fc90eca2e602fb18c28c29bb3fa11d89a1677f6b27f89a"
+      "sha256": "6f74d7b9fad343df21ade0bf4e5cac4bca2b48e1eb5fa412b0f34cf8acc65fc1"
     },
     {
       "signature": "private.can_read_presentation_template_v1(uuid,uuid)",
@@ -445,7 +445,7 @@
     {
       "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
       "file": "private.worker_fail_job(uuid,text,jsonb,boolean,integer).sql",
-      "sha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4"
+      "sha256": "b62463ffba59630261833fbc79f84ba2b7408187f328a8d92dcd24ca8d7bc578"
     },
     {
       "signature": "private.worker_finalize_capital_s11_recipe_v1(uuid,text,uuid,uuid,jsonb,text,text,text,text,bigint,integer,text,text,boolean,text)",

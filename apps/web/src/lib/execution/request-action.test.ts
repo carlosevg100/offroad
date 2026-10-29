@@ -231,4 +231,12 @@ describe("capital execution request action", () => {
       ["quarter_update_priors_invalid", "invalid"], ["quarter_update_priors_method_denied", "invalid"]] as const)
       expect(executionRequestFailure({code: "42501", message}), message).toBe(error);
   });
+  it("names each refusal of the lote 4 prior results (board material sources, folder update)", () => {
+    for (const [message, error] of [["board_material_prior_rights_denied", "provenance_denied"], ["board_material_prior_source_unpinned", "provenance_denied"],
+      ["board_material_prior_fingerprint_mismatch", "stale"], ["board_material_prior_not_released", "prior_invalid"], ["board_material_prior_not_found", "prior_invalid"],
+      ["board_material_priors_invalid", "invalid"], ["document_folder_prior_input_mismatch", "stale"], ["board_material_prior_scale_mismatch", "stale"], ["document_folder_prior_not_completed", "prior_invalid"],
+      ["document_folder_prior_rights_denied", "provenance_denied"], ["document_folder_priors_invalid", "invalid"],
+      ["board_material_prior_manifest_mismatch", "prior_invalid"], ["document_folder_prior_manifest_mismatch", "prior_invalid"]] as const)
+      expect(executionRequestFailure({code: "42501", message}), message).toBe(error);
+  });
 });

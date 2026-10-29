@@ -38,6 +38,11 @@ export type TaskKind =
   | "projection_challenge_extraction"
   | "receivables_funding_extraction"
   | "quarter_update_extraction"
+  | "received_proposal_extraction"
+  | "document_folder_reading"
+  | "document_folder_extraction"
+  | "financing_paths_extraction"
+  | "board_material_extraction"
   | "preview_questions"
   | "preview_synthesis"
   | "baseline_generalist";

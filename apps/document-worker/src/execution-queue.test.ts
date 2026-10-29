@@ -14,7 +14,7 @@ function transport(data:unknown, error:unknown=null) {
 describe("execution queue transport",()=>{
   it("claims only installed compiled manifests, capital, investment, lote 1, lote 2 and lote 3, and treats an empty queue as idle",async()=>{
     const t=transport({claimed:false});expect(await t.queue.claim()).toBeNull();
-    expect(t.rpc).toHaveBeenCalledWith("worker_claim_execution_v1",{p_worker_token:"synthetic-worker-token",p_manifest_hashes:releasedMethodArtifacts.filter(r=>["prepare-capital-structure-decision","analyze-investment-project","compare-financing-proposals","analyze-relative-debt-cost","assess-debt-capacity","build-company-debt-table","measure-covenant-headroom","project-weekly-cash","build-operating-projection","challenge-financial-projection","monetize-receivables-for-working-capital","update-after-quarter-close"].includes(r.methodId)).map(r=>r.manifestHash)});
+    expect(t.rpc).toHaveBeenCalledWith("worker_claim_execution_v1",{p_worker_token:"synthetic-worker-token",p_manifest_hashes:releasedMethodArtifacts.filter(r=>["prepare-capital-structure-decision","analyze-investment-project","compare-financing-proposals","analyze-relative-debt-cost","assess-debt-capacity","build-company-debt-table","measure-covenant-headroom","project-weekly-cash","build-operating-projection","challenge-financial-projection","monetize-receivables-for-working-capital","update-after-quarter-close","organize-document-folder","evaluate-received-proposal","evaluate-financing-paths","prepare-board-capital-discussion"].includes(r.methodId)).map(r=>r.manifestHash)});
   });
   it("announces no more executors than the latest private.worker_claim_execution_v1 accepts",async()=>{
     const dir=fileURLToPath(new URL("../../../supabase/migrations/",import.meta.url));

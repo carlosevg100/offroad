@@ -1,0 +1,3193 @@
+[
+ {
+  "blockKey": "framing",
+  "kind": "section",
+  "content": {
+   "status": "partial",
+   "question": "Conselho na quarta. Prepara a discussão de estrutura de capital.",
+   "currency": "BRL",
+   "stage": "material",
+   "timeToAlign": true,
+   "daysBefore": 2,
+   "version": 2,
+   "materialFingerprint": "05036c05099fec8198a81c20db758dcabd0ecbe4e779a95f983f130e5c504614",
+   "priorVersionFingerprint": "cf37418d457ab5382f9367333242092cb9a0a3758655b9849eb17bad39b26ac6",
+   "agenda": {
+    "minutes": 45,
+    "minutesPerPage": 3,
+    "mainPages": 13,
+    "capacity": 15,
+    "fits": true
+   },
+   "allFiguresMatch": true,
+   "materialFacts": 94,
+   "materialFactsShown": true,
+   "verifiedNumbers": 192,
+   "priorVersionsKept": true,
+   "sentToThirdParties": false,
+   "presented": false
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "deliberations",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "linha",
+     "number": 1,
+     "title": "Linha de embalagem",
+     "text": "decidir o caminho da linha de embalagem, e enviar ao fornecedor o aviso para renegociar o contrato até 2/out",
+     "authority": "board",
+     "recommendationShown": false,
+     "deadlines": [
+      {
+       "id": "aviso",
+       "date": "2026-10-02",
+       "action": "enviar ao fornecedor o aviso para renegociar o contrato"
+      }
+     ]
+    },
+    {
+     "id": "safra",
+     "number": 2,
+     "title": "Capital de giro de 2026",
+     "text": "financiar o capital de giro começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out",
+     "authority": "board",
+     "recommendationShown": true,
+     "deadlines": [
+      {
+       "id": "adesao",
+       "date": "2026-10-16",
+       "action": "aderir aos programas"
+      }
+     ]
+    },
+    {
+     "id": "vencimentos",
+     "number": 3,
+     "title": "Vencimentos de 2027",
+     "text": "autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, com o plano alternativo apresentado no material, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
+     "authority": "board",
+     "recommendationShown": true,
+     "deadlines": [
+      {
+       "id": "sondagem",
+       "date": "2026-10-31",
+       "action": "concluir a sondagem"
+      },
+      {
+       "id": "rota",
+       "date": "2026-11-15",
+       "action": "decidir a rota"
+      }
+     ]
+    },
+    {
+     "id": "politica",
+     "number": 4,
+     "title": "Política de endividamento",
+     "text": "definir qual EBITDA mede o limite de 2,5x",
+     "authority": "board",
+     "recommendationShown": false,
+     "deadlines": []
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "outline",
+  "kind": "section",
+  "content": {
+   "narrative": [
+    "decisions",
+    "situation",
+    "constraint",
+    "topic",
+    "alternatives",
+    "recommendation",
+    "risk",
+    "what_changes",
+    "next_steps"
+   ],
+   "questions": []
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "pages",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "decisoes",
+     "number": 1,
+     "placement": "main",
+     "role": "decisions",
+     "title": "Pedimos quatro decisões; três têm prazo",
+     "lines": [
+      "1. Linha de embalagem: decidir o caminho da linha de embalagem, e enviar ao fornecedor o aviso para renegociar o contrato até 2/out",
+      "2. Capital de giro de 2026: financiar o capital de giro começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out",
+      "3. Vencimentos de 2027: autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, com o plano alternativo apresentado no material, e concluir a sondagem até 31/out e decidir a rota até 15/nov",
+      "4. Política de endividamento: definir qual EBITDA mede o limite de 2,5x"
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "divida",
+     "number": 2,
+     "placement": "main",
+     "role": "situation",
+     "title": "A dívida é de R$ 130 milhões, concentrada em 2027",
+     "lines": [
+      "R$ 77 milhões de principal vencem em 2027; 28% da dívida vence até junho de 2027.",
+      "Prazo médio de 1,5 anos; maior credor: Debenturistas, com 46% da dívida."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "caixa",
+     "number": 3,
+     "placement": "main",
+     "role": "situation",
+     "title": "O caixa fica abaixo do mínimo em 21 de dezembro e, mantida a dívida como está, chega a R$ -79 milhões no fim de 2027",
+     "lines": [
+      "No caso alternativo de menor caixa, o caixa em 21 de dezembro é de R$ -9,5 milhões, contra o mínimo de R$ 15 milhões.",
+      "Serviço da dívida em 2027: R$ 90 milhões, contra R$ 36 milhões de caixa disponível."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "escritura",
+     "number": 4,
+     "placement": "main",
+     "role": "constraint",
+     "title": "O contrato da dívida com Debenturistas tem só R$ 3 milhões livres na exceção para garantias de nova dívida",
+     "lines": [
+      "Exceção de R$ 15 milhões para garantias, com R$ 12 milhões ocupados pelas garantias da dívida com Bradesco.",
+      "Covenant de 3,0x na escritura; política do conselho de 2,5x."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "linha",
+     "number": 5,
+     "placement": "main",
+     "role": "topic",
+     "title": "A linha de embalagem rende 16% ao ano, acima do custo de capital de 15% ao ano",
+     "lines": [
+      "Retorno de 16% ao ano contra custo de capital de 15% ao ano; VPL de R$ 0,7 milhão.",
+      "Payback de cerca de 6 anos; o fluxo acumulado do projeto chega a R$ -21,7 milhões em dezembro de 2027.",
+      "O VPL fica negativo em cada sensibilidade: com economia menor, R$ -6,4 milhões; com capex e depreciação maiores, R$ -2,1 milhões; com partida mais lenta, R$ -1,0 milhão.",
+      "Motivo apresentado pelo presidente do conselho: reduzir a dependência de um único fornecedor do insumo principal."
+     ],
+     "recommendation": null,
+     "options": [
+      "Seguir agora: VPL de R$ 0,7 milhão e retorno de 16% ao ano.",
+      "Seguir em etapas: VPL de [pendente].",
+      "Esperar as cotações, no caso que a análise registra como adiamento: VPL de R$ 1,4 milhão e retorno de 17% ao ano."
+     ],
+     "pendingFigureIds": [
+      "stages-npv"
+     ]
+    },
+    {
+     "id": "safra",
+     "number": 6,
+     "placement": "main",
+     "role": "topic",
+     "title": "Os programas dos clientes antecipam R$ 23,5 milhões contra o pico de R$ 25 milhões, sem dívida bancária nova",
+     "lines": [
+      "Custo indicativo dos programas de antecipação: CDI mais 1,2% ao ano no primeiro e CDI mais 1,5% ao ano no segundo.",
+      "Linha de crédito registrada com Itaú, com limite livre de R$ 10 milhões; modalidade e finalidade: [pendente]."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": [
+      "cl-terms"
+     ]
+    },
+    {
+     "id": "caminhos",
+     "number": 7,
+     "placement": "main",
+     "role": "alternatives",
+     "title": "Avaliamos 7 caminhos para 2027; só o recomendado passa em todos os critérios",
+     "lines": [
+      "Caminho A: caixa mínimo de R$ 15 milhões; alavancagem de 2,20x; custo de R$ 49 milhões; dívida líquida em 2028 de R$ 79 milhões; nos critérios: sim; anuência: não.",
+      "Caminho B: caixa mínimo de R$ -60 milhões; alavancagem de 2,21x; custo de R$ 31 milhões; dívida líquida em 2028 de R$ 89 milhões; nos critérios: não; anuência: não.",
+      "Caminho C: caixa mínimo de R$ 15 milhões; alavancagem de 2,40x; custo de R$ 57 milhões; dívida líquida em 2028 de R$ 102 milhões; nos critérios: não; anuência: não.",
+      "Caminho D: caixa mínimo de R$ -79 milhões; alavancagem de 2,38x; custo de R$ 25 milhões; dívida líquida em 2028 de R$ 81 milhões; nos critérios: não; anuência: não.",
+      "Caminho E: caixa mínimo de R$ -65 milhões; alavancagem de 2,41x; custo de R$ 35 milhões; dívida líquida em 2028 de R$ 87 milhões; nos critérios: não; anuência: sim.",
+      "Caminho F: caixa mínimo de R$ 12 milhões; alavancagem de 2,40x; custo de R$ 57 milhões; dívida líquida em 2028 de R$ 102 milhões; nos critérios: não; anuência: sim.",
+      "Caminho G: caixa mínimo de R$ -11 milhões; alavancagem de 2,40x; custo de R$ 44 milhões; dívida líquida em 2028 de R$ 93 milhões; nos critérios: não; anuência: sim."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "movimentos",
+     "number": 8,
+     "placement": "main",
+     "role": "alternatives",
+     "title": "Os 7 caminhos combinam estes movimentos da dívida e do projeto",
+     "lines": [
+      "Caminho A: sem a linha de embalagem; crédito bancário de curto prazo; debênture nova; pré-pagamento da debênture atual e da dívida com Bradesco.",
+      "Caminho B: adiamento da linha de embalagem; crédito bancário de curto prazo.",
+      "Caminho C: linha de embalagem no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; debênture nova; pré-pagamento da debênture atual e da dívida com Bradesco.",
+      "Caminho D: dívida mantida como está, com a linha de embalagem no cronograma informado.",
+      "Caminho E: financiamento bancário novo com amortização programada; linha de embalagem no cronograma informado.",
+      "Caminho F: linha de embalagem no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; financiamento bancário novo com amortização programada que pré-paga a dívida com Bradesco; waiver da debênture.",
+      "Caminho G: linha de embalagem no cronograma informado, com financiamento de banco de fomento; crédito bancário de curto prazo; dívida com Bradesco alongada por aditamento."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "recomendacao",
+     "number": 9,
+     "placement": "main",
+     "role": "recommendation",
+     "title": "Recomendamos sondar uma debênture de até R$ 80 milhões, com prazo de 7 anos",
+     "lines": [
+      "Resgata a debênture atual e pré-paga a dívida com Bradesco; custo efetivo entre CDI mais 3,46% ao ano e CDI mais 3,56% ao ano.",
+      "Amortização de 2029 a 2033.",
+      "Plano alternativo: sem a linha de embalagem, crédito bancário de curto prazo e financiamento bancário novo com amortização programada que pré-paga a dívida com Bradesco, com waiver da debênture; decisão até 15/nov."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "alavancagem",
+     "number": 10,
+     "placement": "main",
+     "role": "risk",
+     "title": "A alavancagem chega a 2,37x no adverso de 2027, abaixo da política de 2,5x pela definição da escritura",
+     "lines": [
+      "A alavancagem fica em 2,2x em dezembro de 2026 e em 1,85x em dezembro de 2027.",
+      "No adverso de 2027, chega a 2,37x, contra a política de 2,5x pela definição da escritura."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "politica",
+     "number": 11,
+     "placement": "main",
+     "role": "risk",
+     "title": "A política de 2,5x precisa de uma definição de EBITDA",
+     "lines": [
+      "Pelo EBITDA gerencial, 2,0x; pela definição da escritura, 2,2x em dezembro de 2026."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "mudaria",
+     "number": 12,
+     "placement": "main",
+     "role": "what_changes",
+     "title": "A recomendação depende de demanda a partir de R$ 74,44 milhões",
+     "lines": [
+      "Demanda da debênture abaixo de R$ 74,44 milhões, o mínimo que mantém a emissão de R$ 80 milhões dentro dos critérios.",
+      "No cenário do trigo 15% mais caro com repasse em 4 meses, o EBITDA de 2027 fica em cerca de R$ 52,6 milhões.",
+      "No cenário de prazo maior de recebimento das redes, a variação do capital de giro em 2026 fica R$ 12 milhões acima da do cenário de referência."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    },
+    {
+     "id": "passos",
+     "number": 13,
+     "placement": "main",
+     "role": "next_steps",
+     "title": "Próximos passos e datas",
+     "lines": [
+      "2/out: aviso ao fornecedor da linha de embalagem.",
+      "16/out: adesão aos programas de antecipação.",
+      "31/out: conclusão da sondagem da debênture.",
+      "15/nov: decisão da rota para os vencimentos de 2027."
+     ],
+     "recommendation": null,
+     "options": [],
+     "pendingFigureIds": []
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "summary",
+  "kind": "section",
+  "content": {
+   "text": "A companhia tem R$ 77 milhões de dívida vencendo em 2027 e um aperto de caixa já em 21 de dezembro. Pedimos ao conselho: (1) decidir o caminho da linha de embalagem, e enviar ao fornecedor o aviso para renegociar o contrato até 2/out; (2) financiar o capital de giro começando pelos programas de antecipação dos próprios clientes, com a linha bancária só como reserva, e aderir aos programas até 16/out; (3) autorizar a sondagem de uma debênture de até R$ 80 milhões, com prazo de 7 anos, com o plano alternativo apresentado no material, e concluir a sondagem até 31/out e decidir a rota até 15/nov; e (4) definir qual EBITDA mede o limite de 2,5x. A alavancagem fica em 2,2x em dezembro de 2026 e abaixo de 2,5x nos cenários avaliados pela definição da escritura e pelo EBITDA gerencial."
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "questions",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "bradesco",
+     "question": "Por que não rolar a dívida com Bradesco no vencimento?",
+     "answer": "No caminho sem a linha de embalagem, com crédito bancário de curto prazo e a dívida com Bradesco alongada por aditamento, o caixa fica abaixo do mínimo da política: faltam cerca de R$ 18 milhões, com vencimento em setembro de 2027."
+    },
+    {
+     "id": "prazo",
+     "question": "Por que 7 anos e não um prazo menor?",
+     "answer": "Num perfil de amortização testado que termina antes do adotado, a amortização de 2029, de R$ 33 milhões, passa o caixa disponível depois dos juros, de R$ 24 milhões; o perfil adotado passa em todo o horizonte."
+    },
+    {
+     "id": "demanda",
+     "question": "E se as gestoras não comprarem o volume todo?",
+     "answer": "Plano alternativo: sem a linha de embalagem, crédito bancário de curto prazo e financiamento bancário novo de cerca de R$ 70 milhões, com amortização programada, que pré-paga a dívida com Bradesco, com waiver e anuência dos debenturistas, decidido até 15/nov, antes do vencimento dessa dívida em setembro de 2027."
+    },
+    {
+     "id": "custo",
+     "question": "Quanto custa?",
+     "answer": "Custo efetivo entre CDI mais 3,46% ao ano e CDI mais 3,56% ao ano; custo financeiro de cerca de R$ 49 milhões até 2028, com dívida líquida de R$ 79 milhões no fim de 2028."
+    },
+    {
+     "id": "serra-verde",
+     "question": "Por que pagamos mais que a concorrente?",
+     "answer": "Da diferença de 125 pontos, os ajustes conhecidos somam 70 pontos, dos quais 60 pontos de ajuste pela data de contratação; 55 pontos ficam sem explicação na comparação."
+    },
+    {
+     "id": "rating",
+     "question": "Vale contratar rating?",
+     "answer": "Pelo spread, o ganho líquido fica entre R$ -0,17 milhão por ano e R$ 0,03 milhão por ano; a decisão depende do acesso a investidores da debênture. Sugerimos ouvir uma agência de rating antes de decidir."
+    },
+    {
+     "id": "estrategica",
+     "question": "A linha de embalagem não é um investimento estratégico?",
+     "answer": "O retorno de 16% ao ano fica acima do custo de capital de 15% ao ano, mas o VPL fica negativo nos cenários de economia menor, de capex e depreciação maiores e de partida mais lenta. As cotações decidem."
+    },
+    {
+     "id": "trigo",
+     "question": "E se o custo do trigo subir?",
+     "answer": "No cenário do trigo 15% mais caro com repasse em 4 meses, o EBITDA de 2027 fica em cerca de R$ 52,6 milhões; no adverso, com EBITDA de R$ 48,1 milhões, a alavancagem fica em 2,37x, abaixo do covenant de 3,0x."
+    },
+    {
+     "id": "rede-a",
+     "question": "Dependemos demais de rede A?",
+     "answer": "A carteira tem R$ 19,8 milhões de rede A, de um total de R$ 62 milhões; o contrato com esse cliente veda a cessão sem consentimento, mas o programa próprio dele antecipa R$ 19,8 milhões sem regresso, a CDI mais 1,5% ao ano."
+    },
+    {
+     "id": "fpa",
+     "question": "O plano da área financeira mostra EBITDA de R$ 86 milhões em 2028; por que usamos R$ 59 milhões?",
+     "answer": "O plano supõe preço, volume e custos fixos sem evidência apresentada, e o volume passa a capacidade da fábrica sem investimento. A base por drivers fica em R$ 59 milhões."
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "appendix",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "tabela",
+     "label": "Tabela de dívida",
+     "sourceIds": [
+      "tabela-divida"
+     ]
+    },
+    {
+     "id": "projecao",
+     "label": "Projeção por drivers e premissas",
+     "sourceIds": [
+      "projecao"
+     ]
+    },
+    {
+     "id": "plano-fpa",
+     "label": "Plano da área financeira contra a base",
+     "sourceIds": [
+      "plano-fpa"
+     ]
+    },
+    {
+     "id": "fontes",
+     "label": "Fontes e datas das análises",
+     "sourceIds": [
+      "tabela-divida",
+      "covenant",
+      "caixa-semanal",
+      "linha-embalagem",
+      "projecao",
+      "plano-fpa",
+      "recebiveis",
+      "custo-relativo",
+      "plano-2027"
+     ]
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "identity",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "figureId": "divida-total",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.reconciliation.principal",
+     "unit": "money",
+     "value": "130",
+     "rounded": "130",
+     "display": "R$ 130 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "principal-2027",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.scheduleByYear[year=2027].principal",
+     "unit": "money",
+     "value": "76.666672",
+     "rounded": "77",
+     "display": "R$ 77 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "share-12m",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.dueWithinTwelveMonthsShare",
+     "unit": "rate",
+     "value": "0.28205132307692307692",
+     "rounded": "28",
+     "display": "28%",
+     "matches": true
+    },
+    {
+     "figureId": "wal",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.weightedAverageLifeYears",
+     "unit": "years",
+     "value": "1.451141144531085353",
+     "rounded": "1.5",
+     "display": "1,5 anos",
+     "matches": true
+    },
+    {
+     "figureId": "largest-creditor",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.largestCreditor.creditor",
+     "unit": "label",
+     "value": "Debenturistas",
+     "rounded": "Debenturistas",
+     "display": "Debenturistas",
+     "matches": true
+    },
+    {
+     "figureId": "bradesco-creditor",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.rows[id=ccb-bradesco].creditor",
+     "unit": "label",
+     "value": "Bradesco",
+     "rounded": "Bradesco",
+     "display": "Bradesco",
+     "matches": true
+    },
+    {
+     "figureId": "largest-share",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.largestCreditor.share",
+     "unit": "rate",
+     "value": "0.46153846153846153846",
+     "rounded": "46",
+     "display": "46%",
+     "matches": true
+    },
+    {
+     "figureId": "basket",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.negativePledgeBaskets[holderId=debenture-1].basket",
+     "unit": "money",
+     "value": "15",
+     "rounded": "15",
+     "display": "R$ 15 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "basket-used",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.negativePledgeBaskets[holderId=debenture-1].occupied",
+     "unit": "money",
+     "value": "12",
+     "rounded": "12",
+     "display": "R$ 12 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "basket-free",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.negativePledgeBaskets[holderId=debenture-1].remaining",
+     "unit": "money",
+     "value": "3",
+     "rounded": "3",
+     "display": "R$ 3 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "bradesco-maturity",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.rows[id=ccb-bradesco].finalPayment",
+     "unit": "date",
+     "value": "2027-09-15",
+     "rounded": "2027-09-15",
+     "display": "setembro de 2027",
+     "matches": true
+    },
+    {
+     "figureId": "cov-limit",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.limits[id=aditamento].maximumRatio",
+     "unit": "multiple",
+     "value": "3",
+     "rounded": "3.0",
+     "display": "3,0x",
+     "matches": true
+    },
+    {
+     "figureId": "policy-limit",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.limits[id=politica].maximumRatio",
+     "unit": "multiple",
+     "value": "2.5",
+     "rounded": "2.5",
+     "display": "2,5x",
+     "matches": true
+    },
+    {
+     "figureId": "lev-dez26",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.measurements[id=dez26-base].ratio",
+     "unit": "multiple",
+     "value": "2.19824203514563106796",
+     "rounded": "2.2",
+     "display": "2,2x",
+     "matches": true
+    },
+    {
+     "figureId": "lev-dez27",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.measurements[id=dez27-base].ratio",
+     "unit": "multiple",
+     "value": "1.85301114776119402985",
+     "rounded": "1.85",
+     "display": "1,85x",
+     "matches": true
+    },
+    {
+     "figureId": "lev-adv27",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.measurements[id=dez27-adverso].ratio",
+     "unit": "multiple",
+     "value": "2.37072723608955885613",
+     "rounded": "2.37",
+     "display": "2,37x",
+     "matches": true
+    },
+    {
+     "figureId": "ebitda-adv27",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.measurements[id=dez27-adverso].reportedEbitda",
+     "unit": "money",
+     "value": "48.11",
+     "rounded": "48.1",
+     "display": "R$ 48,1 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "lev-ger-dez26",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.measurements[id=dez26-gerencial].ratio",
+     "unit": "multiple",
+     "value": "2.03981017675675675676",
+     "rounded": "2.0",
+     "display": "2,0x",
+     "matches": true
+    },
+    {
+     "figureId": "min-cash",
+     "sourceId": "caixa-semanal",
+     "methodId": "project-weekly-cash",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd",
+     "path": "result.weekly.minimumCash",
+     "unit": "money",
+     "value": "15",
+     "rounded": "15",
+     "display": "R$ 15 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-min",
+     "sourceId": "caixa-semanal",
+     "methodId": "project-weekly-cash",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd",
+     "path": "readings.sensitivities[caseId=sem-linha].minimum",
+     "unit": "money",
+     "value": "-9.51881714",
+     "rounded": "-9.5",
+     "display": "R$ -9,5 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-week",
+     "sourceId": "caixa-semanal",
+     "methodId": "project-weekly-cash",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd",
+     "path": "readings.sensitivities[caseId=sem-linha].weekStart",
+     "unit": "date",
+     "value": "2026-12-21",
+     "rounded": "2026-12-21",
+     "display": "21 de dezembro",
+     "matches": true
+    },
+    {
+     "figureId": "tight-week",
+     "sourceId": "caixa-semanal",
+     "methodId": "project-weekly-cash",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd",
+     "path": "readings.tightestWeek.weekStart",
+     "unit": "date",
+     "value": "2026-12-21",
+     "rounded": "2026-12-21",
+     "display": "21 de dezembro",
+     "matches": true
+    },
+    {
+     "figureId": "irr",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=base].annualIrr",
+     "unit": "rate",
+     "value": "0.15803214919295541016",
+     "rounded": "16",
+     "display": "16% ao ano",
+     "matches": true
+    },
+    {
+     "figureId": "wacc",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=base].discountRate",
+     "unit": "rate",
+     "value": "0.15",
+     "rounded": "15",
+     "display": "15% ao ano",
+     "matches": true
+    },
+    {
+     "figureId": "npv",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=base].netPresentValue",
+     "unit": "money",
+     "value": "732202.68417138870307721353",
+     "rounded": "0.7",
+     "display": "R$ 0,7 milhão",
+     "matches": true
+    },
+    {
+     "figureId": "payback",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=base].paybackYears",
+     "unit": "years",
+     "value": "5.85360438703604711444",
+     "rounded": "6",
+     "display": "6 anos",
+     "matches": true
+    },
+    {
+     "figureId": "peak-need",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=base].peakCumulativeCashNeed.amount",
+     "unit": "money",
+     "value": "-21659499.99999999999998676",
+     "rounded": "-21.7",
+     "display": "R$ -21,7 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "peak-date",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=base].peakCumulativeCashNeed.periodEndDate",
+     "unit": "date",
+     "value": "2027-12-31",
+     "rounded": "2027-12-31",
+     "display": "dezembro de 2027",
+     "matches": true
+    },
+    {
+     "figureId": "npv-economy",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=economy-4].netPresentValue",
+     "unit": "money",
+     "value": "-6350985.37663352871624319942",
+     "rounded": "-6.4",
+     "display": "R$ -6,4 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "npv-capex",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=capex-120].netPresentValue",
+     "unit": "money",
+     "value": "-2080282.64471970584185638815",
+     "rounded": "-2.1",
+     "display": "R$ -2,1 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "npv-slow",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=slower-start].netPresentValue",
+     "unit": "money",
+     "value": "-981029.83000630505877086813",
+     "rounded": "-1.0",
+     "display": "R$ -1,0 milhão",
+     "matches": true
+    },
+    {
+     "figureId": "npv-defer",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=defer-12].netPresentValue",
+     "unit": "money",
+     "value": "1375813.26214606796046257307",
+     "rounded": "1.4",
+     "display": "R$ 1,4 milhão",
+     "matches": true
+    },
+    {
+     "figureId": "irr-defer",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "comparison.metrics[caseId=defer-12].annualIrr",
+     "unit": "rate",
+     "value": "0.16726516378253442467",
+     "rounded": "17",
+     "display": "17% ao ano",
+     "matches": true
+    },
+    {
+     "figureId": "wheat-shock",
+     "sourceId": "projecao",
+     "methodId": "build-operating-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb",
+     "path": "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.rate",
+     "unit": "rate",
+     "value": "0.15",
+     "rounded": "15",
+     "display": "15%",
+     "matches": true
+    },
+    {
+     "figureId": "wheat-lag",
+     "sourceId": "projecao",
+     "methodId": "build-operating-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb",
+     "path": "result.projection.projection.scenarios[id=informado-trigo-4m].inputCostShock.passThroughLagMonths",
+     "unit": "months",
+     "value": "4",
+     "rounded": "4",
+     "display": "4 meses",
+     "matches": true
+    },
+    {
+     "figureId": "ebitda-wheat",
+     "sourceId": "projecao",
+     "methodId": "build-operating-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb",
+     "path": "readings.projected.scenarios[id=informado-trigo-4m].rows[periodId=2027-12-31].ebitda",
+     "unit": "money",
+     "value": "52.6405745",
+     "rounded": "52.6",
+     "display": "R$ 52,6 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "wc-60",
+     "sourceId": "projecao",
+     "methodId": "build-operating-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb",
+     "path": "readings.projected.scenarios[id=prazo-60].rows[periodId=2026-12-31].effects.changeInWorkingCapital",
+     "unit": "money",
+     "value": "12.24305555",
+     "rounded": "12",
+     "display": "R$ 12 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "fpa-2028",
+     "sourceId": "plano-fpa",
+     "methodId": "challenge-financial-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "9f3cf3c9bc925c8cd736cae3b204c4d84392e402efdc46ad67b2d56ee49de1cc",
+     "path": "readings.gap.plan.ebitda",
+     "unit": "money",
+     "value": "85.98954",
+     "rounded": "86",
+     "display": "R$ 86 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "ref-2028",
+     "sourceId": "plano-fpa",
+     "methodId": "challenge-financial-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "9f3cf3c9bc925c8cd736cae3b204c4d84392e402efdc46ad67b2d56ee49de1cc",
+     "path": "readings.gap.reference.ebitda",
+     "unit": "money",
+     "value": "58.79625",
+     "rounded": "59",
+     "display": "R$ 59 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "programs",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "readings.plan[optionId=risco-sacado-a].cumulative",
+     "unit": "money",
+     "value": "23.5",
+     "rounded": "23.5",
+     "display": "R$ 23,5 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "spread-b",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "readings.options[id=risco-sacado-b].spreadOverDi",
+     "unit": "rate",
+     "value": "0.012",
+     "rounded": "1.2",
+     "display": "1,2% ao ano",
+     "matches": true
+    },
+    {
+     "figureId": "spread-a",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "readings.options[id=risco-sacado-a].spreadOverDi",
+     "unit": "rate",
+     "value": "0.015",
+     "rounded": "1.5",
+     "display": "1,5% ao ano",
+     "matches": true
+    },
+    {
+     "figureId": "rede-a",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "result.funding.portfolio.items[itemId=rede-a].amount",
+     "unit": "money",
+     "value": "19.8",
+     "rounded": "19.8",
+     "display": "R$ 19,8 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "rede-a-retained",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "result.funding.options[id=risco-sacado-a].byItem[itemId=rede-a].retained",
+     "unit": "money",
+     "value": "19.8",
+     "rounded": "19.8",
+     "display": "R$ 19,8 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "need-peak",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "result.funding.need.peak",
+     "unit": "money",
+     "value": "25",
+     "rounded": "25",
+     "display": "R$ 25 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "carteira",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "readings.gross",
+     "unit": "money",
+     "value": "62",
+     "rounded": "62",
+     "display": "R$ 62 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "gap-bps",
+     "sourceId": "custo-relativo",
+     "methodId": "analyze-relative-debt-cost",
+     "methodVersion": "2026.10.19-v2",
+     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+     "path": "decomposition.grossBps",
+     "unit": "bps",
+     "value": "125",
+     "rounded": "125",
+     "display": "125 pontos",
+     "matches": true
+    },
+    {
+     "figureId": "date-bps",
+     "sourceId": "custo-relativo",
+     "methodId": "analyze-relative-debt-cost",
+     "methodVersion": "2026.10.19-v2",
+     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+     "path": "result.bridge.steps[family=pricing_date].bps",
+     "unit": "bps",
+     "value": "60",
+     "rounded": "60",
+     "display": "60 pontos",
+     "matches": true
+    },
+    {
+     "figureId": "known-bps",
+     "sourceId": "custo-relativo",
+     "methodId": "analyze-relative-debt-cost",
+     "methodVersion": "2026.10.19-v2",
+     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+     "path": "result.bridge.knownAdjustmentsBps",
+     "unit": "bps",
+     "value": "70",
+     "rounded": "70",
+     "display": "70 pontos",
+     "matches": true
+    },
+    {
+     "figureId": "unexplained-bps",
+     "sourceId": "custo-relativo",
+     "methodId": "analyze-relative-debt-cost",
+     "methodVersion": "2026.10.19-v2",
+     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+     "path": "result.bridge.unexplainedAfterKnownAdjustmentsBps",
+     "unit": "bps",
+     "value": "55",
+     "rounded": "55",
+     "display": "55 pontos",
+     "matches": true
+    },
+    {
+     "figureId": "rating-low",
+     "sourceId": "custo-relativo",
+     "methodId": "analyze-relative-debt-cost",
+     "methodVersion": "2026.10.19-v2",
+     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+     "path": "levers[role=rating&scenario=low].netOfKnownCosts",
+     "unit": "money",
+     "value": "-165000",
+     "rounded": "-0.17",
+     "display": "R$ -0,17 milhão por ano",
+     "matches": true
+    },
+    {
+     "figureId": "rating-high",
+     "sourceId": "custo-relativo",
+     "methodId": "analyze-relative-debt-cost",
+     "methodVersion": "2026.10.19-v2",
+     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+     "path": "levers[role=rating&scenario=high].netOfKnownCosts",
+     "unit": "money",
+     "value": "25000",
+     "rounded": "0.03",
+     "display": "R$ 0,03 milhão por ano",
+     "matches": true
+    },
+    {
+     "figureId": "cl-creditor",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.creditLines[id=conta-garantida].creditor",
+     "unit": "label",
+     "value": "Itaú",
+     "rounded": "Itaú",
+     "display": "Itaú",
+     "matches": true
+    },
+    {
+     "figureId": "cl-unused",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.creditLines[id=conta-garantida].unused",
+     "unit": "money",
+     "value": "10",
+     "rounded": "10",
+     "display": "R$ 10 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-creditor",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.rows[id=debenture-1].creditor",
+     "unit": "label",
+     "value": "Debenturistas",
+     "rounded": "Debenturistas",
+     "display": "Debenturistas",
+     "matches": true
+    },
+    {
+     "figureId": "rede-a-label",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "result.funding.portfolio.items[itemId=rede-a].label",
+     "unit": "label",
+     "value": "Rede A (maior cliente)",
+     "rounded": "Rede A (maior cliente)",
+     "display": "nome fora do dicionário",
+     "matches": true
+    },
+    {
+     "figureId": "project-label",
+     "sourceId": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "path": "cases[id=base].label",
+     "unit": "label",
+     "value": "Linha de embalagem, cronograma original",
+     "rounded": "Linha de embalagem, cronograma original",
+     "display": "nome fora do dicionário",
+     "matches": true
+    },
+    {
+     "figureId": "wheat-label",
+     "sourceId": "projecao",
+     "methodId": "build-operating-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb",
+     "path": "result.projection.projection.scenarios[id=informado-trigo-4m].label",
+     "unit": "label",
+     "value": "Informado, com trigo +15% e repasse em quatro meses",
+     "rounded": "Informado, com trigo +15% e repasse em quatro meses",
+     "display": "nome fora do dicionário",
+     "matches": true
+    },
+    {
+     "figureId": "crop-question",
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "path": "question",
+     "unit": "label",
+     "value": "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?",
+     "rounded": "Tenho uns 60 milhões de recebíveis. Dá para usar isso para financiar a safra em vez da linha do banco?",
+     "display": "nome fora do dicionário",
+     "matches": true
+    },
+    {
+     "figureId": "cash-end-2027",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "result.evaluation.paths[id=manter].closingAvailableByPeriod[periodId=2027-12-31].closingAvailable",
+     "unit": "money",
+     "value": "-78.62584928",
+     "rounded": "-79",
+     "display": "R$ -79 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "service-2027",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].service",
+     "unit": "money",
+     "value": "89.67953712",
+     "rounded": "90",
+     "display": "R$ 90 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "available-2027",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "result.evaluation.paths[id=manter].debtServiceByYear[year=2027].availableForService",
+     "unit": "money",
+     "value": "35.68437595",
+     "rounded": "36",
+     "display": "R$ 36 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "n-paths",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.horizon.candidatePaths",
+     "unit": "count",
+     "value": "7",
+     "rounded": "7",
+     "display": "7",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-amount",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.longInstrument.issueTarget",
+     "unit": "money",
+     "value": "80",
+     "rounded": "80",
+     "display": "R$ 80 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "issue-floor",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.longInstrument.issueFloorInsideGates",
+     "unit": "money",
+     "value": "74.44",
+     "rounded": "74.44",
+     "display": "R$ 74,44 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-term",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.longInstrument.termYears",
+     "unit": "years",
+     "value": "7",
+     "rounded": "7",
+     "display": "7 anos",
+     "matches": true
+    },
+    {
+     "figureId": "deb-cost-low",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.longInstrument.equivalentSpread",
+     "unit": "rate",
+     "value": "0.0346124587317108532",
+     "rounded": "3.46",
+     "display": "3,46% ao ano",
+     "matches": true
+    },
+    {
+     "figureId": "deb-cost-high",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.longInstrument.equivalentSpreadAtCondition",
+     "unit": "rate",
+     "value": "0.03562771280284960303",
+     "rounded": "3.56",
+     "display": "3,56% ao ano",
+     "matches": true
+    },
+    {
+     "figureId": "amort-first",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.longInstrument.firstAmortizationYear",
+     "unit": "calendar",
+     "value": "2029",
+     "rounded": "2029",
+     "display": "2029",
+     "matches": true
+    },
+    {
+     "figureId": "amort-last",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.longInstrument.lastAmortizationYear",
+     "unit": "calendar",
+     "value": "2033",
+     "rounded": "2033",
+     "display": "2033",
+     "matches": true
+    },
+    {
+     "figureId": "bradesco-gap",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "result.evaluation.paths[id=bradesco-sem-linha].shortfallVsPolicyMinimum",
+     "unit": "money",
+     "value": "18.23207894",
+     "rounded": "18",
+     "display": "R$ 18 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "five-year-amort",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=2029].scheduledAmortization",
+     "unit": "money",
+     "value": "33.3333333166666666664",
+     "rounded": "33",
+     "display": "R$ 33 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "five-year-available",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "result.evaluation.paths[id=sem-linha-debenture].amortizationTests[profileId=cinco-anos].years[year=2029].availableAfterInterest",
+     "unit": "money",
+     "value": "23.71868000160049999999",
+     "rounded": "24",
+     "display": "R$ 24 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "alt-amount",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.alternative.issueTarget",
+     "unit": "money",
+     "value": "70",
+     "rounded": "70",
+     "display": "R$ 70 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "cost-2028",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.horizonFinancingCost",
+     "unit": "money",
+     "value": "49.4360524",
+     "rounded": "49",
+     "display": "R$ 49 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "net-debt-2028",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.recommendation.netDebtAtHorizon",
+     "unit": "money",
+     "value": "79.31379459",
+     "rounded": "79",
+     "display": "R$ 79 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "year-2026",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.scheduleByYear[year=2026].year",
+     "unit": "calendar",
+     "value": "2026",
+     "rounded": "2026",
+     "display": "2026",
+     "matches": true
+    },
+    {
+     "figureId": "year-2027",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.scheduleByYear[year=2027].year",
+     "unit": "calendar",
+     "value": "2027",
+     "rounded": "2027",
+     "display": "2027",
+     "matches": true
+    },
+    {
+     "figureId": "year-2028",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.scheduleByYear[year=2028].year",
+     "unit": "calendar",
+     "value": "2028",
+     "rounded": "2028",
+     "display": "2028",
+     "matches": true
+    },
+    {
+     "figureId": "dez26-date",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.measurements[id=dez26-base].date",
+     "unit": "date",
+     "value": "2026-12-31",
+     "rounded": "2026-12-31",
+     "display": "dezembro de 2026",
+     "matches": true
+    },
+    {
+     "figureId": "dez27-date",
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "path": "result.headroom.measurements[id=dez27-base].date",
+     "unit": "date",
+     "value": "2027-12-31",
+     "rounded": "2027-12-31",
+     "display": "dezembro de 2027",
+     "matches": true
+    },
+    {
+     "figureId": "horizon-12m",
+     "sourceId": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "path": "result.table.profile.twelveMonthHorizon",
+     "unit": "date",
+     "value": "2027-06-30",
+     "rounded": "2027-06-30",
+     "display": "junho de 2027",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-debenture-cash",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=sem-linha-debenture].minimumCash.amount",
+     "unit": "money",
+     "value": "15.45720185",
+     "rounded": "15",
+     "display": "R$ 15 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-debenture-lev",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=sem-linha-debenture].worstLeverage",
+     "unit": "multiple",
+     "value": "2.19824203514563106796",
+     "rounded": "2.20",
+     "display": "2,20x",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-debenture-cost",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=sem-linha-debenture].horizonFinancingCost",
+     "unit": "money",
+     "value": "49.4360524",
+     "rounded": "49",
+     "display": "R$ 49 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-debenture-net",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=sem-linha-debenture].netDebtAtHorizon",
+     "unit": "money",
+     "value": "79.31379459",
+     "rounded": "79",
+     "display": "R$ 79 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-debenture-ok",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=sem-linha-debenture].eligible",
+     "unit": "flag",
+     "value": "true",
+     "rounded": "true",
+     "display": "sim",
+     "matches": true
+    },
+    {
+     "figureId": "sem-linha-debenture-consent",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=sem-linha-debenture].consentRequired",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "adiar-linha-cash",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=adiar-linha].minimumCash.amount",
+     "unit": "money",
+     "value": "-60.18234637",
+     "rounded": "-60",
+     "display": "R$ -60 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "adiar-linha-lev",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=adiar-linha].worstLeverage",
+     "unit": "multiple",
+     "value": "2.20637578776699029126",
+     "rounded": "2.21",
+     "display": "2,21x",
+     "matches": true
+    },
+    {
+     "figureId": "adiar-linha-cost",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=adiar-linha].horizonFinancingCost",
+     "unit": "money",
+     "value": "31.30590355",
+     "rounded": "31",
+     "display": "R$ 31 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "adiar-linha-net",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=adiar-linha].netDebtAtHorizon",
+     "unit": "money",
+     "value": "88.84389634",
+     "rounded": "89",
+     "display": "R$ 89 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "adiar-linha-ok",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=adiar-linha].eligible",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "adiar-linha-consent",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=adiar-linha].consentRequired",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-com-linha-cash",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=debenture-com-linha].minimumCash.amount",
+     "unit": "money",
+     "value": "15.03831359",
+     "rounded": "15",
+     "display": "R$ 15 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-com-linha-lev",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=debenture-com-linha].worstLeverage",
+     "unit": "multiple",
+     "value": "2.40055054504854368932",
+     "rounded": "2.40",
+     "display": "2,40x",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-com-linha-cost",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=debenture-com-linha].horizonFinancingCost",
+     "unit": "money",
+     "value": "56.89026112",
+     "rounded": "57",
+     "display": "R$ 57 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-com-linha-net",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=debenture-com-linha].netDebtAtHorizon",
+     "unit": "money",
+     "value": "102.14595542",
+     "rounded": "102",
+     "display": "R$ 102 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-com-linha-ok",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=debenture-com-linha].eligible",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "debenture-com-linha-consent",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=debenture-com-linha].consentRequired",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "manter-cash",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=manter].minimumCash.amount",
+     "unit": "money",
+     "value": "-78.62584928",
+     "rounded": "-79",
+     "display": "R$ -79 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "manter-lev",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=manter].worstLeverage",
+     "unit": "multiple",
+     "value": "2.37858941300970873786",
+     "rounded": "2.38",
+     "display": "2,38x",
+     "matches": true
+    },
+    {
+     "figureId": "manter-cost",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=manter].horizonFinancingCost",
+     "unit": "money",
+     "value": "25.4601388",
+     "rounded": "25",
+     "display": "R$ 25 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "manter-net",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=manter].netDebtAtHorizon",
+     "unit": "money",
+     "value": "81.01369161",
+     "rounded": "81",
+     "display": "R$ 81 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "manter-ok",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=manter].eligible",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "manter-consent",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=manter].consentRequired",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "ccb-tres-anos-cash",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=ccb-tres-anos].minimumCash.amount",
+     "unit": "money",
+     "value": "-64.70729201",
+     "rounded": "-65",
+     "display": "R$ -65 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "ccb-tres-anos-lev",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=ccb-tres-anos].worstLeverage",
+     "unit": "multiple",
+     "value": "2.41029097844660194175",
+     "rounded": "2.41",
+     "display": "2,41x",
+     "matches": true
+    },
+    {
+     "figureId": "ccb-tres-anos-cost",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=ccb-tres-anos].horizonFinancingCost",
+     "unit": "money",
+     "value": "34.59185654",
+     "rounded": "35",
+     "display": "R$ 35 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "ccb-tres-anos-net",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=ccb-tres-anos].netDebtAtHorizon",
+     "unit": "money",
+     "value": "87.04062531",
+     "rounded": "87",
+     "display": "R$ 87 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "ccb-tres-anos-ok",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=ccb-tres-anos].eligible",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "ccb-tres-anos-consent",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=ccb-tres-anos].consentRequired",
+     "unit": "flag",
+     "value": "true",
+     "rounded": "true",
+     "display": "sim",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-com-banco-cash",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-com-banco].minimumCash.amount",
+     "unit": "money",
+     "value": "11.80899139",
+     "rounded": "12",
+     "display": "R$ 12 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-com-banco-lev",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-com-banco].worstLeverage",
+     "unit": "multiple",
+     "value": "2.40055054504854368932",
+     "rounded": "2.40",
+     "display": "2,40x",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-com-banco-cost",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-com-banco].horizonFinancingCost",
+     "unit": "money",
+     "value": "56.54389269",
+     "rounded": "57",
+     "display": "R$ 57 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-com-banco-net",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-com-banco].netDebtAtHorizon",
+     "unit": "money",
+     "value": "102.18926187",
+     "rounded": "102",
+     "display": "R$ 102 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-com-banco-ok",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-com-banco].eligible",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-com-banco-consent",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-com-banco].consentRequired",
+     "unit": "flag",
+     "value": "true",
+     "rounded": "true",
+     "display": "sim",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-bradesco-cash",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-bradesco].minimumCash.amount",
+     "unit": "money",
+     "value": "-10.51712039",
+     "rounded": "-11",
+     "display": "R$ -11 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-bradesco-lev",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-bradesco].worstLeverage",
+     "unit": "multiple",
+     "value": "2.40055054504854368932",
+     "rounded": "2.40",
+     "display": "2,40x",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-bradesco-cost",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-bradesco].horizonFinancingCost",
+     "unit": "money",
+     "value": "43.76769398",
+     "rounded": "44",
+     "display": "R$ 44 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-bradesco-net",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-bradesco].netDebtAtHorizon",
+     "unit": "money",
+     "value": "93.09667803",
+     "rounded": "93",
+     "display": "R$ 93 milhões",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-bradesco-ok",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-bradesco].eligible",
+     "unit": "flag",
+     "value": "false",
+     "rounded": "false",
+     "display": "não",
+     "matches": true
+    },
+    {
+     "figureId": "alongar-bradesco-consent",
+     "sourceId": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "path": "readings.paths[id=alongar-bradesco].consentRequired",
+     "unit": "flag",
+     "value": "true",
+     "rounded": "true",
+     "display": "sim",
+     "matches": true
+    }
+   ]
+  },
+  "claims": [
+   {
+    "claimId": "figure:divida-total",
+    "kind": "calculation",
+    "value": "130",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:principal-2027",
+    "kind": "calculation",
+    "value": "76.666672",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:share-12m",
+    "kind": "calculation",
+    "value": "0.28205132307692307692",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:wal",
+    "kind": "calculation",
+    "value": "1.451141144531085353",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:largest-share",
+    "kind": "calculation",
+    "value": "0.46153846153846153846",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:basket",
+    "kind": "calculation",
+    "value": "15",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:basket-used",
+    "kind": "calculation",
+    "value": "12",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:basket-free",
+    "kind": "calculation",
+    "value": "3",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:cov-limit",
+    "kind": "calculation",
+    "value": "3",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2"
+    ]
+   },
+   {
+    "claimId": "figure:policy-limit",
+    "kind": "calculation",
+    "value": "2.5",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2"
+    ]
+   },
+   {
+    "claimId": "figure:lev-dez26",
+    "kind": "calculation",
+    "value": "2.19824203514563106796",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2"
+    ]
+   },
+   {
+    "claimId": "figure:lev-dez27",
+    "kind": "calculation",
+    "value": "1.85301114776119402985",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2"
+    ]
+   },
+   {
+    "claimId": "figure:lev-adv27",
+    "kind": "calculation",
+    "value": "2.37072723608955885613",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2"
+    ]
+   },
+   {
+    "claimId": "figure:ebitda-adv27",
+    "kind": "calculation",
+    "value": "48.11",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2"
+    ]
+   },
+   {
+    "claimId": "figure:lev-ger-dez26",
+    "kind": "calculation",
+    "value": "2.03981017675675675676",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2"
+    ]
+   },
+   {
+    "claimId": "figure:min-cash",
+    "kind": "calculation",
+    "value": "15",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd"
+    ]
+   },
+   {
+    "claimId": "figure:sem-linha-min",
+    "kind": "calculation",
+    "value": "-9.51881714",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd"
+    ]
+   },
+   {
+    "claimId": "figure:irr",
+    "kind": "calculation",
+    "value": "0.15803214919295541016",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:wacc",
+    "kind": "calculation",
+    "value": "0.15",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:npv",
+    "kind": "calculation",
+    "value": "732202.68417138870307721353",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:payback",
+    "kind": "calculation",
+    "value": "5.85360438703604711444",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:peak-need",
+    "kind": "calculation",
+    "value": "-21659499.99999999999998676",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:npv-economy",
+    "kind": "calculation",
+    "value": "-6350985.37663352871624319942",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:npv-capex",
+    "kind": "calculation",
+    "value": "-2080282.64471970584185638815",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:npv-slow",
+    "kind": "calculation",
+    "value": "-981029.83000630505877086813",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:npv-defer",
+    "kind": "calculation",
+    "value": "1375813.26214606796046257307",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:irr-defer",
+    "kind": "calculation",
+    "value": "0.16726516378253442467",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8"
+    ]
+   },
+   {
+    "claimId": "figure:wheat-shock",
+    "kind": "calculation",
+    "value": "0.15",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb"
+    ]
+   },
+   {
+    "claimId": "figure:wheat-lag",
+    "kind": "calculation",
+    "value": "4",
+    "unit": "months",
+    "period": null,
+    "supportIds": [
+     "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb"
+    ]
+   },
+   {
+    "claimId": "figure:ebitda-wheat",
+    "kind": "calculation",
+    "value": "52.6405745",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb"
+    ]
+   },
+   {
+    "claimId": "figure:wc-60",
+    "kind": "calculation",
+    "value": "12.24305555",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb"
+    ]
+   },
+   {
+    "claimId": "figure:fpa-2028",
+    "kind": "calculation",
+    "value": "85.98954",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "9f3cf3c9bc925c8cd736cae3b204c4d84392e402efdc46ad67b2d56ee49de1cc"
+    ]
+   },
+   {
+    "claimId": "figure:ref-2028",
+    "kind": "calculation",
+    "value": "58.79625",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "9f3cf3c9bc925c8cd736cae3b204c4d84392e402efdc46ad67b2d56ee49de1cc"
+    ]
+   },
+   {
+    "claimId": "figure:programs",
+    "kind": "calculation",
+    "value": "23.5",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8"
+    ]
+   },
+   {
+    "claimId": "figure:spread-b",
+    "kind": "calculation",
+    "value": "0.012",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8"
+    ]
+   },
+   {
+    "claimId": "figure:spread-a",
+    "kind": "calculation",
+    "value": "0.015",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8"
+    ]
+   },
+   {
+    "claimId": "figure:rede-a",
+    "kind": "calculation",
+    "value": "19.8",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8"
+    ]
+   },
+   {
+    "claimId": "figure:rede-a-retained",
+    "kind": "calculation",
+    "value": "19.8",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8"
+    ]
+   },
+   {
+    "claimId": "figure:need-peak",
+    "kind": "calculation",
+    "value": "25",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8"
+    ]
+   },
+   {
+    "claimId": "figure:carteira",
+    "kind": "calculation",
+    "value": "62",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8"
+    ]
+   },
+   {
+    "claimId": "figure:gap-bps",
+    "kind": "calculation",
+    "value": "125",
+    "unit": "bps",
+    "period": null,
+    "supportIds": [
+     "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526"
+    ]
+   },
+   {
+    "claimId": "figure:date-bps",
+    "kind": "calculation",
+    "value": "60",
+    "unit": "bps",
+    "period": null,
+    "supportIds": [
+     "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526"
+    ]
+   },
+   {
+    "claimId": "figure:known-bps",
+    "kind": "calculation",
+    "value": "70",
+    "unit": "bps",
+    "period": null,
+    "supportIds": [
+     "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526"
+    ]
+   },
+   {
+    "claimId": "figure:unexplained-bps",
+    "kind": "calculation",
+    "value": "55",
+    "unit": "bps",
+    "period": null,
+    "supportIds": [
+     "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526"
+    ]
+   },
+   {
+    "claimId": "figure:rating-low",
+    "kind": "calculation",
+    "value": "-165000",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526"
+    ]
+   },
+   {
+    "claimId": "figure:rating-high",
+    "kind": "calculation",
+    "value": "25000",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526"
+    ]
+   },
+   {
+    "claimId": "figure:cl-unused",
+    "kind": "calculation",
+    "value": "10",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60"
+    ]
+   },
+   {
+    "claimId": "figure:cash-end-2027",
+    "kind": "calculation",
+    "value": "-78.62584928",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:service-2027",
+    "kind": "calculation",
+    "value": "89.67953712",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:available-2027",
+    "kind": "calculation",
+    "value": "35.68437595",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:n-paths",
+    "kind": "calculation",
+    "value": "7",
+    "unit": "count",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:debenture-amount",
+    "kind": "calculation",
+    "value": "80",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:issue-floor",
+    "kind": "calculation",
+    "value": "74.44",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:debenture-term",
+    "kind": "calculation",
+    "value": "7",
+    "unit": "years",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:deb-cost-low",
+    "kind": "calculation",
+    "value": "0.0346124587317108532",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:deb-cost-high",
+    "kind": "calculation",
+    "value": "0.03562771280284960303",
+    "unit": "rate",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:bradesco-gap",
+    "kind": "calculation",
+    "value": "18.23207894",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:five-year-amort",
+    "kind": "calculation",
+    "value": "33.3333333166666666664",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:five-year-available",
+    "kind": "calculation",
+    "value": "23.71868000160049999999",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alt-amount",
+    "kind": "calculation",
+    "value": "70",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:cost-2028",
+    "kind": "calculation",
+    "value": "49.4360524",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:net-debt-2028",
+    "kind": "calculation",
+    "value": "79.31379459",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:sem-linha-debenture-cash",
+    "kind": "calculation",
+    "value": "15.45720185",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:sem-linha-debenture-lev",
+    "kind": "calculation",
+    "value": "2.19824203514563106796",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:sem-linha-debenture-cost",
+    "kind": "calculation",
+    "value": "49.4360524",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:sem-linha-debenture-net",
+    "kind": "calculation",
+    "value": "79.31379459",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:adiar-linha-cash",
+    "kind": "calculation",
+    "value": "-60.18234637",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:adiar-linha-lev",
+    "kind": "calculation",
+    "value": "2.20637578776699029126",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:adiar-linha-cost",
+    "kind": "calculation",
+    "value": "31.30590355",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:adiar-linha-net",
+    "kind": "calculation",
+    "value": "88.84389634",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:debenture-com-linha-cash",
+    "kind": "calculation",
+    "value": "15.03831359",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:debenture-com-linha-lev",
+    "kind": "calculation",
+    "value": "2.40055054504854368932",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:debenture-com-linha-cost",
+    "kind": "calculation",
+    "value": "56.89026112",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:debenture-com-linha-net",
+    "kind": "calculation",
+    "value": "102.14595542",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:manter-cash",
+    "kind": "calculation",
+    "value": "-78.62584928",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:manter-lev",
+    "kind": "calculation",
+    "value": "2.37858941300970873786",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:manter-cost",
+    "kind": "calculation",
+    "value": "25.4601388",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:manter-net",
+    "kind": "calculation",
+    "value": "81.01369161",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:ccb-tres-anos-cash",
+    "kind": "calculation",
+    "value": "-64.70729201",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:ccb-tres-anos-lev",
+    "kind": "calculation",
+    "value": "2.41029097844660194175",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:ccb-tres-anos-cost",
+    "kind": "calculation",
+    "value": "34.59185654",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:ccb-tres-anos-net",
+    "kind": "calculation",
+    "value": "87.04062531",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-com-banco-cash",
+    "kind": "calculation",
+    "value": "11.80899139",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-com-banco-lev",
+    "kind": "calculation",
+    "value": "2.40055054504854368932",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-com-banco-cost",
+    "kind": "calculation",
+    "value": "56.54389269",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-com-banco-net",
+    "kind": "calculation",
+    "value": "102.18926187",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-bradesco-cash",
+    "kind": "calculation",
+    "value": "-10.51712039",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-bradesco-lev",
+    "kind": "calculation",
+    "value": "2.40055054504854368932",
+    "unit": "multiple",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-bradesco-cost",
+    "kind": "calculation",
+    "value": "43.76769398",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   },
+   {
+    "claimId": "figure:alongar-bradesco-net",
+    "kind": "calculation",
+    "value": "93.09667803",
+    "unit": "BRL",
+    "period": null,
+    "supportIds": [
+     "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7"
+    ]
+   }
+  ]
+ },
+ {
+  "blockKey": "pending",
+  "kind": "section",
+  "content": {
+   "indicative": [
+    {
+     "figureId": "programs",
+     "reason": "Condições dos programas de antecipação indicativas até a confirmação do banco de cada programa"
+    },
+    {
+     "figureId": "spread-a",
+     "reason": "Condições dos programas de antecipação indicativas até a confirmação do banco de cada programa"
+    }
+   ],
+   "sources": [
+    {
+     "sourceId": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "status": "partial",
+     "reasons": [
+      "A ata não diz qual EBITDA a política usa"
+     ]
+    },
+    {
+     "sourceId": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "status": "partial",
+     "reasons": [
+      "largest_debtor_not_informed",
+      "lead_time_not_informed"
+     ]
+    }
+   ],
+   "authority": [
+    "linha",
+    "vencimentos",
+    "politica",
+    "safra"
+   ],
+   "template": "supplied_not_applied",
+   "figures": [
+    {
+     "figureId": "stages-npv",
+     "methodId": "analyze-investment-project",
+     "path": "comparison.metrics[caseId=staged].netPresentValue",
+     "reason": "A opção não está entre os casos revisados da análise do projeto"
+    },
+    {
+     "figureId": "cl-terms",
+     "methodId": "build-company-debt-table",
+     "path": "result.table.creditLines[id=conta-garantida].terms",
+     "reason": "A tabela de dívida não registra modalidade nem finalidade da linha de crédito"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "omissions",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "linha-sem-recomendacao",
+     "target": "recommendation",
+     "targetId": "linha",
+     "requestedBy": "Presidente do conselho",
+     "outcome": "applied",
+     "reason": "Retirei a recomendação; a página mostra as opções com os critérios e os números, e os fatos materiais continuam.",
+     "keptFigureIds": [
+      "irr",
+      "wacc",
+      "npv",
+      "payback",
+      "peak-need",
+      "npv-economy",
+      "npv-capex",
+      "npv-slow",
+      "npv-defer",
+      "irr-defer"
+     ]
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "links",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "ccb-bradesco",
+     "planSourceId": "plano-2027",
+     "instrumentId": "ccb-bradesco",
+     "tableSourceId": "tabela-divida",
+     "rowId": "ccb-bradesco"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "versions",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "version": 1,
+     "fingerprint": "cf37418d457ab5382f9367333242092cb9a0a3758655b9849eb17bad39b26ac6",
+     "mainPages": 13
+    },
+    {
+     "version": 2,
+     "fingerprint": "05036c05099fec8198a81c20db758dcabd0ecbe4e779a95f983f130e5c504614",
+     "mainPages": 13
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "sources",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "id": "tabela-divida",
+     "methodId": "build-company-debt-table",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "6870410dbe9effae885b9038468b914c233b9ca7f338214742cbec900b688d60",
+     "status": "prepared_for_human_review"
+    },
+    {
+     "id": "covenant",
+     "methodId": "measure-covenant-headroom",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "a77cca7ec984e7d876a08d938c7d50eb437e524976263418d3f24529addf5fd2",
+     "status": "partial"
+    },
+    {
+     "id": "caixa-semanal",
+     "methodId": "project-weekly-cash",
+     "methodVersion": "2026.10.23-v1",
+     "packetFingerprint": "cff3a8ff9045e6897c3ee15ad1af1010bb66ea5a59f7ce121f4ce065ed0c3efd",
+     "status": "prepared_for_human_review"
+    },
+    {
+     "id": "linha-embalagem",
+     "methodId": "analyze-investment-project",
+     "methodVersion": "2026.10.09-v2",
+     "packetFingerprint": "3a104b46865d122b9ebbf4df60e5b29409104ab31f670ea81752b131aba1add8",
+     "status": "prepared_for_human_review"
+    },
+    {
+     "id": "projecao",
+     "methodId": "build-operating-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "0e7e40fd02af5f47488801f9ec8be7f8a9f4d11430034560284275aff79584cb",
+     "status": "prepared_for_human_review"
+    },
+    {
+     "id": "plano-fpa",
+     "methodId": "challenge-financial-projection",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "9f3cf3c9bc925c8cd736cae3b204c4d84392e402efdc46ad67b2d56ee49de1cc",
+     "status": "prepared_for_human_review"
+    },
+    {
+     "id": "recebiveis",
+     "methodId": "monetize-receivables-for-working-capital",
+     "methodVersion": "2026.10.26-v1",
+     "packetFingerprint": "679aeab2981e3a163d34be615e0382d9402290b48ff460e08e0eae2c9c27cea8",
+     "status": "partial"
+    },
+    {
+     "id": "custo-relativo",
+     "methodId": "analyze-relative-debt-cost",
+     "methodVersion": "2026.10.19-v2",
+     "packetFingerprint": "63e3a922438e85fc6f75dc045ccc02423ca652001641bbf4a2318b3088b60526",
+     "status": "prepared_for_human_review"
+    },
+    {
+     "id": "plano-2027",
+     "methodId": "evaluate-financing-paths",
+     "methodVersion": "2026.10.27-v1",
+     "packetFingerprint": "d9d2e4cd61b1924344448f2345a9b47504dc53c843fe7a4c66f10230f4452ba7",
+     "status": "prepared_for_human_review"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "information-gaps",
+  "kind": "table",
+  "content": {
+   "rows": [
+    {
+     "operand": "board_capital.ac400000-0000-4000-9000-000000000095.page.linha.figure.stages-npv",
+     "reason": "figure_pending_reviewed_result"
+    },
+    {
+     "operand": "board_capital.ac400000-0000-4000-9000-000000000095.page.safra.figure.cl-terms",
+     "reason": "figure_pending_reviewed_result"
+    }
+   ]
+  },
+  "claims": []
+ },
+ {
+  "blockKey": "exclusions",
+  "kind": "section",
+  "content": {
+   "items": [
+    "recalculation",
+    "presentation_delivery",
+    "template_import",
+    "third_party_distribution",
+    "credit_approval"
+   ]
+  },
+  "claims": []
+ }
+]

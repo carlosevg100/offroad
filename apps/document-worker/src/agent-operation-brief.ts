@@ -72,9 +72,15 @@ import {operatingProjectionExtractionContract, proposeOperatingProjectionPremise
 import {projectionChallengeExtractionContract, proposeProjectionChallengePremisesForTurn, shouldProposeProjectionChallengePremises} from "./projection-challenge-premises-proposal";
 import {proposeReceivablesFundingPremisesForTurn, receivablesFundingExtractionContract, shouldProposeReceivablesFundingPremises} from "./receivables-funding-premises-proposal";
 import {proposeQuarterUpdatePremisesForTurn, quarterUpdateExtractionContract, shouldProposeQuarterUpdatePremises} from "./quarter-update-premises-proposal";
+import {proposeReceivedProposalPremisesForTurn, receivedProposalExtractionContract, shouldProposeReceivedProposalPremises} from "./received-proposal-premises-proposal";
+import {documentFolderExtractionContract, documentFolderResumeOf, documentFolderWaitWithdrawn, isDocumentFolderResumeNotice, proposeDocumentFolderPremisesForTurn, shouldProposeDocumentFolderPremises}
+  from "./document-folder-premises-proposal";
+import {financingPathsExtractionContract, proposeFinancingPathsPremisesForTurn, shouldProposeFinancingPathsPremises} from "./financing-paths-premises-proposal";
+import {boardMaterialExtractionContract, proposeBoardMaterialPremisesForTurn, shouldProposeBoardMaterialPremises} from "./board-material-premises-proposal";
 
 export type PremiseStep = "comparison" | "capacity" | "debt_table" | "covenant_headroom" | "weekly_cash"
-  | "operating_projection" | "projection_challenge" | "receivables_funding" | "quarter_update" | "investment";
+  | "operating_projection" | "projection_challenge" | "receivables_funding" | "quarter_update"
+  | "received_proposal" | "document_folder" | "financing_paths" | "board_material" | "investment";
 /** The one premise step a turn may run. The compiled objective decides first: a message that compiles
  * to one premise method runs that method's step, subject to its own cue. Otherwise, in precedence:
  * offers for the same need are compared; a capacity question is measured; a debt table is built;
@@ -91,8 +97,18 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
     case "projection_challenge": return own("projection_challenge", shouldProposeProjectionChallengePremises(message, hasAttachments, earlierUserMessages));
     case "receivables_funding": return own("receivables_funding", shouldProposeReceivablesFundingPremises(message, hasAttachments, earlierUserMessages));
     case "quarter_update": return own("quarter_update", shouldProposeQuarterUpdatePremises(message, hasAttachments, earlierUserMessages));
+    case "received_proposal": return own("received_proposal", shouldProposeReceivedProposalPremises(message, hasAttachments, earlierUserMessages));
+    case "document_folder": return own("document_folder", shouldProposeDocumentFolderPremises(message, hasAttachments, earlierUserMessages));
+    case "financing_paths": return own("financing_paths", shouldProposeFinancingPathsPremises(message, hasAttachments, earlierUserMessages));
+    case "board_capital_discussion": return own("board_material", shouldProposeBoardMaterialPremises(message, hasAttachments, earlierUserMessages));
     default: break;
   }
+  // A lote 4 step enters here only as a continuation (its cue is its compiled objective, above), so it is read first:
+  // a term sheet sent to answer a received proposal's question is that analysis, not a comparison of offers.
+  if (shouldProposeReceivedProposalPremises(message, hasAttachments, earlierUserMessages)) return "received_proposal";
+  if (shouldProposeDocumentFolderPremises(message, hasAttachments, earlierUserMessages)) return "document_folder";
+  if (shouldProposeFinancingPathsPremises(message, hasAttachments, earlierUserMessages)) return "financing_paths";
+  if (shouldProposeBoardMaterialPremises(message, hasAttachments, earlierUserMessages)) return "board_material";
   if (shouldProposeFinancingComparisonPremises(message, hasAttachments)) return "comparison";
   if (shouldProposeDebtCapacityPremises(message, hasAttachments, earlierUserMessages)) return "capacity";
   if (shouldProposeDebtTablePremises(message, hasAttachments, earlierUserMessages)) return "debt_table";
@@ -103,6 +119,34 @@ export function premiseStepForTurn(message: string, hasAttachments: boolean, ear
   if (shouldProposeReceivablesFundingPremises(message, hasAttachments, earlierUserMessages)) return "receivables_funding";
   if (shouldProposeQuarterUpdatePremises(message, hasAttachments, earlierUserMessages)) return "quarter_update";
   return "investment";
+}
+
+/** The objectives a message keeps the folder wait under: the folder itself, or nothing specific. Any other objective is
+ * a change of request. */
+const folderKeepingKinds = new Set<string>(["document_folder", "ambiguous", "documents_to_case", "information_organization", "factual_question"]);
+/** The lote 4 method whose open cards this turn supersedes: a lote 4 premise step that answered (the person's turn on
+ * that method) and ended without a card, because the person corrected or rejected its premises and nothing can replace
+ * them yet. A step that did not run, or did not answer, supersedes nothing. */
+export const lote4PremiseMethods = {received_proposal: "evaluate-received-proposal", document_folder: "organize-document-folder", financing_paths: "evaluate-financing-paths",
+  board_material: "prepare-board-capital-discussion"} as const;
+export function premiseInvalidation(steps: Partial<Record<keyof typeof lote4PremiseMethods, {forAdvisor: {status: string}; proposal: unknown} | null>>): string | null {
+  for (const [step, method] of Object.entries(lote4PremiseMethods) as [keyof typeof lote4PremiseMethods, string][]) {
+    const r = steps[step];
+    if (r && r.forAdvisor.status === "missing" && !r.proposal) return method;
+  }
+  return null;
+}
+/** Whether the person withdrew a folder wait after it opened, read from their messages after the one it came from. */
+export function documentFolderResumeWithdrawn(context: {message_id: string; recent_messages: {id: string; role: string; content: string; created_at: string}[]},
+  sourceMessageId: string): boolean {
+  return documentFolderWaitWithdrawn(laterUserMessages(context, sourceMessageId),
+    (message) => !folderKeepingKinds.has(compileObjectiveToPlan({message, hasAttachments: false}).objectiveKind));
+}
+/** The person's messages after the one a folder wait came from, without the system's continuation notices. */
+function laterUserMessages(context: {message_id: string; recent_messages: {id: string; role: string; content: string; created_at: string}[]}, sourceMessageId: string): string[] {
+  const source = context.recent_messages.find((m) => m.id === sourceMessageId);
+  return context.recent_messages.filter((m) => m.role === "user" && m.id !== context.message_id && m.id !== sourceMessageId
+    && !isDocumentFolderResumeNotice(m.content) && (!source || m.created_at > source.created_at)).map((m) => m.content);
 }
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
@@ -376,6 +420,48 @@ Rules:
   before the calculation exists. When its status is missing because priorWeeklyCash or priorCovenant is
   absent, say that the update needs the completed weekly cash or covenant headroom result of this work
   first and offer to build it; for other missing items, ask in one short list, each with the reason.
+- receivedProposalPremises is the premise proposal for a financing proposal the company received. When proposed, the
+  proposal's terms, each use of the money, the company's calendar without the proposal, the limits and their tests,
+  the portfolio, the references, each ask and each alternative appear in a card below your reply, each with its
+  origin. Give the reading first: whether the proposal fits the use, what it does to cash, the covenant and the
+  collateral, the price on a comparable basis with IOF and costs, and that the numbers come after the user confirms.
+  Never say whether the proposal is good, nor state a spread, a cost or an amount, before the calculation exists, and
+  never speak for the bank. When its status is missing, ask for the missing items in one short list, each with the
+  reason; a reference coverage is asked with what it is for.
+- systemContinuation document_folder_readings_completed means the person wrote nothing new: the folder files they sent were
+  read and the organization continues. Never treat it as something the person said; open with the folder's reading.
+- systemContinuation document_folder_wait_withdrawn means the folder files finished reading after the person cancelled or
+  changed the request: nothing is organized and no card follows. Say so in one short sentence, never describe the files,
+  and never treat it as something the person said.
+- documentFolderPremises is the premise proposal for organizing a folder. When proposed, each file read with what it
+  is, of whom and of when, the registry, the open decisions and the vault appear in a card below your reply, each with
+  its origin. Give the reading first: what the folder holds, which version of each document counts, and what was not
+  read, and that the inventory comes after the user confirms. Never calculate, project or give an opinion on the
+  company. When its status is missing, ask for the missing items in one short list, each with the reason; an
+  unreadable or protected file is asked as a legible copy, by its position and name. A file whose missing item ends in
+  reading_pending is still being read: say how many files are in reading and that the inventory comes when they are
+  read; never ask the person for them. A missing item ending in rights_withdrawn is a file whose use is no longer
+  allowed: name it by position as not available and never describe its content. A missing item ending in contradiction is a question answered two ways: ask which
+  answer holds, quoting both, and never pick one.
+- financingPathsPremises is the premise proposal for the financing paths on one basis. When proposed, the debt in
+  force, the indenture and its basket, the projection, the variants of the investment, each instrument and each path
+  appear in a card below your reply, each with its origin. Give the reading first: what happens without action, each
+  path on the same basis with cash, service, tax, the indenture and the basket, that no bank or investor was
+  contacted, and that the numbers come after the user confirms. Never rank the paths or state a number before the
+  calculation exists. When its status is missing, ask for the missing items in one short list, each with the reason.
+- boardMaterialPremises is the premise proposal for the board's capital structure discussion. When proposed, the
+  completed analyses it reads, each deliberation with its deadline and each page appear in a card below your reply,
+  each with its origin; sources not run or not released are named as left out. Give the reading first: the agenda of
+  deliberations in order of deadline, that every number comes from a completed analysis and is checked against it,
+  and that the material comes after the user confirms. Never state a number the analyses do not hold. When its status
+  is missing because no source is released, say which completed analyses the material needs first; a missing item
+  instrumentLink.<instrument> asks which row of the debt table that instrument of the financing plan is (the same
+  contract), as a question, never as an error, showing the terms in instrumentLinks (both sides, with what is not
+  registered); instrumentLinkMismatch.<instrument>.<term> says the row the person named differs in that term and asks
+  again; linkAnswers.<n>.row or .instrument asks the person to name the row or the instrument as the table and the plan
+  name it; for other missing items, ask in one short list, each with the reason.
+  A card row of an identity proposed by the bridge is a proposal: say the person confirms it with the card or tells you
+  it is not the same contract.
 - Only use the patch paths allowed by the response schema.`;
 
 /** Shared with the protected provider probe; schema validation and authority stay unchanged. */
@@ -655,8 +741,25 @@ export async function processAgentOperationBriefJob(
       || !queue.loadPremiseEvidence || !queue.recordAgentResponseWithPremises);
     // One premise step per turn, in the precedence of premiseStepForTurn.
     // The person's earlier messages, without the one this turn answers.
-    const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id).map((message) => message.content);
-    const premiseStep = premiseStepOpen ? premiseStepForTurn(context.message, context.documents.length > 0, earlierUserMessages) : null;
+    // The system's continuation notices are not the person's words: they are never read as an answer or a request.
+    const earlierUserMessages = context.recent_messages.filter((message) => message.role === "user" && message.id !== context.message_id && !isDocumentFolderResumeNotice(message.content))
+      .map((message) => message.content);
+    // A continuation the folder readings resumed (document_folder_resume) runs the folder step with the framing the person
+    // gave, unless the person withdrew the request after the wait opened: a later message of theirs that cancels or refuses
+    // the folder, or asks for another method. Then the wait closes as cancelled, no card is proposed and the turn proposes
+    // no premises (the person's later message had its own turn on its own route).
+    const resumed = documentFolderResumeOf(job.payload.document_folder_resume);
+    const folderWithdrawn = resumed !== null && documentFolderResumeWithdrawn(context, resumed.sourceMessageId);
+    if (folderWithdrawn) {
+      const closed = await queue.cancelDocumentFolderWait?.(job).catch((error: unknown) => {
+        log("document_folder_premises.failed", {job: job.job_id, message: error instanceof Error ? error.message.slice(0, 200) : "unknown"});
+        return false;
+      });
+      log("document_folder_premises.withdrawn", {job: job.job_id, closed: closed === true});
+    }
+    const folderResume = folderWithdrawn ? null : resumed;
+    const premiseStep = !premiseStepOpen || folderWithdrawn ? null : folderResume ? "document_folder"
+      : premiseStepForTurn(context.message, context.documents.length > 0, earlierUserMessages);
     const comparisonTurn = premiseStep === "comparison";
     const comparison = !comparisonTurn ? null : await proposeFinancingComparisonPremisesForTurn({
           message: context.message, hasAttachments: context.documents.length > 0,
@@ -723,6 +826,29 @@ export async function processAgentOperationBriefJob(
     const quarterExtract = lote3("quarter_update", quarterUpdateExtractionContract);
     const quarter = !quarterExtract || !queue.loadQuarterUpdatePriors ? null
       : await proposeQuarterUpdatePremisesForTurn({...lote2Input, extract: quarterExtract, loadPriors: () => queue.loadQuarterUpdatePriors!(job)});
+    // Lote 4: one step per turn, as above.
+    const turnDate = context.recent_messages.find((m) => m.id === context.message_id)?.created_at ?? new Date().toISOString();
+    const receivedExtract = lote3("received_proposal", receivedProposalExtractionContract);
+    const receivedProposal = !receivedExtract ? null : await proposeReceivedProposalPremisesForTurn({...lote2Input, extract: receivedExtract});
+    const pathsExtract = lote3("financing_paths", financingPathsExtractionContract);
+    const paths = !pathsExtract ? null : await proposeFinancingPathsPremisesForTurn({...lote2Input, extract: pathsExtract});
+    const boardExtract = lote3("board_material", boardMaterialExtractionContract);
+    const board = !boardExtract || !queue.loadBoardMaterialPriors ? null
+      : await proposeBoardMaterialPremisesForTurn({...lote2Input, today: saoPauloDate(turnDate), extract: boardExtract, loadPriors: () => queue.loadBoardMaterialPriors!(job)});
+    const folderExtract = lote3("document_folder", documentFolderExtractionContract);
+    const folderEvidence = !folderExtract || !queue.loadDocumentFolder || !queue.loadDocumentFolderPrior || !queue.loadDocumentFolderReadings ? null
+      : await queue.loadDocumentFolder(job).catch((error: unknown) => {
+        log("document_folder_premises.failed", {job: job.job_id, message: error instanceof Error ? error.message.slice(0, 200) : "unknown"});
+        return null;
+      });
+    const folder = !folderExtract || !folderEvidence ? null : await proposeDocumentFolderPremisesForTurn({...lote2Input,
+      messageDate: turnDate, author: folderAuthor(folderEvidence),
+      loadFolder: async () => folderEvidence, loadPrior: () => queue.loadDocumentFolderPrior!(job),
+      // Each file is read in a reading job of its own, outside this turn and its budget; the turn reads what is ready
+      // and names the rest as in reading.
+      loadReadings: (request) => queue.loadDocumentFolderReadings!(job, request),
+      ...folderResume ? {resume: folderResume} : {},
+      extract: folderExtract});
     const premises = premiseStep !== "investment" ? null
       : await proposeInvestmentPremisesForTurn({
           message: context.message,
@@ -772,8 +898,10 @@ export async function processAgentOperationBriefJob(
                 ? workspaceJourneyBlueprint(executionRoute.analysisScope)
                 : null,
               collaborativeAdvisoryPolicy,
-              recentConversation: context.recent_messages.map(({role, content}) => ({role, content})),
-              latestUserMessage: context.message,
+              recentConversation: context.recent_messages.filter((m) => !(m.role === "user" && isDocumentFolderResumeNotice(m.content))).map(({role, content}) => ({role, content})),
+              // A turn the folder readings resumed has no message of the person: the system continues it.
+              latestUserMessage: resumed ? null : context.message,
+              systemContinuation: !resumed ? null : folderWithdrawn ? "document_folder_wait_withdrawn" : "document_folder_readings_completed",
               investmentPremises: premises?.forAdvisor ?? null,
               comparisonPremises: comparison?.forAdvisor ?? null,
               capacityPremises: capacity?.forAdvisor ?? null,
@@ -784,6 +912,10 @@ export async function processAgentOperationBriefJob(
               challengePremises: challenge?.forAdvisor ?? null,
               receivablesPremises: receivables?.forAdvisor ?? null,
               quarterPremises: quarter?.forAdvisor ?? null,
+              receivedProposalPremises: receivedProposal?.forAdvisor ?? null,
+              documentFolderPremises: folder?.forAdvisor ?? null,
+              financingPathsPremises: paths?.forAdvisor ?? null,
+              boardMaterialPremises: board?.forAdvisor ?? null,
             }),
           }],
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
@@ -900,7 +1032,12 @@ export async function processAgentOperationBriefJob(
       }
     }
     const premiseProposal = premises?.proposal ?? comparison?.proposal ?? capacity?.proposal ?? debtTable?.proposal ?? covenant?.proposal ?? weeklyCash?.proposal
-      ?? projection?.proposal ?? challenge?.proposal ?? receivables?.proposal ?? quarter?.proposal ?? null;
+      ?? projection?.proposal ?? challenge?.proposal ?? receivables?.proposal ?? quarter?.proposal
+      ?? receivedProposal?.proposal ?? folder?.proposal ?? paths?.proposal ?? board?.proposal ?? null;
+    // A lote 4 card the person corrected or rejected without a replacement proposal is superseded before the reply is
+    // recorded: the latest message decides, so the earlier card can no longer be confirmed.
+    const invalidated = premiseInvalidation({received_proposal: receivedProposal, document_folder: folder, financing_paths: paths, board_material: board});
+    if (invalidated && queue.supersedePremiseProposals) await queue.supersedePremiseProposals(job, invalidated);
     if (premiseProposal && !proposal && !response.activation && !executionBrief && queue.recordAgentResponseWithPremises) {
       await queue.recordAgentResponseWithPremises(job, assistantMessageId, response, premiseProposal);
     } else {
@@ -917,6 +1054,10 @@ export async function processAgentOperationBriefJob(
       challengePremises: challenge?.forAdvisor.status,
       receivablesPremises: receivables?.forAdvisor.status,
       quarterPremises: quarter?.forAdvisor.status,
+      receivedProposalPremises: receivedProposal?.forAdvisor.status,
+      documentFolderPremises: folder?.forAdvisor.status,
+      financingPathsPremises: paths?.forAdvisor.status,
+      boardMaterialPremises: board?.forAdvisor.status,
       messageId: assistantMessageId,
       state: response.state,
       proposalId: proposal?.id,
@@ -1566,4 +1707,17 @@ function enforceDirectNumericalSupport(
       priority: "required_now",
     },
   };
+}
+
+/** The calendar date in São Paulo of an ISO instant: the board material's "today". */
+function saoPauloDate(iso: string): string {
+  const at = new Date(iso);
+  return new Intl.DateTimeFormat("en-CA", {timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit"})
+    .format(Number.isFinite(at.getTime()) ? at : new Date());
+}
+
+/** The author of the turn's informed answers, as worker_document_folder_evidence_v1 names the person: name and role. */
+function folderAuthor(evidence: unknown): string | null {
+  const author = (evidence as {author?: unknown} | null)?.author;
+  return typeof author === "string" && author.trim() ? author.trim().slice(0, 200) : null;
 }

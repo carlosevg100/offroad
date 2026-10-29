@@ -35,6 +35,21 @@ describe("debt methods premises card", () => {
     const html = render("en-US");
     expect(html).toContain(en.DebtMethodsPremisesCard.methods.debtTable.title); expect(html).toContain("Reference date: 06/30/2026"); expect(html).toContain(en.DebtMethodsPremisesCard.confirm);
   });
+  it("speaks each lote 4 method's copy, its own group names and the folder's groups", () => {
+    const lote4 = {situationId: "refinancing", referenceDate: "2026-09-01", items: [
+      {group: "file", label: "dfs-2025.pdf", origin: "document", source: "Pasta enviada"},
+      {group: "option", label: "Alongar o Bradesco", origin: "informed", source: "Mensagem de 20/10"},
+      {group: "premise", label: "organize", labelKey: "documentFolderMode.organize", origin: "house", source: "Pedido da pessoa"},
+      {group: "premise", label: "IOF", labelKey: "creditTax", origin: "house", source: "Decreto 6.306/2007"},
+    ]};
+    const view = {...proposal, summary: lote4};
+    const folder = render("pt-BR", view, "organize-document-folder");
+    for (const text of [card.methods.documentFolder.title, card.groups.file, "dfs-2025.pdf", card.houseLabels.documentFolderMode.organize]) expect(folder).toContain(text);
+    const paths = render("pt-BR", view, "evaluate-financing-paths");
+    expect(paths).toContain(card.methods.financingPaths.groups.option); expect(paths).not.toContain(card.groups.option);
+    expect(render("en-US", view, "evaluate-received-proposal")).toContain(en.DebtMethodsPremisesCard.houseLabels.creditTax);
+    expect(render("pt-BR", view, "prepare-board-capital-discussion")).toContain(card.methods.boardMaterial.title);
+  });
   it("writes house labels in the viewer's language and keeps labels from the person or a document as written", () => {
     const summary = {situationId: "seasonal-working-capital", referenceDate: null, items: [
       {group: "view", label: "Com arrendamentos", labelKey: "leaseView", origin: "house", source: "Convenção da casa"},
@@ -102,7 +117,8 @@ describe("debt methods premises card", () => {
   });
   it("recognizes only the lote 2 and lote 3 premise methods", () => {
     expect(["build-company-debt-table", "measure-covenant-headroom", "project-weekly-cash", "build-operating-projection", "challenge-financial-projection",
-      "monetize-receivables-for-working-capital", "update-after-quarter-close"].every(isDebtPremiseMethod)).toBe(true);
+      "monetize-receivables-for-working-capital", "update-after-quarter-close", "organize-document-folder", "evaluate-received-proposal", "evaluate-financing-paths",
+      "prepare-board-capital-discussion"].every(isDebtPremiseMethod)).toBe(true);
     expect(isDebtPremiseMethod("assess-debt-capacity")).toBe(false); expect(isDebtPremiseMethod(undefined)).toBe(false); expect(isDebtPremiseMethod("toString")).toBe(false);
   });
 });

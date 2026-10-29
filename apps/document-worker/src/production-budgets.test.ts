@@ -29,7 +29,8 @@ import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processIntegrationPreviewRunJob} from "./integration-preview";
 import {jobModelBudget} from "./model-budgets";
 import {processOriginationThesisJob} from "./origination-thesis";
-import type {AgentOperationBriefJob, CapitalProjectAnalysisJob, CaseAnalysisJob, ClaimedJob, QueueClient, WorkConversationJob} from "./queue";
+import type {AgentOperationBriefJob, CapitalProjectAnalysisJob, CaseAnalysisJob, ClaimedJob, DocumentFolderReadingJob, QueueClient, WorkConversationJob} from "./queue";
+import {processDocumentFolderReadingJob} from "./document-folder-reading-job";
 import {STRUCTURE_DESIGN_SYSTEM, buildStructureDesignInput} from "./structure-design";
 import {processWorkConversationJob} from "./work-conversation";
 
@@ -280,6 +281,33 @@ describe("production budgets hold the largest request of every job", () => {
     expect(worstAttempt(path)).toBeLessThanOrEqual(budget);
     // The historical maximum (0.2245 USD per job) plus the largest request fits with room.
     expect(0.2245 + Math.max(...path)).toBeLessThanOrEqual(budget);
+  }, 120_000);
+
+  it("folder reading: one file at the largest content a reading holds, and its fallback, fit the job's own ceiling", async () => {
+    const text = await corpus();
+    // 400k characters of page text, the most one reading takes (maxDocumentFolderContent); a longer file is refused, never cut.
+    const pages = Array.from({length: 200}, (_, k) => ({n: k + 1, blocks: [{id: `p${k + 1}.b1`, kind: "text" as const, text: text.repeat(4).slice(k * 1_999, (k + 1) * 1_999)}], tables: [], scanned: false}));
+    const layer = {kind: "pdf", documentId: ids.brief, documentVersion: 1, scaleDeclarations: [], pages, stats: {pageCount: 200}};
+    const bytes = new TextEncoder().encode(JSON.stringify(layer));
+    const registry = Array.from({length: 200}, (_, k) => ({id: `entidade-${k}`, label: text.slice(k * 300, k * 300 + 300), groupLabel: text.slice(70_000, 70_300)}));
+    const job = {claimed: true, job_id: ids.job, capability_token: "c".repeat(64), lease_expires_at: "2026-09-24T18:00:00.000Z", attempt: 1, kind: "document_folder_reading",
+      organization_id: ids.organization, intake_session_id: ids.session, processing_run_id: ids.run,
+      payload: {source_document_id: ids.brief, sha256: "1".repeat(64), reader_version: "document-folder-reading.2026.10.27-v1", context_fingerprint: "2".repeat(64), context: {registry},
+        model_budget: {max_calls: 2, max_cost_usd: 1.7}}} as unknown as DocumentFolderReadingJob;
+    const queue = {
+      loadDocumentFolderReadingInput: async () => ({sourceDocumentId: ids.brief, sha256: "1".repeat(64), mimeType: "application/pdf", readerVersion: "document-folder-reading.2026.10.27-v1",
+        contextFingerprint: "2".repeat(64), context: {registry}, layerObjectPath: "o/l.json", layerSha256: createHash("sha256").update(bytes).digest("hex")}),
+      downloadDocumentFolderLayer: async () => bytes, recordDocumentFolderReading: async () => ({recorded: true}), complete: async () => {}, fail: async () => {},
+    } as unknown as QueueClient;
+    const recorded = recorder();
+    await processDocumentFolderReadingJob(job, {queue, gateway: recorded.gateway, log: () => {}});
+    const request = recorded.requests[0]!;
+    expect(request.task).toBe("document_folder_reading");
+    const {primary, fallback} = routes(request);
+    const path = [await reserve(request, primary), await reserve(request, fallback!)];
+    const budget = jobModelBudget({job, ...webSearch});
+    expect(budget).toEqual({maxCostUsd: productionModelCeilingsUsd.documentFolderReading, maxCalls: 2, researchReserveUsd: 0});
+    expect(worstAttempt(path)).toBeLessThanOrEqual(budget.maxCostUsd);
   }, 120_000);
 
   it("work conversation: the one call of a turn at every cap fits the database's 0.25", async () => {

@@ -16,6 +16,7 @@ export function productionCeilingUsd(job: ClaimedJob): number {
     case "preliminary_analysis": return productionModelCeilingsUsd.preliminaryAnalysis;
     case "agent_operation_brief": return productionModelCeilingsUsd.agentOperationBrief;
     case "work_conversation": return productionModelCeilingsUsd.workConversation;
+    case "document_folder_reading": return productionModelCeilingsUsd.documentFolderReading;
     // Deterministic proposal: no model call, so no money.
     case "execution_brief_proposal": return 0;
     case "capital_project_analysis": {

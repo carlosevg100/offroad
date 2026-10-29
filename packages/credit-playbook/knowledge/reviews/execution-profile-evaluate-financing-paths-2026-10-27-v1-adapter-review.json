@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "compiled-single-deterministic.v1",
+    "platformReleaseId": "evaluate-financing-paths-2026.10.27-v1",
+    "artifactHash": "9c30e707f5651248e691ad93100765bafcc0f6228c8e6c8ec99e24cb3ed556b5",
+    "profileFingerprint": "12e118f2368a16acebe989db1e5a032c18fb56503bec0c26c76dc8cfd4551214"
+  },
+  "subjectCommit": "476332feaf270b686fc6c007578e8a48e69fea1f",
+  "reviewer": "Codex CLI (ChatGPT app), independent technical reviewer",
+  "occurredAt": "2026-10-28T19:17:18.596Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4",
+    "manifestFileHash": "7c67d57b3eb079258a10f3829c3708c44496f2e0e2d9cd1e5c63a5c2d4fd27eb",
+    "canonicalProfileTextSha256": "85aca842fa29d7292d46bdc99f2c4967c183dc24676a66043da17e14cc4866a6",
+    "canonicalProfileTextBytes": 1434,
+    "reviewedWorktreeHead": "476332feaf270b686fc6c007578e8a48e69fea1f",
+    "originMainHead": "ee5ca744ff3c45461425e295d1b9d5314ef85dd6",
+    "checksPerformed": [
+      "git merge-base --is-ancestor confirmou sourceCommit ee5ca744ff3c45461425e295d1b9d5314ef85dd6 como ancestral de HEAD 476332feaf270b686fc6c007578e8a48e69fea1f.",
+      "SHA-256 dos bytes do snapshot: f920b1fc9b6358fc2ef3016919bdcbdf6e22f3cc0afee68e981718cc553f4d1a, igual ao snapshotHash do lock; sourceCommit do snapshot confere. Todos os 458 arquivos pinned conferem com git show no sourceCommit.",
+      "Manifesto no sourceCommit e no worktree idênticos, SHA-256 7c67d57b3eb079258a10f3829c3708c44496f2e0e2d9cd1e5c63a5c2d4fd27eb. Conferidos individualmente 449 executorSources, 9 pins do compilador, 5 de evidências e 2 parseOnlySources contra os bytes no commit e no snapshot.",
+      "node packages/credit-playbook/scripts/build-released-executors.mjs executado duas vezes com sucesso em Node 24.19.0. Artefatos idênticos byte a byte, 1794205 bytes, SHA-256 9c30e707f5651248e691ad93100765bafcc0f6228c8e6c8ec99e24cb3ed556b5, igual ao artifactHash do lock.",
+      "apps/document-worker/src/released-methods.generated.ts contém exatamente uma entrada da release, com methodId evaluate-financing-paths, methodVersion 2026.10.27-v1, manifestHash e artifactHash corretos. Manifesto empacotado idêntico ao manifesto fonte.",
+      "deriveExecutionProfile e executionCanonicalText executados a partir das fontes em HEAD. Texto idêntico byte a byte a /Users/olpi/Desktop/Offroad Capital/outputs/implementacao-lote4-2026-10-27/perfil/profile-evaluate-financing-paths.txt: 1434 bytes, SHA-256 85aca842fa29d7292d46bdc99f2c4967c183dc24676a66043da17e14cc4866a6.",
+      "Fingerprint interno recalculado sobre o perfil sem fingerprint: 12e118f2368a16acebe989db1e5a032c18fb56503bec0c26c76dc8cfd4551214, igual ao lock. ManifestHash recalculado sobre o manifesto sem manifestHash; derivação validou os hashes do compilador, dos componentes e do executor.",
+      "Política confirmada: grantsExecution=false; maxModelCalls=0; maxCostMicrousd=0; orçamento original com custo e chamadas zero; allowedEffects=[read_only]; tools=[]; allowedTools=[]; maximumEffect=none; maxDurationMs=61000. Exatamente um executor, @offroad/financial-model#prepareCapitalPathsPacket, versão 2026.10.27-v1; selectedComponentId=capital-paths.packet.",
+      "Em apps/document-worker: npx vitest run src/released-lote4-executors.test.ts src/released-capital-executor.test.ts src/execution-queue.test.ts src/compiled-method-adapters.test.ts. Exit 0: 4 arquivos passaram, 24 testes passaram, duração 35.52 s; transporte de banco simulado.",
+      "Leitura estática de supabase/migrations/20261028120400_lote4_payload_provenance.sql confirmou vínculo de evaluate-financing-paths à versão 2026.10.27-v1, ao manifestHash e306d411ea0e88bcbabe3bb3a62e80bfd43d1e65055477cfcda042d549606af4 e ao schema capital-structure-paths-packet-input.v1; methodId nulo retorna false. Arquivo com 18823 bytes, sem newline final, MD5 49a67c3d64dcd53dff32ea12be4b6073.",
+      "Comparação com 20261027010426_lote3_quarter_update_priors.sql: removidas apenas as 28 linhas marcadas lote 4 e os quatro novos métodos da lista, o corpo anterior de 13997 bytes é recuperado byte a byte. Ramos de capital, investimento, lote 1, lote 2 e lote 3 preservados em comportamento.",
+      "Blobs, SHA-256 do adaptador e último commit do helper obtidos diretamente do Git em HEAD; fontes locais do adaptador e helper idênticas aos blobs. origin/main registrado sem atualização remota. git status --porcelain=v1 vazio após builds e testes. Nenhum arquivo rastreado alterado e nenhum banco acessado.",
+      "JSON final validado em packages/credit-playbook por node --input-type=module com adapterReviewSchema.parse; schema estrito, sem chaves adicionais."
+    ]
+  },
+  "findings": [],
+  "verdictText": "Aprovado no escopo técnico solicitado. Identidades, hashes, reconstrução determinística, perfil canônico, política restritiva e 24 testes conferem. A migração vincula corretamente o método e preserva os ramos anteriores. Revisão estática do SQL, sem acesso a banco; aplicação e ativação em produção não foram verificadas."
+}

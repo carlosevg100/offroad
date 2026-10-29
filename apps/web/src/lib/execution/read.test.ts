@@ -22,6 +22,10 @@ import {auroraProjectionBasis as auroraChallengeBasis} from "../../../../../pack
 import {auroraReceivablesFundingBasis} from "../../../../../packages/financial-model/src/receivables-funding.test-support";
 import {auroraQuarterUpdateBasis} from "../../../../../packages/financial-model/src/quarter-update.test-support";
 import {c32PacketInput} from "../../../../../packages/financial-model/src/investment-decision-packet.test-support";
+import lote4DocumentFolderPacket from "../../../../../packages/domain-contracts/src/fixtures/document-folder-result-packet.json";
+import lote4ReceivedProposalPacket from "../../../../../packages/domain-contracts/src/fixtures/received-proposal-result-packet.json";
+import lote4FinancingPathsPacket from "../../../../../packages/domain-contracts/src/fixtures/financing-paths-result-packet.json";
+import lote4BoardMaterialPacket from "../../../../../packages/domain-contracts/src/fixtures/board-material-result-packet.json";
 import {mdTestGatesOf, projectWorkExecution, projectWorkExecutionList, readCommittedResult, workExecutionState} from "./read";
 import type {ExecutionRevisionState} from "./revision";
 
@@ -364,6 +368,24 @@ describe("the lote 3 results", () => {
     for (const schemaVersion of ["operating-projection-packet.v1", "projection-challenge-packet.v1", "receivables-funding-packet.v1", "quarter-update-packet.v1"]) {
       const result = read({schemaVersion});
       expect(fields.map((f) => result?.[f])).toEqual([null, null, null, null]);
+    }
+  });
+});
+
+describe("the lote 4 results", () => {
+  const fields = ["documentFolder", "receivedProposal", "financingPaths", "boardMaterial"] as const;
+  const read = (packet: unknown) => {
+    const view = projectWorkExecution({...base, result: committedResult(JSON.stringify(packet))});
+    return view.result && !view.result.withheld ? view.result : null;
+  };
+  it("reads each from committed bytes of an execution without a revision, through its blocks, and nothing else from them", () => {
+    const cases = [[lote4DocumentFolderPacket, "documentFolder"], [lote4ReceivedProposalPacket, "receivedProposal"], [lote4FinancingPathsPacket, "financingPaths"],
+      [lote4BoardMaterialPacket, "boardMaterial"]] as const;
+    for (const [packet, field] of cases) {
+      const result = read(packet)!;
+      expect(result[field], field).not.toBeNull();
+      for (const other of fields.filter((f) => f !== field)) expect(result[other], `${field} as ${other}`).toBeNull();
+      expect([result.packet, result.mdTest, result.investment, result.quarterUpdate, result.receivablesFunding]).toEqual([null, null, null, null, null]);
     }
   });
 });

@@ -804,6 +804,10 @@ export * from "./contextual-adoption";
 export * from "./artifact-protocol";
 export * from "./lote2-result-blocks";
 export * from "./lote3-result-blocks";
+export * from "./lote4-document-folder-result-blocks";
+export * from "./lote4-received-proposal-result-blocks";
+export * from "./lote4-financing-paths-result-blocks";
+export * from "./lote4-board-material-result-blocks";
 
 export * from "./review-protocol";
 export * from "./capital-public-capture";

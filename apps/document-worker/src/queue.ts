@@ -103,6 +103,8 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
     locale: z.enum(["pt-BR", "en-US"]),
     /** Set only on the recomputation of an institutional result the dependency graph scheduled (stage 18, increment 5A). */
     institutional_recompute_candidate_id: z.uuid().optional(),
+    /** Set only on a turn the folder readings resumed (ficha C09): the person's original message and framing. */
+    document_folder_resume: z.object({wait_id: z.uuid(), source_message_id: z.uuid(), framing: z.unknown()}).optional(),
   }),
 });
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
@@ -161,8 +163,16 @@ export const workConversationJobSchema = claimedJobBase.extend({
     model_budget: z.object({max_calls: z.literal(1), max_cost_usd: z.literal(0.25)})}).strict(),
 });
 export type WorkConversationJob = z.infer<typeof workConversationJobSchema>;
+/** One file of a folder (ficha C09) read in a job of its own, outside the conversation turn, under its own budget. */
+export const documentFolderReadingJobSchema = claimedJobBase.extend({
+  kind: z.literal("document_folder_reading"),
+  payload: z.object({source_document_id: z.uuid(), sha256: z.string().regex(/^[a-f0-9]{64}$/), reader_version: z.string().regex(/^[a-z0-9][a-z0-9.-]{0,79}$/),
+    context_fingerprint: z.string().regex(/^[a-f0-9]{64}$/), context: z.unknown(),
+    model_budget: z.object({max_calls: z.number().int().positive(), max_cost_usd: z.number().positive()})}).loose(),
+});
+export type DocumentFolderReadingJob = z.infer<typeof documentFolderReadingJobSchema>;
 export const claimedJobSchema = z.discriminatedUnion("kind", [
-  workConversationJobSchema, documentJobSchema, preliminaryAnalysisJobSchema, caseAnalysisJobSchema, executionBriefProposalJobSchema,
+  documentFolderReadingJobSchema, workConversationJobSchema, documentJobSchema, preliminaryAnalysisJobSchema, caseAnalysisJobSchema, executionBriefProposalJobSchema,
   agentOperationBriefJobSchema, capitalProjectAnalysisJobSchema,
 ]);
 export type ClaimedJob = z.infer<typeof claimedJobSchema>;
@@ -410,8 +420,28 @@ export type QueueClient = {
   loadPremiseEvidence?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The latest prior completed weekly cash and covenant results of the turn's work, for the quarter close. */
   loadQuarterUpdatePriors?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The work's folder for ficha C09: the dossier's registry, the company's open works, the vault by hash, each file of
+   * the work in arrival order with where its layer is stored, and the author and date of the turn's message. */
+  loadDocumentFolder?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The stored reading of each named file of the work, ready, refused or pending, queuing one reading job per pending file. */
+  loadDocumentFolderReadings?(job: AgentOperationBriefJob, request: {readerVersion: string; context: unknown; files: {documentId: string}[]; framing: unknown}): Promise<unknown>;
+  /** Closes the folder wait this continuation resumes as cancelled: the person withdrew the request after it opened. */
+  cancelDocumentFolderWait?(job: AgentOperationBriefJob): Promise<boolean>;
+  /** The reading job's file: the bytes it was queued for, its latest ready layer and the registry. */
+  loadDocumentFolderReadingInput?(job: DocumentFolderReadingJob): Promise<unknown>;
+  /** The layer of the reading job's file, as stored, under the job's own storage authority. */
+  downloadDocumentFolderLayer?(job: DocumentFolderReadingJob, objectPath: string): Promise<Uint8Array>;
+  /** The reading job's reading or its refusal by name, recorded once per organization, bytes, reader version and registry. */
+  recordDocumentFolderReading?(job: DocumentFolderReadingJob, outcome: {status: "ready"; reading: unknown} | {status: "refused"; refusalCode: string}): Promise<{recorded: boolean; resumed: number}>;
+  /** The latest completed folder inventory of the work, with its stored input and packet, for an update. */
+  loadDocumentFolderPrior?(job: AgentOperationBriefJob): Promise<unknown>;
+  /** The latest completed result of each source method of the board material, with its release state. */
+  loadBoardMaterialPriors?(job: AgentOperationBriefJob): Promise<unknown>;
   /** The turn's reply and its premise proposal, in one transaction; only a person's confirmation adopts them. */
   recordAgentResponseWithPremises?(job: AgentOperationBriefJob, assistantMessageId: string, response: unknown, premises: unknown): Promise<void>;
+  /** Supersedes the open cards of a lote 4 method from earlier messages of the work: the person corrected or rejected them
+   * and this turn proposes nothing in their place. */
+  supersedePremiseProposals?(job: AgentOperationBriefJob, methodId: string): Promise<number>;
   recordAgentResponse(
     job: AgentOperationBriefJob,
     assistantMessageId: string,
@@ -1260,6 +1290,50 @@ export function createQueueClient(
 
     async loadQuarterUpdatePriors(job) {
       return call("worker_quarter_update_priors_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async loadDocumentFolder(job) {
+      // The conversation reads no layer: each file is read by its own reading job.
+      return call("worker_document_folder_evidence_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async loadDocumentFolderReadings(job, request) {
+      return call("worker_document_folder_readings_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token,
+        p_reader_version: request.readerVersion, p_context: request.context, p_files: request.files, p_framing: request.framing});
+    },
+
+    async cancelDocumentFolderWait(job) {
+      return (await call("worker_cancel_document_folder_wait_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token})) === true;
+    },
+
+    async loadDocumentFolderReadingInput(job) {
+      return call("worker_document_folder_reading_input_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async downloadDocumentFolderLayer(_job, objectPath) {
+      // The storage gate admits this read only while the job is leased and only for the ready layer of its own file.
+      const stored = await supabase.storage.from("document-layers").download(objectPath);
+      if (stored.error || !stored.data) throw new Error("document_folder_layer_read_denied");
+      return new Uint8Array(await stored.data.arrayBuffer());
+    },
+
+    async recordDocumentFolderReading(job, outcome) {
+      const data = await call("worker_record_document_folder_reading_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token,
+        p_status: outcome.status, p_reading: outcome.status === "ready" ? outcome.reading : null, p_refusal_code: outcome.status === "refused" ? outcome.refusalCode : null});
+      return z.object({recorded: z.boolean(), resumed: z.number().int().min(0)}).parse(data);
+    },
+
+    async loadDocumentFolderPrior(job) {
+      return call("worker_document_folder_prior_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async loadBoardMaterialPriors(job) {
+      return call("worker_board_material_priors_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+
+    async supersedePremiseProposals(job, methodId) {
+      const n = await call("worker_supersede_premise_proposals_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_method_id: methodId});
+      return typeof n === "number" ? n : 0;
     },
 
     async recordAgentResponseWithPremises(job, assistantMessageId, response, premises) {

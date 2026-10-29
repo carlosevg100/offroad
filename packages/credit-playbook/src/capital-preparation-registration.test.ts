@@ -26,6 +26,7 @@ function withCandidate(test: (copy: string, component: Record<string, unknown>, 
     write(); test(copy, component, write);
   } finally {rmSync(copy, {recursive: true, force: true});}
 }
+/** Each test compiles every published method in a temporary copy; that grows with each lot, so the 5s default is too short on CI. */
 describe("contract preparation build-owned registration", () => {
   it("registers the preparation executor against its exact contracts and transitive sources", () => withCandidate(copy => {
     const p = buildMethodManifest(copy).provenance.find(p => p.procedure.id === "prepare-capital-structure-decision")! as CompiledProcedureManifest;
@@ -34,9 +35,9 @@ describe("contract preparation build-owned registration", () => {
     expect(e.sources.map(s => s.path)).toContain("packages/financial-model/src/capital-contract-output.ts");
     expect(e.sources.map(s => s.path)).toContain("packages/financial-model/contracts/capital-contract-preparation.json");
     expect(p.grantsExecution).toBe(false);
-  }));
+  }), 60_000);
   it("refuses an authored replacement for the registered preparation output", () => withCandidate((copy, component, write) => {
     component.outputs = {...component.outputs as object, value: {type: "string"}}; write();
     expect(() => buildMethodManifest(copy)).toThrow(/executor contract mismatch/);
-  }));
+  }), 60_000);
 });

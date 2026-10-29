@@ -11974,6 +11974,10 @@ export type Database = {
         }
         Returns: string
       }
+      board_material_prior_results_v1: {
+        Args: { p_work_id: string }
+        Returns: Json
+      }
       claim_case_brief: {
         Args: {
           p_lease_seconds?: number
@@ -12225,6 +12229,10 @@ export type Database = {
       }
       discard_artifact_import_v1: {
         Args: { p_candidate_id: string; p_command_id: string; p_reason: string }
+        Returns: Json
+      }
+      document_folder_prior_v1: {
+        Args: { p_work_id: string }
         Returns: Json
       }
       enqueue_deal_state_analysis: {
@@ -13101,6 +13109,15 @@ export type Database = {
         Returns: Json
       }
       request_work_execution_v3: {
+        Args: {
+          p_contract_text: string
+          p_gates_text: string
+          p_prior_results: Json
+          p_snapshot_text: string
+        }
+        Returns: Json
+      }
+      request_work_execution_v4: {
         Args: {
           p_contract_text: string
           p_gates_text: string

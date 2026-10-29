@@ -1,11 +1,14 @@
 import {executionCanonicalText, type ExecutionContract, type ExecutionGates} from "@offroad/agent-contracts";
-import {composeBoundCapitalPacketV2, composeBoundCovenantHeadroom, composeBoundDebtCapacity, composeBoundDebtTable, composeBoundFinancingComparison, composeBoundInvestmentPacket,
-  composeBoundOperatingProjection, composeBoundProjectionChallenge, composeBoundReceivablesFunding, composeBoundWeeklyCash, composeQuarterUpdateFromStoredPriors,
-  deriveBoundCapitalScope} from "@offroad/financial-model";
+import {composeBoundCapitalPacketV2, composeBoundCapitalPaths, composeBoundCovenantHeadroom, composeBoundDebtCapacity, composeBoundDebtTable, composeBoundFinancingComparison,
+  composeBoundInvestmentPacket, composeBoundOperatingProjection, composeBoundProjectionChallenge, composeBoundReceivablesFunding, composeBoundReceivedProposal, composeBoundWeeklyCash,
+  composeQuarterUpdateFromStoredPriors, deriveBoundCapitalScope, inventoryModes} from "@offroad/financial-model";
 import {readContextualBasis} from "@offroad/reconciliation";
 import {composeExecutionContract, contractBasisVersions, executionContractText, type ExecutionContractBasis, type ExecutionRequestIds} from "./contract";
 import {closeExecutionGates, openExecutionGates} from "./gates";
 import type {ExecutionGateRefusal} from "./refusal";
+import {boardMaterialContractBasis, boardMaterialMethodId, boardMaterialPriorResults, composeBoardMaterialPacket, type BoardMaterialPriorReference,
+  type BoardMaterialPriorResult} from "./board-material-compose";
+import {composeDocumentFolderRequest, documentFolderMethodId, type DocumentFolderPrior} from "./document-folder-compose";
 
 /** What was asked of an execution: the question, the objectives, the reference date and the situations. */
 export type CapitalExecutionAsk = {question: string; objectives: readonly string[]; asOf: string; situationIds: readonly string[]};
@@ -18,14 +21,23 @@ export type QuarterUpdatePrior = {executionId: string; inputSnapshot: string; re
 export type QuarterUpdatePriors = {weeklyCash: QuarterUpdatePrior | null; covenant: QuarterUpdatePrior | null};
 /** The references the request carries for the database to check, in a fixed order. */
 export type PriorResultReference = {role: "weekly_cash" | "covenant"; executionId: string; resultFingerprint: string};
+/** A folder update names the inventory it updates (role `inventario`); its stored base is checked byte for byte. */
+export type DocumentFolderPriorReference = {role: "inventario"; executionId: string; resultFingerprint: string};
+/** What a confirmed folder card asks: its mode, and the latest completed inventory when it is an update. */
+export type DocumentFolderAsk = {mode: (typeof inventoryModes)[number]; prior: DocumentFolderPrior | null};
 export const quarterUpdateMethodId = "update-after-quarter-close";
 
 export type CapitalExecutionComposition =
   | {ok: false; error: CapitalExecutionRefusal}
   | {ok: false; error: "provenance_denied"; unverifiedSources: ExecutionContractBasis["unverifiedSources"]}
   | {ok: true; contract: ExecutionContract; packet: unknown; gates: ExecutionGates; contractText: string; snapshotText: string; gatesText: string;
-    /** Only for the quarter close: the prior results the request names. */
-    priorResults?: PriorResultReference[]};
+    /** Only for the methods that read prior results of the work (quarter close, board material, folder update): the references the request names. */
+    priorResults?: PriorResultReference[] | BoardMaterialPriorReference[] | DocumentFolderPriorReference[]};
+
+/** What a method's packet may read beyond its own basis: the quarter close's priors and the dependents asked, the board
+ * material's reviewed results and their references, the folder's mode and prior inventory. */
+type PacketExtras = {quarter: QuarterUpdatePriors | null; askedDependentIds: readonly string[];
+  board: {priors: readonly BoardMaterialPriorResult[]; references: readonly BoardMaterialPriorReference[]} | null; folder: DocumentFolderAsk | null};
 
 /**
  * One capital execution request, composed from the basis the server assembled for its requester
@@ -41,7 +53,7 @@ export function composeCapitalExecutionRequest(input: {basis: ExecutionContractB
 }
 
 /** The packet composer of each released method, chosen by the method the server's basis names. */
-const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: CapitalExecutionAsk, priors: QuarterUpdatePriors | null, askedDependentIds: readonly string[]) => unknown> = {
+const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: CapitalExecutionAsk, extras: PacketExtras) => unknown> = {
   "prepare-capital-structure-decision": (basis, ask) => {
     const scope = {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId};
     const snapshot = readContextualBasis(basis.envelope, scope);
@@ -67,7 +79,17 @@ const packetComposers: Record<string, (basis: ExecutionContractBasis, ask: Capit
     composeBoundReceivablesFunding({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
   // The quarter close executes on its one basis; the prior weekly cash and covenant analyses are copied
   // verbatim from the stored inputs of the prior completed executions, which the database checks byte for byte.
-  [quarterUpdateMethodId]: (basis, ask, priors, askedDependentIds) => composeQuarterUpdatePacket(basis, ask, priors!, askedDependentIds),
+  [quarterUpdateMethodId]: (basis, ask, extras) => composeQuarterUpdatePacket(basis, ask, extras.quarter!, extras.askedDependentIds),
+  // Lote 4. The received proposal and the financing paths read only their adopted basis.
+  "evaluate-received-proposal": (basis, ask) =>
+    composeBoundReceivedProposal({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  "evaluate-financing-paths": (basis, ask) =>
+    composeBoundCapitalPaths({envelope: basis.envelope, scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}, question: ask.question}),
+  // The folder: the inventory on its basis, or the update against the prior inventory's stored base taken verbatim.
+  [documentFolderMethodId]: (basis, ask, extras) => composeDocumentFolderRequest({basis: {envelope: basis.envelope,
+    scope: {workId: basis.workId, purpose: basis.purpose, versionId: basis.versionId}}, question: ask.question, mode: extras.folder!.mode, prior: extras.folder!.prior}),
+  // The board material: the discussion on its basis with each reviewed result the basis names, verbatim from its stored row.
+  [boardMaterialMethodId]: (basis, ask, extras) => composeBoardMaterialPacket(basis, ask, extras.board!.priors, extras.board!.references),
 };
 
 /** The quarter close packet: the close on this basis, the priors verbatim from their stored inputs, and the dependents the
@@ -94,15 +116,28 @@ export function quarterUpdateContractBasis(basis: ExecutionContractBasis, priors
 /** Same order and refusals as the capital request, for any method with a packet composer. */
 export function composeMethodExecutionRequest(input: {basis: ExecutionContractBasis; ask: CapitalExecutionAsk; ids: ExecutionRequestIds; now?: Date; priors?: QuarterUpdatePriors;
   /** Quarter close only: the dependents the person explicitly asked to update, by id. */
-  askedDependentIds?: readonly string[]}): CapitalExecutionComposition {
+  askedDependentIds?: readonly string[];
+  /** Board material only: the latest completed result of each source role, as the server returned them. */
+  boardPriors?: readonly BoardMaterialPriorResult[];
+  /** Folder only: the mode the card was proposed with and the prior inventory it updates, if any. */
+  documentFolder?: DocumentFolderAsk}): CapitalExecutionComposition {
   const {ask} = input;
-  const composePacket = packetComposers[input.basis.profile.method.methodId];
+  const methodId = input.basis.profile.method.methodId;
+  const composePacket = packetComposers[methodId];
   if (!composePacket) return {ok: false, error: "method_unavailable"};
-  // Only the quarter close reads prior results; every other method ignores them and composes as before.
-  const quarter = input.basis.profile.method.methodId === quarterUpdateMethodId;
-  const priorResults = quarter && input.priors ? quarterUpdatePriorResults(input.priors) : null;
-  if (quarter && !priorResults) return {ok: false, error: "priors_missing"};
-  const basis = quarter ? quarterUpdateContractBasis(input.basis, input.priors!) : input.basis;
+  // Only the quarter close, the board material and the folder read beyond their basis; every other method ignores the
+  // extras and composes as before.
+  const quarter = methodId === quarterUpdateMethodId, boardMaterial = methodId === boardMaterialMethodId, folder = methodId === documentFolderMethodId;
+  if (folder && !input.documentFolder) return {ok: false, error: "priors_missing"};
+  const quarterResults = quarter && input.priors ? quarterUpdatePriorResults(input.priors) : null;
+  if (quarter && !quarterResults) return {ok: false, error: "priors_missing"};
+  const boardResults = boardMaterial && input.boardPriors ? boardMaterialPriorResults(input.basis, input.boardPriors) : null;
+  if (boardMaterial && !boardResults) return {ok: false, error: "priors_missing"};
+  const folderPrior = folder ? input.documentFolder!.prior : null;
+  const priorResults = quarterResults ?? boardResults
+    ?? (folderPrior ? [{role: "inventario" as const, executionId: folderPrior.executionId, resultFingerprint: folderPrior.resultFingerprint}] : null);
+  const basis = quarter ? quarterUpdateContractBasis(input.basis, input.priors!)
+    : boardMaterial ? boardMaterialContractBasis(input.basis, input.boardPriors!, boardResults!) : input.basis;
   const opened = openExecutionGates({company: basis.company, method: basis.profile.method, situationIds: ask.situationIds, referenceDate: ask.asOf});
   if (!opened.ok) return {ok: false, error: opened.error};
   // Every adopted source must be pinned with verified bytes and current rights, or the database
@@ -110,7 +145,8 @@ export function composeMethodExecutionRequest(input: {basis: ExecutionContractBa
   if (basis.unverifiedSources.length) return {ok: false, error: "provenance_denied", unverifiedSources: basis.unverifiedSources};
   let packet: unknown; let snapshotText: string; let contract: ExecutionContract; let contractText: string;
   try {
-    packet = composePacket(basis, ask, quarter ? input.priors! : null, quarter ? input.askedDependentIds ?? [] : []);
+    packet = composePacket(basis, ask, {quarter: quarter ? input.priors! : null, askedDependentIds: quarter ? input.askedDependentIds ?? [] : [],
+      board: boardMaterial ? {priors: input.boardPriors!, references: boardResults!} : null, folder: folder ? input.documentFolder! : null});
     snapshotText = executionCanonicalText(packet);
     contract = composeExecutionContract(basis, snapshotText, input.ids, input.now);
     contractText = executionContractText(contract);

@@ -1,11 +1,12 @@
 "use server";
 
 import {askedQuarterUpdateDependents, checkQuarterUpdatePins, type PriorResultPins} from "@/lib/execution/quarter-update-pins";
+import {checkBoardMaterialPins} from "@/lib/execution/board-material-pins";
 import {randomUUID} from "node:crypto";
 import {z} from "zod";
 import {revalidatePath} from "next/cache";
-import {composeCapitalExecutionRequest, composeMethodExecutionRequest, executionContractBasisSchema, quarterUpdateMethodId, type ExecutionContractBasis,
-  type QuarterUpdatePriors} from "@offroad/execution-request";
+import {boardMaterialMethodId, boardMaterialRoles, checkDocumentFolderPin, composeCapitalExecutionRequest, composeMethodExecutionRequest, documentFolderMethodId, documentFolderMode,
+  executionContractBasisSchema, quarterUpdateMethodId, type BoardMaterialPriorResult, type DocumentFolderAsk, type ExecutionContractBasis, type QuarterUpdatePriors} from "@offroad/execution-request";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {capitalDecisionPurpose} from "@/lib/advisor/adoption-basis-reader";
 import {executionRequestFailure, type ExecutionRequestError} from "@/lib/execution/failure";
@@ -74,6 +75,7 @@ const capacitySituations = ["capex-infrastructure", "structural-working-capital"
 const projectionSituations = ["stable-business-high-conversion", "structural-working-capital", "capex-infrastructure"];
 const receivablesFundingSituations = ["seasonal-working-capital", "structural-working-capital"];
 const quarterUpdateSituations = ["near-covenant", "seasonal-working-capital"];
+const receivedProposalSituations = ["seasonal-working-capital", "structural-working-capital", "capex-infrastructure", "refinancing"];
 const premiseMethods: Record<string, {key: string; text: string; ask: (summary: Record<string, unknown>) => {question: string; objectives: string[]; situationIds: string[]} | null}> = {
   "analyze-investment-project": {key: "investment.premises",
     text: "Premissas de um investimento confirmadas pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada uma.",
@@ -132,6 +134,31 @@ const premiseMethods: Record<string, {key: string; text: string; ask: (summary: 
       ? {question: "O que o fechamento do trimestre mudou e qual decisão ficou em risco?",
         objectives: ["Explicar cada desvio por causa, separar o pontual do que continua, atualizar o caixa semanal e o covenant sobre as versões anteriores preservadas, dizer qual decisão muda, a ação dentro do aprovado e o que não mudou"],
         situationIds: [summary.situationId]} : null},
+  // Lote 4.
+  [documentFolderMethodId]: {key: "document-folder.premises",
+    text: "Leituras de cada arquivo da pasta, cadastro, decisões em curso, cofre e respostas confirmados pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada um.",
+    // The folder is the base when versions of the numbers diverge, and before the debt is discussed when that is the request.
+    ask: (summary) => documentFolderMode(summary) === null ? null : {question: "O que tem na pasta, qual versão vale e o que falta?",
+      objectives: ["Dizer o que cada arquivo é, de quem e de quando, resolver as versões, apontar o que muda uma decisão em curso e listar o que falta por finalidade e o que não foi lido"],
+      situationIds: [documentFolderMode(summary) === "organize_for_debt" ? "refinancing" : "unaudited-divergent-numbers"]}},
+  "evaluate-received-proposal": {key: "received-proposal.premises",
+    text: "Termos da proposta recebida, usos do dinheiro, calendário, limites, carteira, referências, pedidos e alternativas confirmados pela pessoa na conversa: documento, informado, faixa de mercado ou premissa da casa, conforme a origem de cada um.",
+    ask: (summary) => typeof summary.situationId === "string" && receivedProposalSituations.includes(summary.situationId)
+      ? {question: "A proposta recebida cabe na companhia e o que pedir ao banco?",
+        objectives: ["Ler o prazo contra o uso, o caixa com a proposta, o covenant na definição da escritura e no caso do banco, a garantia contra a carteira e a exceção, o preço em base comparável com IOF e custos, os pedidos e as alternativas"],
+        situationIds: [summary.situationId]} : null},
+  "evaluate-financing-paths": {key: "financing-paths.premises",
+    text: "Dívida vigente, escritura, projeção, variantes do investimento, instrumentos e caminhos confirmados pela pessoa na conversa: documento, informado ou premissa da casa, conforme a origem de cada um.",
+    ask: (summary) => summary.situationId === "refinancing"
+      ? {question: "Que caminhos de financiamento fazem sentido, na mesma base?",
+        objectives: ["Recalcular cada caminho com caixa, imposto, escritura, exceção e amortização depois do horizonte, ordenar pelos critérios e recomendar com condição e plano alternativo datado"],
+        situationIds: ["refinancing"]} : null},
+  [boardMaterialMethodId]: {key: "board-capital-discussion.premises",
+    text: "Data e pauta da reunião, análises revisadas fixadas por execução, deliberações, páginas e pedidos confirmados pela pessoa na conversa: análise revisada, informado ou premissa da casa, conforme a origem de cada um.",
+    ask: (summary) => summary.situationId === "board-capital-discussion"
+      ? {question: "Que decisões o conselho precisa tomar sobre a estrutura de capital, e com que números?",
+        objectives: ["Propor o roteiro das deliberações por prazo, montar as páginas com números lidos das análises revisadas, a síntese, o apêndice e as perguntas com resposta, conferindo cada número na análise de origem"],
+        situationIds: ["refinancing"]} : null},
 };
 type PremiseSuccess = {ok: true; versionId: string; executionId: string | null; calculation: "requested" | "pending_release"};
 type PremiseFailure = {ok: false; error: ExecutionRequestError | "company_unregistered" | "superseded"; missing?: ("weeklyCash" | "covenant")[]};
@@ -140,6 +167,12 @@ const sourcePin = z.object({resourceId: z.uuid(), sourceVersionId: z.uuid(), con
 const priorSchema = z.object({executionId: z.uuid(), methodId: z.string(), methodVersion: z.string(), inputSnapshot: z.string().min(2), inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sources: z.array(sourcePin), committedAt: z.string()}).loose();
 const priorsSchema = z.object({weeklyCash: priorSchema.nullable(), covenant: priorSchema.nullable()}).loose();
+/** board_material_prior_results_v1: the latest completed execution of each source role of the board material. */
+const boardRole = z.enum(Object.keys(boardMaterialRoles) as [keyof typeof boardMaterialRoles, ...(keyof typeof boardMaterialRoles)[]]);
+const boardPriorsSchema = z.object({priors: z.array(z.object({role: boardRole, methodId: z.string(), executionId: z.uuid(), result: z.string().min(2),
+  resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), sources: z.array(sourcePin), moneyScale: z.enum(["reais", "millions"]).nullable()}).loose()).max(16)}).loose();
+/** document_folder_prior_v1: the latest completed inventory of the work, or null. */
+const folderPriorSchema = z.object({prior: z.object({executionId: z.uuid(), resultFingerprint: z.string().regex(/^[a-f0-9]{64}$/), inputSnapshot: z.string().min(2)}).loose().nullable()}).loose();
 
 /** The person confirms the premises the conversation proposed. The company the dossier names as
  * its subject and the work's premise definition give every hypothesis its identity; the database
@@ -188,6 +221,32 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
     if (!asked) return failure({code: "22023"});
     askedDependentIds = asked;
   }
+  // The board material reads the reviewed results its card pinned; a newer result of any of them supersedes the card.
+  let boardPriors: BoardMaterialPriorResult[] | undefined;
+  if (proposal.data.method_id === boardMaterialMethodId) {
+    const read = await supabase.rpc("board_material_prior_results_v1", {p_work_id: projectId});
+    if (read.error) return failure(read.error);
+    const found = boardPriorsSchema.safeParse(read.data);
+    if (!found.success) return failure(null);
+    if (!checkBoardMaterialPins(summary, found.data.priors).ok) return {ok: false, error: "superseded"};
+    boardPriors = found.data.priors.map((p) => ({role: p.role, methodId: p.methodId, executionId: p.executionId, result: p.result, resultFingerprint: p.resultFingerprint, sources: p.sources,
+      moneyScale: p.moneyScale}));
+  }
+  // The folder: an inventory card goes ahead while the work has no completed inventory; an update card only over the inventory it pinned.
+  let documentFolder: DocumentFolderAsk | undefined;
+  if (proposal.data.method_id === documentFolderMethodId) {
+    const mode = documentFolderMode(summary);
+    if (!mode) return failure({code: "22023"});
+    const read = await supabase.rpc("document_folder_prior_v1", {p_work_id: projectId});
+    if (read.error) return failure(read.error);
+    const found = folderPriorSchema.safeParse(read.data);
+    if (!found.success) return failure(null);
+    const facts = proposal.data.facts && typeof proposal.data.facts === "object" && !Array.isArray(proposal.data.facts) ? proposal.data.facts as Record<string, unknown> : {};
+    const latest = found.data.prior ? {executionId: found.data.prior.executionId, resultFingerprint: found.data.prior.resultFingerprint, inputSnapshot: found.data.prior.inputSnapshot} : null;
+    const pinned = checkDocumentFolderPin(summary, facts, latest);
+    if (!pinned.ok) return {ok: false, error: "superseded"};
+    documentFolder = {mode, prior: pinned.prior};
+  }
   const dossiers = await supabase.from("dossiers").select("id").eq("organization_id", organization.id).in("resource_id", [projectId, proposal.data.intake_session_id]);
   if (dossiers.error || !dossiers.data?.length) return {ok: false, error: "company_unregistered"};
   const now = new Date().toISOString();
@@ -219,16 +278,22 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   if (!basis.success || basis.data.workId !== projectId || basis.data.versionId !== versionId || basis.data.purpose !== capitalDecisionPurpose) return failure({code: "22023"});
   const composed = composeMethodExecutionRequest({basis: basis.data,
     ask: {...ask, asOf: now.slice(0, 10)},
-    ids: {executionId: randomUUID(), requestId, processingRunId: randomUUID(), snapshotId: randomUUID()}, ...priors ? {priors, askedDependentIds} : {}});
+    ids: {executionId: randomUUID(), requestId, processingRunId: randomUUID(), snapshotId: randomUUID()}, ...priors ? {priors, askedDependentIds} : {},
+    ...boardPriors ? {boardPriors} : {}, ...documentFolder ? {documentFolder} : {}});
   if (!composed.ok) return composed.error === "method_unavailable" ? {ok: true, versionId, executionId: null, calculation: "pending_release"}
     : composed.error === "provenance_denied" || composed.error === "composition_invalid" ? failure({code: "22023"}) : refused(composed.error);
-  // Only the quarter close names prior results, through the v3 producer; every other method keeps v2.
-  // The request names exactly the prior executions the card pinned.
-  if (composed.priorResults && (!pins || composed.priorResults.length !== 2 || composed.priorResults.some((r, k) => r.role !== pins![k]!.role
+  // The quarter close names prior results through the v3 producer, the board material and a folder update through v4; every
+  // other method keeps v2. The quarter close names exactly the prior executions the card pinned; the board material exactly the
+  // results its basis names (the composition checked them against the card's pins above); a folder update the inventory it pinned.
+  if (composed.priorResults && quarterPriors(proposal.data.method_id) && (!pins || composed.priorResults.length !== 2 || composed.priorResults.some((r, k) => r.role !== pins![k]!.role
     || r.executionId !== pins![k]!.executionId || r.resultFingerprint !== pins![k]!.resultFingerprint))) return {ok: false, error: "superseded"};
-  const requested = composed.priorResults
+  const priorResults = composed.priorResults?.map((r) => ({role: r.role, executionId: r.executionId, resultFingerprint: r.resultFingerprint}));
+  const requested = priorResults && quarterPriors(proposal.data.method_id)
     ? await supabase.rpc("request_work_execution_v3", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText,
       p_prior_results: pins!})
+    : priorResults
+    ? await supabase.rpc("request_work_execution_v4", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText,
+      p_prior_results: priorResults})
     : await supabase.rpc("request_work_execution_v2", {p_contract_text: composed.contractText, p_snapshot_text: composed.snapshotText, p_gates_text: composed.gatesText});
   if (requested.error) {
     if (requested.error.code === "23505" && requested.error.message.includes("execution_request_conflict")) {
@@ -242,6 +307,9 @@ export async function confirmPremiseProposal(input: unknown): Promise<PremiseSuc
   revalidatePath(`/${locale}/app/projects/${projectId}/executions`);
   return {ok: true, versionId, executionId: result.data.executionId, calculation: "requested"};
 }
+
+/** The quarter close names its priors from the card's pins; the other methods from the composition. */
+const quarterPriors = (methodId: string) => methodId === quarterUpdateMethodId;
 
 /** The company a premise card calculates for, registered from the card itself when the work's dossier
  * names none yet: the person states the company's name and CNPJ once, the identity is reviewed under
