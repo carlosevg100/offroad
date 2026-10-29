@@ -1,3 +1,7 @@
+## 2026-10-29: correções de dependências sinalizadas pelo GitHub
+
+Candidato `fix/dependency-security-patches`: patch de Vite 8.2.1 para 8.2.4, Vitest e mocker 4.1.11 para 4.1.12, fast-uri 3.1.7 para 3.1.9 e brace-expansion 1.1.20/5.0.11 para 1.1.21/5.0.12. O GitHub reportou 15 alertas abertos; o de risco alto é o bypass de launch-editor no Windows, em ferramenta de desenvolvimento. A auditoria do lockfile atualizado não reportou vulnerabilidades conhecidas. Isso não comprova ausência de falhas do produto nem fecha os alertas da main antes da integração. Sem mudança de autorização, esquema, método publicado ou major de ferramenta. Evidência e gates em `docs/security/DEPENDENCY-PATCHES-2026-10-29.md`.
+
 ## 2026-10-10: ponte da conversa para premissas de investimento
 
 Teste SQL `supabase/tests/work_premise_proposals.sql` passou no staging (transação desfeita, nenhum dado remanescente): proposta só com capacidade do job, chaves e caminhos estranhos recusados, membro sem acesso não vê nem confirma, confirmação grava três hipóteses como o dono com entidade e definição escolhidas, retentativa idempotente, impressão digital alterada recusada, escrita direta negada. Worker: `investment-premises-proposal.test.ts` (C32 completa com premissas da casa marcadas, custo de capital nunca padrão, falha nunca derruba o turno, UUID v5 com vetor independente). Web: `investment-premises-card.test.tsx` nas duas línguas. financial-model: composer e construtor de premissas reproduzem a C32 pela base adotada.
