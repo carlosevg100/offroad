@@ -1,6 +1,9 @@
 ## 2026-10-29: correções de dependências sinalizadas pelo GitHub
 
 Candidato `fix/dependency-security-patches`: patch de Vite 8.2.1 para 8.2.4, Vitest e mocker 4.1.11 para 4.1.12, fast-uri 3.1.7 para 3.1.9 e brace-expansion 1.1.20/5.0.11 para 1.1.21/5.0.12. O GitHub reportou 15 alertas abertos; o de risco alto é o bypass de launch-editor no Windows, em ferramenta de desenvolvimento. A auditoria do lockfile atualizado não reportou vulnerabilidades conhecidas. Isso não comprova ausência de falhas do produto nem fecha os alertas da main antes da integração. Sem mudança de autorização, esquema, método publicado ou major de ferramenta. Evidência e gates em `docs/security/DEPENDENCY-PATCHES-2026-10-29.md`. A CI exige nova execução após o ajuste de orçamento externo dos jobs para 60 minutos; nenhum check foi retirado.
+## 2026-10-29: avaliação real da classificação e extração documental
+
+Conta e namespace de avaliação configurados com credencial em cofre e sem acesso a clientes. A medição real da versão de produção revelou uma rota sem atestado de schema, erros de classificação com confiança alta e truncamento da extração. Candidato `fix/document-classification-readiness` corrige as distinções documentais, exige revisão no desacordo de classe, usa rotas cobertas pelos atestados existentes e envia a desativação explícita do raciocínio na enumeração de campos. A janela inteira tem teto de 16 mil tokens e linhas mantêm 4 mil, sempre com reserva de custo. Classificador v3, extrator v4 e gateway v5 de 29/10. Avaliações finais, gate completo, CI e promoção pendentes. Detalhes e falhas preservadas em `docs/build/document-model-readiness-2026-10-29.md`.
 
 ## 2026-10-10: ponte da conversa para premissas de investimento
 

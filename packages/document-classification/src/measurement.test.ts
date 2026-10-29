@@ -93,7 +93,7 @@ describe("classification measurement run", () => {
     expect(classificationMeasurementResultSchema.parse(JSON.parse(JSON.stringify(result)))).toEqual(result);
     // The class follows the kind through the ontology, as the classifier decides it, not the model's own reading.
     expect(result.documents).toEqual([
-      {document: "01_Carta.pdf", actualKind: "capital_request_letter", actualClass: "company_document", actualPeriodEnd: null, confidence: 0.91, costUsd: 0.0021, calls: 1, ms: 500},
+      {document: "01_Carta.pdf", actualKind: "capital_request_letter", actualClass: "company_document", actualPeriodEnd: null, confidence: 0.79, costUsd: 0.0021, calls: 1, ms: 500},
       {document: "02_DF.pdf", actualKind: "audited_financial_statements", actualClass: "audited", actualPeriodEnd: "2025-12-31", confidence: 0.64, costUsd: 0.0021, calls: 1, ms: 500},
     ]);
     // The classifier read the parse the script produced: the file name, the detected type and the parser's scale declarations.

@@ -248,8 +248,11 @@ async function main(): Promise<void> {
     periodAccuracy: periodScored.length === 0 ? null : ratio(periodCorrect.length, periodScored.length),
     confidentlyWrong: confidentlyWrong.length,
     unsureButRight: unsureButRight.length,
-    costUsd: usage.costUsd,
-    calls: usage.calls,
+    // The accepted answer omits failed/repair attempts; the governed ledger counts all of them.
+    costUsd: evaluation.totalCostMicrousd / 1_000_000,
+    calls: evaluation.cost.spentCalls + evaluation.cost.reservedCalls,
+    acceptedAnswerCostUsd: usage.costUsd,
+    acceptedAnswerCalls: usage.calls,
     rows,
   };
 

@@ -108,10 +108,10 @@ describe("policy", () => {
   it("resolves primary, shadow and fallback per task, cheapest current-generation model first on extraction", () => {
     const extraction = resolveModel("extract_fields", defaultTaskPolicies, {});
     expect(extraction.primary).toEqual({provider: "anthropic", model: "claude-sonnet-5", effort: "medium"});
-    expect(extraction.fallback).toEqual({provider: "openai", model: "gpt-5.6-terra", effort: "medium"});
+    expect(extraction.fallback).toEqual({provider: "anthropic", model: "claude-opus-5", effort: "medium"});
     const shadow = resolveModel("extract_fields", defaultTaskPolicies, {useShadow: true});
     expect(shadow.primary).toEqual({provider: "openai", model: "gpt-5.6-terra", effort: "medium"});
-    expect(resolveModel("classify_document", defaultTaskPolicies, {}).primary).toEqual({provider: "openai", model: "gpt-5.6-terra", effort: "low"});
+    expect(resolveModel("classify_document", defaultTaskPolicies, {}).primary).toEqual({provider: "anthropic", model: "claude-sonnet-5", effort: "low"});
     expect(resolveModel("extract_semantic_objects", defaultTaskPolicies, {})).toMatchObject({
       primary: {provider: "anthropic", model: "claude-sonnet-5", effort: "low"},
       fallback: {provider: "openai", model: "gpt-5.6-terra", effort: "low"},
@@ -156,9 +156,7 @@ describe("policy", () => {
     const start = defaultTaskPolicies.extract_fields.primary;
     const second = nextEscalation("extract_fields", start);
     expect(second).toEqual({provider: "anthropic", model: "claude-opus-5", effort: "high"});
-    const third = nextEscalation("extract_fields", second!);
-    expect(third).toEqual({provider: "openai", model: "gpt-5.6-sol", effort: "high"});
-    expect(nextEscalation("extract_fields", third!)).toBeUndefined();
+    expect(nextEscalation("extract_fields", second!)).toBeUndefined();
     expect(nextEscalation("extract_complex", {provider: "anthropic", model: "claude-opus-5", effort: "high"})).toEqual({provider: "anthropic", model: "claude-opus-5", effort: "max"});
     // a model outside the ladder starts at the first step instead of failing
     expect(nextEscalation("extract_fields", {provider: "openai", model: "gpt-5.6-terra", effort: "medium"})).toEqual(defaultTaskPolicies.extract_fields.escalation?.[0]);
@@ -210,6 +208,7 @@ describe("adapters (pure builders)", () => {
     expect(params.model).toBe("claude-sonnet-5");
     expect(params.system).toEqual([{type: "text", text: "system prompt", cache_control: {type: "ephemeral"}}]);
     expect(params.thinking).toEqual({type: "adaptive"});
+    expect(buildAnthropicParams({...request, thinking: "off"}).thinking).toEqual({type: "disabled"});
     expect(params.output_config?.effort).toBe("low");
     expect(params.output_config?.format?.type).toBe("json_schema");
     const content = params.messages[0]?.content;
@@ -288,11 +287,20 @@ describe("adapters (pure builders)", () => {
   });
 });
 
+// Generic cross-provider failover tests keep their own explicit policy. Production
+// documentary routes are tested above and depend on the account's eligible resources.
+function createCrossProviderTestGateway(config: Parameters<typeof createModelGateway>[0]) {
+  return createModelGateway({policies: {...defaultTaskPolicies, extract_fields: {
+    ...defaultTaskPolicies.extract_fields,
+    fallback: {provider: "openai", model: "gpt-5.6-terra", effort: "medium"},
+  }}, ...config});
+}
+
 describe("gateway", () => {
   it("routes by policy, redacts personal identifiers, validates output and accounts cost", async () => {
     const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "audited_financial_statements", confidence: 0.93})]);
     const logs: GatewayCallLog[] = [];
-    const gateway = createModelGateway({adapters: {anthropic}, onCall: (log) => logs.push(log), now: (() => { let t = 0; return () => (t += 5); })()});
+    const gateway = createCrossProviderTestGateway({adapters: {anthropic}, onCall: (log) => logs.push(log), now: (() => { let t = 0; return () => (t += 5); })()});
     const result = await gateway.complete(baseRequest);
     expect(result.output).toEqual({kind: "audited_financial_statements", confidence: 0.93});
     expect(result.provider).toBe("anthropic");
@@ -304,7 +312,7 @@ describe("gateway", () => {
     const sent = anthropic.calls[0]?.input[0];
     expect(sent?.type === "text" ? sent.text : "").toContain("529.***.***-**");
     expect(sent?.type === "text" ? sent.text : "").toContain("[email]");
-    expect(anthropic.calls[0]?.maxOutputTokens).toBe(8_000);
+    expect(anthropic.calls[0]?.maxOutputTokens).toBe(16_000);
     expect(logs).toHaveLength(1);
     expect(JSON.stringify(logs[0])).not.toContain("Demonstrações");
     expect(logs[0]?.schemaName).toBe("document_profile");
@@ -319,7 +327,7 @@ describe("gateway", () => {
   it("falls back to the next provider on refusal, error or invalid output", async () => {
     const refusing = fakeAdapter("anthropic", [ok("claude-sonnet-5", undefined, {stopReason: "refusal"})]);
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
-    const gateway = createModelGateway({adapters: {anthropic: refusing, openai}});
+    const gateway = createCrossProviderTestGateway({adapters: {anthropic: refusing, openai}});
     const result = await gateway.complete(baseRequest);
     expect(result.usedFallback).toBe(true);
     expect(result.provider).toBe("openai");
@@ -328,12 +336,12 @@ describe("gateway", () => {
 
     const failing = fakeAdapter("anthropic", [new Error("boom")]);
     const openai2 = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
-    const second = await createModelGateway({adapters: {anthropic: failing, openai: openai2}}).complete(baseRequest);
+    const second = await createCrossProviderTestGateway({adapters: {anthropic: failing, openai: openai2}}).complete(baseRequest);
     expect(second.attempts[0]).toMatchObject({outcome: "error", message: "Error: boom"});
 
     const invalid = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "nope", confidence: 2})]);
     const openai3 = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
-    const third = await createModelGateway({adapters: {anthropic: invalid, openai: openai3}}).complete(baseRequest);
+    const third = await createCrossProviderTestGateway({adapters: {anthropic: invalid, openai: openai3}}).complete(baseRequest);
     expect(third.attempts[0]?.outcome).toBe("invalid_output");
     expect(third.usedFallback).toBe(true);
   });
@@ -344,7 +352,7 @@ describe("gateway", () => {
       ok("claude-sonnet-5", {kind: "secret_rejected_value", confidence: 0.5}),
       ok("claude-sonnet-5", {kind: "other", confidence: 0.5}),
     ]);
-    const result = await createModelGateway({
+    const result = await createCrossProviderTestGateway({
       adapters: {anthropic},
       onCall: (log) => logs.push(log),
     }).complete({...baseRequest, outputMode: "prompted_json", allowFallback: false});
@@ -380,7 +388,7 @@ describe("gateway", () => {
       ok("claude-sonnet-5", {kind: "other", confidence: 0.2}),
     ]);
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.9})]);
-    const result = await createModelGateway({
+    const result = await createCrossProviderTestGateway({
       adapters: {anthropic, openai},
       onCall: (log) => logs.push(log),
     }).complete({
@@ -418,7 +426,7 @@ describe("gateway", () => {
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
     const request = {...baseRequest, outputMode: "prompted_json" as const, allowFallback: false};
 
-    await expect(createModelGateway({adapters: {anthropic, openai}}).complete(request))
+    await expect(createCrossProviderTestGateway({adapters: {anthropic, openai}}).complete(request))
       .rejects.toMatchObject({code: "all_attempts_failed"});
     expect(anthropic.calls).toHaveLength(1);
     expect(openai.calls).toHaveLength(0);
@@ -442,14 +450,14 @@ describe("gateway", () => {
       alternativeId: null,
     })]);
 
-    const result = await createModelGateway({adapters: {anthropic}}).complete(request);
+    const result = await createCrossProviderTestGateway({adapters: {anthropic}}).complete(request);
 
     expect(result.output).toEqual({status: "not_ready", alternativeId: null});
   });
 
   it("records failed provider attempts without logging their content", async () => {
     const logs: GatewayCallLog[] = [];
-    const gateway = createModelGateway({
+    const gateway = createCrossProviderTestGateway({
       adapters: {
         anthropic: fakeAdapter("anthropic", [new Error("provider response contained private content")]),
         openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]),
@@ -473,7 +481,7 @@ describe("gateway", () => {
       code: "rate_limit_exceeded",
       type: "rate_limit_error",
     });
-    const gateway = createModelGateway({
+    const gateway = createCrossProviderTestGateway({
       adapters: {
         anthropic: fakeAdapter("anthropic", [error]),
         openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]),
@@ -493,7 +501,7 @@ describe("gateway", () => {
 
   it("throws when every attempt fails and reports each attempt", async () => {
     const logs: GatewayCallLog[] = [];
-    const gateway = createModelGateway({adapters: {anthropic: fakeAdapter("anthropic", [new Error("down")]), openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {bad: true})])}, onCall: (log) => logs.push(log)});
+    const gateway = createCrossProviderTestGateway({adapters: {anthropic: fakeAdapter("anthropic", [new Error("down")]), openai: fakeAdapter("openai", [ok("gpt-5.6-terra", {bad: true})])}, onCall: (log) => logs.push(log)});
     await expect(gateway.complete(baseRequest)).rejects.toMatchObject({code: "all_attempts_failed"});
     expect(logs[1]?.validationIssues).toEqual(expect.arrayContaining([
       expect.objectContaining({path: "kind", code: "invalid_value"}),
@@ -509,7 +517,7 @@ describe("gateway", () => {
       stopReason: "max_tokens",
     })]);
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
-    const gateway = createModelGateway({
+    const gateway = createCrossProviderTestGateway({
       adapters: {anthropic, openai},
       budget: {maxCalls: 1},
       onCall: (log) => logs.push(log),
@@ -530,7 +538,7 @@ describe("gateway", () => {
       stopReason: "max_tokens",
     })]);
     const fallbackOpenai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
-    const recovered = await createModelGateway({
+    const recovered = await createCrossProviderTestGateway({
       adapters: {anthropic: fallbackAnthropic, openai: fallbackOpenai},
       budget: {maxCalls: 2},
       onCall: (log) => fallbackLogs.push(log),
@@ -541,17 +549,17 @@ describe("gateway", () => {
 
   it("enforces cost and call budgets", async () => {
     const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5}), ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
-    const gateway = createModelGateway({adapters: {anthropic}, budget: {maxCalls: 1}});
+    const gateway = createCrossProviderTestGateway({adapters: {anthropic}, budget: {maxCalls: 1}});
     await gateway.complete(baseRequest);
     await expect(gateway.complete(baseRequest)).rejects.toMatchObject({code: "budget_exceeded"});
-    const costly = createModelGateway({adapters: {anthropic: fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5})])}, budget: {maxCostUsd: 0.000001}});
+    const costly = createCrossProviderTestGateway({adapters: {anthropic: fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5})])}, budget: {maxCostUsd: 0.000001}});
     await expect(costly.complete(baseRequest)).rejects.toMatchObject({code: "budget_exceeded"});
   });
 
   it("reserves the worst-case request before calling a provider and keeps failed-call exposure", async () => {
     const anthropic = fakeAdapter("anthropic", [new Error("usage unavailable"), ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
-    const gateway = createModelGateway({
+    const gateway = createCrossProviderTestGateway({
       adapters: {anthropic, openai},
       budget: {maxCostUsd: 0.02, maxCalls: 2},
     });
@@ -563,7 +571,7 @@ describe("gateway", () => {
   it("uses the shadow model when asked and honours model overrides within the allowlist", async () => {
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.7})]);
     const anthropic = fakeAdapter("anthropic", [ok("claude-opus-5", {kind: "other", confidence: 0.7})]);
-    const gateway = createModelGateway({adapters: {openai, anthropic}});
+    const gateway = createCrossProviderTestGateway({adapters: {openai, anthropic}});
     const shadow = await gateway.complete({...baseRequest, useShadow: true});
     expect(shadow.provider).toBe("openai");
     const overridden = await gateway.complete({...baseRequest, model: {model: "claude-opus-5", effort: "high"}});
@@ -575,12 +583,12 @@ describe("gateway", () => {
   it("records and replays cassettes deterministically, and fails loudly on a replay miss", async () => {
     const store = new InMemoryCassetteStore();
     const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.6})]);
-    const recorder = createModelGateway({adapters: {anthropic}, cassette: {mode: "record", store}});
+    const recorder = createCrossProviderTestGateway({adapters: {anthropic}, cassette: {mode: "record", store}});
     const first = await recorder.complete(baseRequest);
     expect(first.fromCassette).toBe(false);
     expect(store.entries.size).toBe(1);
 
-    const replayer = createModelGateway({adapters: {anthropic: fakeAdapter("anthropic", [])}, cassette: {mode: "replay", store}});
+    const replayer = createCrossProviderTestGateway({adapters: {anthropic: fakeAdapter("anthropic", [])}, cassette: {mode: "replay", store}});
     const second = await replayer.complete(baseRequest);
     expect(second.fromCassette).toBe(true);
     expect(second.output).toEqual(first.output);
@@ -591,7 +599,7 @@ describe("gateway", () => {
 
   it("fails closed when data-policy context is absent and never calls a provider", async () => {
     const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
-    const gateway = createModelGateway({
+    const gateway = createCrossProviderTestGateway({
       adapters: {anthropic},
       providerDataPolicy: {enforce: true, assurances: {anthropic: assurance("anthropic", ["public", "confidential"])}},
     });
@@ -603,7 +611,7 @@ describe("gateway", () => {
     const anthropic = fakeAdapter("anthropic", [ok("claude-sonnet-5", {kind: "other", confidence: 0.5})]);
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.7})]);
     const logs: GatewayCallLog[] = [];
-    const gateway = createModelGateway({
+    const gateway = createCrossProviderTestGateway({
       adapters: {anthropic, openai},
       providerDataPolicy: {
         enforce: true,

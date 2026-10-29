@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "offroad.document-real-model-evidence.v1",
+  "scope": "Synthetic document classification through actual governed staging worker; no credit method release or universal support claim",
+  "observedAt": "2026-10-29T15:24:27.866836+00:00",
+  "cases": [
+    {
+      "caseId": "rede-horizonte",
+      "classifierVersion": "2026.10.29-e1-v3",
+      "documentsScored": 8,
+      "kindCorrect": 8,
+      "classCorrect": 8,
+      "periodsScored": 5,
+      "periodsCorrect": 5,
+      "confidentlyWrong": 0,
+      "executionId": "444a474b-b393-4e60-9e50-c901a5761e99",
+      "inputFingerprint": "8f9fcc2dec50e95ef88fa6b6e3a590b8cc67925502500a47fe9004ea59437a9e",
+      "resultFingerprint": "2a14ac419fb0ffdefc105dce15a335308eb3b5f7f699e68ecebf1ea0553974c7",
+      "outcome": "succeeded",
+      "calls": 9,
+      "costMicrousd": 140455,
+      "originalReportSha256": "af8d061d6e0cc4edc104452a4c3cfa30ee07ea9a3048b993057611deecef9589",
+      "receiptSha256": "22968c7eab842d5e15b5525fad629d4e9e3ff22208a9045c44952706a14c855c"
+    },
+    {
+      "caseId": "nimbus",
+      "classifierVersion": "2026.10.29-e1-v3",
+      "documentsScored": 6,
+      "kindCorrect": 6,
+      "classCorrect": 6,
+      "periodsScored": 3,
+      "periodsCorrect": 3,
+      "confidentlyWrong": 0,
+      "executionId": "7b6df0d4-8730-4928-ba4d-a9e949d26998",
+      "inputFingerprint": "1b66eeaec117a25a92ecd5263bcd66420ab1dcf5397a797d55a3b50bd0c64b72",
+      "resultFingerprint": "51006292fc2224be1aedca4385e8884e4526a149cc0e2940ccf4cb2e8dacb839",
+      "outcome": "succeeded",
+      "calls": 6,
+      "costMicrousd": 38781,
+      "originalReportSha256": "dfb542d9fc1096600a8287f906ee638c05db9f7d35ab21e97eb9f1cbf5b5b33c",
+      "receiptSha256": "6e30695f6ea802109b6df38c1869828b1b0b25e9855b8e65f198cddbf84f3892"
+    },
+    {
+      "caseId": "fakeco",
+      "classifierVersion": "2026.10.29-e1-v3",
+      "documentsScored": 9,
+      "kindCorrect": 9,
+      "classCorrect": 9,
+      "periodsScored": 5,
+      "periodsCorrect": 5,
+      "confidentlyWrong": 0,
+      "executionId": "7d102051-f5f6-4d6c-9ce1-c6ab53f28c62",
+      "inputFingerprint": "267a3cfee7fad53876ee98b2bc88421a8035b0c75085e28130263a070d27ff43",
+      "resultFingerprint": "feaf077ce8c25d13e58ada6f7b5f8c087da51ba3b838378091d1c2076941a28c",
+      "outcome": "succeeded",
+      "calls": 9,
+      "costMicrousd": 41892,
+      "originalReportSha256": "ce3d8e573e9b3eed8e99dd88a4a6916ae6f2cce2688044eb2b97e7ec42fc803b",
+      "receiptSha256": "b7ae9868836a5a4e0ea34f7cddba24436e1f34950fb374eb4250846e52422b31"
+    }
+  ],
+  "extraction": "pending full measurement",
+  "sources": {
+    "reports": "/Users/olpi/Desktop/Offroad Capital/outputs/validacao-documentos-reais-2026-10-29/classificacao",
+    "productionBaselineCommit": "18d00e7f53b7fb461878069b37cdb2e45a368646"
+  },
+  "productionPromotion": false
+}

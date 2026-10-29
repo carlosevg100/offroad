@@ -54,17 +54,17 @@ const anthropic = (model: string, effort: Effort): ModelRef => ({provider: "anth
 const openai = (model: string, effort: Effort): ModelRef => ({provider: "openai", model, effort});
 
 export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
-  classify_document: {primary: openai("gpt-5.6-terra", "low"), shadow: anthropic("claude-sonnet-5", "low"), fallback: anthropic("claude-sonnet-5", "low"), maxOutputTokens: 4_000, timeoutMs: 60_000},
-  locate_fields: {primary: openai("gpt-5.6-terra", "low"), fallback: anthropic("claude-sonnet-5", "low"), maxOutputTokens: 4_000, timeoutMs: 90_000},
+  classify_document: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: anthropic("claude-opus-5", "low"), maxOutputTokens: 4_000, timeoutMs: 60_000},
+  locate_fields: {primary: anthropic("claude-sonnet-5", "low"), fallback: anthropic("claude-opus-5", "low"), maxOutputTokens: 4_000, timeoutMs: 90_000},
   extract_fields: {
     primary: anthropic("claude-sonnet-5", "medium"),
     shadow: openai("gpt-5.6-terra", "medium"),
-    fallback: openai("gpt-5.6-terra", "medium"),
-    escalation: [anthropic("claude-sonnet-5", "medium"), anthropic("claude-opus-5", "high"), openai("gpt-5.6-sol", "high")],
-    // Extraction is evidence enumeration, not long-form writing. The previous 16k ceiling
-    // doubled both worst-case exposure and the preflight reservation without improving the
-    // measured documents; bounded chunks and table passes fit inside 8k.
-    maxOutputTokens: 8_000,
+    fallback: anthropic("claude-opus-5", "medium"),
+    escalation: [anthropic("claude-sonnet-5", "medium"), anthropic("claude-opus-5", "high")],
+    // The 2026-10-29 real-model run exhausted 8k with cited fields even with thinking
+    // explicitly disabled. Keep a bounded 16k whole-window response; row passes retain 4k.
+    // Every attempt still reserves this full upper bound before sending.
+    maxOutputTokens: 16_000,
     timeoutMs: 240_000,
   },
   extract_complex: {

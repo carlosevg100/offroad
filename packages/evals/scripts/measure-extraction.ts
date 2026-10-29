@@ -357,11 +357,11 @@ async function main(): Promise<void> {
   for (const row of perDocument) {
     console.log(`  ${row.document.padEnd(52)} ${String(row.candidates).padStart(4)} cand  ${String(row.chunks).padStart(2)} trechos  $${row.costUsd.toFixed(4)}  ${(row.ms / 1000).toFixed(1)}s`);
   }
-  console.log(`\nTotal: ${usage.calls} chamadas, $${usage.costUsd.toFixed(4)}`);
+  console.log(`\nTotal: ${evaluation.cost.spentCalls + evaluation.cost.reservedCalls} chamadas, $${(evaluation.totalCostMicrousd / 1_000_000).toFixed(4)} (ledger governado; inclui tentativas sem resposta aceita)`);
 
   mkdirSync(outDir, {recursive: true});
   const outPath = join(outDir, `extraction-${caseId}.json`);
-  writeFileSync(outPath, `${JSON.stringify({report, snapshot: extractionSnapshot, perDocument, detail, sweep: modelArg ? {model: modelArg} : null, raw: rawByDocument, promptVersion: measured.extractor.promptVersion}, null, 2)}\n`);
+  writeFileSync(outPath, `${JSON.stringify({report, cost: {costUsd: evaluation.totalCostMicrousd / 1_000_000, calls: evaluation.cost.spentCalls + evaluation.cost.reservedCalls, ledger: evaluation.cost, acceptedAnswerCostUsd: usage.costUsd, acceptedAnswerCalls: usage.calls}, snapshot: extractionSnapshot, perDocument, detail, sweep: modelArg ? {model: modelArg} : null, raw: rawByDocument, promptVersion: measured.extractor.promptVersion}, null, 2)}\n`);
   console.log(`\nrelatório completo: ${outPath}`);
 }
 

@@ -198,6 +198,8 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     try {
       const result = await gateway.complete({
         task: "extract_fields",
+        // Evidence enumeration must leave the response budget for cited fields.
+        thinking: "off",
         system: wholeSystem,
         input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, fields, evidence: chunk})}],
         schema: salvageExtractorOutputSchema,
@@ -264,6 +266,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     try {
       const result = await gateway.complete({
         task: "extract_fields",
+
         system: rowSystem,
         input: [{type: "text", text: buildExtractionPrompt({
           profile,

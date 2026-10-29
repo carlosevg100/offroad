@@ -7,7 +7,7 @@
  * refusal handling, minimization of personal identifiers, cassettes for
  * deterministic tests, and content-free call logs.
  */
-export const modelGatewayVersion = "2026.09.24-calibrated-reservation-v4";
+export const modelGatewayVersion = "2026.10.29-explicit-thinking-v5";
 
 export * from "./lineage";
 export * from "./data-policy";
