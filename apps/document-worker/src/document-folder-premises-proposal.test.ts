@@ -221,7 +221,7 @@ describe("ficha C09 bridge: the folder organized from the conversation", {timeou
     expect(resumed.summary.mode).toBe("organize_only");
     expect(extracted).toBe(0);
     // The notices are exactly the texts the database writes, and never count as the person's words.
-    const sql = readFileSync(new URL("../../../supabase/migrations/20261028120300_lote4_folder_reading.sql", import.meta.url), "utf8");
+    const sql = readFileSync(new URL("../../../supabase/migrations/20261029000458_lote4_folder_reading.sql", import.meta.url), "utf8");
     for (const text of Object.values(documentFolderResumeNotices)) {expect(sql).toContain(`'${text}'`); expect(isDocumentFolderResumeNotice(text)).toBe(true);}
     expect(isDocumentFolderResumeNotice("Só organiza, não analisa ainda.")).toBe(false);
   });

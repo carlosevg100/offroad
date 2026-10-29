@@ -8571,7 +8571,7 @@
           "mechanism": "generated_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 392,
           "anchor": "create or replace function private.bind_job_authority_v1()",
           "mechanism": "direct_ddl"
@@ -27748,7 +27748,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120400_lote4_payload_provenance.sql",
+          "path": "supabase/migrations/20261029000608_lote4_payload_provenance.sql",
           "line": 14,
           "anchor": "create or replace function private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
           "mechanism": "direct_ddl"
@@ -45209,7 +45209,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 365,
           "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
           "mechanism": "direct_ddl"
@@ -75750,7 +75750,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 367,
           "anchor": "create or replace function private.worker_can_access_document_storage_v1(p_bucket text,p_object_path text,p_write boolean)",
           "mechanism": "direct_ddl"
@@ -79406,7 +79406,7 @@
           "mechanism": "schema_move_or_rename"
         },
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 538,
           "anchor": "create or replace function private.worker_complete_job(p_job_id uuid, p_capability_token text, p_result jsonb DEFAULT '{}'::jsonb)",
           "mechanism": "direct_ddl"
@@ -79985,7 +79985,7 @@
           "mechanism": "schema_move_or_rename"
         },
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 459,
           "anchor": "create or replace function private.worker_fail_job(p_job_id uuid, p_capability_token text, p_error jsonb, p_retryable boolean DEFAULT true, p_retry_in_seconds integer DEFAULT 60)",
           "mechanism": "direct_ddl"
@@ -96273,7 +96273,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120000_lote4_financial_objectives.sql",
+          "path": "supabase/migrations/20261028235534_lote4_financial_objectives.sql",
           "line": 19,
           "anchor": "create or replace function private.worker_record_objective_plan_preflight_v1(",
           "mechanism": "direct_ddl"
@@ -319652,7 +319652,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 32,
           "anchor": "create or replace function private.worker_record_agent_response_with_premises_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_response jsonb, p_premises jsonb)",
           "mechanism": "direct_ddl"
@@ -320780,7 +320780,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 493,
           "anchor": "create or replace function private.record_execution_result_reply_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -343949,7 +343949,7 @@
       "reason": "Último resultado concluído de cada papel da discussão do conselho, na ordem da biblioteca.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 367,
           "anchor": "create function private.board_material_latest_priors_v1(p_org uuid,p_work uuid,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344003,7 +344003,7 @@
       "reason": "Conteúdo de uma fonte do conselho: método e versão do papel, liberação, impressão, texto guardado byte a byte, fontes fixadas de novo e escala monetária declarada contra a do método.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 136,
           "anchor": "create function private.board_material_prior_content_v1(p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,",
           "mechanism": "direct_ddl"
@@ -344057,7 +344057,7 @@
       "reason": "Método, versão liberada e esquema de pacote que cada papel da discussão do conselho lê.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 29,
           "anchor": "create function private.board_material_prior_method_v1(p_role text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344121,7 +344121,7 @@
       "reason": "Leitura, pela pessoa que confirma o cartão do conselho, dos resultados anteriores com o texto guardado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 380,
           "anchor": "create function private.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344175,7 +344175,7 @@
       "reason": "Os nove papéis da discussão do conselho, na ordem da biblioteca.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 44,
           "anchor": "create function private.board_material_prior_roles_v1() returns text[]",
           "mechanism": "direct_ddl"
@@ -344229,7 +344229,7 @@
       "reason": "Recusa pelo nome a escala monetária declarada por uma fonte do conselho quando falta, é desconhecida ou difere da escala de adoção do método.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 82,
           "anchor": "create function private.board_material_prior_scale_v1(p_declared text,p_method text,p_version text) returns text",
           "mechanism": "direct_ddl"
@@ -344283,7 +344283,7 @@
       "reason": "Conferência que o ramo de proveniência da discussão do conselho chama: a execução carrega os anteriores que o produtor v4 gravou.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 210,
           "anchor": "create function private.board_material_priors_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
@@ -344337,7 +344337,7 @@
       "reason": "Tipo de decisão em curso derivado do último objetivo de cada trabalho aberto da companhia.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 462,
           "anchor": "create function private.document_folder_decision_kind_v1(p_objective text) returns text",
           "mechanism": "direct_ddl"
@@ -344391,7 +344391,7 @@
       "reason": "Conteúdo do inventário anterior da pasta: método e versão, liberação, impressão, base igual à guardada e fontes fixadas de novo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 156,
           "anchor": "create function private.document_folder_prior_content_v1(p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_prior_contract jsonb,p_prior_snapshot jsonb,",
           "mechanism": "direct_ddl"
@@ -344445,7 +344445,7 @@
       "reason": "Método, versão e esquema de pacote do inventário anterior da pasta.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 50,
           "anchor": "create function private.document_folder_prior_method_v1() returns jsonb",
           "mechanism": "direct_ddl"
@@ -344499,7 +344499,7 @@
       "reason": "Conferência que o ramo de proveniência da pasta chama: inventário inicial sem anterior, atualização com o anterior gravado pelo produtor v4.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 241,
           "anchor": "create function private.document_folder_prior_recorded_v1(p_contract jsonb,p_payload jsonb) returns boolean",
           "mechanism": "direct_ddl"
@@ -344563,7 +344563,7 @@
       "reason": "Leitura, pela pessoa que confirma a atualização da pasta, do último inventário concluído.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 419,
           "anchor": "create function private.document_folder_prior_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344617,7 +344617,7 @@
       "reason": "Dossiês de um trabalho que o sujeito pode ler: os próprios, os das sessões e os vinculados.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 471,
           "anchor": "create function private.document_folder_work_dossiers_v1(p_org uuid,p_work uuid,p_subject uuid) returns uuid[]",
           "mechanism": "direct_ddl"
@@ -344671,7 +344671,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 298,
           "anchor": "create function private.execution_result_board_material_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344725,7 +344725,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 188,
           "anchor": "create function private.execution_result_document_folder_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344779,7 +344779,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 241,
           "anchor": "create function private.execution_result_financing_paths_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344833,7 +344833,7 @@
       "reason": "Espelho em SQL do mapeamento de blocos do resultado do lote 4, despacho no projetor, rastro e resposta citada; copia os valores do pacote sem recalcular, fechado a todos os papéis da API.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 125,
           "anchor": "create function private.execution_result_received_proposal_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344887,7 +344887,7 @@
       "reason": "Última execução concluída de um método e versão no trabalho, determinística, ausente quando o fechamento não pode ser lido.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 341,
           "anchor": "create function private.lote4_latest_prior_v1(p_org uuid,p_work uuid,p_expected jsonb,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -344941,7 +344941,7 @@
       "reason": "Veredito de identidade dos anteriores do lote 4: outra organização ou outro trabalho é não encontrado; sem resultado concluído é recusado pelo nome.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 114,
           "anchor": "create function private.lote4_prior_identity_v1(p_kind text,p_org uuid,p_work uuid,p_found boolean,p_exec_org uuid,p_exec_work uuid,p_outcome text) returns text",
           "mechanism": "direct_ddl"
@@ -344995,7 +344995,7 @@
       "reason": "Resolve uma referência do lote 4 contra as linhas guardadas, com o fechamento de fontes do anterior pelo mecanismo normal de direitos; recusa cada falha pelo nome.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 175,
           "anchor": "create function private.lote4_prior_resolve_v1(p_kind text,p_org uuid,p_work uuid,p_role text,p_ref jsonb,p_embedded jsonb,p_contract_sources jsonb,p_subject uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345049,7 +345049,7 @@
       "reason": "Escala de adoção de cada método liberado, fixada pela construção da ponte daquele método.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 70,
           "anchor": "create function private.prior_method_money_scale_v1(p_method text,p_version text) returns text",
           "mechanism": "direct_ddl"
@@ -345103,7 +345103,7 @@
       "reason": "Se a versão de um método está liberada para todas as organizações, como o perfil de execução exige.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 58,
           "anchor": "create function private.prior_method_released_v1(p_method text,p_version text) returns boolean",
           "mechanism": "direct_ddl"
@@ -345157,7 +345157,7 @@
       "reason": "Toda fonte que o anterior fixou é fixada de novo pelo contrato, com a mesma versão, bytes e recurso.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 124,
           "anchor": "create function private.prior_sources_pinned_v1(p_prior_contract jsonb,p_contract_sources jsonb) returns boolean",
           "mechanism": "direct_ddl"
@@ -345221,7 +345221,7 @@
       "reason": "Produtor v4, só para a discussão do conselho e a atualização da pasta: resolve e grava os anteriores e chama o produtor v2 sem mudança.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 269,
           "anchor": "create function private.request_work_execution_producer_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345285,7 +345285,7 @@
       "reason": "Leitura, pelo worker com a capacidade do job, dos anteriores da discussão do conselho.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 400,
           "anchor": "create function private.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345349,7 +345349,7 @@
       "reason": "Leitura, pelo worker com a capacidade do job, da pasta do trabalho, do cadastro, dos trabalhos abertos e do cofre da companhia.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 481,
           "anchor": "create function private.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345413,7 +345413,7 @@
       "reason": "Leitura, pelo worker com a capacidade do job, do último inventário concluído da pasta.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 439,
           "anchor": "create function private.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345477,7 +345477,7 @@
       "reason": "Leitura, pela pessoa que confirma o cartão do conselho, dos resultados anteriores com o texto guardado.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 393,
           "anchor": "create function public.board_material_prior_results_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345541,7 +345541,7 @@
       "reason": "Leitura, pela pessoa que confirma a atualização da pasta, do último inventário concluído.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 433,
           "anchor": "create function public.document_folder_prior_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345605,7 +345605,7 @@
       "reason": "Porta autenticada do produtor v4, invocador.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 332,
           "anchor": "create function public.request_work_execution_v4(p_contract_text text,p_snapshot_text text,p_gates_text text,p_prior_results jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345669,7 +345669,7 @@
       "reason": "Leitura, pelo worker com a capacidade do job, dos anteriores da discussão do conselho.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 413,
           "anchor": "create function public.worker_board_material_priors_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345733,7 +345733,7 @@
       "reason": "Leitura, pelo worker com a capacidade do job, da pasta do trabalho, do cadastro, dos trabalhos abertos e do cofre da companhia.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 559,
           "anchor": "create function public.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345797,7 +345797,7 @@
       "reason": "Leitura, pelo worker com a capacidade do job, do último inventário concluído da pasta.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 452,
           "anchor": "create function public.worker_document_folder_prior_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -345851,7 +345851,7 @@
       "reason": "Escala monetária de cada fonte da discussão do conselho lida da base adotada; autor e data da mensagem na evidência da pasta.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+          "path": "supabase/migrations/20261029000247_lote4_priors.sql",
           "line": 93,
           "anchor": "create function private.board_material_declared_scale_v1(p_snapshot jsonb,p_id text) returns text",
           "mechanism": "direct_ddl"
@@ -345905,7 +345905,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 40,
           "anchor": "create function private.document_folder_reading_budget_v1() returns jsonb",
           "mechanism": "direct_ddl"
@@ -345969,7 +345969,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 230,
           "anchor": "create function private.worker_document_folder_reading_input_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -346033,7 +346033,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 301,
           "anchor": "create function private.worker_record_document_folder_reading_v1(p_job_id uuid,p_capability_token text,p_status text,p_reading jsonb,p_refusal_code text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -346097,7 +346097,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 247,
           "anchor": "create function public.worker_document_folder_reading_input_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -346161,7 +346161,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 320,
           "anchor": "create function public.worker_record_document_folder_reading_v1(p_job_id uuid,p_capability_token text,p_status text,p_reading jsonb,p_refusal_code text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -346207,7 +346207,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 34,
           "anchor": "create policy document_folder_readings_deny on private.document_folder_readings as restrictive for all to public using(false) with check(false);",
           "mechanism": "direct_ddl"
@@ -346325,7 +346325,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 14,
           "anchor": "create table private.document_folder_readings (",
           "mechanism": "direct_ddl"
@@ -346363,7 +346363,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno da conversa, guardada por organização, bytes, versão do leitor e cadastro; a porta de storage passa a valer só para esse job, só leitura da camada pronta do próprio arquivo.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 36,
           "anchor": "create trigger document_folder_readings_immutable before update or delete on private.document_folder_readings for each row execute function private.guard_contribution_immutable_v1();",
           "mechanism": "direct_ddl"
@@ -346427,7 +346427,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 165,
           "anchor": "create function private.worker_document_folder_readings_v1(p_job_id uuid,p_capability_token text,p_reader_version text,p_context jsonb,p_files jsonb,p_framing jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -346491,7 +346491,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 221,
           "anchor": "create function public.worker_document_folder_readings_v1(p_job_id uuid,p_capability_token text,p_reader_version text,p_context jsonb,p_files jsonb,p_framing jsonb) returns jsonb",
           "mechanism": "direct_ddl"
@@ -346537,7 +346537,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 81,
           "anchor": "create policy document_folder_reading_waits_deny on private.document_folder_reading_waits as restrictive for all to public using(false) with check(false);",
           "mechanism": "direct_ddl"
@@ -346655,7 +346655,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 49,
           "anchor": "create table private.document_folder_reading_waits (",
           "mechanism": "direct_ddl"
@@ -346709,7 +346709,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 261,
           "anchor": "create function private.document_folder_reading_advance_v1(p_org uuid) returns integer",
           "mechanism": "direct_ddl"
@@ -346763,7 +346763,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 129,
           "anchor": "create function private.document_folder_reading_enqueue_v1(p_org uuid,p_wait uuid,p_documents uuid[]) returns integer",
           "mechanism": "direct_ddl"
@@ -346817,7 +346817,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 97,
           "anchor": "create function private.document_folder_reading_lock_v1(p_org uuid,p_reader_version text,p_context_fingerprint text) returns void",
           "mechanism": "direct_ddl"
@@ -346871,7 +346871,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio, fora do turno; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura, que também enfileira os arquivos que o limite deixou de fora.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 87,
           "anchor": "create function private.document_folder_wait_job_subject_v1(p_org uuid,p_wait uuid,p_session uuid,p_run uuid,p_root uuid) returns uuid",
           "mechanism": "direct_ddl"
@@ -346925,7 +346925,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio de cada espera, fora do turno, com os direitos do próprio arquivo verificados; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura ou pelo fim de um job sem resultado, com limite de tentativas.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 106,
           "anchor": "create function private.document_folder_file_state_v1(p_org uuid,p_document uuid,p_subject uuid,p_wait uuid,p_reader_version text,p_context_fingerprint text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -346979,7 +346979,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio de cada espera, fora do turno, com os direitos do próprio arquivo verificados; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura ou pelo fim de um job sem resultado, com limite de tentativas.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 329,
           "anchor": "create function private.document_folder_reading_job_ended_v1() returns trigger",
           "mechanism": "direct_ddl"
@@ -347017,7 +347017,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio de cada espera, fora do turno, com os direitos do próprio arquivo verificados; o turno que espera fica registrado com o enquadramento da pessoa e é retomado pela gravação da última leitura ou pelo fim de um job sem resultado, com limite de tentativas.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 336,
           "anchor": "create trigger processing_jobs_document_folder_reading_ended after update of status on public.processing_jobs for each row",
           "mechanism": "direct_ddl"
@@ -347081,7 +347081,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio de cada espera, fora do turno, com os direitos do próprio arquivo verificados; a espera é retomada pela gravação da última leitura ou pelo fim de um job sem resultado, e fechada como cancelada quando a pessoa desiste ou muda o pedido.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 343,
           "anchor": "create function private.worker_cancel_document_folder_wait_v1(p_job_id uuid,p_capability_token text) returns boolean",
           "mechanism": "direct_ddl"
@@ -347145,7 +347145,7 @@
       "reason": "Leitura de cada arquivo da pasta (C09) em job próprio de cada espera, fora do turno, com os direitos do próprio arquivo verificados; a espera é retomada pela gravação da última leitura ou pelo fim de um job sem resultado, e fechada como cancelada quando a pessoa desiste ou muda o pedido.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+          "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
           "line": 359,
           "anchor": "create function public.worker_cancel_document_folder_wait_v1(p_job_id uuid,p_capability_token text) returns boolean",
           "mechanism": "direct_ddl"
@@ -347209,7 +347209,7 @@
       "reason": "Ponte da conversa do lote 4: um cartão do lote 4 corrigido ou recusado sem substituto é superado pelo turno seguinte.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 101,
           "anchor": "create function private.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text) returns integer",
           "mechanism": "direct_ddl"
@@ -347273,7 +347273,7 @@
       "reason": "Ponte da conversa do lote 4: um cartão do lote 4 corrigido ou recusado sem substituto é superado pelo turno seguinte.",
       "sources": [
         {
-          "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+          "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
           "line": 117,
           "anchor": "create function public.worker_supersede_premise_proposals_v1(p_job_id uuid, p_capability_token text, p_method_id text) returns integer",
           "mechanism": "direct_ddl"
@@ -355205,35 +355205,35 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261028120000_lote4_financial_objectives.sql",
+      "path": "supabase/migrations/20261028235534_lote4_financial_objectives.sql",
       "decision": "preservar",
       "stage": "fichas C09, C01, C32 e C47, roteador",
       "reason": "Tipos de objetivo do lote 4 (pasta de documentos, proposta recebida, caminhos de financiamento, discussão de capital no conselho) na restrição e no corpo do preflight."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261028120100_lote4_bridge.sql",
+      "path": "supabase/migrations/20261029000019_lote4_bridge.sql",
       "decision": "preservar",
       "stage": "fichas C09, C01, C32 e C47, ponte da conversa",
       "reason": "Ponte da conversa do lote 4: cartões de premissas em contexto próprio, blocos de resultado, projetor e resposta citada."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261028120200_lote4_priors.sql",
+      "path": "supabase/migrations/20261029000247_lote4_priors.sql",
       "decision": "preservar",
       "stage": "fichas C47 e C09, resultados anteriores",
       "reason": "Resultados anteriores da discussão do conselho (C47) e da atualização da pasta (C09), produtor v4, evidência da pasta e porta de leitura das camadas."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261028120300_lote4_folder_reading.sql",
+      "path": "supabase/migrations/20261029000458_lote4_folder_reading.sql",
       "decision": "preservar",
       "stage": "ficha C09, leitura de arquivo fora do turno",
       "reason": "Job de leitura de arquivo da pasta (C09): tipo novo em processing_jobs, tabela privada de leituras, comandos do turno e do job, porta de storage restrita ao job de leitura."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261028120400_lote4_payload_provenance.sql",
+      "path": "supabase/migrations/20261029000608_lote4_payload_provenance.sql",
       "decision": "preservar",
       "stage": "fichas C09, C01, C32 e C47, proveniência da carga",
       "reason": "Proveniência da carga dos quatro métodos do lote 4, no molde da 20261026203118."

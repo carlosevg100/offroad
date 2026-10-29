@@ -14,7 +14,7 @@ const lote4 = ["organize-document-folder", "evaluate-received-proposal", "evalua
 
 describe("the provenance walk with the lote 4 methods", () => {
   it("is the quarter close body (20261027010426) byte for byte for every other method", () => {
-    const before = body("20261027010426_lote3_quarter_update_priors.sql"), after = body("20261028120400_lote4_payload_provenance.sql");
+    const before = body("20261027010426_lote3_quarter_update_priors.sql"), after = body("20261029000608_lote4_payload_provenance.sql");
     const restored = after.split("\n").filter((line) => !line.endsWith(" -- lote 4")).join("\n")
       .replace(`,${lote4.map((m) => `'${m}'`).join(",")}) then return true;end if;`, ") then return true;end if;");
     expect(restored).toBe(before);
@@ -23,7 +23,7 @@ describe("the provenance walk with the lote 4 methods", () => {
     expect(after.indexOf("if c#>>'{method,methodId}' is null then return false;end if;")).toBeLessThan(after.indexOf("prepare-board-capital-discussion"));
   });
   it("binds each lote 4 method to its version, published manifest and payload schema, and the two that read priors to their records", () => {
-    const after = body("20261028120400_lote4_payload_provenance.sql");
+    const after = body("20261029000608_lote4_payload_provenance.sql");
     const manifests: Record<string, [string, string]> = {
       "organize-document-folder": ["4378d63bf0b7465838fefe7e3463dbc755cd6c022803a60ac7fe32d368f75248", "document-folder-inventory-packet-input.v1"],
       "evaluate-received-proposal": ["4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0", "received-proposal-packet-input.v1"],
@@ -40,7 +40,7 @@ describe("the provenance walk with the lote 4 methods", () => {
     expect(after.includes("p->>'assumptionVersionId'=private.execution_json_projection_v1(payload#>>'{analysis,discussion,envelope,canonical}')->>'versionId'")).toBe(true);
   });
   it("pins exactly the manifestHash of each publication record, C47 included", () => {
-    const after = body("20261028120400_lote4_payload_provenance.sql");
+    const after = body("20261029000608_lote4_payload_provenance.sql");
     const runs = join(__dirname, "../../credit-playbook/knowledge/reviews/runs");
     const pinOf = (id: string) => {
       const branch = after.slice(after.indexOf(`(c#>>'{method,methodId}'='${id}' and (c#>>'{method,methodVersion}'`));
