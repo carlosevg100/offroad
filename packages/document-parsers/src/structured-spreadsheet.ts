@@ -34,7 +34,7 @@ export async function detectStructuredSpreadsheet(bytes: Uint8Array, mime: strin
     const tag = (name: string) => prefix ? `${prefix}:${name}` : name;
     const body = root[tag("body")] as Record<string, unknown> | undefined;
     return root[attribute] === officeNamespace && root[`@_${tag("mimetype")}`] === "application/vnd.oasis.opendocument.spreadsheet" && body && Object.hasOwn(body, tag("spreadsheet"))
-      ? {mime: "application/vnd.oasis.opendocument.spreadsheet", extension: "fods"} : null;
+      ? {mime: "application/vnd.oasis.opendocument.spreadsheet-flat-xml", extension: "fods"} : null;
   }
   if (mime === "application/octet-stream" && isDbf(bytes)) return {mime: "application/x-dbf", extension: "dbf"};
   return null;

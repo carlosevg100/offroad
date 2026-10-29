@@ -65,6 +65,7 @@ const legacySpreadsheetMimes = new Set([
   "application/vnd.ms-excel",
   "application/vnd.ms-excel.sheet.binary.macroenabled.12",
   "application/vnd.oasis.opendocument.spreadsheet",
+  "application/vnd.oasis.opendocument.spreadsheet-flat-xml",
   "application/x-dbf",
 ]);
 

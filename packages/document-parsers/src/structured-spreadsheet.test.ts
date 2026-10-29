@@ -26,6 +26,14 @@ describe("native spreadsheet formats reach their implemented reader", () => {
     expect(result.mismatch).toBe(true);
   });
 
+  it("recognizes the native FODS MIME without reporting a false mismatch", async () => {
+    const mimeType = "application/vnd.oasis.opendocument.spreadsheet-flat-xml";
+    const result = await parseDocument({...base, fileName: "synthetic.fods", mimeType, bytes: workbook("fods")});
+    expect(result.detected.mime).toBe(mimeType);
+    expect(result.detected.mismatch).toBe(false);
+    expect(result.layer.sheets?.[0]?.cells.find((cell) => cell.ref === "B2")?.v).toBe(1250.5);
+  });
+
   it("does not identify a file by an .xlsb extension alone", async () => {
     const zip = new JSZip();
     zip.file("some-document.txt", "synthetic");
@@ -37,13 +45,13 @@ describe("native spreadsheet formats reach their implemented reader", () => {
     for (const source of ['<?xml version="1.0"?><data><value>10</value></data>',
       '<?xml version="1.0"?><office:document xmlns:office="https://invalid.example" office:mimetype="application/vnd.oasis.opendocument.spreadsheet"><office:body><office:spreadsheet/></office:body></office:document>']) {
       const result = await detectType({...base, fileName: "fake.fods", bytes: encode(source)});
-      expect(result.mime).not.toBe("application/vnd.oasis.opendocument.spreadsheet");
+      expect(result.mime).not.toBe("application/vnd.oasis.opendocument.spreadsheet-flat-xml");
     }
   });
 
   it("does not expand a DTD to establish FODS identity", async () => {
     const bytes = encode('<?xml version="1.0"?><!DOCTYPE office:document [<!ENTITY x "abc">]><office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" office:mimetype="application/vnd.oasis.opendocument.spreadsheet"><office:body><office:spreadsheet>&x;</office:spreadsheet></office:body></office:document>');
-    expect((await detectType({...base, fileName: "entity.fods", bytes})).mime).not.toBe("application/vnd.oasis.opendocument.spreadsheet");
+    expect((await detectType({...base, fileName: "entity.fods", bytes})).mime).not.toBe("application/vnd.oasis.opendocument.spreadsheet-flat-xml");
   });
 
   it.each(["truncated", "length", "terminator"])("refuses DBF identity when its %s structure is broken", async (fault) => {
