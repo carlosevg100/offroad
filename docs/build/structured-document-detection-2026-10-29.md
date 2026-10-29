@@ -18,8 +18,8 @@ A política de quarentena v3 corrige outro bloqueio: um navegador sem MIME espec
 - Suíte inteira dos parsers: 59 testes em 6 arquivos passaram.
 - Suíte de inteligência documental: 91 testes em 8 arquivos passaram.
 - Typecheck do parser e da inteligência documental passou. O fallback de texto com extensão arbitrária foi reproduzido como aceitação indevida e passou a ser recusado por tipo não suportado.
-- `pnpm check` completo passou no commit `006c5d178ec07d66c81e92d253a8abe17a38f5f5`: lint, typecheck, testes e build em 44 pacotes. Uma tentativa anterior, sobreposta a outra regressão, excedeu os 5 segundos de um teste numérico não alterado; a execução sem sobreposição passou, com o mesmo teste em 2,6 segundos. Nenhum limite desse teste foi alterado.
-- Verificação completa após a inclusão do MIME nativo, CI e promoção: pendentes.
+- `pnpm check` completo passou no commit `72d14523` (com o MIME nativo incluído): lint, typecheck, testes e build em 44 pacotes. Uma tentativa anterior, sobreposta a outra regressão, excedeu os 5 segundos de um teste numérico não alterado; a execução sem sobreposição passou, com o mesmo teste em 2,6 segundos. Nenhum limite desse teste foi alterado.
+- A repetição completa após a inclusão do MIME nativo passou. CI e promoção: pendentes.
 
 ## Segurança e alcance
 
