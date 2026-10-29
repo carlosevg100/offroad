@@ -1,13 +1,18 @@
 {
   "source": "Mensagem direta do fundador nesta tarefa, 28 de outubro de 2026, autorizando publicar e preparar em produção a ativação das fichas do lote 4",
   "author": "Carlos Eduardo Vasques Galves",
-  "scope": "Preparação em produção da ativação do método evaluate-received-proposal 2026.10.27-v1 (empacotamento do executor, prova de proveniência da carga, perfil de execução), mantendo a capacidade desligada. Não libera a capacidade, não aprova outro método nem efeito externo.",
+  "scope": "Preparação em produção da ativação do método evaluate-received-proposal 2026.10.27-v1 (empacotamento do executor, prova de proveniência da carga, perfil de execução), e, por ato posterior, liberação da capacidade para todas as organizações. Não aprova outro método nem efeito externo.",
   "release": "evaluate-received-proposal-2026.10.27-v1",
   "manifestHash": "4e092f29299e5cefcf650532b470794a387c077474503ace43909a93c1d040e0",
   "acts": [
     {
       "verbatim": "Aprovo o conteúdo das fichas C09, C01, C32 (plano de financiamento de 2027) e C47 (organizar a pasta, proposta recebida, caminhos de financiamento e material do conselho), versão 2026.10.27-v1, e autorizo publicar os métodos, capturar os executores, registrar os perfis, aplicar as migrações e montar a ponte com a conversa, com as capacidades desligadas até a liberação final.",
       "recordedAt": "2026-10-28T16:49:15Z"
+    },
+    {
+      "verbatim": "Libero para uso as fichas C09, C01, C32 (plano de financiamento de 2027) e C47 (material do conselho), versão 2026.10.27-v1, para todas as organizações.",
+      "recordedAt": "2026-10-29T09:59:19.313177+00:00",
+      "effect": "Capacidade method.evaluate-received-proposal.2026.10.27-v1 liberada com exposição universal em produção, após a fusão das PRs 955 a 961, a aplicação das migrações da ponte (20261028235534, 20261029000019, 20261029000247, 20261029000458, 20261029000608 e 20261029023208) e a verificação do deploy da web e do worker no commit 18d00e7f. Perfil ed4aa88d-c3d2-5959-8e77-67092396b30b."
     }
   ]
 }
