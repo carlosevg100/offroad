@@ -2764,6 +2764,11 @@
       "name": "lote4_payload_provenance",
       "version": "20261029000608",
       "statements_md5": "54933cabe3cb6842e3ade50b4aaf3841"
+    },
+    {
+      "name": "lote4_folder_evidence_no_temp_table",
+      "version": "20261029010000",
+      "statements_md5": "8be81d3bca95fd2a3ba325a3972e9075"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
