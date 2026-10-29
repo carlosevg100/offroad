@@ -29,10 +29,11 @@ import {parseLegacySpreadsheet} from "./legacy-spreadsheet";
 import {parseCsv} from "./csv";
 import {parseDocx} from "./docx";
 import {parsePptx} from "./pptx";
-import {parseImageWithOcr, pagesFromOcr} from "./ocr";
+import {parseImageWithOcr, pagesFromOcr, ocrLayerVersion, ocrPageText} from "./ocr";
 import {cfbMimeTypes, detectCfbSubtype} from "./cfb";
+import {detectStructuredSpreadsheet} from "./structured-spreadsheet";
 
-export const documentParsersVersion = "2026.08.18-parsers-v2";
+export const documentParsersVersion = "2026.10.29-parsers-v3";
 
 export * from "./types";
 export * from "./scale";
@@ -64,6 +65,7 @@ const legacySpreadsheetMimes = new Set([
   "application/vnd.ms-excel",
   "application/vnd.ms-excel.sheet.binary.macroenabled.12",
   "application/vnd.oasis.opendocument.spreadsheet",
+  "application/vnd.oasis.opendocument.spreadsheet-flat-xml",
   "application/x-dbf",
 ]);
 
@@ -100,6 +102,11 @@ export async function detectType(input: ParseInput): Promise<DetectedType> {
     // more; the main stream inside says whether it is a workbook, a letter or a deck.
     let mime = sniffed.mime;
     let ext = sniffed.ext;
+    const structured = await detectStructuredSpreadsheet(input.bytes, mime);
+    if (structured) {
+      mime = structured.mime;
+      ext = structured.extension;
+    }
     if (mime === "application/x-cfb") {
       const subtype = detectCfbSubtype(input.bytes);
       if (subtype !== "unknown") {
@@ -113,6 +120,9 @@ export async function detectType(input: ParseInput): Promise<DetectedType> {
       mismatch: Boolean(declared && declared !== mime && !isBenignMismatch(declared, mime)),
     };
   }
+
+  const structured = await detectStructuredSpreadsheet(input.bytes, "application/octet-stream");
+  if (structured) return {...structured, mismatch: Boolean(declared && declared !== structured.mime && !isBenignMismatch(declared, structured.mime))};
 
   // file-type only knows binary signatures; text formats are decided by extension plus the
   // fact that the bytes decode as text.
@@ -268,6 +278,7 @@ async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | un
   }
 
   const byNumber = new Map<number, LayerPage>();
+  const ocrScales: ReturnType<typeof pagesFromOcr>["scaleDeclarations"] = [];
   for (const page of readable) {
     try {
       const recognized = await engine.recognizePdfPage({bytes: bytesForOcr, pageNumber: page.n});
@@ -275,6 +286,7 @@ async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | un
       const [ocrPage] = built.pages;
       if (ocrPage) byNumber.set(page.n, ocrPage);
       warnings.push(...built.warnings);
+      ocrScales.push(...built.scaleDeclarations);
     } catch (error) {
       warnings.push({code: "parse_error", message: `OCR failed: ${(error as Error).message}`, where: `p${page.n}`});
     }
@@ -283,11 +295,12 @@ async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | un
   if (byNumber.size === 0) return {...result, warnings};
 
   const merged = pages.map((page) => byNumber.get(page.n) ?? page);
+  const scales = new Map([...result.layer.scaleDeclarations, ...ocrScales].map((scale) => [JSON.stringify([scale.where, scale.scale, scale.text]), scale]));
 
   return {
     ...result,
-    layer: {...result.layer, pages: merged},
-    parserVersions: {...result.parserVersions, [engine.name]: engine.version},
+    layer: {...result.layer, pages: merged, scaleDeclarations: [...scales.values()], stats: {...result.layer.stats, estimatedTokens: Math.ceil(merged.map(ocrPageText).join("\n").length / 4)}},
+    parserVersions: {...result.parserVersions, ocrLayer: ocrLayerVersion, [engine.name]: engine.version},
     warnings: [
       ...warnings,
       {

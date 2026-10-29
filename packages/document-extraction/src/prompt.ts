@@ -25,9 +25,10 @@ Rules, in order of importance:
 
 1. ANCHOR. Every candidate carries the id of the line it came from, copied exactly from the
    evidence (the value in square brackets at the start of a line). Never invent, adjust or
-   guess an id. To cite one cell of a table row, append the 1-based column: a row \`p3.t1.r4\`
-   has cells \`p3.t1.r4.c1\`, \`p3.t1.r4.c2\`, and so on. Prefer the cell when the number sits
-   in one; use the row when the fact is the row as a whole.
+   guess an id. Cite a cell only when its exact id is printed in the evidence. When a table
+   is rendered as a row, cite that row's printed id. Never append a column number: empty
+   layout cells make visual column counting unreliable. Keep the period of the value's
+   column; a row citation does not change that period.
 2. QUOTE. \`quote\` is copied character for character from that line, never reflowed,
    translated, corrected or abbreviated. \`value_raw\` is the value exactly as printed inside
    that quote, with its original separators ("1.234.567,89" stays "1.234.567,89").

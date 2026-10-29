@@ -9,8 +9,8 @@ import type {IndexedAnchor, LayerIndex} from "@offroad/document-intelligence";
  *
  * Granularity is chosen per container. A table row is the useful unit, it carries the label
  * and the values together, which is what makes "Receita líquida" mean the number beside it,
- * and cell ids are derivable from it (`<row>.c1`, `<row>.c2`, …), so the model can cite a
- * single cell without the renderer spending characters on every one. Containers with no rows
+ * and its printed id is the citation at row precision. Cell ids are never guessed from visual
+ * positions because PDF layout may contain empty spacer cells. Containers with no rows
  * fall back to their cells, which is what a spreadsheet export without detected tables looks
  * like.
  */
@@ -56,9 +56,9 @@ export type RenderOptions = {
    * Lines per window, whatever their size. Cogna measured why the character budget alone is
    * not enough: a 34-page release packed into three windows of 40k characters came back with
    * eleven fields, because a model asked to read four hundred lines in one breath reads the
-   * first hundred. Ninety lines is the size of task it reads whole: Cogna's release put its debt note inside a
-   * 185-line window, the model answered with the financial tables it opened with, and the note
-   * came back with one field out of fifteen.
+   * first hundred. A later real-model run still truncated a dense comparative statement at
+   * ninety lines and a 16k response. The default now bounds those windows more tightly while
+   * repeating headers and preserving source anchors.
    */
   maxLines?: number;
 };
@@ -70,14 +70,18 @@ export type RenderOptions = {
  * response could hold and the whole chunk died at the output ceiling; at 18k recall got
  * *worse* (44.6% → 40.0%), because tiny windows cut the table header away from its rows and
  * the model lost period and scale. 40k with structural packing (whole sheets/pages together,
- * headers repeated on a split) keeps context intact, and per-candidate salvage now means a
- * ceiling-hit response loses its tail, not the document.
+ * headers repeated on a split) keeps context intact. The 2026-10-29 live run showed that the
+ * response can still overflow on dense comparisons, so the line ceiling below also bounds
+ * output density. A truncated JSON response remains a failed pass; it is never called complete.
  */
 const DEFAULT_MAX_CHARS = 40_000;
 /** Three lines is a sentence and its subject; more would pay for context nobody reads. */
 const DEFAULT_OVERLAP_LINES = 3;
 
-const DEFAULT_MAX_LINES = 90;
+// The real Sonnet 5 run exhausted a 16k response on a comparative statement at 90
+// lines. Smaller windows retain table headers and overlap, so context survives the cut.
+const DEFAULT_MAX_LINES = 48;
+const DENSE_TABLE_MAX_LINES = 24;
 const DEFAULT_MAX_LINE_CHARS = 2_000;
 
 const isTableAggregate = (id: string) => /\.t\d+$/.test(id);
@@ -171,7 +175,6 @@ export function selectLines(index: LayerIndex, options: RenderOptions = {}): Lin
  */
 export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): EvidenceChunk[] {
   const maxChars = options.maxChars ?? DEFAULT_MAX_CHARS;
-  const maxLines = options.maxLines ?? DEFAULT_MAX_LINES;
   // A workbook read one sheet per window has no anaphora to carry: repeating three rows of the
   // customer sheet into the summary sheet would be noise with an anchor on it.
   const overlapLines = options.overlapLines ?? (options.oneContainerPerChunk ? 0 : DEFAULT_OVERLAP_LINES);
@@ -212,6 +215,11 @@ export function renderEvidence(index: LayerIndex, options: RenderOptions = {}): 
   };
 
   for (const group of groups) {
+    // Comparative table rows can emit several facts per line. Sparse cell exports and prose
+    // keep a larger bound, instead of quadrupling calls on every long workbook.
+    const comparative = group.lines.some((line) => isRow(line.anchorId)
+      && line.text.split("|").filter((cell) => /^[\s(+-]*\d[\d.,\s)%+-]*$/.test(cell.trim())).length >= 2);
+    const maxLines = options.maxLines ?? (comparative ? DENSE_TABLE_MAX_LINES : DEFAULT_MAX_LINES);
     const rendered = group.lines.map((line) => ({line, text: `[${line.anchorId}] ${line.text}`}));
     const groupSize = group.container.length + 9 + rendered.reduce((sum, item) => sum + item.text.length + 1, 0);
 

@@ -1047,7 +1047,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/page.tsx",
-      "sha256": "5e78ea5158405c9a89b0f34e7727c9fe19d87dca8be44b958c6a0b1e78978155",
+      "sha256": "ea8078598520eeeb04bdd5a978dcb0db7675793b9011554a5c85502c5a006bd8",
       "entrypoint": false,
       "rpcs": [
         "get_workspace_project_setup"
@@ -1056,7 +1056,8 @@
       "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
-        "apps/web/src/lib/auth/workspace-context.test.ts"
+        "apps/web/src/lib/auth/workspace-context.test.ts",
+        "apps/web/e2e/document-upload-reliability.spec.ts"
       ]
     },
     {
@@ -1943,7 +1944,7 @@
     },
     {
       "path": "apps/web/src/lib/intake/pipeline-run.ts",
-      "sha256": "18fc2166b2b233600b75a184d08d2805eff6ba14c1b0ec5f68b981f1df70c4c3",
+      "sha256": "dbe0f56bc6a9b9c821f0e08c84c51f165da7e330a84a0edb3cdd8a67f1504189",
       "entrypoint": false,
       "rpcs": [
         "begin_processing_run"
@@ -2010,16 +2011,17 @@
     },
     {
       "path": "apps/web/src/lib/intake/upload-client.ts",
-      "sha256": "29574865f9ac4f3e9a52d7621f4e93218ea650b9247509b35fee2f150e92376a",
+      "sha256": "caf08e1566602adcbeb3826e517cc1e81613d0906388c8b57b8a178b1f5ba848",
       "entrypoint": false,
       "rpcs": [
         "register_intake_document_command"
       ],
       "decision": "preserve governed consumer",
-      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "authority": "Same organization/scope, private Storage path and authenticated registration command; sequential complete selection and per-file failure. Uncertain registration is recovered only by exact attempt ID, organization, scope, path and hash; bytes are preserved otherwise. No new grants or RPCs.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
-        "apps/web/src/lib/auth/workspace-context.test.ts"
+        "apps/web/src/lib/auth/workspace-context.test.ts",
+        "apps/web/src/lib/intake/upload-queue.test.ts"
       ]
     },
     {

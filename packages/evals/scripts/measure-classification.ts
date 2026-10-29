@@ -113,6 +113,8 @@ async function main(): Promise<void> {
 
     const startedAt = Date.now();
     const bytes = new Uint8Array(readFileSync(join(documentsDir, entry.name)));
+    // PDF readers may transfer this buffer. Bind the original file before parsing it.
+    const sourceHash = sha256(bytes);
     const {conversion, ...parsed} = await parseDocument({
       bytes,
       documentId: entry.name,
@@ -121,7 +123,7 @@ async function main(): Promise<void> {
       localeHint: "pt-BR",
     });
     parseMs.set(entry.name, Date.now() - startedAt);
-    documents.push({name: entry.name, sha256: sha256(bytes), parsed: {...parsed, conversion: conversion ?? null}});
+    documents.push({name: entry.name, sha256: sourceHash, parsed: {...parsed, conversion: conversion ?? null}});
   }
 
   // The routes the task policy gives this run: the worker's gateway takes the same policy from the snapshot.
@@ -248,8 +250,11 @@ async function main(): Promise<void> {
     periodAccuracy: periodScored.length === 0 ? null : ratio(periodCorrect.length, periodScored.length),
     confidentlyWrong: confidentlyWrong.length,
     unsureButRight: unsureButRight.length,
-    costUsd: usage.costUsd,
-    calls: usage.calls,
+    // The accepted answer omits failed/repair attempts; the governed ledger counts all of them.
+    costUsd: evaluation.totalCostMicrousd / 1_000_000,
+    calls: evaluation.cost.spentCalls + evaluation.cost.reservedCalls,
+    acceptedAnswerCostUsd: usage.costUsd,
+    acceptedAnswerCalls: usage.calls,
     rows,
   };
 
@@ -262,7 +267,7 @@ async function main(): Promise<void> {
   );
   console.log(`  errado com confianca  ${confidentlyWrong.length}   (>= 0.80 e errado: passa direto pelo revisor)`);
   console.log(`  certo sem confianca   ${unsureButRight.length}   (< 0.80 e certo: custa uma olhada, nao um erro)`);
-  console.log(`  custo                 $${usage.costUsd.toFixed(4)} em ${usage.calls} chamada(s)`);
+  console.log(`  custo                 $${summary.costUsd.toFixed(4)} em ${summary.calls} chamada(s), ledger governado`);
   console.log("=".repeat(78));
 
   mkdirSync(outDir, {recursive: true});

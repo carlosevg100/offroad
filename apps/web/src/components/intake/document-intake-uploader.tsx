@@ -47,58 +47,70 @@ export function DocumentIntakeUploader({organizationId, sessionId, userId, local
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [failedFiles, setFailedFiles] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInFlight = useRef(false);
 
   async function upload(files: FileList | null) {
-    if (!files?.length) return;
-    const supabase = createClient();
-    if (!supabase) {
-      setError(copy.startError);
-      return;
-    }
+    if (!files?.length || uploadInFlight.current) return;
+    const selected = Array.from(files);
+    uploadInFlight.current = true;
     setUploading(true);
     setError("");
     setNotice("");
-    const result = await uploadDocuments({supabase, files: Array.from(files), organizationId, userId, scope: {kind: "session", sessionId}});
-    setDocuments((current) => {
-      const byId = new Map(current.map((document) => [document.id, document]));
-      for (const document of result.uploaded) byId.set(document.id, document);
-      return [...byId.values()];
-    });
-    if (result.failure === "invalid") setError(copy.invalidFile);
-    else if (result.failure === "upload") setError(copy.uploadError);
-    else if (result.failure === "register") setError(copy.registerError);
-    else if (result.duplicateCount > 0) setNotice(copy.duplicateNotice);
-    setUploading(false);
-    router.refresh();
+    setFailedFiles([]);
+    try {
+      const supabase = createClient();
+      if (!supabase) {
+        setError(copy.startError);
+        return;
+      }
+      const result = await uploadDocuments({supabase, files: selected, organizationId, userId, scope: {kind: "session", sessionId}});
+      setDocuments((current) => {
+        const byId = new Map(current.map((document) => [document.id, document]));
+        for (const document of result.uploaded) byId.set(document.id, document);
+        return [...byId.values()];
+      });
+      setFailedFiles(result.failed.map((file) => `${file.original_name}: ${file.reason === "invalid" ? copy.invalidFile : file.reason === "upload" ? copy.uploadError : copy.registerError}`));
+      if (result.duplicateCount > 0) setNotice(copy.duplicateNotice);
+      router.refresh();
+    } catch {
+      setError(copy.uploadError);
+    } finally {
+      uploadInFlight.current = false;
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
   }
 
   return (
     <div className="intake-upload">
       <div
         aria-busy={uploading}
+        aria-disabled={uploading}
         className={`intake-upload__drop${dragActive ? " is-dragging" : ""}${uploading ? " is-uploading" : ""}`}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => { if (!uploadInFlight.current) inputRef.current?.click(); }}
         onDragEnter={(event) => { event.preventDefault(); setDragActive(true); }}
         onDragLeave={(event) => { event.preventDefault(); if (event.currentTarget === event.target) setDragActive(false); }}
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => { event.preventDefault(); setDragActive(false); void upload(event.dataTransfer.files); }}
-        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") inputRef.current?.click(); }}
+        onKeyDown={(event) => { if (!uploadInFlight.current && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); inputRef.current?.click(); } }}
         role="button"
         tabIndex={0}
       >
-        <input accept={DOCUMENT_ACCEPT} multiple onChange={(event) => void upload(event.target.files)} ref={inputRef} type="file" />
+        <input accept={DOCUMENT_ACCEPT} disabled={uploading} multiple onChange={(event) => void upload(event.target.files)} ref={inputRef} type="file" />
         <div className="intake-upload__animation" aria-hidden="true">
           <span>{uploading ? <LoaderCircle className="spin" size={28} /> : <FileUp size={28} />}</span>
           <i><FileText size={18} /></i><i><FileSpreadsheet size={18} /></i><i><Presentation size={18} /></i><i><ImageIcon size={18} /></i>
         </div>
         <h3>{uploading ? copy.uploading : copy.dropTitle}</h3>
         <p>{copy.dropBody}</p>
-        <button onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }} type="button">{copy.select}</button>
+        <button disabled={uploading} onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }} type="button">{copy.select}</button>
         <small>{copy.formats}</small>
       </div>
 
       {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
+      {failedFiles.length ? <ul className="form-notice form-notice--error form-notice--files" role="alert">{failedFiles.map((message, index) => <li key={index}>{message}</li>)}</ul> : null}
       {notice ? <p className="form-notice form-notice--success" role="status">{notice}</p> : null}
 
       {documents.length ? (

@@ -1,0 +1,39 @@
+{
+  "observedAt": "2026-10-29T13:36:52.266464+00:00",
+  "source": "pnpm audit --json",
+  "scope": "current pnpm lockfile; not container, host or universal application assurance",
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  },
+  "githubBaselineAlertIds": [
+    74,
+    73,
+    72,
+    71,
+    56,
+    55,
+    54,
+    53,
+    52,
+    51,
+    50,
+    49,
+    24,
+    23,
+    22
+  ],
+  "versions": {
+    "vite": "8.2.4",
+    "vitest": "4.1.12",
+    "@vitest/mocker": "4.1.12",
+    "fast-uri": "3.1.9",
+    "brace-expansion": [
+      "1.1.21",
+      "5.0.12"
+    ]
+  }
+}

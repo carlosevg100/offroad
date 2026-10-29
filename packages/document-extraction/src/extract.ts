@@ -122,33 +122,43 @@ const indexedCandidatePath = /^(.*)\.(\d{1,3})\.([a-z0-9_]+)$/;
  * The row passes already count across tables; the whole-document pass does not, because the
  * model numbers each table from one. Nimbus measured the result: the deck's management table
  * and its cap table both produced `company.controllers.4`, and the reconciliation reported the
- * CEO against a venture fund as a contradiction. Tuples are grouped by the table their anchor
- * cites and renumbered in document order, so the same index means the same row.
+ * CEO against a venture fund as a contradiction. Structured tuples are bound to their source row, independently of model numbering.
+ * A new window restarting at one cannot merge two instruments, and another pass cannot split
+ * the fields of the same row merely by choosing a different model index.
  */
 export function renumberByTable(candidates: RawExtractionCandidate[]): RawExtractionCandidate[] {
   // A table row cites `<table>.r<n>` and a spreadsheet cell cites `s<sheet>!<col><row>`; both
   // reduce to the container the row sits in. Aurora's debt map measured the cell case: with
   // the cell left in the key, every cell was its own table and the seven instruments came out
   // as fifty-one one-field tuples.
-  const tableOf = (anchorId: string) => {
+  const tupleOrigin = (anchorId: string, modelIndex: string) => {
     // Anchors are single-line identifiers. Leave malformed multiline values intact for
     // verification; retrying a greedy suffix at every .r could otherwise take quadratic time.
     for (const character of anchorId) {
-      if (character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029") return anchorId;
+      if (character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029") return JSON.stringify(["model", anchorId, modelIndex]);
     }
-    let table = anchorId;
+    const separator = anchorId.lastIndexOf("!");
+    if (separator >= 0) {
+      let at = separator + 1;
+      while (at < anchorId.length && anchorId.charCodeAt(at) >= 65 && anchorId.charCodeAt(at) <= 90) at++;
+      const letters = at - separator - 1;
+      const digits = at;
+      while (at < anchorId.length && anchorId.charCodeAt(at) >= 48 && anchorId.charCodeAt(at) <= 57) at++;
+      if (letters >= 1 && letters <= 3 && at > digits && at === anchorId.length) {
+        return JSON.stringify(["sheet-row", anchorId.slice(0, separator), anchorId.slice(digits)]);
+      }
+    }
     for (let position = 0; position < anchorId.length - 2; position++) {
       if (anchorId[position] !== "." || anchorId[position + 1] !== "r") continue;
       let end = position + 2;
       while (end < anchorId.length && anchorId.charCodeAt(end) >= 48 && anchorId.charCodeAt(end) <= 57) end++;
       if (end > position + 2 && (end === anchorId.length || anchorId[end] === ".")) {
-        table = anchorId.slice(0, position);
-        break;
+        return JSON.stringify(["table-row", anchorId.slice(0, end)]);
       }
       // Digit runs contain no possible .r start, so never scan them twice.
       position = end - 1;
     }
-    return table.replace(/![A-Z]{1,3}\d+$/, "");
+    return JSON.stringify(["model", anchorId, modelIndex]);
   };
   const next = new Map<string, number>();
   const assigned = new Map<string, number>();
@@ -156,7 +166,7 @@ export function renumberByTable(candidates: RawExtractionCandidate[]): RawExtrac
     const match = indexedCandidatePath.exec(candidate.field_path);
     if (!match) return candidate;
     const [, group, index, key] = match as unknown as [string, string, string, string];
-    const tupleKey = `${group}|${tableOf(candidate.anchor.id)}|${index}`;
+    const tupleKey = JSON.stringify([group, tupleOrigin(candidate.anchor.id, index)]);
     let number = assigned.get(tupleKey);
     if (number === undefined) {
       number = (next.get(group) ?? 0) + 1;
@@ -198,6 +208,8 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     try {
       const result = await gateway.complete({
         task: "extract_fields",
+        // Evidence enumeration must leave the response budget for cited fields.
+        thinking: "off",
         system: wholeSystem,
         input: [{type: "text", text: buildExtractionPrompt({profile, fileName: options.fileName, fields, evidence: chunk})}],
         schema: salvageExtractorOutputSchema,
@@ -247,9 +259,8 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
 
   // ---- table passes: the orchestration enumerates, the model reads once -------------------
   //
-  // Wide tables need a focused pass, but a paid call per row made cost proportional to row
-  // count. One pass per table keeps the focus while the cited row anchor, not the model, decides
-  // the tuple index. A 500-row tape therefore costs one mapping call rather than 500 calls.
+  // Wide tables need focused, bounded groups of rows. An entire table can exceed the response
+  // ceiling even when its input fits. The cited source row, never the model, decides the tuple.
   const indexedFields = fields.filter((field) => field.pattern.includes("{i}"));
   const tablePasses = indexedFields.length > 0 ? tableBatchPasses(index, {fields: indexedFields}) : [];
   const rowFieldPaths = new Set<string>();
@@ -264,6 +275,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
     try {
       const result = await gateway.complete({
         task: "extract_fields",
+
         system: rowSystem,
         input: [{type: "text", text: buildExtractionPrompt({
           profile,
@@ -275,7 +287,7 @@ export async function extractDocument(options: ExtractionOptions): Promise<Extra
         schema: salvageExtractorOutputSchema,
         schemaName: "extractor_output",
         dataHandling: {classification: "restricted", purpose: "document_processing", requiredPolicyVersion: providerDataPolicyVersion},
-        maxOutputTokens: options.maxOutputTokens ?? 4_000,
+        maxOutputTokens: options.maxOutputTokens ?? 16_000,
         cacheKey: `extract-table:${profile.kind}`,
         ...(options.model ? {model: options.model} : {}),
         // A row pass reads cells; there is nothing to reason about, and reasoning bills as output.

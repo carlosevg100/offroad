@@ -1642,6 +1642,14 @@ summary:focus-visible {
   color: var(--risk);
 }
 
+.form-notice--files {
+  list-style: disc;
+  overflow-wrap: anywhere;
+  padding-left: 30px;
+}
+
+.form-notice--files li + li { margin-top: 6px; }
+
 .auth-page {
   display: grid;
   grid-template-columns: minmax(340px, 0.9fr) minmax(460px, 1.1fr);

@@ -36,3 +36,27 @@ describe("a window carries the tail of the one before it", () => {
     expect(chunks.every((chunk) => !chunk.text.includes("contexto do trecho anterior"))).toBe(true);
   });
 });
+
+describe("dense comparative statement windows", () => {
+  it("splits a long statement without losing the period header or a row", () => {
+    const dense = indexLayer(documentLayerSchema.parse({documentId: "dense", documentVersion: 1, kind: "pdf", parserVersion: "synthetic", scaleDeclarations: [], stats: {},
+      pages: [{n: 1, scanned: false, blocks: [], tables: [{id: "p1.t1", header: ["Account", "2028 (R$ mil)", "2027 (R$ mil)"],
+        rows: Array.from({length: 75}, (_, index) => ({id: `p1.t1.r${index + 1}`, cells: [
+          {id: `p1.t1.r${index + 1}.c1`, text: `Account ${index + 1}`},
+          {id: `p1.t1.r${index + 1}.c2`, text: "100"}, {id: `p1.t1.r${index + 1}.c3`, text: "90"},
+        ]})),
+      }]}]}));
+    const windows = renderEvidence(dense);
+    expect(windows.length).toBeGreaterThan(1);
+    expect(windows.every((window) => window.text.includes("2028 (R$ mil)"))).toBe(true);
+    const own = windows.flatMap((window) => window.anchorIds);
+    for (let row = 1; row <= 75; row++) expect(own.filter((id) => id === `p1.t1.r${row}`)).toHaveLength(1);
+  });
+});
+
+it("keeps sparse cell exports at a larger bound than comparative rows", () => {
+  const sparse = indexLayer(documentLayerSchema.parse({documentId: "cells", documentVersion: 1, kind: "spreadsheet", parserVersion: "synthetic", scaleDeclarations: [], stats: {},
+    sheets: [{name: "Summary", tables: [], cells: Array.from({length: 40}, (_, i) => ({ref: `A${i + 1}`, t: "s", v: `Label ${i + 1}`}))}],
+  }));
+  expect(renderEvidence(sparse)).toHaveLength(1);
+});

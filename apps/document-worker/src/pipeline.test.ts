@@ -503,3 +503,18 @@ describe("what a document cost travels with its outcome", () => {
     expect(calls.completed[0]).toMatchObject({model_lineage: [call]});
   });
 });
+
+describe("incomplete extraction cannot complete a document", () => {
+  for (const kept of [0, 1]) it(`keeps ${kept} proposals but fails when an evidence window was not read`, async () => {
+    const candidates = kept ? [{field_path: "liquidity.available_cash", is_primary: false, anchor_verified: true}] : [];
+    const {deps, calls} = fakes({extract: async () => ({candidates, absentFields: [], malformed: 0, chunks: {total: 2, failed: 1}})});
+    const result = await processDocumentJob(job(), deps);
+    expect(result.status).toBe("failed");
+    expect(calls.completed).toEqual([]);
+    expect(calls.candidates).toEqual([candidates]);
+    expect(calls.failed[0]?.error.reason).toBe("extraction_incomplete");
+    expect(calls.failed[0]?.options?.retryable).toBe(false);
+    expect(calls.stages.filter((stage) => stage.stage === "extract").at(-1)?.status).toBe("failed");
+    expect(calls.stages.some((stage) => stage.stage === "prepare_requests")).toBe(false);
+  });
+});

@@ -141,15 +141,23 @@ describe("production budgets hold the largest request of every job", () => {
       organization_id: ids.organization, intake_session_id: ids.session, processing_run_id: ids.run, kind: "document_pipeline",
       payload: {source_document_id: ids.brief, document_version: 1, original_name: "x.pdf", object_path: "x.pdf", model_budget: {max_cost_usd: share, max_calls: 8}}} as unknown as ClaimedJob);
     expect(budget).toBe(productionModelCeilingsUsd.documentPipeline);
+    expect(worst).toBeGreaterThan(1.6);
     expect(largest.reservation).toBeGreaterThan(0.18);
     expect(worst).toBeLessThanOrEqual(budget);
+    const fallback = routes(largest.request).fallback!;
+    const retryPath = [classify, ...Array.from({length: 7}, () => largest.reservation),
+      await reserve(largest.request, routes(largest.request).primary, repairSystem(largest.request)),
+      await reserve(largest.request, fallback)];
+    expect(worstAttempt(retryPath), "measured repair and eligible fallback path").toBeLessThanOrEqual(budget);
 
     // The single document job on record at 8.32 USD cannot come from the call ceiling of 28 Aug
     // 2026 (eight calls an attempt, three attempts): even with every call at the input its
     // calibrated bound allows and its whole output, at the Sonnet 5 price then recorded (3/15),
     // they stay far below it.
     const sonnetThen = {...listPrices["claude-sonnet-5"]!, input: 3, output: 15, cacheWrite: 3.75, cachedInput: 0.3};
-    const inputBound = (largest.reservation / COST_RESERVATION_SAFETY_FACTOR - 8_000 * 10 / 1_000_000) / (2 / 1_000_000);
+    // Rebuild the historical 8k request; a current 16k reservation is not evidence about 28 Aug.
+    const historicalReservation = await reserve({...largest.request, maxOutputTokens: 8_000}, routes(largest.request).primary);
+    const inputBound = (historicalReservation / COST_RESERVATION_SAFETY_FACTOR - 8_000 * 10 / 1_000_000) / (2 / 1_000_000);
     const perCallThen = estimateCostUsd("claude-sonnet-5", {inputTokens: Math.ceil(inputBound), cachedInputTokens: 0, outputTokens: 8_000}, {"claude-sonnet-5": sonnetThen});
     expect(3 * 8 * perCallThen).toBeLessThan(8.3179);
   }, 120_000);

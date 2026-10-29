@@ -1,0 +1,453 @@
+{
+  "schemaVersion": "document-extraction-real-evidence.v1",
+  "extractorVersion": "2026.10.29-e3-v7",
+  "gatewayVersion": "2026.10.29-explicit-thinking-v5",
+  "isolatedCodeArtifactSha256": "92389ca69abccab3bd5fb787ecf4ba3c0dd4769913d435d58286ed36c6c51474",
+  "scope": "Synthetic native documents, real model, governed worker; not a browser-to-model job proof or universal credit-analysis acceptance. The measurement never auto-adopts facts.",
+  "evaluations": [
+    {
+      "caseId": "rede-horizonte",
+      "mode": "preceding_real_classification",
+      "executionId": "e9eb3f79-1e73-4c56-853c-84da80b0d732",
+      "inputFingerprint": "b6424a6b1418555e9585fc09a91dc0e4fc039a5d3850678bc578d5e6b55f8f54",
+      "resultFingerprint": "41dc95c8320ea71d034009b52c630cbf2d9623c2cf6835307011e447e2cfaaa5",
+      "contractFingerprint": "9f4ca482317042a7f775d07eee91eeb6400deb459f76d999f97007a6466e9558",
+      "committedAt": "2026-10-29T17:54:11.704191+00:00",
+      "documents": 8,
+      "passes": 274,
+      "failedPasses": 0,
+      "cost": {
+        "spentMicrousd": 7952308,
+        "reservedMicrousd": 0,
+        "spentCalls": 274,
+        "reservedCalls": 0,
+        "activeDurationMs": 2396763,
+        "exhausted": false
+      },
+      "material": {
+        "expected": 141,
+        "matched": 97,
+        "recall": 0.6879
+      },
+      "precision": {
+        "comparable": 309,
+        "correct": 168,
+        "flagged": 1,
+        "value": 0.5437
+      },
+      "acceptance": {
+        "outcomes": [
+          {
+            "id": "AC-01",
+            "critical": true,
+            "weight": 15,
+            "status": "pass",
+            "reasons": []
+          },
+          {
+            "id": "AC-02",
+            "critical": true,
+            "weight": 15,
+            "status": "fail",
+            "reasons": [
+              "calculation addon_stabilized_revenue not matched",
+              "calculation addon_stabilized_ebitda not matched"
+            ]
+          },
+          {
+            "id": "AC-03",
+            "critical": true,
+            "weight": 15,
+            "status": "pass",
+            "reasons": []
+          },
+          {
+            "id": "AC-04",
+            "critical": true,
+            "weight": 15,
+            "status": "fail",
+            "reasons": [
+              "field leverage.post_transaction_net_debt_ebitda not matched"
+            ]
+          },
+          {
+            "id": "AC-05",
+            "critical": false,
+            "weight": 10,
+            "status": "fail",
+            "reasons": [
+              "field transaction.timeline.1.date not matched",
+              "field transaction.timeline.2.date not matched",
+              "field transaction.timeline.3.date not matched"
+            ]
+          },
+          {
+            "id": "AC-06",
+            "critical": true,
+            "weight": 10,
+            "status": "fail",
+            "reasons": [
+              "calculation addon_stabilized_revenue not matched",
+              "calculation addon_stabilized_ebitda not matched"
+            ]
+          },
+          {
+            "id": "AC-07",
+            "critical": true,
+            "weight": 10,
+            "status": "fail",
+            "reasons": [
+              "field collateral.total_capacity not matched",
+              "exception RF-01 not detected",
+              "exception RF-02 not detected"
+            ]
+          },
+          {
+            "id": "AC-08",
+            "critical": false,
+            "weight": 5,
+            "status": "fail",
+            "reasons": [
+              "exception RF-04 not detected"
+            ]
+          },
+          {
+            "id": "AC-09",
+            "critical": false,
+            "weight": 5,
+            "status": "pass",
+            "reasons": []
+          }
+        ],
+        "passedWeight": 35,
+        "totalWeight": 100,
+        "criticalFailures": [
+          "AC-02",
+          "AC-04",
+          "AC-06",
+          "AC-07"
+        ]
+      },
+      "perDocument": [
+        {
+          "document": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+          "candidates": 11,
+          "unverified": 0,
+          "absent": 32,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.024591,
+          "ms": 11643
+        },
+        {
+          "document": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+          "candidates": 123,
+          "unverified": 16,
+          "absent": 103,
+          "chunks": 9,
+          "failed": 0,
+          "costUsd": 0.538389,
+          "ms": 214683
+        },
+        {
+          "document": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+          "candidates": 117,
+          "unverified": 6,
+          "absent": 37,
+          "chunks": 22,
+          "failed": 0,
+          "costUsd": 0.8717740000000002,
+          "ms": 358713
+        },
+        {
+          "document": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+          "candidates": 403,
+          "unverified": 0,
+          "absent": 59,
+          "chunks": 143,
+          "failed": 0,
+          "costUsd": 3.515049,
+          "ms": 947113
+        },
+        {
+          "document": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+          "candidates": 133,
+          "unverified": 1,
+          "absent": 4,
+          "chunks": 16,
+          "failed": 0,
+          "costUsd": 0.46714199999999995,
+          "ms": 165416
+        },
+        {
+          "document": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+          "candidates": 91,
+          "unverified": 0,
+          "absent": 13,
+          "chunks": 38,
+          "failed": 0,
+          "costUsd": 1.2992819999999998,
+          "ms": 216986
+        },
+        {
+          "document": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+          "candidates": 23,
+          "unverified": 1,
+          "absent": 41,
+          "chunks": 18,
+          "failed": 0,
+          "costUsd": 0.47475999999999996,
+          "ms": 151541
+        },
+        {
+          "document": "07_Memorial_Descritivo_Expansao_3_Lojas.pdf",
+          "candidates": 131,
+          "unverified": 43,
+          "absent": 68,
+          "chunks": 27,
+          "failed": 0,
+          "costUsd": 0.7613210000000001,
+          "ms": 330163
+        }
+      ]
+    },
+    {
+      "caseId": "nimbus",
+      "mode": "gold_profile_extraction_isolation",
+      "executionId": "2c976f3e-a2e3-421f-9cf7-fef1798057d3",
+      "inputFingerprint": "ac3a02c9afa3bcca1ba14cb6456da24b496fc0321501efd1c93d82ae7a70c4ad",
+      "resultFingerprint": "3dac4708852d92b6054bec076e3471ae32ab58ccc81035f9b1385cee196afd7b",
+      "contractFingerprint": "d0c7f0fc91729d1f88180c7eb5d9e8cc98f8a4642cf2d17e6b366d5909446e8b",
+      "committedAt": "2026-10-29T17:14:15.094364+00:00",
+      "documents": 6,
+      "passes": 32,
+      "failedPasses": 0,
+      "cost": {
+        "spentMicrousd": 856944,
+        "reservedMicrousd": 0,
+        "spentCalls": 32,
+        "reservedCalls": 0,
+        "activeDurationMs": 229993,
+        "exhausted": false
+      },
+      "material": {
+        "expected": 64,
+        "matched": 56,
+        "recall": 0.875
+      },
+      "precision": {
+        "comparable": 95,
+        "correct": 89,
+        "flagged": 0,
+        "value": 0.9368
+      },
+      "acceptance": {
+        "outcomes": [],
+        "passedWeight": 0,
+        "totalWeight": 0,
+        "criticalFailures": []
+      },
+      "perDocument": [
+        {
+          "document": "00_Deck_Institucional_Nimbus.docx",
+          "candidates": 35,
+          "unverified": 0,
+          "absent": 149,
+          "chunks": 4,
+          "failed": 0,
+          "costUsd": 0.155374,
+          "ms": 58799
+        },
+        {
+          "document": "01_Carta_Pedido_Venture_Debt.docx",
+          "candidates": 23,
+          "unverified": 0,
+          "absent": 41,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.084955,
+          "ms": 27160
+        },
+        {
+          "document": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+          "candidates": 15,
+          "unverified": 0,
+          "absent": 29,
+          "chunks": 24,
+          "failed": 0,
+          "costUsd": 0.47114599999999995,
+          "ms": 78969
+        },
+        {
+          "document": "03_Cap_Table_Serie_A.xlsx",
+          "candidates": 18,
+          "unverified": 0,
+          "absent": 33,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.033807,
+          "ms": 18391
+        },
+        {
+          "document": "04_Gerencial_2024_2025_Jul2026.xlsx",
+          "candidates": 24,
+          "unverified": 0,
+          "absent": 57,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.083827,
+          "ms": 38380
+        },
+        {
+          "document": "05_Extrato_Bancario_Mai_Jul2026.csv",
+          "candidates": 1,
+          "unverified": 0,
+          "absent": 43,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.027835,
+          "ms": 8025
+        }
+      ]
+    },
+    {
+      "caseId": "fakeco",
+      "mode": "gold_profile_extraction_isolation",
+      "executionId": "ca44be81-bbbf-4119-9438-9bda9e222946",
+      "inputFingerprint": "7f7b0e374cfccfefabcc5bb075b2d00d5becaf11da2485cafca549aec7372db6",
+      "resultFingerprint": "091bffd7599a039f30a1da2888e95e60ea9cb8dc9704f8709c2bd78ed785c5a7",
+      "contractFingerprint": "0328e3c4e269a75f70a0329c811991eae374c858ea50fc6decce5628cfa472e1",
+      "committedAt": "2026-10-29T18:00:41.861454+00:00",
+      "documents": 9,
+      "passes": 20,
+      "failedPasses": 0,
+      "cost": {
+        "spentMicrousd": 892090,
+        "reservedMicrousd": 0,
+        "spentCalls": 20,
+        "reservedCalls": 0,
+        "activeDurationMs": 389630,
+        "exhausted": false
+      },
+      "material": {
+        "expected": 131,
+        "matched": 124,
+        "recall": 0.9466
+      },
+      "precision": {
+        "comparable": 173,
+        "correct": 159,
+        "flagged": 0,
+        "value": 0.9191
+      },
+      "acceptance": {
+        "outcomes": [],
+        "passedWeight": 0,
+        "totalWeight": 0,
+        "criticalFailures": []
+      },
+      "perDocument": [
+        {
+          "document": "00_Ficha_Cadastral_Aurora.docx",
+          "candidates": 26,
+          "unverified": 4,
+          "absent": 31,
+          "chunks": 3,
+          "failed": 0,
+          "costUsd": 0.07062900000000001,
+          "ms": 38907
+        },
+        {
+          "document": "01_Carta_CFO_Pedido_e_Racional.docx",
+          "candidates": 24,
+          "unverified": 5,
+          "absent": 74,
+          "chunks": 3,
+          "failed": 0,
+          "costUsd": 0.14332899999999998,
+          "ms": 44270
+        },
+        {
+          "document": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+          "candidates": 37,
+          "unverified": 1,
+          "absent": 51,
+          "chunks": 7,
+          "failed": 0,
+          "costUsd": 0.298225,
+          "ms": 133495
+        },
+        {
+          "document": "03_Balancete_Gerencial_Jul2026.xls",
+          "candidates": 9,
+          "unverified": 0,
+          "absent": 44,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.052575,
+          "ms": 19155
+        },
+        {
+          "document": "04_Mapa_Divida_Jul2026.xlsx",
+          "candidates": 69,
+          "unverified": 5,
+          "absent": 27,
+          "chunks": 2,
+          "failed": 0,
+          "costUsd": 0.11928,
+          "ms": 61308
+        },
+        {
+          "document": "05_Concentracao_Clientes_2025.xlsx",
+          "candidates": 11,
+          "unverified": 0,
+          "absent": 128,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.050117,
+          "ms": 21878
+        },
+        {
+          "document": "06_Memorial_CD_Jacarei.pdf",
+          "candidates": 17,
+          "unverified": 1,
+          "absent": 107,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.057873,
+          "ms": 25098
+        },
+        {
+          "document": "07_Contrato_Social_Consolidado.png",
+          "candidates": 16,
+          "unverified": 3,
+          "absent": 31,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.035241,
+          "ms": 19485
+        },
+        {
+          "document": "08_Projecoes_2026_2030.xlsx",
+          "candidates": 20,
+          "unverified": 0,
+          "absent": 104,
+          "chunks": 1,
+          "failed": 0,
+          "costUsd": 0.064821,
+          "ms": 26728
+        }
+      ]
+    }
+  ],
+  "totalCostMicrousd": 9701342,
+  "totalCalls": 326,
+  "completeCreditAnalysisApproved": false,
+  "fidcOriginatorMethodsReleased": false,
+  "remainingFailures": [
+    "Rede Horizonte misses four critical business acceptance criteria and contains unit/scale, indexed identity and derived-calculation gaps; gold/scorer were not changed.",
+    "Nimbus still misses eight material fields.",
+    "Fakeco uses nine profiled documents out of eleven supplied sources; success does not validate all arbitrary kits."
+  ],
+  "executorStopped": true
+}

@@ -36,16 +36,16 @@ begin
   end if;
 
   effective_budget := jsonb_build_object(
-    'max_cost_usd', 16,
-    'max_calls', 160,
-    'document_max_cost_usd', 1.60,
-    'document_max_calls', 8,
+    'max_cost_usd', 30,
+    'max_calls', 500,
+    'document_max_cost_usd', 3.15,
+    'document_max_calls', 50,
     'case_max_cost_usd', 3.10,
     'case_max_calls', 4
   ) || coalesce(p_budget, '{}'::jsonb);
 
   if (effective_budget->>'max_cost_usd')::numeric <= 0
-    or (effective_budget->>'max_cost_usd')::numeric > 25
+    or (effective_budget->>'max_cost_usd')::numeric > 30
     or (effective_budget->>'max_calls')::integer not between 1 and 500
     or (effective_budget->>'document_max_cost_usd')::numeric <= 0
     or (effective_budget->>'document_max_cost_usd')::numeric > (effective_budget->>'max_cost_usd')::numeric

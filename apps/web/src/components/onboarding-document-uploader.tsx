@@ -36,27 +36,37 @@ export function OnboardingDocumentUploader({organizationId, opportunityId, userI
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
+  const [failedFiles, setFailedFiles] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInFlight = useRef(false);
 
   async function upload(files: FileList | null) {
-    if (!files?.length) return;
-    const supabase = createClient();
-    if (!supabase) {
-      setError(copy.error);
-      return;
-    }
+    if (!files?.length || uploadInFlight.current) return;
+    const selected = Array.from(files);
+    uploadInFlight.current = true;
     setUploading(true);
     setError("");
+    setFailedFiles([]);
     // Same path as the document-first uploader: SHA-256 in the browser (re-verified server-side later),
     // private bucket under {organization}/{opportunity}/…, RLS-protected registration.
-    const result = await uploadDocuments({supabase, files: Array.from(files), organizationId, userId, scope: {kind: "opportunity", opportunityId}});
-    setDocuments((current) => {
-      const byId = new Map(current.map((document) => [document.id, document]));
-      for (const document of result.uploaded) byId.set(document.id, document);
-      return [...byId.values()];
-    });
-    if (result.failure) setError(copy.error);
-    setUploading(false);
+    try {
+      const supabase = createClient();
+      if (!supabase) { setError(copy.error); return; }
+      const result = await uploadDocuments({supabase, files: selected, organizationId, userId, scope: {kind: "opportunity", opportunityId}});
+      setDocuments((current) => {
+        const byId = new Map(current.map((document) => [document.id, document]));
+        for (const document of result.uploaded) byId.set(document.id, document);
+        return [...byId.values()];
+      });
+      setFailedFiles(result.failed.map((file) => file.original_name));
+      if (result.failure) setError(copy.error);
+    } catch {
+      setError(copy.error);
+    } finally {
+      uploadInFlight.current = false;
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
   }
 
   function handleDrop(event: React.DragEvent<HTMLDivElement>) {
@@ -76,17 +86,18 @@ export function OnboardingDocumentUploader({organizationId, opportunityId, userI
 
       <div
         aria-busy={uploading}
+        aria-disabled={uploading}
         className={`document-dropzone${dragActive ? " is-dragging" : ""}${uploading ? " is-uploading" : ""}`}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => { if (!uploadInFlight.current) inputRef.current?.click(); }}
         onDragEnter={(event) => { event.preventDefault(); setDragActive(true); }}
         onDragLeave={(event) => { event.preventDefault(); if (event.currentTarget === event.target) setDragActive(false); }}
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
-        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") inputRef.current?.click(); }}
+        onKeyDown={(event) => { if (!uploadInFlight.current && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); inputRef.current?.click(); } }}
         role="button"
         tabIndex={0}
       >
-        <input accept={DOCUMENT_ACCEPT} multiple onChange={(event) => void upload(event.target.files)} ref={inputRef} type="file" />
+        <input accept={DOCUMENT_ACCEPT} disabled={uploading} multiple onChange={(event) => void upload(event.target.files)} ref={inputRef} type="file" />
         <div className="document-dropzone__visual">
           <i aria-hidden="true" />
           <span>{uploading ? <LoaderCircle aria-hidden="true" className="spin" size={24} /> : <FileUp aria-hidden="true" size={24} />}</span>
@@ -94,11 +105,12 @@ export function OnboardingDocumentUploader({organizationId, opportunityId, userI
           <FileSpreadsheet aria-hidden="true" size={18} />
         </div>
         <strong>{uploading ? copy.uploading : copy.drop}</strong>
-        <button onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }} type="button">{copy.choose}</button>
+        <button disabled={uploading} onClick={(event) => { event.stopPropagation(); inputRef.current?.click(); }} type="button">{copy.choose}</button>
         <small>{copy.categories}</small>
       </div>
 
       {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
+      {failedFiles.length ? <ul className="form-notice form-notice--error form-notice--files">{failedFiles.map((name, index) => <li key={index}>{name}</li>)}</ul> : null}
       {documents.length ? (
         <div className="document-list">
           {documents.map((document) => (

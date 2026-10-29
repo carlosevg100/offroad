@@ -25,17 +25,13 @@
  */
 export const productionModelCeilingsUsd = {
   /**
-   * Per document. Old ceiling 0.75 (web run budget and database default), 8 calls. Largest
-   * classification 0.0732 (GPT-5.6 Terra, 0.0602 under the old estimate); largest extraction
-   * window 0.2094 (Sonnet 5, 0.1402 old).
-   * Worst attempt: classification plus seven windows at their bound, 1.4184; x1.10 = 1.5602.
-   * The largest ratio of new to old reservation over these requests is 1.49, so 1.60 also admits
-   * every call the old 0.75 admitted. The single 8.32 USD document on record is out of reach of the
-   * call ceiling of #310 (28 Aug 2026): three attempts of eight calls, each at its calibrated bound
-   * and at the Sonnet 5 price then recorded, come to about 6.9 USD. It ran under the former
-   * 12 USD / 800 calls per job; admitting it again would mean undoing #310, not calibrating.
+   * Document processing, 29 Oct 2026. The real run exposed truncation at 8k output;
+   * a 16k window raises the measured widest eight-call path from 1.4184 to 1.8884.
+   * The measured repair/fallback path is 2.824744; plus 10%, rounded up to five cents, is 3.15. Calls are bounded
+   * separately at 50; every send still reserves its full upper bound against this ceiling.
+   * This is not a promise that arbitrarily long files fit: incomplete reads fail explicitly.
    */
-  documentPipeline: 1.6,
+  documentPipeline: 3.15,
   /**
    * Old ceiling 1.00 (web and database `case_max_cost_usd`) less 0.10 of research. Largest request
    * the case brief of the Camil gold case (170 facts), 1.1793 on Claude Opus 5 (0.9808 old, already
@@ -133,17 +129,17 @@ export const productionModelCeilingsUsd = {
 /**
  * The economic contract of a document run, as the web app sends it to `begin_processing_run`. The
  * database gives each paid document the smaller of `document_max_cost_usd` and what the run leaves
- * after the case analysis, divided by the documents: 16.00 = 3.10 + 8 x 1.60 lets a data room of
+ * after the case analysis, divided by the documents: 30.00 exceeds 3.10 + 8 x 3.15 and lets a data room of
  * eight documents (the Rede Horizonte acceptance room) keep the whole per-document ceiling, where
- * the old 5.00 = 1.00 + 4.00 did that for five documents at 0.75. Calls are unchanged. Every value
- * sits inside the bounds the database validates (at most 25 USD, the case below the run), and the
+ * the old 5.00 = 1.00 + 4.00 did that for five documents at 0.75. Document calls are bounded at 50 and the run at 500. Every value
+ * sits inside the bounds the database validates (at most 30 USD, the case below the run), and the
  * same numbers are the database's defaults for a run its own callers start without a budget.
  */
 export const productionRunBudget = {
-  max_cost_usd: 16,
-  max_calls: 160,
+  max_cost_usd: 30,
+  max_calls: 500,
   document_max_cost_usd: productionModelCeilingsUsd.documentPipeline,
-  document_max_calls: 8,
+  document_max_calls: 50,
   case_max_cost_usd: productionModelCeilingsUsd.caseAnalysis,
   case_max_calls: 4,
 } as const;

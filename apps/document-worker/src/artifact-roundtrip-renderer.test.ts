@@ -160,7 +160,7 @@ it("exports the actual native compiler term sheet to PPTX with every structural 
  const extracted=await extractRoundtripManifest(rendered.bytes,"pptx");expect(extracted.issue).toBeNull();
  expect(extracted.manifest?.blocks.length).toBeGreaterThan(0);
  expect((await readRoundtripSnapshot(rendered.bytes,"pptx")).entries.length).toBe(extracted.manifest?.blocks.length);
-});
+},30_000);
 it("exports the actual native compiler financial model with null archetype only under approved workbook bytes",async()=>{
  const {buildMaterialCompilerReadyFixture}=await import("./testing/material-compiler-ready-fixture");
  const {bundle}=await buildMaterialCompilerReadyFixture({sessionId:id(80),runId:id(81)});

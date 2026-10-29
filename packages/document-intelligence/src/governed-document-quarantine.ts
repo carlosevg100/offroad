@@ -64,7 +64,7 @@ export const documentQuarantinePolicySchema = z.object({
 export type DocumentQuarantinePolicy = z.infer<typeof documentQuarantinePolicySchema>;
 
 export const defaultDocumentQuarantinePolicy: Readonly<DocumentQuarantinePolicy> = deepFreeze(documentQuarantinePolicySchema.parse({
-  policyVersion: "offroad.document-quarantine.2026-09-16.v2",
+  policyVersion: "offroad.document-quarantine.2026-10-29.v3",
   maxFileBytes: 50 * 1024 * 1024,
   maxArchiveEntries: 5_000,
   maxArchiveMemberBytes: 200 * 1024 * 1024,
@@ -380,7 +380,7 @@ async function inspectDocumentBytes(
   const activeContent = new Set<z.infer<typeof detectedContentSchema>["activeContent"][number]>();
   const reasons = new Set<QuarantineReason>();
 
-  if (!sniffed && looksTextual(bytes)) {
+  if (!sniffed && ["txt", "csv", "tsv", "prn"].includes(fileExtension) && looksTextual(bytes)) {
     mediaType = fileExtension === "txt" ? "text/plain" : "text/csv";
     extension = fileExtension;
     container = "text";
@@ -526,6 +526,9 @@ async function inspectDocumentBytes(
 function canonicalMediaType(value: string | null): string | null {
   if (!value) return null;
   const normalized = value.toLowerCase().split(";", 1)[0]?.trim() ?? "";
+  // Browsers use this generic value when the OS supplies no document MIME. It is no
+  // claim about the format: magic bytes, container inspection and extension still apply.
+  if (normalized === "application/octet-stream") return null;
   if (normalized === "application/csv" || normalized === "text/comma-separated-values") return "text/csv";
   if (normalized === "application/x-pdf") return "application/pdf";
   if (normalized === "image/jpg") return "image/jpeg";

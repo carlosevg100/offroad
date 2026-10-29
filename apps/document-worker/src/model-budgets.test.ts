@@ -87,3 +87,10 @@ describe("worker model budget of one attempt", () => {
     expect(describeConfig(config).maxCostUsdPerJob).toBe("job_kind_ceiling");
   });
 });
+
+it("admits document windows without widening other job call ceilings", () => {
+  const input = {researchCostPerQueryUsd: 0, researchProvidersConfigured: false, maxCallsPerJob: 50};
+  expect(jobModelBudget({job: documentJob({max_cost_usd: 2.7, max_calls: 50}), ...input})).toEqual({maxCostUsd: 2.7, maxCalls: 50, researchReserveUsd: 0});
+  expect(jobModelBudget({job: briefJob, ...input}).maxCalls).toBe(8);
+  expect(jobModelBudget({job: documentJob({max_cost_usd: 1.6, max_calls: 8}), ...input})).toEqual({maxCostUsd: 1.6, maxCalls: 8, researchReserveUsd: 0});
+});

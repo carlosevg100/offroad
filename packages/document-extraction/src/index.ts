@@ -5,7 +5,7 @@
  * given a parsed layer and a gateway, and it returns candidates that have already been checked
  * against the document they claim to come from.
  */
-export const documentExtractionVersion = "2026.08.19-e3-v1";
+export const documentExtractionVersion = "2026.10.29-e3-v8";
 
 export * from "./evidence";
 export * from "./prompt";

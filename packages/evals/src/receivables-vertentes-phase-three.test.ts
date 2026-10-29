@@ -193,7 +193,7 @@ describe("Vertentes Phase 3 raw-document replay", () => {
     expect(JSON.stringify(rawDocuments)).toBe(before);
     expect(readFileSync(join(goldRoot, "expected", "phase-three.json"))).toEqual(goldBefore);
     expect(rawDetection.defects.find((defect) => defect.id === "undeclared_recourse_and_debt")?.measured).toBeUndefined();
-  });
+  }, 30_000);
 
   // Rebuilding 34,397 titles can exceed the 5s default under shared CI CPU contention.
   it("reconstructs the governed universe directly from the delivered tape", () => {

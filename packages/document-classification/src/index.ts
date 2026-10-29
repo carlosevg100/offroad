@@ -10,7 +10,7 @@
  *
  * Holds no I/O: it is given a parsed layer and a gateway, and returns a profile.
  */
-export const documentClassificationVersion = "2026.08.20-e1-v1";
+export const documentClassificationVersion = "2026.10.29-e1-v3";
 
 export * from "./classify";
 export * from "./measurement";

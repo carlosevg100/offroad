@@ -139,6 +139,16 @@ describe("the document is data, and the prompt says so where the document appear
 });
 
 describe("the sample is bounded and deterministic", () => {
+  it("preserves a period and unit found only in a table header", () => {
+    const parsed = layerWith({layer: {pages: [{blocks: [], tables: [{
+      id: "p1.t1", header: ["Competência", "Fevereiro de 2028", "Valores em milhares de reais"],
+      rows: [{id: "p1.t1.r1", cells: [{text: "Receita"}, {text: "100"}]}],
+    }]}]}});
+    const sample = sampleLayer(parsed);
+    expect(sample).toContain("[p1.t1.header] Competência | Fevereiro de 2028 | Valores em milhares de reais");
+    expect(sample).toContain("[p1.t1.r1] Receita | 100");
+  });
+
   it("returns the same text for the same layer", () => {
     const parsed = layerWith();
     expect(sampleLayer(parsed)).toBe(sampleLayer(parsed));
@@ -272,6 +282,8 @@ describe("the class follows the kind, and the rank follows the class", () => {
     const {profile} = await classify({parsed: layerWith(), fileName: "balancete.xls"});
 
     expect(profile.quality).toMatchObject({classSuggestedByModel: "management"});
+    // A disagreement about evidence precedence must not pass the automatic review threshold.
+    expect(profile.confidence).toBeLessThan(0.8);
   });
 
   it("says nothing when the model and the ontology agree", async () => {

@@ -8281,6 +8281,12 @@
           "line": 95,
           "anchor": "alter function public.begin_processing_run(uuid, uuid, text, jsonb, text, jsonb) set schema private;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20261029163644_document_processing_budget_headroom.sql",
+          "line": 26,
+          "anchor": "  select pg_get_functiondef('private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)'::regprocedure) into body;",
+          "mechanism": "dynamic_definition_transform"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -57033,6 +57039,12 @@
           "line": 130,
           "anchor": "create or replace function private.register_source_version_v1(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261029180916_work_document_upload_continuity.sql",
+          "line": 25,
+          "anchor": "  select pg_get_functiondef('private.register_source_version_v1(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,uuid)'::regprocedure) into body;",
+          "mechanism": "dynamic_definition_transform"
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
@@ -355250,6 +355262,20 @@
       "decision": "preservar",
       "stage": "ficha C09, evidência da pasta sem tabela temporária",
       "reason": "A evidência da pasta (C09) lê os vínculos ativos do cadastro uma vez num valor local, sem tabela temporária que o lint do banco não resolve; mesma assinatura, permissões e comportamento."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261029163644_document_processing_budget_headroom.sql",
+      "decision": "preservar",
+      "stage": "documentos, qualidade e orçamento de produção",
+      "reason": "Ajusta somente os padrões econômicos do processamento ao ensaio real e à reserva de reparo/fallback; preserva isolamento, permissões, teto mensal e orçamento gravado dos trabalhos existentes."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261029180916_work_document_upload_continuity.sql",
+      "decision": "preservar",
+      "stage": "documentos, continuidade de envio no trabalho privado",
+      "reason": "Permite adicionar o documento faltante durante processamento/revisão somente no mesmo trabalho privado autorizado e ativo; conserva os estados finais, o estado da sessão, a autorização por recurso e os recibos de fonte."
     }
   ],
   "staging_archive": [

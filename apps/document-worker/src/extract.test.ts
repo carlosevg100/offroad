@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import type {VerifiedCandidate} from "@offroad/document-intelligence";
+import {documentLayerSchema, indexLayer, verifyCandidate, type VerifiedCandidate} from "@offroad/document-intelligence";
 
 import {toCandidateRow, toLayerProfile} from "./extract";
 import type {DocumentProfile} from "./pipeline";
@@ -66,6 +66,22 @@ describe("profile seam", () => {
 });
 
 describe("candidate rows", () => {
+  it("keeps a bare spreadsheet amount out of calculations when its own sheet declares millions", () => {
+    const layer = documentLayerSchema.parse({documentId: "synthetic-scale-proof", documentVersion: 1, kind: "spreadsheet",
+      sheets: [{name: "Summary", cells: [{ref: "B3", v: 18.8, t: "n"}]}],
+      scaleDeclarations: [{scale: 1_000_000, where: "sSummary", text: "R$ milhões"}]});
+    const verified = verifyCandidate({field_path: "collateral.inventory_eligible", value_raw: "18.8", value_type: "number", scale: 1,
+      information_class: "management", anchor: {kind: "sheet_cell", id: "sSummary!B3"}, quote: "18.8", confidence: 0.9},
+    {layer, index: indexLayer(layer), profile: {documentId: layer.documentId}, documentVersion: 1, localeHint: "pt-BR"});
+    if (verified.kind !== "verified") throw new Error("expected reviewable proposal");
+    const row = toCandidateRow(verified.value, {evidenceRank: 3});
+    expect(row.anchor_verified).toBe(true);
+    expect(row.normalized_value).toBe("18.8");
+    expect(row.value_scale).toBeNull();
+    expect(row.verifier_flags).toContain("scale_unverified");
+    expect(row.is_primary).toBe(false);
+  });
+
   it("keeps the anchor and the quote together — the row is the evidence, not just the value", () => {
     const row = toCandidateRow(candidate(), {locale: "pt-BR", evidenceRank: 1});
     expect(row.source_anchor).toMatchObject({id: "p12.t1.r1.c2", kind: "table_cell", quote: "Receita líquida | 185.400 | 172.900"});

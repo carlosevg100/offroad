@@ -163,6 +163,7 @@ export function AdvisorProject(props: Props) {
   const labelCopy = useTranslations("App.workUpdates.labels");
   const baseLabel = (raw: string) => milestoneLabelText(raw, (key: MilestoneLabelKey) => labelCopy(key));
   const inputRef = useRef<HTMLInputElement>(null);
+  const uploadInFlight = useRef(false);
   const [commandRecovery] = useState(() => createAdvisorCommandRecovery());
   const [content, setContent] = useState("");
   const [continuationQuestion, setContinuationQuestion] = useState<ContinuationQuestionState | null>(null);
@@ -171,6 +172,7 @@ export function AdvisorProject(props: Props) {
   const selectedRequest = props.pendingRequests?.find((request) => request.id === selectedRequestId) ?? props.pendingRequests?.[0];
   const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [failedFiles, setFailedFiles] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [optimistic, setOptimistic] = useState<AdvisorProjectMessage[]>([]);
   // Only a live job the conversation waits on makes it busy; never a queued message or a missing result.
@@ -362,33 +364,43 @@ export function AdvisorProject(props: Props) {
   }
 
   async function upload(selected: FileList | null) {
-    if (!selected?.length || uploading) return;
+    if (!selected?.length || uploadInFlight.current || pending) return;
+    const files = Array.from(selected);
+    uploadInFlight.current = true;
     setError("");
+    setFailedFiles([]);
     setUploading(true);
-    const scope = await prepareAdvisorDocumentUpload({locale: props.locale, projectId: props.projectId});
-    const supabase = createClient();
-    if (!scope.ok || !supabase) {
-      setError(scope.ok ? props.copy.errors.upload : props.copy.errors[scope.error]);
-      setUploading(false);
-      return;
-    }
-    const result = await uploadDocuments({
-      supabase,
-      files: Array.from(selected),
-      organizationId: scope.organizationId,
-      userId: scope.userId,
-      scope: {kind: "session", sessionId: scope.sessionId},
-    });
-    if (result.failure || result.uploaded.length === 0) {
+    try {
+      const scope = await prepareAdvisorDocumentUpload({locale: props.locale, projectId: props.projectId});
+      const supabase = createClient();
+      if (!scope.ok || !supabase) {
+        setError(scope.ok ? props.copy.errors.upload : props.copy.errors[scope.error]);
+        return;
+      }
+      const result = await uploadDocuments({
+        supabase,
+        files,
+        organizationId: scope.organizationId,
+        userId: scope.userId,
+        scope: {kind: "session", sessionId: scope.sessionId},
+      });
+      setFailedFiles(result.failed.map((file) => file.original_name));
+      if (result.failure) setError(props.copy.errors.upload);
+      // Successful files must advance even when another file in the selection failed.
+      // A selection of duplicates can also retry an interrupted enqueue. The server reuses
+      // unchanged documents rather than extracting them again.
+      if (result.uploaded.length > 0 || result.duplicateCount > 0) {
+        const processing = await beginAdvisorProjectProcessing({locale: props.locale, projectId: props.projectId});
+        if (!processing.ok) setError(props.copy.errors[processing.error]);
+      }
+      router.refresh();
+    } catch {
       setError(props.copy.errors.upload);
+    } finally {
+      uploadInFlight.current = false;
       setUploading(false);
-      return;
+      if (inputRef.current) inputRef.current.value = "";
     }
-    const processing = await beginAdvisorProjectProcessing({locale: props.locale, projectId: props.projectId});
-    if (!processing.ok) setError(props.copy.errors[processing.error]);
-    setUploading(false);
-    if (inputRef.current) inputRef.current.value = "";
-    router.refresh();
   }
 
   return (
@@ -514,14 +526,15 @@ export function AdvisorProject(props: Props) {
             /></label>
             <footer>
               <div>
-                <input accept={DOCUMENT_ACCEPT} hidden multiple onChange={(event) => void upload(event.target.files)} ref={inputRef} type="file" />
+                <input accept={DOCUMENT_ACCEPT} disabled={pending || uploading} hidden multiple onChange={(event) => void upload(event.target.files)} ref={inputRef} type="file" />
                 <button aria-label={props.copy.attach} disabled={pending || uploading} onClick={() => inputRef.current?.click()} title={props.copy.attach} type="button">{uploading ? <LoaderCircle aria-hidden="true" className="spin" size={17} /> : <Paperclip aria-hidden="true" size={17} />}</button>
                 <span>{props.accessBasis === "authorized_private" ? props.copy.private : props.copy.public}</span>
               </div>
               <button aria-label={props.copy.send} className="advisor-composer__send" disabled={!content.trim() || pending || uploading} onClick={() => void send()} title={props.copy.send} type="button">{pending ? <LoaderCircle aria-hidden="true" className="spin" size={17} /> : <ArrowUp aria-hidden="true" size={17} />}</button>
             </footer>
           </section>
-          {error ? <p className="form-notice form-notice--error" role="alert">{error}<button aria-label={props.copy.close} onClick={() => setError("")} type="button"><X aria-hidden="true" size={12} /></button></p> : null}
+          {error ? <p className="form-notice form-notice--error" role="alert">{error}<button aria-label={props.copy.close} onClick={() => { setError(""); setFailedFiles([]); }} type="button"><X aria-hidden="true" size={12} /></button></p> : null}
+          {error && failedFiles.length ? <ul className="form-notice form-notice--error form-notice--files">{failedFiles.map((name, index) => <li key={index}>{name}</li>)}</ul> : null}
           {continuationNotice ? <p className="form-notice continuation-notice" role="status">{continuationNotice}<button aria-label={props.copy.close} onClick={() => setContinuationNotice("")} type="button"><X aria-hidden="true" size={12} /></button></p> : null}
         </div>
       </section>

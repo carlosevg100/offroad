@@ -1,7 +1,7 @@
 // Disposable localhost stack only. Called by verify-governed-evaluation.mjs with its stack, sessions
 // and worker binding once the transport is open: the measurement families of stage 17, increment 5,
 // each through its own script, live, as a child process with no provider key in its environment.
-// measure-extraction and measure-classification parse the committed nimbus gold case and request
+// measure-extraction parses Nimbus and measure-classification parses Rede Horizonte (including PDFs), and request
 // through the evaluator's session wrapper; probe-structured-output requests its sixteen shapes. The
 // worker's consumer claims each evaluation and answers from a cassette recorded for exactly the
 // requests the family sends; the script reads the committed result and writes its record. Then,
@@ -39,11 +39,11 @@ export {cassetteKey, createModelGateway, defaultTaskPolicies, estimateCostUsd} f
 export {z} from 'zod';`, resolveDir: join(root, 'apps/document-worker'), loader: 'ts'}, outfile, bundle: true, platform: 'node', format: 'esm', target: 'node24', logLevel: 'silent'});
   const b = await import(pathToFileURL(outfile));
 
-  // 1. As the database owner: one assurance per route and resource these families send (Sonnet and
-  // Terra; inference, prompt cache and schema cache), valid for evaluation only, under this proof's
+  // 1. As the database owner: one assurance per route and resource these families send (Sonnet,
+  // Opus and Terra; inference, prompt cache and schema cache), valid for evaluation only, under this proof's
   // own synthetic connection.
   const connection = {accountRef: 'synthetic-measurement-account-e5a1e000', projectRef: 'synthetic-measurement-project', credentialBinding: 'synthetic-measurement-binding', region: 'global'};
-  const assurances = [['anthropic', 'claude-sonnet-5'], ['openai', 'gpt-5.6-terra']]
+  const assurances = [['anthropic', 'claude-sonnet-5'], ['anthropic', 'claude-opus-5'], ['openai', 'gpt-5.6-terra']]
     .flatMap(([provider, model]) => ['inference', 'prompt_cache', 'schema_cache'].map(resource => ({id: randomUUID(), provider, model, resource})));
   sql(`begin;
 ${assurances.map(({id, provider, model, resource}) => `select private.record_provider_processing_assurance_v1(jsonb_build_object(
@@ -151,13 +151,12 @@ commit;`);
   const toolOf = (provider, model) => ({id: `provider:${provider}:${model}`, version: b.governedEvaluationToolVersion, effect: 'read_only'});
   const families = [
     {scriptId: 'measure-extraction', file: 'scripts/measure-extraction.ts', args: ['nimbus'], files: ['extraction-nimbus.evaluation.json', 'extraction-nimbus.json'],
-      tools: [toolOf('anthropic', 'claude-sonnet-5'), toolOf('openai', 'gpt-5.6-terra')], route: 'provider:anthropic:claude-sonnet-5', model: 'claude-sonnet-5'},
-    {scriptId: 'measure-classification', file: 'scripts/measure-classification.ts', args: ['nimbus'], files: ['nimbus-classification.evaluation.json', 'nimbus-classification.json'],
-      tools: [toolOf('openai', 'gpt-5.6-terra'), toolOf('anthropic', 'claude-sonnet-5')], route: 'provider:openai:gpt-5.6-terra', model: 'gpt-5.6-terra'},
+      tools: [toolOf('anthropic', 'claude-sonnet-5'), toolOf('anthropic', 'claude-opus-5')], route: 'provider:anthropic:claude-sonnet-5', model: 'claude-sonnet-5'},
+    {scriptId: 'measure-classification', file: 'scripts/measure-classification.ts', args: ['rede-horizonte'], files: ['rede-horizonte-classification.evaluation.json', 'rede-horizonte-classification.json'],
+      tools: [toolOf('anthropic', 'claude-sonnet-5'), toolOf('anthropic', 'claude-opus-5')], route: 'provider:anthropic:claude-sonnet-5', model: 'claude-sonnet-5'},
     {scriptId: 'probe-structured-output', file: 'scripts/probe-structured-output.ts', args: [], files: ['structured-output-probe.evaluation.json'],
       tools: [toolOf('anthropic', 'claude-sonnet-5')], route: 'provider:anthropic:claude-sonnet-5', model: 'claude-sonnet-5'},
   ];
-  const nimbus = JSON.parse(readFileSync(join(root, 'packages/testing-fixtures/gold/nimbus/manifest.json'), 'utf8'));
 
   // 4. Each family allowed: request, claim, one reservation per send, cassette, settlement, commit,
   // and the script's own record written from the committed result.
@@ -179,11 +178,12 @@ commit;`);
       assert.equal(contract.budget.maxModelCalls, 20);
       sends = 16;
     } else {
-      assert.deepEqual([contract.audience.caseId, contract.audience.caseVersion], ['nimbus', nimbus.version]);
-      assert.deepEqual(snapshot.documents.map(document => document.name), nimbus.documents.map(document => document.name));
+      const manifest = JSON.parse(readFileSync(join(root, 'packages/testing-fixtures/gold', family.args[0], 'manifest.json'), 'utf8'));
+      assert.deepEqual([contract.audience.caseId, contract.audience.caseVersion], [manifest.caseId, manifest.version]);
+      assert.deepEqual(snapshot.documents.map(document => document.name), manifest.documents.map(document => document.name));
       const hashes = family.scriptId === 'measure-extraction' ? b.extractionMeasurementContentHashes(snapshot) : b.classificationMeasurementContentHashes(snapshot);
       assert.deepEqual(contract.inputs.sources.map(source => source.contentHash), hashes);
-      assert.deepEqual(hashes, [...new Set(nimbus.documents.map(document => document.sha256))].sort(), 'the sources are the bytes of the committed documents');
+      assert.deepEqual(hashes, [...new Set(manifest.documents.map(document => document.sha256))].sort(), 'the sources, including transferred PDF buffers, are the bytes of the committed documents');
       sends = family.scriptId === 'measure-extraction' ? sum(await b.extractionMeasurementPasses(snapshot)) : snapshot.documents.length;
       assert.equal(contract.budget.maxModelCalls, sends * 2, 'each send may fall back once');
     }

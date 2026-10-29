@@ -2707,16 +2707,34 @@ begin
   run_id := (first_run->>'processing_run_id')::uuid;
 
   -- A run started without a budget takes the production defaults (migration
-  -- production_budget_ceilings), and its one document the whole per-document ceiling.
+  -- document_processing_budget_headroom), and its one document the whole per-document ceiling.
   set local role postgres;
   if (select budget from public.processing_runs where id = run_id) is distinct from jsonb_build_object(
-      'max_cost_usd', 16, 'max_calls', 160, 'document_max_cost_usd', 1.60, 'document_max_calls', 8,
+      'max_cost_usd', 30, 'max_calls', 500, 'document_max_cost_usd', 3.15, 'document_max_calls', 50,
       'case_max_cost_usd', 3.10, 'case_max_calls', 4)
     or (select (payload #>> '{model_budget,max_cost_usd}')::numeric from public.processing_jobs
-      where processing_run_id = run_id and kind = 'document_pipeline') is distinct from 1.60 then
+      where processing_run_id = run_id and kind = 'document_pipeline') is distinct from 3.15 then
     raise exception 'a run started without a budget did not take the production defaults';
   end if;
   set local role authenticated;
+
+  -- The higher document allowance is still bounded; malformed ceilings cannot open a run.
+  declare bad_budget jsonb; begin
+    foreach bad_budget in array array['{"max_cost_usd":30.01}'::jsonb,
+      '{"max_calls":501}'::jsonb, '{"document_max_calls":51}'::jsonb] loop
+      accepted := true;
+      begin
+        perform public.begin_processing_run(org,session_id,'manual','[]'::jsonb,'test',bad_budget);
+      exception when invalid_parameter_value then
+        if sqlerrm <> 'processing_budget_invalid' then raise; end if;
+        accepted := false;
+      end;
+      if accepted then raise exception 'document processing accepted an over-limit budget'; end if;
+    end loop;
+  end;
+  if (select count(*) from public.processing_runs where intake_session_id=session_id)<>1 then
+    raise exception 'an over-limit budget left a run behind';
+  end if;
 
   -- Put the month over the ceiling by recording what that run cost.
   set local role postgres;
@@ -6262,6 +6280,23 @@ do $$declare tab text;api_role text;sig text;begin
    if has_function_privilege(api_role,sig,'EXECUTE') then raise exception 'Capture helper exposed: %, %',sig,api_role;end if;
   end loop;
  end loop;
+end $$;
+
+-- Work upload continuity keeps registration behind the same authenticated resource boundary.
+do $$declare denied boolean:=false;begin
+ begin
+  set local role authenticated;
+  perform public.register_intake_document_command(
+   'a9690000-0000-4000-9000-000000000090','a9690000-0000-4000-9000-000000000091',
+   gen_random_uuid(),gen_random_uuid(),'opportunity-documents',
+   'a9690000-0000-4000-9000-000000000090/a9690000-0000-4000-9000-000000000091/denied.csv',
+   'denied.csv','text/csv',10,repeat('d',64));
+ exception when insufficient_privilege then denied:=true;end;
+ reset role;
+ if not denied then raise exception 'work upload reached an ungranted intake';end if;
+ if has_function_privilege('anon','public.register_intake_document_command(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text)','EXECUTE')
+  or has_function_privilege('service_role','private.register_source_version_v1(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,uuid)','EXECUTE')
+  then raise exception 'work upload widened API grants';end if;
 end $$;
 
 -- Stage 20 / 3G has no callable client surface.

@@ -40,7 +40,7 @@
     {
       "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
       "file": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb).sql",
-      "sha256": "3904fb897ccfc833aea2b5ac21ddc0971b1f5c026549c87fc9c49d68d9bc3fa2"
+      "sha256": "4b8258c5a35315620dfaf551e591b108a3dcf58d80ae1b684191dfa4db0312de"
     },
     {
       "signature": "private.bind_job_authority_v1()",
@@ -296,6 +296,11 @@
       "signature": "private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text)",
       "file": "private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text).sql",
       "sha256": "062ca74d883819de06ec07fd2e82d5bc98e3d4d0ad03a1cc293f3f0ea1626eff"
+    },
+    {
+      "signature": "private.register_source_version_v1(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,uuid)",
+      "file": "private.register_source_version_v1(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,uuid).sql",
+      "sha256": "77a375378f7e8af42a1f464b6f732f5a3864c4c0ecfc98df1617fbb48a70d7e5"
     },
     {
       "signature": "private.request_documentary_work_revision_v1(uuid,uuid,text,uuid,text,text,jsonb)",
@@ -628,5 +633,21 @@
       "knownEquivalentHistoricalDifferences": 4,
       "unreconciledDifferences": 0
     }
-  }
+  },
+  "latestFunctionUpdates": [
+    {
+      "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
+      "sha256": "4b8258c5a35315620dfaf551e591b108a3dcf58d80ae1b684191dfa4db0312de",
+      "capturedAt": "2026-10-29T17:31:21.372958+00:00",
+      "source": "Production pg_get_functiondef; budget migration 20261029163644, same prosrc MD5 b38c2e66bb9244df4d23fe6b8f66c706 in staging and production",
+      "migrationMd5": "fbe6f5ca3f5c0e105089b3f3dd8ad2a6"
+    },
+    {
+      "signature": "private.register_source_version_v1(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,uuid)",
+      "sha256": "77a375378f7e8af42a1f464b6f732f5a3864c4c0ecfc98df1617fbb48a70d7e5",
+      "capturedAt": "2026-10-29T18:10:53.434324+00:00",
+      "source": "Production pg_get_functiondef; work upload migration 20261029180916, same prosrc MD5 3336bdf830f11c20087e6435b8911abb in staging and production",
+      "migrationMd5": "064aba1c497679fb64195c8a08b76073"
+    }
+  ]
 }

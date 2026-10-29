@@ -99,6 +99,7 @@ export default async function ApplicationHome({params, searchParams}: Props) {
     remove: t("advisor.remove"),
     send: t("advisor.send"),
     continueLabel: t("advisor.continueLabel"),
+    openProject: t("advisor.openProject"),
     status: {creating: t("advisor.status.creating"), uploading: t("advisor.status.uploading"), starting: t("advisor.status.starting")},
     errors: {
       invalid: t("advisor.errors.invalid"),

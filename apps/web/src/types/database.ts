@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -12031,15 +12031,6 @@ export type Database = {
         }
         Returns: Json
       }
-      confirm_work_premise_proposal_v1: {
-        Args: {
-          p_definition_version_id: string
-          p_entity_id: string
-          p_expected_fingerprint: string
-          p_proposal_id: string
-        }
-        Returns: string
-      }
       confirm_provider_mandate_v1: {
         Args: {
           p_channel: string
@@ -12076,6 +12067,15 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      confirm_work_premise_proposal_v1: {
+        Args: {
+          p_definition_version_id: string
+          p_entity_id: string
+          p_expected_fingerprint: string
+          p_proposal_id: string
+        }
+        Returns: string
       }
       contest_work_decision_v1: {
         Args: {
@@ -12231,10 +12231,7 @@ export type Database = {
         Args: { p_candidate_id: string; p_command_id: string; p_reason: string }
         Returns: Json
       }
-      document_folder_prior_v1: {
-        Args: { p_work_id: string }
-        Returns: Json
-      }
+      document_folder_prior_v1: { Args: { p_work_id: string }; Returns: Json }
       enqueue_deal_state_analysis: {
         Args: {
           p_organization_id: string
@@ -12404,6 +12401,7 @@ export type Database = {
         Args: { p_action: string; p_group_id: string; p_name?: string }
         Returns: Json
       }
+      market_odbl_release_v1: { Args: { p_release?: number }; Returns: Json }
       match_artifact_import_v1: {
         Args: {
           p_candidate_id: string
@@ -12477,6 +12475,10 @@ export type Database = {
           p_reviewed_fingerprint: string
         }
         Returns: string
+      }
+      quarter_update_prior_results_v1: {
+        Args: { p_work_id: string }
+        Returns: Json
       }
       queue_advisor_initial_turn_v1: {
         Args: { p_project_id: string }
@@ -12787,10 +12789,6 @@ export type Database = {
           p_recipient: string
         }
         Returns: string
-      }
-      quarter_update_prior_results_v1: {
-        Args: { p_work_id: string }
-        Returns: Json
       }
       record_definition_version_v1: {
         Args: {
@@ -14121,6 +14119,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_board_material_priors_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_cancel_document_folder_wait_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: boolean
+      }
       worker_capital_preview_boundary_usage_v1: {
         Args: {
           p_capability_token: string
@@ -14203,6 +14209,14 @@ export type Database = {
       }
       worker_claim_job_v4: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
+        Returns: Json
+      }
+      worker_claim_market_acquisition_v1: {
+        Args: { p_worker_token: string }
+        Returns: Json
+      }
+      worker_claim_market_event_v1: {
+        Args: { p_consumer: string; p_worker_token: string }
         Returns: Json
       }
       worker_claim_retention_action_v1: {
@@ -14476,6 +14490,31 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_commit_market_acquisition_v1: {
+        Args: {
+          p_acquired_at: string
+          p_byte_size: number
+          p_capability_token: string
+          p_content_type: string
+          p_final_url: string
+          p_job_id: string
+          p_lease_id: string
+          p_md5: string
+          p_sha256: string
+        }
+        Returns: Json
+      }
+      worker_commit_market_version_v1: {
+        Args: {
+          p_acquired_at: string
+          p_capability_token: string
+          p_content: string
+          p_content_type: string
+          p_job_id: string
+          p_lease_id: string
+        }
+        Returns: Json
+      }
       worker_commit_material_production_body_v1: {
         Args: {
           p_allocation_id: string
@@ -14558,6 +14597,16 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string; p_result?: Json }
         Returns: Json
       }
+      worker_complete_market_event_v1: {
+        Args: {
+          p_capability: string
+          p_consumer: string
+          p_effect: Json
+          p_lease: string
+          p_sequence: number
+        }
+        Returns: Json
+      }
       worker_create_artifact_revision_v1: {
         Args: {
           p_audience: string
@@ -14596,6 +14645,29 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_document_folder_evidence_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_document_folder_prior_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_document_folder_reading_input_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_document_folder_readings_v1: {
+        Args: {
+          p_capability_token: string
+          p_context: Json
+          p_files: Json
+          p_framing: Json
+          p_job_id: string
+          p_reader_version: string
+        }
+        Returns: Json
+      }
       worker_enqueue_receivables_method_refresh_v1: {
         Args: {
           p_capability_token: string
@@ -14603,6 +14675,10 @@ export type Database = {
           p_draft_fingerprint: string
           p_job_id: string
         }
+        Returns: Json
+      }
+      worker_evaluate_rg01_v1: {
+        Args: { p_worker_token: string }
         Returns: Json
       }
       worker_fail_artifact_roundtrip_v1: {
@@ -14630,6 +14706,28 @@ export type Database = {
           p_job_id: string
           p_retry_in_seconds?: number
           p_retryable?: boolean
+        }
+        Returns: Json
+      }
+      worker_fail_market_acquisition_v1: {
+        Args: {
+          p_capability_token: string
+          p_code: string
+          p_detail: string
+          p_job_id: string
+          p_lease_id: string
+          p_retryable: boolean
+        }
+        Returns: Json
+      }
+      worker_fail_market_event_v1: {
+        Args: {
+          p_capability: string
+          p_code: string
+          p_consumer: string
+          p_detail: string
+          p_lease: string
+          p_sequence: number
         }
         Returns: Json
       }
@@ -14742,6 +14840,10 @@ export type Database = {
         }
         Returns: string
       }
+      worker_fire_market_schedules_v1: {
+        Args: { p_worker_token: string }
+        Returns: Json
+      }
       worker_freeze_case_input: {
         Args: {
           p_capability_token: string
@@ -14756,6 +14858,10 @@ export type Database = {
           p_job_id: string
           p_lease_seconds?: number
         }
+        Returns: Json
+      }
+      worker_list_market_orphans_v1: {
+        Args: { p_limit: number; p_worker_token: string }
         Returns: Json
       }
       worker_load_agent_context: {
@@ -14936,10 +15042,7 @@ export type Database = {
         Returns: Json
       }
       worker_load_premise_evidence_v1: {
-        Args: {
-          p_capability_token: string
-          p_job_id: string
-        }
+        Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_load_prior_case_report: {
@@ -15336,6 +15439,10 @@ export type Database = {
           p_job_id: string
           p_request_id: string
         }
+        Returns: Json
+      }
+      worker_quarter_update_priors_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_read_assessment_research_source_v1: {
@@ -16067,6 +16174,16 @@ export type Database = {
         }
         Returns: string
       }
+      worker_record_document_folder_reading_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_reading: Json
+          p_refusal_code: string
+          p_status: string
+        }
+        Returns: Json
+      }
       worker_record_document_result: {
         Args: {
           p_capability_token: string
@@ -16354,6 +16471,23 @@ export type Database = {
         Args: { p_capability: string; p_job: string; p_lease: string }
         Returns: Json
       }
+      worker_renew_market_acquisition_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_lease_id: string
+        }
+        Returns: Json
+      }
+      worker_renew_market_event_v1: {
+        Args: {
+          p_capability: string
+          p_consumer: string
+          p_lease: string
+          p_sequence: number
+        }
+        Returns: Json
+      }
       worker_reserve_evaluation_operation_v1: {
         Args: {
           p_capability_token: string
@@ -16441,7 +16575,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      worker_run_rg01_event_v1: {
+        Args: {
+          p_capability: string
+          p_consumer: string
+          p_lease: string
+          p_sequence: number
+        }
+        Returns: Json
+      }
       worker_runtime_schema_contract_v1: { Args: never; Returns: Json }
+      worker_schedule_rg01_v1: {
+        Args: { p_worker_token: string }
+        Returns: Json
+      }
       worker_seal_capital_preview_boundary_v1: {
         Args: {
           p_capability_token: string
@@ -16531,6 +16678,14 @@ export type Database = {
           p_worker_token: string
         }
         Returns: Json
+      }
+      worker_supersede_premise_proposals_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_method_id: string
+        }
+        Returns: number
       }
       worker_sync_institutional_information_requests_v1: {
         Args: { p_capability_token: string; p_job_id: string; p_requests: Json }

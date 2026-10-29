@@ -45,3 +45,16 @@ describe("untrusted anchor suffixes", () => {
     expect(out.map(item => item.anchor.id)).toEqual(anchors);
   }, 2000);
 });
+
+it("binds structured tuples to their source row when model numbering restarts", () => {
+  const out = renumberByTable([
+    candidate("debt.instruments.1.lender", "sLoans!A5"), candidate("debt.instruments.1.balance", "sLoans!C5"),
+    candidate("debt.instruments.1.lender", "sLoans!A6"), candidate("debt.instruments.1.balance", "sLoans!C6"),
+    candidate("debt.instruments.7.balance", "sLoans!C5"),
+    candidate("debt.instruments.1.lender", "p3.t1.r1"), candidate("debt.instruments.1.lender", "p3.t1.r2"),
+  ]);
+  expect(out.map(item => item.field_path)).toEqual([
+    "debt.instruments.1.lender", "debt.instruments.1.balance", "debt.instruments.2.lender", "debt.instruments.2.balance",
+    "debt.instruments.1.balance", "debt.instruments.3.lender", "debt.instruments.4.lender",
+  ]);
+});

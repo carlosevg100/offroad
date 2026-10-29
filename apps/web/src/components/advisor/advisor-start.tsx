@@ -7,6 +7,7 @@ import {useRouter} from "next/navigation";
 import {useEffect, useMemo, useRef, useState} from "react";
 
 import {beginAdvisorProjectProcessing, prepareAdvisorDocumentUpload, startAdvisorProject} from "@/app/[locale]/app/advisor-actions";
+import {finishAdvisorDocumentUpload} from "@/lib/advisor/upload-continuation";
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
@@ -24,6 +25,7 @@ export type AdvisorStartCopy = {
   remove: string;
   send: string;
   continueLabel: string;
+  openProject: string;
   status: {creating: string; uploading: string; starting: string};
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
   groupContext: string;
@@ -93,13 +95,17 @@ function useRotatingExample(examples: AdvisorStartExample[], idle: boolean, fall
   return {placeholder: idle && typed ? typed : fallback, role};
 }
 
-export function AdvisorStart({copy, groupId, groupName, locale, organizationId, recents, userFirstName, userId}: Props) {
+export function AdvisorStart({copy, groupId, groupName, locale, recents, userFirstName}: Props) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const [prompt, setPrompt] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "creating" | "uploading" | "starting">("idle");
   const [error, setError] = useState("");
+  const [failedFiles, setFailedFiles] = useState<string[]>([]);
+  const [createdWorkId, setCreatedWorkId] = useState<string | null>(null);
+  const inFlight = useRef(false);
+  const creationAttempt = useRef<{key: string; requestId: string} | null>(null);
   const pending = status !== "idle";
   const statusLabel = status === "creating" ? copy.status.creating : status === "uploading" ? copy.status.uploading : copy.status.starting;
   const distinctFiles = useMemo(() => {
@@ -116,64 +122,56 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
 
   async function submit() {
     const normalizedPrompt = prompt.trim() || (distinctFiles.length > 0 ? copy.documentsOnly : "");
-    if (!normalizedPrompt || pending) return;
+    if (!normalizedPrompt || inFlight.current || createdWorkId) return;
+    inFlight.current = true;
     setError("");
+    setFailedFiles([]);
+    const key = JSON.stringify([normalizedPrompt, groupId ?? null, distinctFiles.map((file) => [file.name, file.size, file.lastModified])]);
+    if (creationAttempt.current?.key !== key) creationAttempt.current = {key, requestId: crypto.randomUUID()};
     setStatus("creating");
-    const result = await startAdvisorProject({
-      locale,
-      prompt: normalizedPrompt,
-      entryJobHint: distinctFiles.length > 0 ? "structure_from_documents" : null,
-      hasAttachments: distinctFiles.length > 0,
-      requestId: crypto.randomUUID(),
-      groupId: groupId ?? null,
-    });
-    if (!result.ok) {
-      // A review-role denial cannot happen before a project exists; keep the generic denial copy.
-      setError(copy.errors[result.error === "role" ? "denied" : result.error]);
-      setStatus("idle");
-      return;
-    }
-
-    if (distinctFiles.length > 0) {
-      const supabase = createClient();
-      if (!supabase) {
-        setError(copy.errors.upload);
-        setStatus("idle");
-        return;
-      }
-      const scope = await prepareAdvisorDocumentUpload({locale, projectId: result.workId});
-      if (!scope.ok) {
-        setError(copy.errors[scope.error === "role" ? "denied" : scope.error]);
-        setStatus("idle");
-        return;
-      }
-      setStatus("uploading");
-      const upload = await uploadDocuments({
-        supabase,
-        files: distinctFiles,
-        organizationId,
-        userId,
-        scope: {kind: "session", sessionId: scope.sessionId},
+    let workCreated = false;
+    try {
+      const result = await startAdvisorProject({
+        locale, prompt: normalizedPrompt,
+        entryJobHint: distinctFiles.length > 0 ? "structure_from_documents" : null,
+        hasAttachments: distinctFiles.length > 0,
+        requestId: creationAttempt.current.requestId,
+        groupId: groupId ?? null,
       });
-      if (upload.failure || upload.uploaded.length === 0) {
-        setError(copy.errors.upload);
-        setStatus("idle");
+      if (!result.ok) {
+        setError(copy.errors[result.error === "role" ? "denied" : result.error]);
         return;
       }
-      // Uploading the documents is only the intake boundary. Every document-backed project must
-      // cross the preliminary evidence gate immediately afterwards, including the two journeys
-      // whose prompt may consist entirely of the attached package. Otherwise a documents-only
-      // start creates a valid project and then leaves it idle with no analysis to continue.
-      setStatus("starting");
-      const processing = await beginAdvisorProjectProcessing({locale, projectId: result.projectId});
-      if (!processing.ok) {
-        setError(copy.errors[processing.error === "role" ? "denied" : processing.error]);
-        setStatus("idle");
-        return;
+      // A confirmed work remains reachable after upload/processing failure. Retrying here
+      // must never create a second work or hide the files already registered in the first.
+      workCreated = true;
+      setCreatedWorkId(result.workId);
+      if (distinctFiles.length > 0) {
+        const supabase = createClient();
+        if (!supabase) {setError(copy.errors.upload); return;}
+        const scope = await prepareAdvisorDocumentUpload({locale, projectId: result.workId});
+        if (!scope.ok) {setError(copy.errors[scope.error === "role" ? "denied" : scope.error]); return;}
+        setStatus("uploading");
+        const upload = await uploadDocuments({supabase, files: distinctFiles,
+          organizationId: scope.organizationId, userId: scope.userId,
+          scope: {kind: "session", sessionId: scope.sessionId}});
+        setStatus("starting");
+        const continuation = await finishAdvisorDocumentUpload(upload,
+          () => beginAdvisorProjectProcessing({locale, projectId: result.workId}));
+        setFailedFiles(continuation.failedFiles);
+        if (continuation.error) {
+          setError(copy.errors[continuation.error === "role" ? "denied" : continuation.error]);
+          return;
+        }
       }
+      router.push(`/${locale}/app/projects/${result.workId}`);
+    } catch {
+      setError(workCreated ? copy.errors.upload : copy.errors.save);
+    } finally {
+      inFlight.current = false;
+      setStatus("idle");
+      if (fileInput.current) fileInput.current.value = "";
     }
-
-    router.push(`/${locale}/app/projects/${result.workId}`);
   }
 
   return (
@@ -197,7 +195,7 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
             <span className="sr-only">{copy.prompt}</span>
             <textarea
               autoFocus
-              disabled={pending}
+              disabled={pending || Boolean(createdWorkId)}
               maxLength={8000}
               onChange={(event) => setPrompt(event.target.value)}
               onKeyDown={(event) => {
@@ -221,7 +219,7 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
                   <small>{formatDocumentSize(file.size)}</small>
                   <button
                     aria-label={`${copy.remove}: ${file.name}`}
-                    disabled={pending}
+                    disabled={pending || Boolean(createdWorkId)}
                     onClick={() => setFiles((current) => current.filter((candidate) => candidate !== file))}
                     type="button"
                   ><X aria-hidden="true" size={12} /></button>
@@ -231,15 +229,15 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
           ) : null}
 
           <footer>
-            <input accept={DOCUMENT_ACCEPT} hidden multiple onChange={(event) => addFiles(event.target.files)} ref={fileInput} type="file" />
-            <button aria-label={copy.attach} disabled={pending} onClick={() => fileInput.current?.click()} title={copy.attach} type="button">
+            <input accept={DOCUMENT_ACCEPT} disabled={pending || Boolean(createdWorkId)} hidden multiple onChange={(event) => addFiles(event.target.files)} ref={fileInput} type="file" />
+            <button aria-label={copy.attach} disabled={pending || Boolean(createdWorkId)} onClick={() => fileInput.current?.click()} title={copy.attach} type="button">
               <Paperclip aria-hidden="true" size={16} />
             </button>
             <span className="advisor-composer__grow" />
             <button
               aria-label={copy.send}
               className="advisor-composer__send"
-              disabled={pending || (!prompt.trim() && distinctFiles.length === 0)}
+              disabled={pending || Boolean(createdWorkId) || (!prompt.trim() && distinctFiles.length === 0)}
               onClick={() => void submit()}
               title={copy.send}
               type="button"
@@ -250,6 +248,8 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
         {pending ? <p className="advisor-start__status" role="status">{statusLabel}</p> : null}
 
         {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
+        {failedFiles.length > 0 ? <ul className="form-notice form-notice--error">{failedFiles.map((name, index) => <li key={`${index}:${name}`}>{name}</li>)}</ul> : null}
+        {createdWorkId && !pending ? <p><Link className="button button--secondary" href={`/${locale}/app/projects/${createdWorkId}`}>{copy.openProject}</Link></p> : null}
 
         {recents.length > 0 ? (
           <section className="advisor-start__continue">

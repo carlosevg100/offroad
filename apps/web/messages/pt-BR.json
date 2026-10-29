@@ -4225,7 +4225,8 @@
         }
       },
       "documentsOnly": "Analise os documentos anexados e me diga o que eles sustentam.",
-      "continueLabel": "Continuar"
+      "continueLabel": "Continuar",
+      "openProject": "Continuar no projeto"
     },
     "advisorProject": {
       "artifactReadUnavailable": "Não foi possível ler esta versão com segurança. Tente novamente.",
