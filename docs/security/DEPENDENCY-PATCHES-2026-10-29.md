@@ -19,3 +19,5 @@ A instalação congelada passou. O manifesto de autoria foi recompilado para ref
 Segurança: SDLC-04, SDLC-07, SDLC-10 e SDLC-11. Sem novo provedor, privilégio, esquema ou processamento de dados privados; sem atualização major. A mudança afeta o resolvedor de URI e expansão de padrões usados pelas dependências e as ferramentas de teste. A regressão completa e a compilação são exigidas antes de enviar. Reverter reinstala versões com vulnerabilidades conhecidas; diante de regressão, preferir correção adiante e registrar qualquer contenção e prazo.
 
 Referências primárias: [alerta do projeto](https://github.com/carlosevg100/offroad/security/dependabot/50), [aviso do fornecedor](https://github.com/vitejs/launch-editor/security/advisories/GHSA-587h-7wmj-h5pm). Nenhum alerta foi dispensado ou fechado manualmente.
+
+A CI inicial passou banco, E2E, preview e segurança, mas o job de qualidade foi cancelado pelo teto externo de 45 minutos durante a verificação completa. O orçamento dos jobs de qualidade e banco passa a 60 minutos, acompanhando a correção da PR #964, com todos os checks e limites de testes preservados. A execução final precisa passar antes do merge.
