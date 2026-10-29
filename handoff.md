@@ -1,3 +1,9 @@
+## 2026-10-29: identificação de planilhas e MIME ausente
+
+Candidato `fix/structured-document-detection`. Arquivos nativos XLSB, FODS e DBF passavam pela seleção do navegador, mas a identificação genérica ZIP/XML/binário não chegava aos leitores implementados. A identificação agora verifica a estrutura do pacote XLSB, o documento ODF e o cabeçalho/descritores/registros do DBF antes de escolher o leitor. Testes usam bytes gerados em seis formatos e verificam valores e âncoras, inclusive nomes e MIME falsos, XML genérico, entidade XML e DBF corrompido. O leitor não autoriza o arquivo a passar pela quarentena: os cinco formatos antigos continuam fechados na política de entrada até sua inspeção de conteúdo ativo ser completada.
+
+A política de quarentena v3 trata `application/octet-stream` como ausência de declaração específica; o tipo real, a extensão, o hash, o scanner e o conteúdo continuam obrigatórios. O fallback de texto passa a exigir extensão textual conhecida; um texto chamado `.exe` não é mais tratado como CSV. Lista de tipos autorizados não ampliada. Sem migração ou método publicado alterado. Evidência, limites e retorno em `docs/build/structured-document-detection-2026-10-29.md`.
+
 ## 2026-10-28: lote 4 de fichas testado (C09, C01, C32 plano de 2027, C47)
 
 - Quatro métodos 2026.10.27-v1 com revisão independente aprovada, ainda não publicados: organize-document-folder (C09, inventário da pasta; aprovado na r21), evaluate-received-proposal (C01, proposta de banco recebida; r6), evaluate-financing-paths (plano de financiamento de 2027 da C32 sobre a Aurora, método próprio porque prepare-capital-structure-decision v4 sustenta o fluxo R01; r4) e prepare-board-capital-discussion (C47, material do conselho; r44).

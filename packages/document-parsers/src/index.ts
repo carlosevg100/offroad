@@ -31,8 +31,9 @@ import {parseDocx} from "./docx";
 import {parsePptx} from "./pptx";
 import {parseImageWithOcr, pagesFromOcr} from "./ocr";
 import {cfbMimeTypes, detectCfbSubtype} from "./cfb";
+import {detectStructuredSpreadsheet} from "./structured-spreadsheet";
 
-export const documentParsersVersion = "2026.08.18-parsers-v2";
+export const documentParsersVersion = "2026.10.29-parsers-v3";
 
 export * from "./types";
 export * from "./scale";
@@ -100,6 +101,11 @@ export async function detectType(input: ParseInput): Promise<DetectedType> {
     // more; the main stream inside says whether it is a workbook, a letter or a deck.
     let mime = sniffed.mime;
     let ext = sniffed.ext;
+    const structured = await detectStructuredSpreadsheet(input.bytes, mime);
+    if (structured) {
+      mime = structured.mime;
+      ext = structured.extension;
+    }
     if (mime === "application/x-cfb") {
       const subtype = detectCfbSubtype(input.bytes);
       if (subtype !== "unknown") {
@@ -113,6 +119,9 @@ export async function detectType(input: ParseInput): Promise<DetectedType> {
       mismatch: Boolean(declared && declared !== mime && !isBenignMismatch(declared, mime)),
     };
   }
+
+  const structured = await detectStructuredSpreadsheet(input.bytes, "application/octet-stream");
+  if (structured) return {...structured, mismatch: Boolean(declared && declared !== structured.mime && !isBenignMismatch(declared, structured.mime))};
 
   // file-type only knows binary signatures; text formats are decided by extension plus the
   // fact that the bytes decode as text.
