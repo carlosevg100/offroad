@@ -34,6 +34,16 @@
         "^test"
       ]
     },
+    "@offroad/model-gateway#test": {
+      "dependsOn": [
+        "^test"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/supabase/migrations/**/*.sql",
+        "$TURBO_ROOT$/docs/build/schema-history/effective-function-bodies/**/*.sql"
+      ]
+    },
     "web#test": {
       "dependsOn": [
         "^test"

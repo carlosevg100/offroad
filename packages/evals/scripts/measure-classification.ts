@@ -113,6 +113,8 @@ async function main(): Promise<void> {
 
     const startedAt = Date.now();
     const bytes = new Uint8Array(readFileSync(join(documentsDir, entry.name)));
+    // PDF readers may transfer this buffer. Bind the original file before parsing it.
+    const sourceHash = sha256(bytes);
     const {conversion, ...parsed} = await parseDocument({
       bytes,
       documentId: entry.name,
@@ -121,7 +123,7 @@ async function main(): Promise<void> {
       localeHint: "pt-BR",
     });
     parseMs.set(entry.name, Date.now() - startedAt);
-    documents.push({name: entry.name, sha256: sha256(bytes), parsed: {...parsed, conversion: conversion ?? null}});
+    documents.push({name: entry.name, sha256: sourceHash, parsed: {...parsed, conversion: conversion ?? null}});
   }
 
   // The routes the task policy gives this run: the worker's gateway takes the same policy from the snapshot.

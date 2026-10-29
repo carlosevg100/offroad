@@ -39,3 +39,10 @@ Controles afetados: proteção documental DOC-01/DOC-02/DOC-03 e continuidade da
 ## Alcance
 
 Esta correção remove falhas concretas da entrada. Não comprova extração de qualquer documento, não publica R1/R2/R3 e não abre fonte comercial de dados. Essas frentes exigem seus próprios casos e gates.
+
+
+## Continuidade comprovada pelo ensaio remoto
+
+O novo ensaio de navegador comprovou 30 arquivos recebidos, recuperação da confirmação perdida, fila completa e preservação do primeiro trabalho, mas recusou o reenvio quando a sessão já estava em processamento: `intake_session_not_collecting`. Corrigido por migração nova `20261029180916_work_document_upload_continuity.sql` (staging `20261029180830`, MD5 `064aba1c497679fb64195c8a08b76073`). Somente trabalho privado ativo, com autorização de trabalho no projeto e na sessão, admite chegada durante processamento/revisão. Os estados confirmado/cancelado continuam recusados; a sessão não é reaberta. A regressão falhou antes e passou depois no staging, com duplicata/evento único e recusas de membro sem acesso, trabalho arquivado e estados finais. Corpo MD5 `3336bdf830f11c20087e6435b8911abb` nos dois bancos, ACL/search_path/security definer preservados; tipos regenerados sem diferença, segurança zero e inventários sem divergência. A captura nova integra as 123 funções do manifesto. CI de navegador e gate final precisam repetir.
+
+O primeiro envio parcial passou no navegador: conserva um trabalho e um arquivo, identifica o arquivo falho e oferece a continuidade. A falha do reenvio foi mantida como regressão e exige nova execução, sem alterar a expectativa de 31 arquivos nem afrouxar a prova de hash, Storage, eventos e fila.

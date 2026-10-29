@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "document-postprocessing-evidence.v1",
+  "mode": "deterministic_replay_of_recorded_v7_model_answers",
+  "currentExtractorVersion": "2026.10.29-e3-v8",
+  "verifierSourceSha256": "3cb9b106df22f3fd31cba64bdb17b56a89f5b0c4a95a30d267ce4d1f25217510",
+  "modelPromptsUnchanged": true,
+  "sourceBindingSupplement": "document-source-bindings-2026-10-29.json",
+  "sourceHashDryRun": {
+    "mode": "unmodified_cli_dry_run",
+    "sourceEvaluationId": "00d68caf-d65e-43d9-82a9-f2f2c84eddc5",
+    "originalInputFingerprint": "8f9fcc2dec50e95ef88fa6b6e3a590b8cc67925502500a47fe9004ea59437a9e",
+    "onlyInputChange": "PDF hashes corrected before the parser transfers their buffers",
+    "expectedCorrectedInputFingerprint": "0cc9bd2fc2b57787768d8e9dcae1637145d20ce909fc160bf444c9dc69b55bb2",
+    "observedCliFingerprintPrefix": "0cc9bd2fc2b57787",
+    "matched": true,
+    "additionalProviderCalls": 0,
+    "additionalCostUsd": 0
+  },
+  "evaluations": [
+    {
+      "mode": "offline_postprocessing_only",
+      "capturedExtractorVersion": "2026.10.29-e3-v7",
+      "currentExtractorVersion": "2026.10.29-e3-v8",
+      "promptHash": "47b7501e0c4a",
+      "promptHashMatches": true,
+      "sourceHashesVerified": 8,
+      "sourceReportSha256": "b8d316d51521405f27721c2336066bdcc8616e08566b3f127deb78bbeeefdaf6",
+      "sourceEvaluationId": "e9eb3f79-1e73-4c56-853c-84da80b0d732",
+      "sourceInputFingerprint": "b6424a6b1418555e9585fc09a91dc0e4fc039a5d3850678bc578d5e6b55f8f54",
+      "sourceResultFingerprint": "41dc95c8320ea71d034009b52c630cbf2d9623c2cf6835307011e447e2cfaaa5",
+      "sourceSupplementSha256": "a1dd5690f78290e812912499a59592ae3c2638eb810252115b1fa016087291e3",
+      "classificationMode": "preceding_real_classification",
+      "additionalProviderCalls": 0,
+      "additionalCostUsd": 0,
+      "material": {
+        "expected": 141,
+        "matched": 99,
+        "recall": 0.7021
+      },
+      "precision": {
+        "comparable": 309,
+        "correct": 174,
+        "flagged": 1,
+        "value": 0.5631
+      },
+      "criticalFailures": [
+        "AC-02",
+        "AC-04",
+        "AC-06",
+        "AC-07"
+      ],
+      "unresolvedScaleCandidates": 15
+    },
+    {
+      "mode": "offline_postprocessing_only",
+      "capturedExtractorVersion": "2026.10.29-e3-v7",
+      "currentExtractorVersion": "2026.10.29-e3-v8",
+      "promptHash": "47b7501e0c4a",
+      "promptHashMatches": true,
+      "sourceHashesVerified": 6,
+      "sourceReportSha256": "cca18beed2e4db9751cdf189da2cab7d2a6c6a88c1f86d4dd9f690ca5857b62b",
+      "sourceEvaluationId": "2c976f3e-a2e3-421f-9cf7-fef1798057d3",
+      "sourceInputFingerprint": "ac3a02c9afa3bcca1ba14cb6456da24b496fc0321501efd1c93d82ae7a70c4ad",
+      "sourceResultFingerprint": "3dac4708852d92b6054bec076e3471ae32ab58ccc81035f9b1385cee196afd7b",
+      "sourceSupplementSha256": "a1dd5690f78290e812912499a59592ae3c2638eb810252115b1fa016087291e3",
+      "classificationMode": "gold_profile_extraction_isolation",
+      "additionalProviderCalls": 0,
+      "additionalCostUsd": 0,
+      "material": {
+        "expected": 64,
+        "matched": 56,
+        "recall": 0.875
+      },
+      "precision": {
+        "comparable": 95,
+        "correct": 89,
+        "flagged": 0,
+        "value": 0.9368
+      },
+      "criticalFailures": [],
+      "unresolvedScaleCandidates": 0
+    },
+    {
+      "mode": "offline_postprocessing_only",
+      "capturedExtractorVersion": "2026.10.29-e3-v7",
+      "currentExtractorVersion": "2026.10.29-e3-v8",
+      "promptHash": "47b7501e0c4a",
+      "promptHashMatches": true,
+      "sourceHashesVerified": 9,
+      "sourceReportSha256": "4feca706790d51a4f022811c3ce4b9bb66ba25c386538a40c3dd512ea448e987",
+      "sourceEvaluationId": "ca44be81-bbbf-4119-9438-9bda9e222946",
+      "sourceInputFingerprint": "7f7b0e374cfccfefabcc5bb075b2d00d5becaf11da2485cafca549aec7372db6",
+      "sourceResultFingerprint": "091bffd7599a039f30a1da2888e95e60ea9cb8dc9704f8709c2bd78ed785c5a7",
+      "sourceSupplementSha256": "a1dd5690f78290e812912499a59592ae3c2638eb810252115b1fa016087291e3",
+      "classificationMode": "gold_profile_extraction_isolation",
+      "additionalProviderCalls": 0,
+      "additionalCostUsd": 0,
+      "material": {
+        "expected": 131,
+        "matched": 124,
+        "recall": 0.9466
+      },
+      "precision": {
+        "comparable": 173,
+        "correct": 159,
+        "flagged": 0,
+        "value": 0.9191
+      },
+      "criticalFailures": [],
+      "unresolvedScaleCandidates": 1
+    }
+  ],
+  "additionalProviderCalls": 0,
+  "additionalCostUsd": 0,
+  "completeCreditAnalysisApproved": false,
+  "note": "The scorer/gold were not changed. Unresolved scales are separately tested through the real worker projection, which leaves value_scale null and proposes no primary adoption. Original v7 provider receipts and metrics are retained."
+}

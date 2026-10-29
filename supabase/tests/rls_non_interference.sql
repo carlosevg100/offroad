@@ -6282,6 +6282,23 @@ do $$declare tab text;api_role text;sig text;begin
  end loop;
 end $$;
 
+-- Work upload continuity keeps registration behind the same authenticated resource boundary.
+do $$declare denied boolean:=false;begin
+ begin
+  set local role authenticated;
+  perform public.register_intake_document_command(
+   'a9690000-0000-4000-9000-000000000090','a9690000-0000-4000-9000-000000000091',
+   gen_random_uuid(),gen_random_uuid(),'opportunity-documents',
+   'a9690000-0000-4000-9000-000000000090/a9690000-0000-4000-9000-000000000091/denied.csv',
+   'denied.csv','text/csv',10,repeat('d',64));
+ exception when insufficient_privilege then denied:=true;end;
+ reset role;
+ if not denied then raise exception 'work upload reached an ungranted intake';end if;
+ if has_function_privilege('anon','public.register_intake_document_command(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text)','EXECUTE')
+  or has_function_privilege('service_role','private.register_source_version_v1(uuid,uuid,uuid,uuid,text,text,text,text,bigint,text,uuid)','EXECUTE')
+  then raise exception 'work upload widened API grants';end if;
+end $$;
+
 -- Stage 20 / 3G has no callable client surface.
 do $$begin
  if has_function_privilege('anon','private.institutional_result_source_closure_v1(uuid,text)','EXECUTE')

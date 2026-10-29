@@ -85,6 +85,10 @@ const migrationFiles = readdirSync(migrations).filter((file) => file.endsWith(".
 const ceilingsFile = migrationFiles.filter((file) => file.endsWith("_production_budget_ceilings.sql")).at(-1);
 const earlierFiles = ceilingsFile ? migrationFiles.slice(0, migrationFiles.indexOf(ceilingsFile)) : [];
 const ceilingsSql = ceilingsFile ? read(migrations, ceilingsFile) : "";
+const documentBudgetFile = migrationFiles.find((file) => file.endsWith("_document_processing_budget_headroom.sql"))!;
+const documentBudgetSql = read(migrations, documentBudgetFile);
+const documentBudgetBefore = /old_text constant text := \$old\$([\s\S]*?)\$old\$/.exec(documentBudgetSql)![1]!;
+const documentBudgetAfter = /new_text constant text := \$new\$([\s\S]*?)\$new\$/.exec(documentBudgetSql)![1]!;
 const patchBlock = /^do \$(\w+)\$\n([\s\S]*?)^end \$\1\$;$/gm;
 const patches = [...ceilingsSql.matchAll(patchBlock)].map(([, , block = ""]) => {
   const texts = new Map([...block.matchAll(/^ +(\w+) constant text := \$(old|new)\$([\s\S]*?)\$\2\$;$/gm)]
@@ -147,7 +151,14 @@ describe("production budgets in the database", () => {
       // committed before this migration is applied (old text) or after it (new text).
       const rewritten = earlierFiles.some((file) => [...read(migrations, file).matchAll(/pg_get_functiondef\s*\(\s*'([^']+)'\s*::\s*regprocedure/gi)]
         .some(([, target = ""]) => target.replace(/\s+/g, "").toLowerCase() === signature));
-      const captured = rewritten ? read(capturedBodies, `${signature}.sql`) : undefined;
+      let captured = rewritten ? read(capturedBodies, `${signature}.sql`) : undefined;
+      // The current capture includes the independently checked 29 Oct follow-up. Restore only
+      // its exact budget block to test the historical 25 Sep patch against its own version.
+      if (captured !== undefined && signature === "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)"
+          && countOf(captured, documentBudgetAfter) === 1) {
+        expect(countOf(captured, documentBudgetBefore), signature).toBe(0);
+        captured = captured.replace(documentBudgetAfter, documentBudgetBefore);
+      }
       for (const {before, after, occurrences} of patch.replacements) {
         expect(countOf(createdBody, before), signature).toBe(occurrences);
         if (captured !== undefined) expect([countOf(captured, before), countOf(captured, after)], signature).toContain(occurrences);
@@ -158,14 +169,22 @@ describe("production budgets in the database", () => {
 
 describe("29 Oct document budget follow-up", () => {
   it("keeps the finite call and spend bounds aligned with code, without grants or new objects", () => {
-    const file = migrationFiles.find((file) => file.endsWith("_document_processing_budget_headroom.sql"))!;
-    const sql = read(migrations, file);
-    const next = /new_text constant text := \$new\$([\s\S]*?)\$new\$/.exec(sql)![1]!;
+    const sql = documentBudgetSql;
+    const next = documentBudgetAfter;
     const budget = Object.fromEntries([...next.matchAll(/'([a-z_]+)', ([\d.]+)/g)].map((match) => [match[1], Number(match[2])]));
     expect(budget).toEqual(productionRunBudget);
     expect(sql).toContain("'max_cost_usd')::numeric > 30");
     expect(sql).not.toMatch(/\b(?:grant|revoke|create table|alter table)\b/i);
     expect(allocate(productionRunBudget, 8).documentCalls).toBe(50);
     expect(allocate(productionRunBudget, 8).documentUsd).toBe(3.15);
+  });
+
+  it("matches the effective function and changes only the declared numbers from its prior version", () => {
+    expect(documentBudgetAfter.replace(NUMBER, "#")).toBe(documentBudgetBefore.replace(NUMBER, "#"));
+    const captured = read(capturedBodies, "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb).sql");
+    expect(countOf(captured, documentBudgetAfter)).toBe(1);
+    expect(countOf(captured, documentBudgetBefore)).toBe(0);
+    expect(countOf(captured, "(effective_budget->>'max_cost_usd')::numeric > 30")).toBe(1);
+    expect(countOf(captured, "(effective_budget->>'max_cost_usd')::numeric > 25")).toBe(0);
   });
 });

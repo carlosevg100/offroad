@@ -1,0 +1,681 @@
+{
+  "schemaVersion": "document-source-binding-supplement.v1",
+  "mode": "offline_source_verification",
+  "createdAt": "2026-10-29T18:36:43.749Z",
+  "explanation": "Old measurement clients hashed PDF buffers after the parser transferred them and recorded the empty-buffer SHA. Original governed receipts remain unchanged. This separate supplement verifies every actual file against its unchanged source manifest. For each anomalous PDF it additionally reproduces exactly the committed parsed layer. Correctly recorded file hashes remain direct bindings; they are not replaced by a new parse. This is not a new model run or a rewritten historical source claim.",
+  "evaluations": [
+    {
+      "evaluationId": "00d68caf-d65e-43d9-82a9-f2f2c84eddc5",
+      "caseId": "rede-horizonte",
+      "inputFingerprint": "8f9fcc2dec50e95ef88fa6b6e3a590b8cc67925502500a47fe9004ea59437a9e",
+      "contractFingerprint": "b8ec128843846ca278d8776c13ba75bb50bf0b3b884d55aeadf00ae1f9b4953b",
+      "documents": [
+        {
+          "name": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+          "recordedSourceSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "actualSourceSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "manifestSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "1b15d19524106360d2fc9974722e39ce937fc9091986376a452648531fad4986",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+          "recordedSourceSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "actualSourceSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "manifestSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "29f8619c4d364533e83639f7b6aebecc264faa6786b7a2d9710c24441fa00e94",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "manifestSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "reparsedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+          "recordedSourceSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "actualSourceSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "manifestSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "04f6db4ae98b47ecc704f4a2be7f3d7826a221faa4f2618493ffb9c294331171",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+          "recordedSourceSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "actualSourceSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "manifestSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "ab38d87e06942b7eae6c32ecf9e99000ba62632a2f08f1b5d665a1c46b36e133",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+          "recordedSourceSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "actualSourceSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "manifestSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "a9ebf21987fb117786a046ce326d3c91c7c9a976cfe9c65bf65ca78e5564b7c0",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "9dca71cb1fc06e3b8c85dea44ca8452e7c20ba4b492c0e69f8abce0c05c19b15",
+          "manifestSha256": "9dca71cb1fc06e3b8c85dea44ca8452e7c20ba4b492c0e69f8abce0c05c19b15",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "3d80d16bfa552d6b599a021bb9aa4461628cd2adaa8b6b00c8ed2bb459c96605",
+          "reparsedLayerSha256": "3d80d16bfa552d6b599a021bb9aa4461628cd2adaa8b6b00c8ed2bb459c96605",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "07_Memorial_Descritivo_Expansao_3_Lojas.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "d1469dbf6a75d82494544bd149f793f23fe7bcc6030c5b2608f2ad8b46e23fc5",
+          "manifestSha256": "d1469dbf6a75d82494544bd149f793f23fe7bcc6030c5b2608f2ad8b46e23fc5",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "43a285831dcba6ff7d202192cb90e4d8008c0da22aa277bf9205ba344ea0517b",
+          "reparsedLayerSha256": "43a285831dcba6ff7d202192cb90e4d8008c0da22aa277bf9205ba344ea0517b",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        }
+      ]
+    },
+    {
+      "evaluationId": "2c976f3e-a2e3-421f-9cf7-fef1798057d3",
+      "caseId": "nimbus",
+      "inputFingerprint": "ac3a02c9afa3bcca1ba14cb6456da24b496fc0321501efd1c93d82ae7a70c4ad",
+      "contractFingerprint": "d0c7f0fc91729d1f88180c7eb5d9e8cc98f8a4642cf2d17e6b366d5909446e8b",
+      "documents": [
+        {
+          "name": "00_Deck_Institucional_Nimbus.docx",
+          "recordedSourceSha256": "56d090991252319d5c425380250e4d9ec6c4d409a073e25c30eaf3333ac940f0",
+          "actualSourceSha256": "56d090991252319d5c425380250e4d9ec6c4d409a073e25c30eaf3333ac940f0",
+          "manifestSha256": "56d090991252319d5c425380250e4d9ec6c4d409a073e25c30eaf3333ac940f0",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "7a586701831cc6fb0a2a8d33275222b820bf7f9c83ef10705605d65e3d571862",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "01_Carta_Pedido_Venture_Debt.docx",
+          "recordedSourceSha256": "7e2059778c4c7aa41a60d2d7978d449aa9c47806f760b8efa0dd19a5f768122b",
+          "actualSourceSha256": "7e2059778c4c7aa41a60d2d7978d449aa9c47806f760b8efa0dd19a5f768122b",
+          "manifestSha256": "7e2059778c4c7aa41a60d2d7978d449aa9c47806f760b8efa0dd19a5f768122b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "edffab1384e5edf94ff1266556346e9879f7f1d29e9ec1d878df2c02835dfd56",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+          "recordedSourceSha256": "038bc0afc8e839fa1d10bf05d59244c41c76d9e0d52bc923b389b9a31971c725",
+          "actualSourceSha256": "038bc0afc8e839fa1d10bf05d59244c41c76d9e0d52bc923b389b9a31971c725",
+          "manifestSha256": "038bc0afc8e839fa1d10bf05d59244c41c76d9e0d52bc923b389b9a31971c725",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "901c17e2a4c29bf4ba086be6f78d0ebeaf24687a1d06b3043c81add8abaa588e",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "03_Cap_Table_Serie_A.xlsx",
+          "recordedSourceSha256": "4c4698b9c0a28e87addabe4229ee478344b6d6982aa2634acbd41c05f81edce1",
+          "actualSourceSha256": "4c4698b9c0a28e87addabe4229ee478344b6d6982aa2634acbd41c05f81edce1",
+          "manifestSha256": "4c4698b9c0a28e87addabe4229ee478344b6d6982aa2634acbd41c05f81edce1",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "20985a526ff81ed0446ba793a60ecba0bdb7501a2464a065e8372d981d662096",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "04_Gerencial_2024_2025_Jul2026.xlsx",
+          "recordedSourceSha256": "1625823ed4397abf4a21cf20cb0ebe5cb689ebb7bbdda719a9be13c9643754f2",
+          "actualSourceSha256": "1625823ed4397abf4a21cf20cb0ebe5cb689ebb7bbdda719a9be13c9643754f2",
+          "manifestSha256": "1625823ed4397abf4a21cf20cb0ebe5cb689ebb7bbdda719a9be13c9643754f2",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "c76140e77d964af996b08b5cd64ba857a3feb96c1e336ef78aa2984248de359c",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "05_Extrato_Bancario_Mai_Jul2026.csv",
+          "recordedSourceSha256": "c63868e65dcd074cbd1a32eb3dcb492a0cb69a2ab1d0e259d85f25d60d0343ec",
+          "actualSourceSha256": "c63868e65dcd074cbd1a32eb3dcb492a0cb69a2ab1d0e259d85f25d60d0343ec",
+          "manifestSha256": "c63868e65dcd074cbd1a32eb3dcb492a0cb69a2ab1d0e259d85f25d60d0343ec",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "1e31c7beba9e7439f8cf0eefe47e9383f8897fe6ef7dbfe55c205db56d20dec0",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        }
+      ]
+    },
+    {
+      "evaluationId": "444a474b-b393-4e60-9e50-c901a5761e99",
+      "caseId": "rede-horizonte",
+      "inputFingerprint": "8f9fcc2dec50e95ef88fa6b6e3a590b8cc67925502500a47fe9004ea59437a9e",
+      "contractFingerprint": "8239bd0c1b1fc9532e03b3bbbe78080114c0d5f3eab800f68abc37cded6ab275",
+      "documents": [
+        {
+          "name": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+          "recordedSourceSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "actualSourceSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "manifestSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "1b15d19524106360d2fc9974722e39ce937fc9091986376a452648531fad4986",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+          "recordedSourceSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "actualSourceSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "manifestSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "29f8619c4d364533e83639f7b6aebecc264faa6786b7a2d9710c24441fa00e94",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "manifestSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "reparsedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+          "recordedSourceSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "actualSourceSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "manifestSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "04f6db4ae98b47ecc704f4a2be7f3d7826a221faa4f2618493ffb9c294331171",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+          "recordedSourceSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "actualSourceSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "manifestSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "ab38d87e06942b7eae6c32ecf9e99000ba62632a2f08f1b5d665a1c46b36e133",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+          "recordedSourceSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "actualSourceSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "manifestSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "a9ebf21987fb117786a046ce326d3c91c7c9a976cfe9c65bf65ca78e5564b7c0",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "9dca71cb1fc06e3b8c85dea44ca8452e7c20ba4b492c0e69f8abce0c05c19b15",
+          "manifestSha256": "9dca71cb1fc06e3b8c85dea44ca8452e7c20ba4b492c0e69f8abce0c05c19b15",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "3d80d16bfa552d6b599a021bb9aa4461628cd2adaa8b6b00c8ed2bb459c96605",
+          "reparsedLayerSha256": "3d80d16bfa552d6b599a021bb9aa4461628cd2adaa8b6b00c8ed2bb459c96605",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "07_Memorial_Descritivo_Expansao_3_Lojas.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "d1469dbf6a75d82494544bd149f793f23fe7bcc6030c5b2608f2ad8b46e23fc5",
+          "manifestSha256": "d1469dbf6a75d82494544bd149f793f23fe7bcc6030c5b2608f2ad8b46e23fc5",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "43a285831dcba6ff7d202192cb90e4d8008c0da22aa277bf9205ba344ea0517b",
+          "reparsedLayerSha256": "43a285831dcba6ff7d202192cb90e4d8008c0da22aa277bf9205ba344ea0517b",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        }
+      ]
+    },
+    {
+      "evaluationId": "7b6df0d4-8730-4928-ba4d-a9e949d26998",
+      "caseId": "nimbus",
+      "inputFingerprint": "1b66eeaec117a25a92ecd5263bcd66420ab1dcf5397a797d55a3b50bd0c64b72",
+      "contractFingerprint": "e3c4911ea00d39dc59e740acdcbb29c4c2596e388674839a23687bc579c70650",
+      "documents": [
+        {
+          "name": "00_Deck_Institucional_Nimbus.docx",
+          "recordedSourceSha256": "56d090991252319d5c425380250e4d9ec6c4d409a073e25c30eaf3333ac940f0",
+          "actualSourceSha256": "56d090991252319d5c425380250e4d9ec6c4d409a073e25c30eaf3333ac940f0",
+          "manifestSha256": "56d090991252319d5c425380250e4d9ec6c4d409a073e25c30eaf3333ac940f0",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "7a586701831cc6fb0a2a8d33275222b820bf7f9c83ef10705605d65e3d571862",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "01_Carta_Pedido_Venture_Debt.docx",
+          "recordedSourceSha256": "7e2059778c4c7aa41a60d2d7978d449aa9c47806f760b8efa0dd19a5f768122b",
+          "actualSourceSha256": "7e2059778c4c7aa41a60d2d7978d449aa9c47806f760b8efa0dd19a5f768122b",
+          "manifestSha256": "7e2059778c4c7aa41a60d2d7978d449aa9c47806f760b8efa0dd19a5f768122b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "edffab1384e5edf94ff1266556346e9879f7f1d29e9ec1d878df2c02835dfd56",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "02_Metricas_MRR_por_Cliente_2024_2026.xlsx",
+          "recordedSourceSha256": "038bc0afc8e839fa1d10bf05d59244c41c76d9e0d52bc923b389b9a31971c725",
+          "actualSourceSha256": "038bc0afc8e839fa1d10bf05d59244c41c76d9e0d52bc923b389b9a31971c725",
+          "manifestSha256": "038bc0afc8e839fa1d10bf05d59244c41c76d9e0d52bc923b389b9a31971c725",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "901c17e2a4c29bf4ba086be6f78d0ebeaf24687a1d06b3043c81add8abaa588e",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "03_Cap_Table_Serie_A.xlsx",
+          "recordedSourceSha256": "4c4698b9c0a28e87addabe4229ee478344b6d6982aa2634acbd41c05f81edce1",
+          "actualSourceSha256": "4c4698b9c0a28e87addabe4229ee478344b6d6982aa2634acbd41c05f81edce1",
+          "manifestSha256": "4c4698b9c0a28e87addabe4229ee478344b6d6982aa2634acbd41c05f81edce1",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "20985a526ff81ed0446ba793a60ecba0bdb7501a2464a065e8372d981d662096",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "04_Gerencial_2024_2025_Jul2026.xlsx",
+          "recordedSourceSha256": "1625823ed4397abf4a21cf20cb0ebe5cb689ebb7bbdda719a9be13c9643754f2",
+          "actualSourceSha256": "1625823ed4397abf4a21cf20cb0ebe5cb689ebb7bbdda719a9be13c9643754f2",
+          "manifestSha256": "1625823ed4397abf4a21cf20cb0ebe5cb689ebb7bbdda719a9be13c9643754f2",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "c76140e77d964af996b08b5cd64ba857a3feb96c1e336ef78aa2984248de359c",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "05_Extrato_Bancario_Mai_Jul2026.csv",
+          "recordedSourceSha256": "c63868e65dcd074cbd1a32eb3dcb492a0cb69a2ab1d0e259d85f25d60d0343ec",
+          "actualSourceSha256": "c63868e65dcd074cbd1a32eb3dcb492a0cb69a2ab1d0e259d85f25d60d0343ec",
+          "manifestSha256": "c63868e65dcd074cbd1a32eb3dcb492a0cb69a2ab1d0e259d85f25d60d0343ec",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "1e31c7beba9e7439f8cf0eefe47e9383f8897fe6ef7dbfe55c205db56d20dec0",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        }
+      ]
+    },
+    {
+      "evaluationId": "7d102051-f5f6-4d6c-9ce1-c6ab53f28c62",
+      "caseId": "fakeco",
+      "inputFingerprint": "267a3cfee7fad53876ee98b2bc88421a8035b0c75085e28130263a070d27ff43",
+      "contractFingerprint": "6291701f5f6c8b528cb7bb03fddb22847a531fb6be4dfb9cc7a8528b18a0f11d",
+      "documents": [
+        {
+          "name": "00_Ficha_Cadastral_Aurora.docx",
+          "recordedSourceSha256": "cd858d5c653a7ffd70d80a7a7cf6e1842a8c6b78f40260a49a25b5612e16eb59",
+          "actualSourceSha256": "cd858d5c653a7ffd70d80a7a7cf6e1842a8c6b78f40260a49a25b5612e16eb59",
+          "manifestSha256": "cd858d5c653a7ffd70d80a7a7cf6e1842a8c6b78f40260a49a25b5612e16eb59",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "9f1d06a8c1a29b06922a42ba56a824b9d7aabac290696ff163467fb9d1b9bd17",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "01_Carta_CFO_Pedido_e_Racional.docx",
+          "recordedSourceSha256": "7c05fdf1e1d55cb9daae9c275a977b27416f8c0118087957a8572b4bf1d8d75c",
+          "actualSourceSha256": "7c05fdf1e1d55cb9daae9c275a977b27416f8c0118087957a8572b4bf1d8d75c",
+          "manifestSha256": "7c05fdf1e1d55cb9daae9c275a977b27416f8c0118087957a8572b4bf1d8d75c",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "ade3d46a544c015a4a076542ab65a40210385352a44909e8e1032a962ca49916",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "06d7fd3b92e82097c4eba1afc60f880cd9148057d9960adb3c33e7f39619d9a4",
+          "manifestSha256": "06d7fd3b92e82097c4eba1afc60f880cd9148057d9960adb3c33e7f39619d9a4",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "b5c1a2879def33c85940e7327f4e27384871df74b26e43d76a28c3c72726330a",
+          "reparsedLayerSha256": "b5c1a2879def33c85940e7327f4e27384871df74b26e43d76a28c3c72726330a",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "03_Balancete_Gerencial_Jul2026.xls",
+          "recordedSourceSha256": "703ad87ddb43711c68fc46a3b18f7c8cc9bf679b60e84c85a0da29622bf1240b",
+          "actualSourceSha256": "703ad87ddb43711c68fc46a3b18f7c8cc9bf679b60e84c85a0da29622bf1240b",
+          "manifestSha256": "703ad87ddb43711c68fc46a3b18f7c8cc9bf679b60e84c85a0da29622bf1240b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "40351efb012efaff7ae93ba9dc45f94ff75ec4314e0d173a5ffcabe32523fe52",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "04_Mapa_Divida_Jul2026.xlsx",
+          "recordedSourceSha256": "dde0f54da560c8139362289a57f09c387039c4a3bd9f3d2900710954db785b7c",
+          "actualSourceSha256": "dde0f54da560c8139362289a57f09c387039c4a3bd9f3d2900710954db785b7c",
+          "manifestSha256": "dde0f54da560c8139362289a57f09c387039c4a3bd9f3d2900710954db785b7c",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "152b318737620b12d5e89fe9b8c70fcc6f2e569e79db8dc4cbe43cdf3d2d218a",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "05_Concentracao_Clientes_2025.xlsx",
+          "recordedSourceSha256": "7fd003a5e6846a44382cb896999e3126e934967a131c7757add4c6768d1afdae",
+          "actualSourceSha256": "7fd003a5e6846a44382cb896999e3126e934967a131c7757add4c6768d1afdae",
+          "manifestSha256": "7fd003a5e6846a44382cb896999e3126e934967a131c7757add4c6768d1afdae",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "6c528a710a21983cfdb075f2af62afcae446b1e00472cbb6f41ee35ec8294cf1",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "06_Memorial_CD_Jacarei.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "9bc417077a784bee2066ed74a7b9917d3751dad5a8a3cf52203f06f595abf42e",
+          "manifestSha256": "9bc417077a784bee2066ed74a7b9917d3751dad5a8a3cf52203f06f595abf42e",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "329f64cf21d0933a5e970cbb3f8ee0e8ecd6ecdad524dd4ea4e7250dcc7ff5bc",
+          "reparsedLayerSha256": "329f64cf21d0933a5e970cbb3f8ee0e8ecd6ecdad524dd4ea4e7250dcc7ff5bc",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "07_Contrato_Social_Consolidado.png",
+          "recordedSourceSha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4",
+          "actualSourceSha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4",
+          "manifestSha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "a55822c4162d5befe16e9c6e3a2339143ced59f99be8f55fb8ad146220fae29d",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "08_Projecoes_2026_2030.xlsx",
+          "recordedSourceSha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1",
+          "actualSourceSha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1",
+          "manifestSha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "0a9ae652720a677fe97dad788a03aad88e1421d42b6175b2a28f8431cd0abe0e",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        }
+      ]
+    },
+    {
+      "evaluationId": "96ad06f1-a7ed-4be1-ab2c-792d06017b32",
+      "caseId": "rede-horizonte",
+      "inputFingerprint": "5c3f2c3f6eee25df6ff6c73cac70fe7bd54cc1734b51abc964f61d2cba9e7e91",
+      "contractFingerprint": "2798543480a400084c0675a8421dda28b606b8dd8edce0d1cb8c478926cb6838",
+      "documents": [
+        {
+          "name": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "manifestSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "reparsedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        }
+      ]
+    },
+    {
+      "evaluationId": "ca44be81-bbbf-4119-9438-9bda9e222946",
+      "caseId": "fakeco",
+      "inputFingerprint": "7f7b0e374cfccfefabcc5bb075b2d00d5becaf11da2485cafca549aec7372db6",
+      "contractFingerprint": "0328e3c4e269a75f70a0329c811991eae374c858ea50fc6decce5628cfa472e1",
+      "documents": [
+        {
+          "name": "00_Ficha_Cadastral_Aurora.docx",
+          "recordedSourceSha256": "cd858d5c653a7ffd70d80a7a7cf6e1842a8c6b78f40260a49a25b5612e16eb59",
+          "actualSourceSha256": "cd858d5c653a7ffd70d80a7a7cf6e1842a8c6b78f40260a49a25b5612e16eb59",
+          "manifestSha256": "cd858d5c653a7ffd70d80a7a7cf6e1842a8c6b78f40260a49a25b5612e16eb59",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "9f1d06a8c1a29b06922a42ba56a824b9d7aabac290696ff163467fb9d1b9bd17",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "01_Carta_CFO_Pedido_e_Racional.docx",
+          "recordedSourceSha256": "7c05fdf1e1d55cb9daae9c275a977b27416f8c0118087957a8572b4bf1d8d75c",
+          "actualSourceSha256": "7c05fdf1e1d55cb9daae9c275a977b27416f8c0118087957a8572b4bf1d8d75c",
+          "manifestSha256": "7c05fdf1e1d55cb9daae9c275a977b27416f8c0118087957a8572b4bf1d8d75c",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "ade3d46a544c015a4a076542ab65a40210385352a44909e8e1032a962ca49916",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "02_Demonstracoes_Auditadas_2023_2025.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "06d7fd3b92e82097c4eba1afc60f880cd9148057d9960adb3c33e7f39619d9a4",
+          "manifestSha256": "06d7fd3b92e82097c4eba1afc60f880cd9148057d9960adb3c33e7f39619d9a4",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "b5c1a2879def33c85940e7327f4e27384871df74b26e43d76a28c3c72726330a",
+          "reparsedLayerSha256": "b5c1a2879def33c85940e7327f4e27384871df74b26e43d76a28c3c72726330a",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "03_Balancete_Gerencial_Jul2026.xls",
+          "recordedSourceSha256": "703ad87ddb43711c68fc46a3b18f7c8cc9bf679b60e84c85a0da29622bf1240b",
+          "actualSourceSha256": "703ad87ddb43711c68fc46a3b18f7c8cc9bf679b60e84c85a0da29622bf1240b",
+          "manifestSha256": "703ad87ddb43711c68fc46a3b18f7c8cc9bf679b60e84c85a0da29622bf1240b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "40351efb012efaff7ae93ba9dc45f94ff75ec4314e0d173a5ffcabe32523fe52",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "04_Mapa_Divida_Jul2026.xlsx",
+          "recordedSourceSha256": "dde0f54da560c8139362289a57f09c387039c4a3bd9f3d2900710954db785b7c",
+          "actualSourceSha256": "dde0f54da560c8139362289a57f09c387039c4a3bd9f3d2900710954db785b7c",
+          "manifestSha256": "dde0f54da560c8139362289a57f09c387039c4a3bd9f3d2900710954db785b7c",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "152b318737620b12d5e89fe9b8c70fcc6f2e569e79db8dc4cbe43cdf3d2d218a",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "05_Concentracao_Clientes_2025.xlsx",
+          "recordedSourceSha256": "7fd003a5e6846a44382cb896999e3126e934967a131c7757add4c6768d1afdae",
+          "actualSourceSha256": "7fd003a5e6846a44382cb896999e3126e934967a131c7757add4c6768d1afdae",
+          "manifestSha256": "7fd003a5e6846a44382cb896999e3126e934967a131c7757add4c6768d1afdae",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "6c528a710a21983cfdb075f2af62afcae446b1e00472cbb6f41ee35ec8294cf1",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "06_Memorial_CD_Jacarei.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "9bc417077a784bee2066ed74a7b9917d3751dad5a8a3cf52203f06f595abf42e",
+          "manifestSha256": "9bc417077a784bee2066ed74a7b9917d3751dad5a8a3cf52203f06f595abf42e",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "329f64cf21d0933a5e970cbb3f8ee0e8ecd6ecdad524dd4ea4e7250dcc7ff5bc",
+          "reparsedLayerSha256": "329f64cf21d0933a5e970cbb3f8ee0e8ecd6ecdad524dd4ea4e7250dcc7ff5bc",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "07_Contrato_Social_Consolidado.png",
+          "recordedSourceSha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4",
+          "actualSourceSha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4",
+          "manifestSha256": "ce2f506b515a018ae115af860dd2a5f7608a2e78c9171c8c5c7654e2ee297da4",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "63334ac49eda53298ca6a0025bc3e15fa5f1f0aaa3eec1d1678373ca5803efac",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "08_Projecoes_2026_2030.xlsx",
+          "recordedSourceSha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1",
+          "actualSourceSha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1",
+          "manifestSha256": "29a365fb32c3ff7e30c86265799b29bcd4449d8b1aa47d106d5e2863f193b4f1",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "0a9ae652720a677fe97dad788a03aad88e1421d42b6175b2a28f8431cd0abe0e",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        }
+      ]
+    },
+    {
+      "evaluationId": "e9eb3f79-1e73-4c56-853c-84da80b0d732",
+      "caseId": "rede-horizonte",
+      "inputFingerprint": "b6424a6b1418555e9585fc09a91dc0e4fc039a5d3850678bc578d5e6b55f8f54",
+      "contractFingerprint": "9f4ca482317042a7f775d07eee91eeb6400deb459f76d999f97007a6466e9558",
+      "documents": [
+        {
+          "name": "00_Ficha_Cadastral_Rede_Horizonte.docx",
+          "recordedSourceSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "actualSourceSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "manifestSha256": "7986231b1f6f224957ecdbba57dac9c8529cfca51f054e4002fbc335102ba44a",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "1b15d19524106360d2fc9974722e39ce937fc9091986376a452648531fad4986",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "01_Carta_CFO_Pedido_e_Racional_Expansao.docx",
+          "recordedSourceSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "actualSourceSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "manifestSha256": "037a0734272d09982a1af360ac4208c3a68f6a55f3f70416b687d0c7ddd65509",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "29f8619c4d364533e83639f7b6aebecc264faa6786b7a2d9710c24441fa00e94",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "02_Demonstracoes_Financeiras_Auditadas_2023_2025.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "manifestSha256": "b41aa3edc1ba60ab440adae0f95ebfa0061fd15b492e95ff12a4e34db4be68f0",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "reparsedLayerSha256": "290040b34085351ec78bbd15dcdd8c004fde59ea64302ca25bf3b087cb376110",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "03_Export_ERP_Contabilidade_2024_Jul2026.xlsx",
+          "recordedSourceSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "actualSourceSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "manifestSha256": "1c46f5376f6f71cec2adeb375976b1c57c0bc23fd3cdbbee1b472501c797fc2b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "04f6db4ae98b47ecc704f4a2be7f3d7826a221faa4f2618493ffb9c294331171",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "04_Mapa_Divida_Garantias_Jul2026.xlsx",
+          "recordedSourceSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "actualSourceSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "manifestSha256": "e5a9db039d372e72e668da77df1959716d2435fb135411af1046a288ebec6031",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "ab38d87e06942b7eae6c32ecf9e99000ba62632a2f08f1b5d665a1c46b36e133",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "05_Business_Plan_3_Novas_Lojas_2026_2030.xlsx",
+          "recordedSourceSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "actualSourceSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "manifestSha256": "d2bbb79f6de57b0f15c6d4ab7f3b21c1427c9e6a01c62c9831115cf256280a5b",
+          "sourceHashAnomaly": false,
+          "recordedLayerSha256": "a9ebf21987fb117786a046ce326d3c91c7c9a976cfe9c65bf65ca78e5564b7c0",
+          "reparsedLayerSha256": null,
+          "pdfContentReparseMatches": null,
+          "directSourceHashMatches": true
+        },
+        {
+          "name": "06_Parecer_Contabil_Informacoes_Intermediarias_Jul2026.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "9dca71cb1fc06e3b8c85dea44ca8452e7c20ba4b492c0e69f8abce0c05c19b15",
+          "manifestSha256": "9dca71cb1fc06e3b8c85dea44ca8452e7c20ba4b492c0e69f8abce0c05c19b15",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "3d80d16bfa552d6b599a021bb9aa4461628cd2adaa8b6b00c8ed2bb459c96605",
+          "reparsedLayerSha256": "3d80d16bfa552d6b599a021bb9aa4461628cd2adaa8b6b00c8ed2bb459c96605",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        },
+        {
+          "name": "07_Memorial_Descritivo_Expansao_3_Lojas.pdf",
+          "recordedSourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "actualSourceSha256": "d1469dbf6a75d82494544bd149f793f23fe7bcc6030c5b2608f2ad8b46e23fc5",
+          "manifestSha256": "d1469dbf6a75d82494544bd149f793f23fe7bcc6030c5b2608f2ad8b46e23fc5",
+          "sourceHashAnomaly": true,
+          "recordedLayerSha256": "43a285831dcba6ff7d202192cb90e4d8008c0da22aa277bf9205ba344ea0517b",
+          "reparsedLayerSha256": "43a285831dcba6ff7d202192cb90e4d8008c0da22aa277bf9205ba344ea0517b",
+          "pdfContentReparseMatches": true,
+          "directSourceHashMatches": false
+        }
+      ]
+    }
+  ],
+  "sourceBindings": 55,
+  "anomalousPdfBindings": 14,
+  "additionalProviderCalls": 0,
+  "additionalCostUsd": 0
+}

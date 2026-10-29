@@ -272,6 +272,24 @@ describe("verifier", () => {
     expect(conflicting.value.verifier_flags).toContain("scale_conflict");
   });
 
+  it("normalizes an explicitly printed percentage in a ratio field without changing a multiple", () => {
+    const percent = verifyCandidate({...revenue, field_path: "project.investments.1.stabilized_ebitda_margin", value_raw: "18,25%", scale: 1000}, context);
+    const multiple = verifyCandidate({...revenue, field_path: "leverage.pre_transaction_net_debt_ebitda", value_raw: "3,25x", scale: 1000}, context);
+    if (percent.kind !== "verified" || multiple.kind !== "verified") throw new Error("expected verified shape");
+    expect(percent.value.normalized_value).toBe("0.1825");
+    expect(percent.value.scale).toBe(1);
+    expect(multiple.value.normalized_value).toBe("3.25");
+  });
+
+  it("keeps an omitted money scale unresolved when that source declares a different scale", () => {
+    const local = verifyCandidate({...revenue, scale: 1}, {...context, profile: {...context.profile, scale: undefined}, layer: {scaleDeclarations: [{scale: 1000, where: "p12", text: "Em milhares de reais"}]}});
+    const otherPage = verifyCandidate({...revenue, scale: 1}, {...context, profile: {...context.profile, scale: undefined}, layer: {scaleDeclarations: [{scale: 1000, where: "p11", text: "Em milhares de reais"}]}});
+    if (local.kind !== "verified" || otherPage.kind !== "verified") throw new Error("expected verified shape");
+    expect(local.value.normalized_value).toBe("185400"); // No guessed multiplication.
+    expect(local.value.verifier_flags).toContain("scale_unverified");
+    expect(otherPage.value.verifier_flags).not.toContain("scale_unverified");
+  });
+
   it("flags an undeclared scale and a profile scale conflict", () => {
     const undeclared = verifyCandidate({...revenue, scale: 1_000_000}, {...context, layer: {scaleDeclarations: []}, profile: {...context.profile, scale: undefined}});
     if (undeclared.kind !== "verified") throw new Error("expected verified shape");

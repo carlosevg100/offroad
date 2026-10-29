@@ -107,9 +107,10 @@ export function verifyCandidate(
       const printedAsPercent = parsed.isPercent || /%/.test(candidate.value_raw) || parsed.value.abs().gt("1.5");
       normalizedValue = (printedAsPercent ? parsed.value.div(100) : parsed.value).toDecimalPlaces(8).toFixed();
     } else if (field.definition.unit !== "money") {
-      // ratios, counts, months… are stored at displayed magnitude and never scaled
+      // A printed percent can express a dimensionless ratio (e.g. a unit EBITDA margin).
+      // Multiples, counts and durations retain their displayed magnitude; monetary scale never applies.
       effectiveScale = 1;
-      normalizedValue = parsed.value.toDecimalPlaces(8).toFixed();
+      normalizedValue = (field.definition.unit === "ratio" && parsed.isPercent ? parsed.value.div(100) : parsed.value).toDecimalPlaces(8).toFixed();
     } else {
       if (parsed.detectedScale && candidate.scale !== 1 && parsed.detectedScale !== candidate.scale) flags.add("scale_conflict");
       effectiveScale = candidate.scale !== 1 ? candidate.scale : (parsed.detectedScale ?? 1);
@@ -122,6 +123,13 @@ export function verifyCandidate(
       const declared = declaredInText || context.layer.scaleDeclarations.some((d) => d.scale === effectiveScale) || context.profile.scale === effectiveScale;
       if (effectiveScale !== 1 && !declared) flags.add("scale_unverified");
       if (context.profile.scale && candidate.scale !== 1 && context.profile.scale !== candidate.scale) flags.add("scale_conflict");
+      if (effectiveScale === 1 && !parsed.detectedScale) {
+        const declaredLocally = context.layer.scaleDeclarations.some((d) => d.scale !== 1
+          && (candidate.anchor.id === d.where || candidate.anchor.id.startsWith(`${d.where}.`) || candidate.anchor.id.startsWith(`${d.where}!`)));
+        // An omitted multiplier is not a declaration of base reais. Preserve the raw number,
+        // but leave its scale unresolved for the existing adoption/calculation gate.
+        if (declaredLocally || (context.profile.scale !== undefined && context.profile.scale !== 1)) flags.add("scale_unverified");
+      }
     }
   } else if (expectedType === "date") {
     const iso = parseDate(candidate.value_raw);
