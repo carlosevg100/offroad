@@ -53,6 +53,28 @@ function clock(): () => string {
   return () => timestamps[Math.min(position++, timestamps.length - 1)]!;
 }
 
+describe("generic browser MIME does not replace content inspection", () => {
+  it("accepts a real CSV when the browser cannot supply a specific MIME", async () => {
+    const bytes = encoder.encode("Conta;Valor\nReceita;1250,50\n");
+    const receipt = await quarantineDocument({bytes, binding: binding(bytes, {originalName: "synthetic.csv", declaredMediaType: "application/octet-stream"}), scanner: cleanScanner, now: clock()});
+    expect(receipt.verdict).toBe("clean");
+    expect(receipt.detected?.mediaType).toBe("text/csv");
+  });
+
+  it("still refuses an explicit false MIME, a false extension and unknown binary content", async () => {
+    const text = encoder.encode("Conta;Valor\nReceita;1250,50\n");
+    for (const [bytes, originalName, declaredMediaType, reason] of [
+      [text, "synthetic.csv", "application/pdf", "declared_type_mismatch"],
+      [text, "synthetic.exe", "application/octet-stream", "unsupported_type"],
+      [new Uint8Array([0x4d, 0x5a, 0, 0, 0, 0]), "synthetic.csv", "application/octet-stream", "unsupported_type"],
+    ] as const) {
+      const receipt = await quarantineDocument({bytes, binding: binding(bytes, {originalName, declaredMediaType}), scanner: cleanScanner, now: clock()});
+      expect(receipt.verdict).toBe("rejected");
+      expect(receipt.reasons).toContain(reason);
+    }
+  });
+});
+
 function pdf(extra = ""): Uint8Array {
   return encoder.encode(`%PDF-1.7\n1 0 obj\n<< /Type /Catalog ${extra} >>\nendobj\nstartxref\n0\n%%EOF\n`);
 }
