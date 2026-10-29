@@ -345355,7 +345355,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20261029010000_lote4_folder_evidence_no_temp_table.sql",
+          "path": "supabase/migrations/20261029023208_lote4_folder_evidence_no_temp_table.sql",
           "line": 7,
           "anchor": "create or replace function private.worker_document_folder_evidence_v1(p_job_id uuid,p_capability_token text) returns jsonb",
           "mechanism": "direct_ddl"
@@ -355246,7 +355246,7 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20261029010000_lote4_folder_evidence_no_temp_table.sql",
+      "path": "supabase/migrations/20261029023208_lote4_folder_evidence_no_temp_table.sql",
       "decision": "preservar",
       "stage": "ficha C09, evidência da pasta sem tabela temporária",
       "reason": "A evidência da pasta (C09) lê os vínculos ativos do cadastro uma vez num valor local, sem tabela temporária que o lint do banco não resolve; mesma assinatura, permissões e comportamento."

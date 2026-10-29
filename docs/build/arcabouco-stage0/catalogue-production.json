@@ -108966,6 +108966,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.board_material_declared_scale_v1(p_snapshot jsonb, p_id text)",
+      "kind": "function",
+      "name": "board_material_declared_scale_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_snapshot jsonb, p_id text",
+      "security_definer": false
+    },
+    {
       "id": "function:private.board_material_priors_recorded_v1(p_contract jsonb, p_payload jsonb)",
       "kind": "function",
       "name": "board_material_priors_recorded_v1",
