@@ -28,6 +28,9 @@ test("a folder larger than twenty files survives a partial failure and a same-se
   expect(projectId).toMatch(/^[0-9a-f-]{36}$/);
   // Accept synthetic owner's terms through the same authenticated command as the existing readiness journey.
   sql(`begin;select set_config('request.jwt.claim.sub',(select created_by::text from public.capital_projects where id='${projectId}'),true);select set_config('request.headers',json_build_object('x-offroad-workspace',(select organization_id from public.capital_projects where id='${projectId}'))::text,true);set local role authenticated;select public.accept_private_workspace_terms('pt-BR','Synthetic upload owner','',true,true);select public.prepare_work_document_intake_v1('${projectId}','pt-BR');commit;`);
+  // This journey proves the production enqueue branch. Fresh local workspaces deliberately
+  // default to the deterministic fixture path, which publishes no worker jobs.
+  sql(`begin;update public.organizations set pipeline_enabled=true where id=(select organization_id from public.capital_projects where id='${projectId}');update public.organization_rollout_policies set state='canary',promotion_basis='Synthetic isolated upload enqueue proof' where organization_id=(select organization_id from public.capital_projects where id='${projectId}');commit;`);
   await page.reload();
 
   const files = Array.from({length: 31}, (_, index) => ({name: `synthetic-${index + 1}.csv`, mimeType: "text/csv", buffer: Buffer.from(`metric,value\nliquidity.available_cash,${index + 1}\n`)}));
