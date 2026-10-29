@@ -2010,16 +2010,17 @@
     },
     {
       "path": "apps/web/src/lib/intake/upload-client.ts",
-      "sha256": "29574865f9ac4f3e9a52d7621f4e93218ea650b9247509b35fee2f150e92376a",
+      "sha256": "caf08e1566602adcbeb3826e517cc1e81613d0906388c8b57b8a178b1f5ba848",
       "entrypoint": false,
       "rpcs": [
         "register_intake_document_command"
       ],
       "decision": "preserve governed consumer",
-      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "authority": "Same organization/scope, private Storage path and authenticated registration command; sequential complete selection and per-file failure. Uncertain registration is recovered only by exact attempt ID, organization, scope, path and hash; bytes are preserved otherwise. No new grants or RPCs.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
-        "apps/web/src/lib/auth/workspace-context.test.ts"
+        "apps/web/src/lib/auth/workspace-context.test.ts",
+        "apps/web/src/lib/intake/upload-queue.test.ts"
       ]
     },
     {

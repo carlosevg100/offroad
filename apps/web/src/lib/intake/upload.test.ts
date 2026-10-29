@@ -61,7 +61,7 @@ describe("the door accepts everything the engine can read", () => {
     expect(offered).toEqual(DOCUMENT_ALLOWED_EXTENSIONS);
   });
 
-  it("keeps the size and batch limits", () => {
+  it("keeps the per-file size and empty-file safeguards", () => {
     expect(isAcceptedDocument({name: "grande.xlsx", size: DOCUMENT_MAX_BYTES + 1})).toBe(false);
     expect(isAcceptedDocument({name: "vazio.xlsx", size: 0})).toBe(false);
   });

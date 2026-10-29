@@ -1,0 +1,32 @@
+# Envio de documentos: correção de continuidade
+
+Estado: candidato, sem liberação ou afirmação de qualidade universal.
+
+## Problemas reproduzidos
+
+1. Seleção de 31 arquivos enviava somente 20, sem aviso sobre os outros 11.
+2. Exceção de rede em um arquivo abandonava os seguintes e podia deixar a interface ocupada.
+3. Resposta perdida do registro podia apagar um arquivo cujo registro havia sido confirmado no servidor.
+4. Na conversa, uma falha parcial impedia iniciar o processamento dos arquivos registrados.
+
+## Comportamento corrigido
+
+Todo arquivo é considerado, um de cada vez. Recusas e falhas trazem o nome do arquivo. O reenvio usa a deduplicação já autorizada no mesmo escopo. A interface não abre envios concorrentes e limpa o seletor ao terminar. O registro incerto é recuperado por identidade, organização, escopo, caminho e hash; sem confirmação, preserva o objeto privado; duplicidade confirmada permite remover o novo objeto temporário. Os arquivos registrados seguem ao processamento mesmo com falha de outro arquivo.
+
+## Evidência
+
+- Três regressões iniciais falharam antes da correção: 20/31 arquivos, exceção no segundo envio e exceção no segundo registro.
+- 44 verificações focadas de regras, duplicidade, falha isolada, recusa e resposta incerta passaram após a correção.
+- Verificação TypeScript da aplicação passou.
+- `document-upload-reliability.spec.ts`: prova integrada nova com Storage/registro/fila reais em serviços locais e falha de Storage controlada pelo navegador, além de perda da resposta depois do registro confirmado e verificação da permanência dos objetos no Storage. Ainda não executada. Este host não tem Docker; a CI fornece a pilha isolada.
+- Gate completo local e gates de CI: pendentes.
+
+## Segurança, dados e retorno
+
+Mesmo comando autenticado, escopo e políticas; nenhuma nova autorização. Nenhuma migração. Nenhum método financeiro ou seu manifesto muda. Não há chamada a provedor de modelo neste teste nem transferência a terceiros. Dados de teste não entram em produção. Mantidos limite por arquivo, quarentena, scanner, limites contra exaustão e revisão das extrações. Um registro incerto pode deixar bytes privados sem registro: a correção prefere reconciliação posterior a apagar uma fonte possivelmente confirmada. A limpeza automática desse caso não foi implementada por este candidato.
+
+Controles afetados: proteção documental DOC-01/DOC-02/DOC-03 e continuidade da aplicação. Regressões negativas mantêm recusa de executável/arquivo vazio/arquivo acima do limite, isolamento e deduplicação existentes. Para retornar, reverter o candidato; objetos e registros existentes continuam compatíveis.
+
+## Alcance
+
+Esta correção remove falhas concretas da entrada. Não comprova extração de qualquer documento, não publica R1/R2/R3 e não abre fonte comercial de dados. Essas frentes exigem seus próprios casos e gates.

@@ -1171,6 +1171,7 @@
 .advisor-project__composer-wrap .advisor-composer textarea {min-height: 72px;}
 .advisor-project__composer-wrap > .form-notice {align-items: center; display: flex; justify-content: space-between; margin: 8px auto 0; max-width: 810px;}
 .advisor-project__composer-wrap > .form-notice button {background: none; border: 0; cursor: pointer; display: flex;}
+.advisor-project__composer-wrap > .form-notice--files {display: block;}
 
 .advisor-project__context {
   background: #f4f5f3;

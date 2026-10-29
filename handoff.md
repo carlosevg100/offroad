@@ -1,3 +1,9 @@
+## 2026-10-29: envio completo e recuperação de falhas parciais
+
+Candidato `fix/document-reading-reliability`, ainda sem prova de produção. O envio deixa de descartar silenciosamente os arquivos depois do vigésimo. Cada arquivo válido é tentado em sequência, a falha é identificada pelo nome e os demais continuam. Resposta perdida ou incompleta do registro não autoriza apagar os bytes possivelmente já registrados. Os três pontos de envio liberam a interface ao terminar e permitem repetir a seleção; a conversa inicia o processamento dos arquivos recebidos mesmo se outro falhou. Duplicatas conservam o registro existente e removem apenas o objeto temporário quando a duplicidade foi confirmada.
+
+Segurança: DOC-01/DOC-02/DOC-03 e fronteiras de organização/arquivo preservadas; sem migração, grant, novo provedor ou alteração de método publicado. O limite de 50 MiB por arquivo e os controles do scanner/parser permanecem. Falha de registro sem confirmação pode deixar um objeto privado para reconciliação; apagá-lo sem saber se o registro foi confirmado perderia evidência. Teste de navegador novo usa somente serviços locais e fontes sintéticas, cobre 31 arquivos válidos, recusa, falha parcial, fila e reenvio. Execução integrada depende da CI porque este host não tem Docker. Detalhes e estado dos gates em `docs/build/document-upload-reliability-2026-10-29.md`.
+
 ## 2026-10-28: lote 4 de fichas testado (C09, C01, C32 plano de 2027, C47)
 
 - Quatro métodos 2026.10.27-v1 com revisão independente aprovada, ainda não publicados: organize-document-folder (C09, inventário da pasta; aprovado na r21), evaluate-received-proposal (C01, proposta de banco recebida; r6), evaluate-financing-paths (plano de financiamento de 2027 da C32 sobre a Aurora, método próprio porque prepare-capital-structure-decision v4 sustenta o fluxo R01; r4) e prepare-board-capital-discussion (C47, material do conselho; r44).
