@@ -1,6 +1,6 @@
 ## 2026-10-29: confiança e escala na leitura OCR
 
-Candidato `fix/ocr-line-confidence`: uma linha abaixo do piso de confiança não reaparece como prosa por estar em um bloco de média alta, e os trechos confiáveis não são unidos através dessa lacuna. A omissão gera aviso por página. Uma página composta somente de tabela deixa de ser classificada como sem texto. A escala monetária declarada em linha/cabeçalho confiável é preservada em imagem e PDF digitalizado, e a estimativa de texto inclui tabelas. A leitura OCR passa a `ocr-1.2.0`; o piso de confiança e a revisão humana obrigatória permanecem. Sem migração, novo provedor ou método publicado alterado. Testes e alcance em `docs/build/ocr-evidence-quality-2026-10-29.md`.
+Candidato `fix/ocr-line-confidence`: uma linha abaixo do piso de confiança não reaparece como prosa por estar em um bloco de média alta, e os trechos confiáveis não são unidos através dessa lacuna. A omissão gera aviso por página. Uma página composta somente de tabela deixa de ser classificada como sem texto. A escala monetária declarada em linha/cabeçalho confiável é preservada em imagem e PDF digitalizado, e a estimativa de texto inclui tabelas. A leitura OCR passa a `ocr-1.2.0`; o piso de confiança e a revisão humana obrigatória permanecem. Sem migração, novo provedor ou método publicado alterado. `pnpm check` completo aprovado (44 tarefas); CI e promoção pendentes. Testes e alcance em `docs/build/ocr-evidence-quality-2026-10-29.md`.
 
 ## 2026-10-10: ponte da conversa para premissas de investimento
 
