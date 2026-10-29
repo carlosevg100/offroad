@@ -13,6 +13,8 @@ Estado: candidato, sem liberação ou afirmação de qualidade universal.
 
 Todo arquivo é considerado, um de cada vez. Recusas e falhas trazem o nome do arquivo. O reenvio usa a deduplicação já autorizada no mesmo escopo. A interface não abre envios concorrentes e limpa o seletor ao terminar. O registro incerto é recuperado por identidade, organização, escopo, caminho e hash; sem confirmação, preserva o objeto privado; duplicidade confirmada permite remover o novo objeto temporário. Os arquivos registrados seguem ao processamento mesmo com falha de outro arquivo.
 
+O primeiro envio na tela de início também preserva o trabalho criado: arquivos recebidos avançam mesmo com falha parcial, os nomes que falharam aparecem e a pessoa pode continuar no mesmo projeto. Uma falha de transporte na criação repete a mesma chave; confirmação da criação impede criar outro trabalho por novo clique. A interface libera o estado ocupado e limpa o seletor mesmo em exceção.
+
 ## Evidência
 
 - Três regressões iniciais falharam antes da correção: 20/31 arquivos, exceção no segundo envio e exceção no segundo registro.
@@ -23,6 +25,8 @@ Todo arquivo é considerado, um de cada vez. Recusas e falhas trazem o nome do a
 - A primeira prova de navegador da PR #963 não disparou o envio: zero fontes e nenhum pedido de Storage/registro no traço. O ensaio atribuía arquivos diretamente ao input HTML logo após recarregar a página. Passou a usar o botão e o seletor real, como a jornada existente, comprovando que o manipulador da interface está ativo antes da escolha. As exigências de 30/31 registros, hashes, fila, resposta perdida e reenvio são preservadas. Nova prova de CI pendente; nenhuma dispensa do gate.
 
 A segunda execução de navegador registrou os 30 documentos e preservou o objeto da resposta perdida. A exigência de fila detectou uma configuração incorreta do ensaio: a organização local nova estava no caminho determinístico, que não cria jobs. O caso passa a habilitar o pipeline/canary somente nessa organização sintética local antes do upload, preservando a exigência de jobs e todos os controles. Nova CI pendente.
+
+Quatro regressões unitárias cobrem continuidade do primeiro envio, seleção apenas de duplicatas, nenhum arquivo registrado e recusa/exceção do início de processamento. A prova de navegador também cobre o primeiro envio parcial e a continuação sem segundo projeto. A integração final será verificada no candidato consolidado.
 
 ## Segurança, dados e retorno
 
