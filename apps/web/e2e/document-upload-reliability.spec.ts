@@ -49,7 +49,16 @@ test("a folder larger than twenty files survives a partial failure and a same-se
     } else await route.continue();
   });
   const input = page.locator('.advisor-composer input[type="file"]');
-  await input.setInputFiles([...files, {name: "synthetic-refused.exe", mimeType: "application/octet-stream", buffer: Buffer.from("MZ")}]);
+  const chooseFiles = async (selected: typeof files) => {
+    // The real chooser proves that the client handler is active after reload. Assigning
+    // files directly to the SSR input can dispatch change before React has hydrated it.
+    const [chooser] = await Promise.all([
+      page.waitForEvent("filechooser"),
+      page.getByRole("button", {name: "Anexar documentos", exact: true}).click(),
+    ]);
+    await chooser.setFiles(selected);
+  };
+  await chooseFiles([...files, {name: "synthetic-refused.exe", mimeType: "application/octet-stream", buffer: Buffer.from("MZ")}]);
   const sourceQuery = `select d.id,d.original_name,d.sha256 from public.source_documents d join public.document_intake_sessions s on s.id=d.intake_session_id where s.capital_project_id='${projectId}'`;
   await expect.poll(() => sql(`select count(*) from (${sourceQuery}) d`), {timeout: 120_000}).toBe("30");
   await expect(input).toBeEnabled({timeout: 120_000});
@@ -67,7 +76,7 @@ test("a folder larger than twenty files survives a partial failure and a same-se
 
   await page.unroute(storageRoute);
   await page.unroute(registrationRoute);
-  await input.setInputFiles(files);
+  await chooseFiles(files);
   await expect.poll(() => sql(`select count(*) from (${sourceQuery}) d`), {timeout: 120_000}).toBe("31");
   await expect(input).toBeEnabled({timeout: 120_000});
   await expect(input).toHaveValue("");

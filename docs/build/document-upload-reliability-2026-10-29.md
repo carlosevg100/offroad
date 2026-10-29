@@ -20,7 +20,7 @@ Todo arquivo é considerado, um de cada vez. Recusas e falhas trazem o nome do a
 - Verificação TypeScript da aplicação passou.
 - `document-upload-reliability.spec.ts`: prova integrada nova com Storage/registro/fila reais em serviços locais e falha de Storage controlada pelo navegador, além de perda da resposta depois do registro confirmado e verificação da permanência dos objetos no Storage. Ainda não executada. Este host não tem Docker; a CI fornece a pilha isolada.
 - `pnpm check` completo passou no commit `b704c3e399357a0cb2678f60b3a67f3fdb9a2105`: lint, typecheck, testes e build, com 44 pacotes em cada etapa. A aplicação teve 1.683 testes aprovados, incluindo 44 testes das regras e recuperação de upload. A primeira tentativa em ambiente restrito falhou no IPC do executor `tsx`; a prova final foi executada com esse recurso local permitido.
-- Gates de CI e execução integrada em navegador: pendentes.
+- A primeira prova de navegador da PR #963 não disparou o envio: zero fontes e nenhum pedido de Storage/registro no traço. O ensaio atribuía arquivos diretamente ao input HTML logo após recarregar a página. Passou a usar o botão e o seletor real, como a jornada existente, comprovando que o manipulador da interface está ativo antes da escolha. As exigências de 30/31 registros, hashes, fila, resposta perdida e reenvio são preservadas. Nova prova de CI pendente; nenhuma dispensa do gate.
 
 ## Segurança, dados e retorno
 
