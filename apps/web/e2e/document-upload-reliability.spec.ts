@@ -30,7 +30,7 @@ test("a folder larger than twenty files survives a partial failure and a same-se
   sql(`begin;select set_config('request.jwt.claim.sub',(select created_by::text from public.capital_projects where id='${projectId}'),true);select set_config('request.headers',json_build_object('x-offroad-workspace',(select organization_id from public.capital_projects where id='${projectId}'))::text,true);set local role authenticated;select public.accept_private_workspace_terms('pt-BR','Synthetic upload owner','',true,true);select public.prepare_work_document_intake_v1('${projectId}','pt-BR');commit;`);
   // This journey proves the production enqueue branch. Fresh local workspaces deliberately
   // default to the deterministic fixture path, which publishes no worker jobs.
-  sql(`begin;update public.organizations set pipeline_enabled=true where id=(select organization_id from public.capital_projects where id='${projectId}');update public.organization_rollout_policies set state='canary',promotion_basis='Synthetic isolated upload enqueue proof' where organization_id=(select organization_id from public.capital_projects where id='${projectId}');commit;`);
+  sql(`begin;update public.organizations set pipeline_enabled=true where id=(select organization_id from public.capital_projects where id='${projectId}');select private.promote_organization_rollout(organization_id,'shadow',created_by,'Synthetic isolated upload enqueue proof') from public.capital_projects where id='${projectId}';commit;`);
   await page.reload();
 
   const files = Array.from({length: 31}, (_, index) => ({name: `synthetic-${index + 1}.csv`, mimeType: "text/csv", buffer: Buffer.from(`metric,value\nliquidity.available_cash,${index + 1}\n`)}));
@@ -75,7 +75,7 @@ test("a folder larger than twenty files survives a partial failure and a same-se
   await testInfo.attach("partial-upload-mobile", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
   await page.setViewportSize(viewport);
   // A failed sibling must not leave the thirty registered files without any processing run.
-  await expect.poll(() => sql(`select count(*) from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.capital_project_id='${projectId}'`)).not.toBe("0");
+  await expect.poll(() => sql(`select count(distinct j.source_document_id) from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.capital_project_id='${projectId}'`)).toBe("30");
 
   await page.unroute(storageRoute);
   await page.unroute(registrationRoute);

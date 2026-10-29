@@ -35,9 +35,9 @@ jobs:
     name: ${{ inputs.native_diagnostic && 'Skipped lint (native diagnostic only)' || 'Lint, typecheck, test, build' }}
     if: ${{ !inputs.native_diagnostic }}
     runs-on: ubuntu-latest
-    # The whole monorepo gate took 13.8 to 14.7 minutes on main in September 2026 and 23 to 25
-    # minutes by late October 2026; a 45-minute ceiling keeps a slow runner from failing a green tree.
-    timeout-minutes: 45
+    # The full monorepo and replayed schema outgrew the former 45-minute job budget.
+    # Keep every check; this is the enclosing job budget, not a test timeout.
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -97,7 +97,9 @@ jobs:
     if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target != 'material' }}
     name: ${{ inputs.native_diagnostic && 'Native consumers diagnostic (not a release gate)' || 'Database (migrations, RLS, lint)' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The full monorepo and replayed schema outgrew the former 45-minute job budget.
+    # Keep every check; this is the enclosing job budget, not a test timeout.
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
