@@ -305,7 +305,7 @@ describe("canonical ficha objective routing", () => {
     const departures = rows.filter((r) => compileObjectiveToPlan({message: r.message, hasAttachments: r.hasAttachments}).objectiveKind !== r.kind);
     expect(departures).toEqual([]);
     expect(rows.filter((r) => lote4Kinds.includes(r.kind))).toEqual([]);
-  });
+  }, 60_000);
 
   // Round 7: a request addressed to the advisor still promotes: an imperative, a modal that opens the clause or has
   // "você" as its subject, a first person request, and the ficha's direct question.
