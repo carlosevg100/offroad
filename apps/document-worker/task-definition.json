@@ -33,7 +33,7 @@
         },
         {
           "name": "PIPELINE_VERSION",
-          "value": "f2-2026.08.24"
+          "value": "f2-2026.10.29"
         },
         {
           "name": "LEASE_SECONDS",
@@ -61,7 +61,7 @@
         },
         {
           "name": "MODEL_MAX_CALLS_PER_JOB",
-          "value": "8"
+          "value": "50"
         },
         {
           "name": "ENABLE_OPENAI_WEB_SEARCH",

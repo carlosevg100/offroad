@@ -75,7 +75,7 @@ export function jobModelBudget(input: {
     : 0;
   return {
     maxCostUsd: ceilingUsd - researchReserveUsd,
-    maxCalls: Math.min(input.maxCallsPerJob, requested?.max_calls ?? input.maxCallsPerJob),
+    maxCalls: Math.min(input.maxCallsPerJob, requested?.max_calls ?? input.maxCallsPerJob, input.job.kind === "document_pipeline" ? 50 : 8),
     researchReserveUsd,
   };
 }

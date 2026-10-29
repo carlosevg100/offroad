@@ -27,11 +27,11 @@ export type TableRowPass = {
 };
 
 /**
- * One bounded model pass for one table.
+ * One bounded model pass for a small group of rows of one table.
  *
  * `rows` keeps the deterministic global instance assigned by `tableRowPasses`. The model is
- * allowed to read the table once; candidate indices are rebound from the cited row anchor in
- * code, so adding 500 rows changes input size, not the number of paid calls.
+ * candidate indices are rebound from the cited row anchor in code. A finite row group keeps
+ * the enumeration inside the response limit without losing or renumbering the remaining rows.
  */
 export type TableBatchPass = {
   tableId: string;
@@ -124,7 +124,7 @@ export function tableRowPasses(index: LayerIndex, options: {minRows?: number; ma
   return passes;
 }
 
-/** Groups eligible rows into one pass per table, preserving deterministic row instances. */
+/** Groups eligible rows in threes, preserving every deterministic row instance and header. */
 export function tableBatchPasses(index: LayerIndex, options: {minRows?: number; maxRows?: number; fields?: readonly FieldDefinition[]} = {}): TableBatchPass[] {
   const rows = tableRowPasses(index, options);
   const grouped = new Map<string, TableRowPass[]>();
@@ -133,13 +133,15 @@ export function tableBatchPasses(index: LayerIndex, options: {minRows?: number; 
     grouped.get(row.tableId)!.push(row);
   }
 
-  return [...grouped].map(([tableId, tableRows]) => {
+  return [...grouped].flatMap(([tableId, tableRows]) => {
     const header = tableRows[0]?.evidenceText.split("\n").find((line) => line.startsWith("colunas: "));
-    const evidenceRows = tableRows.map((row) => row.evidenceText.split("\n").find((line) => line.startsWith(`[${row.rowAnchorId}]`)) ?? `[${row.rowAnchorId}]`);
-    return {
-      tableId,
-      rows: tableRows.map((row) => ({instance: row.instance, rowAnchorId: row.rowAnchorId, evidenceText: row.evidenceText})),
-      evidenceText: [...(header ? [header] : []), ...evidenceRows].join("\n"),
-    };
+    const batches: TableBatchPass[] = [];
+    for (let offset = 0; offset < tableRows.length; offset += 3) {
+      const batchRows = tableRows.slice(offset, offset + 3);
+      const evidenceRows = batchRows.map((row) => row.evidenceText.split("\n").find((line) => line.startsWith(`[${row.rowAnchorId}]`)) ?? `[${row.rowAnchorId}]`);
+      batches.push({tableId, rows: batchRows.map((row) => ({instance: row.instance, rowAnchorId: row.rowAnchorId, evidenceText: row.evidenceText})),
+        evidenceText: [...(header ? [header] : []), ...evidenceRows].join("\n")});
+    }
+    return batches;
   });
 }

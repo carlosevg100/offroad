@@ -12,14 +12,14 @@ import type {IntakeErrorCode} from "./types";
  */
 
 /** Pipeline contract version recorded on the run. Must match what the worker reports. */
-export const PIPELINE_VERSION = "f2-2026.08.24";
+export const PIPELINE_VERSION = "f2-2026.10.29";
 
 /**
  * Economic contract for a production case. The database persists and distributes it to jobs;
  * the worker enforces the smaller of these values and its own ceiling for the job kind. Both come
- * from `productionRunBudget` of the model gateway, derived for the calibrated reservation (24 Sep
- * 2026): 1.60 per document, 3.10 for the case analysis, 16.00 for the run, so that a room of eight
- * documents keeps the whole per-document ceiling.
+ * from `productionRunBudget` of the model gateway, derived for the calibrated reservation (29 Oct
+ * 2026): 3.15 per document, 3.10 for the case analysis, 30.00 for the run; 50 calls per document
+ * and 500 per run. Eight documents keep the whole per-document ceiling.
  */
 export const DEFAULT_RUN_BUDGET = productionRunBudget;
 

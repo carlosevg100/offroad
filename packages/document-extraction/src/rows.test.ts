@@ -118,7 +118,7 @@ describe("the extractor runs one paid pass per table, with indices bound from an
 });
 
 describe("table batches", () => {
-  it("turns any eligible row count into one pass per table", () => {
+  it("keeps one bounded pass for three eligible rows", () => {
     const batches = tableBatchPasses(indexLayer(debtLayer));
     expect(batches).toHaveLength(1);
     expect(batches[0]?.rows.map((row) => row.instance)).toEqual([1, 2, 3]);
@@ -164,4 +164,20 @@ describe("instrument numbers across tables", () => {
     const passes = tableRowPasses(indexLayer(layer));
     expect(passes.map((pass) => pass.instance)).toEqual([1, 2, 3, 4, 5, 6]);
   });
+});
+
+it("bounds a dense table batch while preserving every row instance and its header", () => {
+  const tableId = "p1.t1";
+  const dense = documentLayerSchema.parse({documentId: "dense", documentVersion: 1, kind: "pdf", parserVersion: "synthetic", scaleDeclarations: [], stats: {},
+    pages: [{n: 1, scanned: false, blocks: [], tables: [{id: tableId, header: ["Credor", "Saldo", "Vencimento"],
+      rows: Array.from({length: 8}, (_, index) => ({id: `${tableId}.r${index + 1}`, cells: [
+        {id: `${tableId}.r${index + 1}.c1`, text: `Banco ${index + 1}`}, {id: `${tableId}.r${index + 1}.c2`, text: "100.000"},
+      ]})),
+    }]}],
+  });
+  const batches = tableBatchPasses(indexLayer(dense));
+  expect(batches.every(batch => batch.rows.length <= 3)).toBe(true);
+  expect(batches.flatMap(batch => batch.rows.map(row => row.instance))).toEqual([1,2,3,4,5,6,7,8]);
+  expect(batches.every(batch => batch.evidenceText.includes("colunas: Credor | Saldo | Vencimento"))).toBe(true);
+  expect(new Set(batches.flatMap(batch => batch.rows.map(row => row.rowAnchorId))).size).toBe(8);
 });

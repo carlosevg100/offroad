@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "document-processing-budget-proof.v1",
+  "date": "2026-10-29",
+  "migration": {
+    "name": "document_processing_budget_headroom",
+    "productionVersion": "20261029163644",
+    "stagingVersion": "20261029163547",
+    "statementsMd5": "fbe6f5ca3f5c0e105089b3f3dd8ad2a6",
+    "functionBodyMd5": "b38c2e66bb9244df4d23fe6b8f66c706"
+  },
+  "measuredReservation": {
+    "eightCallPrimaryUsd": 1.8883766,
+    "repairFallbackPathUsd": 2.8247434,
+    "documentCeilingUsd": 3.15,
+    "margin": "10 percent, rounded up to five cents",
+    "runCeilingUsd": 30,
+    "runCalls": 500,
+    "documentCalls": 50,
+    "otherJobCallCeilingUnchanged": 8
+  },
+  "checks": {
+    "partialExtractionRegressionFailedBefore": 2,
+    "focusedWorkerTestsPassed": 41,
+    "budgetConstantTestsPassed": 7,
+    "webRunBudgetTestsPassed": 7,
+    "authorityAndBodyComparison": "only exact defaults and run amount bound changed; ACL/security mode/search_path preserved in rollback rehearsal on each database",
+    "overLimitBudgetRefusedInStaging": true,
+    "securityAdvisorFindingsEachDatabase": 0,
+    "typesRegenerated": true,
+    "typesSha256": "c7eb31129d83892c61062e006f73e298b41a975e3ac0e1fe49fab348c3bc17a2"
+  },
+  "releaseStatus": "candidate; final full gate and browser proof pending"
+}

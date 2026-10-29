@@ -265,7 +265,7 @@ async function main(): Promise<void> {
   );
   console.log(`  errado com confianca  ${confidentlyWrong.length}   (>= 0.80 e errado: passa direto pelo revisor)`);
   console.log(`  certo sem confianca   ${unsureButRight.length}   (< 0.80 e certo: custa uma olhada, nao um erro)`);
-  console.log(`  custo                 $${usage.costUsd.toFixed(4)} em ${usage.calls} chamada(s)`);
+  console.log(`  custo                 $${summary.costUsd.toFixed(4)} em ${summary.calls} chamada(s), ledger governado`);
   console.log("=".repeat(78));
 
   mkdirSync(outDir, {recursive: true});

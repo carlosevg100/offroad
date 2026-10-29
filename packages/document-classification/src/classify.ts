@@ -8,8 +8,8 @@ import type {ParseResult} from "@offroad/document-parsers";
  *
  * The model gets a bounded, deterministic sample of the layer, never the whole file, and
  * answers in a closed schema. Everything it may say is a value from the ontology, so a
- * hallucinated document type is not representable; the worst case is the wrong member of a
- * known set, flagged by a low confidence.
+ * hallucinated document type is not representable. A wrong member of the known set can still
+ * carry high model confidence; measurement and review gates remain necessary.
  *
  * Three things the model is deliberately *not* trusted with, computed from the ontology
  * instead: the evidence rank, the folder, and the suggested file name. Those drive precedence

@@ -1178,7 +1178,10 @@ jobs:
       - name: Run end-to-end tests
         if: ${{ !inputs.native_diagnostic }}
         # The native material case and changed roundtrip paths already ran in required steps.
-        run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$|Office roundtrip preserves the base|stored preview downloads exact bytes|governed materials and model come from one exact revision|guided institutional setup calculates only after review|a mixed update of an execution and the financial model is adopted in one act'
+        run: |
+          # Fail quickly on the changed entry boundary, then retain the whole release journey.
+          pnpm --filter web exec playwright test e2e/document-upload-reliability.spec.ts
+          pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$|Office roundtrip preserves the base|stored preview downloads exact bytes|governed materials and model come from one exact revision|guided institutional setup calculates only after review|a mixed update of an execution and the financial model is adopted in one act'
         env:
           CI: "true"
           # Restricted to loopback by the synthetic sector-planning setup.

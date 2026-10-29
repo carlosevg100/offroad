@@ -87,6 +87,10 @@ export type PipelineOutcome = {
   documentKind?: string;
 };
 
+class IncompleteExtractionError extends Error {
+  constructor() {super("document extraction did not finish every evidence window");}
+}
+
 export async function processDocumentJob(job: DocumentJob, deps: PipelineDependencies): Promise<PipelineOutcome> {
   const {queue} = deps;
   const payload = job.payload;
@@ -313,6 +317,11 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
         extracted.usage ?? {},
       );
 
+      if (extracted.chunks.failed > 0) {
+        await queue.writeStage(job, "extract", "failed", {code: "extraction_incomplete", chunks: extracted.chunks});
+        throw new IncompleteExtractionError();
+      }
+
       const suggestions = buildScopeSuggestionInputs(extracted.candidates);
       if (suggestions.length > 0) {
         await stage("suggest_scope", () => queue.recordAnalysisScopeSuggestions(
@@ -387,6 +396,12 @@ function describeFailure(error: unknown): {
   retryInSeconds: number;
   detail: {reason: string; message: string; code?: string};
 } {
+  if (error instanceof IncompleteExtractionError) {
+    // Retrying the entire file automatically would repay all successful windows. Keep the
+    // proposals and the failed state visible; a person may request another governed run.
+    return {retryable: false, retryInSeconds: 0,
+      detail: {reason: "extraction_incomplete", code: "extraction_incomplete", message: error.message}};
+  }
   if (error instanceof GateError) {
     return {
       retryable: error.retryable,

@@ -67,7 +67,7 @@ const schema = z.object({
   MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().optional(),
   /** The same bound expressed in calls, which catches a loop before the cost does. */
   DOCUMENTARY_WORK_PLANNING_ENABLED: z.enum(["true", "false"]).default("false").transform(value => value === "true"),
-  MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(8),
+  MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(50),
   SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   /** Dedicated service account that belongs to no organization. */
   WORKER_ACCOUNT_EMAIL: z.email(),
@@ -94,7 +94,7 @@ const schema = z.object({
     .default("Offroad Capital research@offroad.capital"),
   PROVIDER_CONNECTIONS_JSON: providerConnectionsJsonSchema.default({}),
 
-  PIPELINE_VERSION: z.string().min(1).default("f2-2026.08.24"),
+  PIPELINE_VERSION: z.string().min(1).default("f2-2026.10.29"),
   LEASE_SECONDS: z.coerce.number().int().min(60).max(3600).default(600),
   HEARTBEAT_SECONDS: z.coerce.number().int().min(15).max(600).default(120),
   IDLE_POLL_SECONDS: z.coerce.number().int().min(1).max(60).default(5),

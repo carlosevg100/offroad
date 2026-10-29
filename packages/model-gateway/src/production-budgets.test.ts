@@ -7,12 +7,12 @@ import {productionModelCeilingsUsd, productionRunBudget} from "./production-budg
 /**
  * The run budget travels to `private.begin_processing_run`, which validates it and divides it
  * between the documents and the case analysis. These are the rules of that function (migration
- * 20260829003002_economic_pipeline_guardrails.sql): a budget outside them is refused with
+ * 20260829003002_economic_pipeline_guardrails.sql plus the 29 Oct numeric follow-up): a budget outside them is refused with
  * `processing_budget_invalid` and no run starts.
  */
 type RunBudget = {[Key in keyof typeof productionRunBudget]: number};
 function allocate(budget: RunBudget, paidDocuments: number) {
-  const valid = budget.max_cost_usd > 0 && budget.max_cost_usd <= 25
+  const valid = budget.max_cost_usd > 0 && budget.max_cost_usd <= 30
     && budget.max_calls >= 1 && budget.max_calls <= 500
     && budget.document_max_cost_usd > 0 && budget.document_max_cost_usd <= budget.max_cost_usd
     && budget.document_max_calls >= 1 && budget.document_max_calls <= 50
@@ -27,9 +27,9 @@ function allocate(budget: RunBudget, paidDocuments: number) {
 
 describe("production budgets", () => {
   it("passes the database's validation and gives an eight-document room the whole per-document ceiling", () => {
-    expect(allocate(productionRunBudget, 8)).toEqual({valid: true, documentUsd: productionModelCeilingsUsd.documentPipeline, documentCalls: 8});
+    expect(allocate(productionRunBudget, 8)).toEqual({valid: true, documentUsd: productionModelCeilingsUsd.documentPipeline, documentCalls: 50});
     // Beyond eight documents the database divides what the case leaves, as it always has.
-    expect(allocate(productionRunBudget, 10).documentUsd).toBeCloseTo((16 - 3.1) / 10, 10);
+    expect(allocate(productionRunBudget, 10).documentUsd).toBeCloseTo((30 - 3.1) / 10, 10);
     expect(productionRunBudget.case_max_cost_usd).toBe(productionModelCeilingsUsd.caseAnalysis);
   });
 
@@ -65,9 +65,9 @@ const databaseCeilings: Array<{signature: string; source: string; changes: Array
     changes: [[1.5, productionModelCeilingsUsd.originationThesis]]},
   {signature: "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)", source: "20260905175807_integration_preview_run_budget_v2.sql",
     changes: [[0.5, productionModelCeilingsUsd.integrationPreview]]},
-  // The defaults the database's own callers start with '{}': the run budget the web app sends.
+  // Historical 25 Sep defaults. The 29 Oct follow-up is tested separately below.
   {signature: "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)", source: "20260829003002_economic_pipeline_guardrails.sql",
-    changes: [[5, productionRunBudget.max_cost_usd], [0.75, productionRunBudget.document_max_cost_usd], [1, productionRunBudget.case_max_cost_usd]]},
+    changes: [[5, 16], [0.75, 1.6], [1, 3.1]]},
   {signature: "private.enqueue_primary_case_analysis(uuid,uuid,uuid)", source: "20260904040355_preliminary_understanding_completion_budget.sql",
     changes: [[1, caseAnalysis]]},
   // The run, its case share and the job.
@@ -153,5 +153,19 @@ describe("production budgets in the database", () => {
         if (captured !== undefined) expect([countOf(captured, before), countOf(captured, after)], signature).toContain(occurrences);
       }
     });
+  });
+});
+
+describe("29 Oct document budget follow-up", () => {
+  it("keeps the finite call and spend bounds aligned with code, without grants or new objects", () => {
+    const file = migrationFiles.find((file) => file.endsWith("_document_processing_budget_headroom.sql"))!;
+    const sql = read(migrations, file);
+    const next = /new_text constant text := \$new\$([\s\S]*?)\$new\$/.exec(sql)![1]!;
+    const budget = Object.fromEntries([...next.matchAll(/'([a-z_]+)', ([\d.]+)/g)].map((match) => [match[1], Number(match[2])]));
+    expect(budget).toEqual(productionRunBudget);
+    expect(sql).toContain("'max_cost_usd')::numeric > 30");
+    expect(sql).not.toMatch(/\b(?:grant|revoke|create table|alter table)\b/i);
+    expect(allocate(productionRunBudget, 8).documentCalls).toBe(50);
+    expect(allocate(productionRunBudget, 8).documentUsd).toBe(3.15);
   });
 });

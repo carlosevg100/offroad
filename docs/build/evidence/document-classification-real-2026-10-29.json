@@ -58,10 +58,31 @@
       "receiptSha256": "b7ae9868836a5a4e0ea34f7cddba24436e1f34950fb374eb4250846e52422b31"
     }
   ],
-  "extraction": "pending full measurement",
+  "extraction": "See document-model-readiness-2026-10-29.md: v6 broad reading has a failed table pass and limited end-to-end recall; v7 fresh measurements remain promotion prerequisites.",
   "sources": {
     "reports": "/Users/olpi/Desktop/Offroad Capital/outputs/validacao-documentos-reais-2026-10-29/classificacao",
     "productionBaselineCommit": "18d00e7f53b7fb461878069b37cdb2e45a368646"
   },
-  "productionPromotion": false
+  "productionPromotion": false,
+  "repetitions": [
+    {
+      "caseId": "rede-horizonte",
+      "classifierVersion": "2026.10.29-e1-v3",
+      "documentsScored": 8,
+      "kindCorrect": 7,
+      "classCorrect": 7,
+      "periodsScored": 5,
+      "periodsCorrect": 5,
+      "confidentlyWrong": 0,
+      "executionId": "00d68caf-d65e-43d9-82a9-f2f2c84eddc5",
+      "inputFingerprint": "8f9fcc2dec50e95ef88fa6b6e3a590b8cc67925502500a47fe9004ea59437a9e",
+      "resultFingerprint": "c064eda64bc22b66ef772e8fd271ef0133a5965d42672dce789b986eafc254a8",
+      "outcome": "succeeded",
+      "calls": 8,
+      "costMicrousd": 106617,
+      "uncertainErrorConfidence": 0.62,
+      "originalReportSha256": "0bd6dfdbffdc98c66f40bb1a290cd2a2c5b94b62158ba143bff6ce81c6dcecf6",
+      "receiptSha256": "3297dc33612b3c0076e1e5ce14b8d9a6b57d8d61b46cd645185798b83970978e"
+    }
+  ]
 }
