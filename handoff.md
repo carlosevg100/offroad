@@ -1,3 +1,7 @@
+## 2026-10-29: confiança e escala na leitura OCR
+
+Candidato `fix/ocr-line-confidence`: uma linha abaixo do piso de confiança não reaparece como prosa por estar em um bloco de média alta, e os trechos confiáveis não são unidos através dessa lacuna. A omissão gera aviso por página. Uma página composta somente de tabela deixa de ser classificada como sem texto. A escala monetária declarada em linha/cabeçalho confiável é preservada em imagem e PDF digitalizado, e a estimativa de texto inclui tabelas. A leitura OCR passa a `ocr-1.2.0`; o piso de confiança e a revisão humana obrigatória permanecem. Sem migração, novo provedor ou método publicado alterado. Testes e alcance em `docs/build/ocr-evidence-quality-2026-10-29.md`.
+
 ## 2026-10-28: lote 4 de fichas testado (C09, C01, C32 plano de 2027, C47)
 
 - Quatro métodos 2026.10.27-v1 com revisão independente aprovada, ainda não publicados: organize-document-folder (C09, inventário da pasta; aprovado na r21), evaluate-received-proposal (C01, proposta de banco recebida; r6), evaluate-financing-paths (plano de financiamento de 2027 da C32 sobre a Aurora, método próprio porque prepare-capital-structure-decision v4 sustenta o fluxo R01; r4) e prepare-board-capital-discussion (C47, material do conselho; r44).
