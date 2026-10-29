@@ -3,7 +3,7 @@ import {parserLimits, type ParseResult, type ParserWarning} from "./types";
 import {minimumOcrConfidence, type OcrEngine, type OcrLine, type OcrResult} from "./capabilities";
 import {collectScaleDeclarations} from "./scale";
 
-export const ocrLayerVersion = "ocr-1.1.0";
+export const ocrLayerVersion = "ocr-1.2.0";
 
 type Cell = {text: string; bbox: [number, number, number, number]; line: OcrLine};
 
@@ -101,9 +101,11 @@ export function tablesFromLines(lines: readonly OcrLine[], pageId: string): {tab
 export function pagesFromOcr(results: readonly {pageNumber: number; result: OcrResult}[]): {
   pages: LayerPage[];
   warnings: ParserWarning[];
+  scaleDeclarations: ReturnType<typeof collectScaleDeclarations>;
 } {
   const pages: LayerPage[] = [];
   const warnings: ParserWarning[] = [];
+  const scaleSources: {id: string; text: string}[] = [];
 
   for (const {pageNumber, result} of results) {
     const pageId = `p${pageNumber}`;
@@ -117,18 +119,32 @@ export function pagesFromOcr(results: readonly {pageNumber: number; result: OcrR
 
     for (const block of result.blocks) {
       if (block.confidence < minimumOcrConfidence) continue;
-      if (blocks.length >= parserLimits.maxBlocksPerPage) break;
-      const remaining = block.lines ? block.lines.filter((line) => !consumed.has(line)) : null;
-      const text = (remaining ? remaining.map((line) => line.text).join(" ") : block.text).replace(/\s+/g, " ").trim();
-      if (!text) continue;
-
-      const layerBlock: LayerBlock = {
-        id: `${pageId}.b${blocks.length + 1}`,
-        kind: "text",
-        text: text.slice(0, parserLimits.maxCharactersPerBlock),
+      const emit = (raw: string, bbox: typeof block.bbox) => {
+        const text = raw.replace(/\s+/g, " ").trim();
+        if (!text || blocks.length >= parserLimits.maxBlocksPerPage) return;
+        const layerBlock: LayerBlock = {id: `${pageId}.b${blocks.length + 1}`, kind: "text", text: text.slice(0, parserLimits.maxCharactersPerBlock)};
+        if (bbox) layerBlock.bbox = bbox;
+        blocks.push(layerBlock);
       };
-      if (block.bbox) layerBlock.bbox = block.bbox;
-      blocks.push(layerBlock);
+      if (!block.lines) {
+        scaleSources.push({id: pageId, text: block.text});
+        emit(block.text, block.bbox);
+        continue;
+      }
+      // Keep trustworthy text on either side of an omitted line separate. Joining across
+      // a gap can manufacture adjacency (including joining a statement to its negation).
+      let run: OcrLine[] = [];
+      const flush = () => {
+        if (run.length) emit(run.map((line) => line.text).join(" "), [Math.min(...run.map((l) => l.bbox[0])), Math.min(...run.map((l) => l.bbox[1])), Math.max(...run.map((l) => l.bbox[2])), Math.max(...run.map((l) => l.bbox[3]))]);
+        run = [];
+      };
+      for (const line of block.lines) {
+        if (line.confidence < minimumOcrConfidence) { flush(); continue; }
+        // Scale declarations may sit in a table header or on their own wrapped line.
+        scaleSources.push({id: pageId, text: line.text});
+        if (consumed.has(line)) flush(); else run.push(line);
+      }
+      flush();
     }
 
     const dropped = result.blocks.filter((block) => block.text.trim() && block.confidence < minimumOcrConfidence).length;
@@ -139,7 +155,10 @@ export function pagesFromOcr(results: readonly {pageNumber: number; result: OcrR
         where: pageId,
       });
     }
-    if (blocks.length === 0) {
+    const droppedLines = result.blocks.filter((block) => block.confidence >= minimumOcrConfidence)
+      .flatMap((block) => block.lines ?? []).filter((line) => line.text.trim() && line.confidence < minimumOcrConfidence).length;
+    if (droppedLines) warnings.push({code: "parse_error", message: `${droppedLines} OCR line(s) on this page were below the confidence floor and are not quotable; the reading has gaps`, where: pageId});
+    if (blocks.length === 0 && tables.length === 0) {
       warnings.push({code: "no_text", message: "OCR found no readable text on this page", where: pageId});
     }
 
@@ -147,7 +166,12 @@ export function pagesFromOcr(results: readonly {pageNumber: number; result: OcrR
     pages.push({n: pageNumber, blocks, tables, scanned: true});
   }
 
-  return {pages, warnings};
+  return {pages, warnings, scaleDeclarations: collectScaleDeclarations(scaleSources)};
+}
+
+/** Count all usable OCR content, including table headers and cells. */
+export function ocrPageText(page: LayerPage): string {
+  return [...page.blocks.map((block) => block.text), ...page.tables.flatMap((table) => [...(table.header ?? []), ...table.rows.flatMap((row) => row.cells.map((cell) => cell.text))])].join("\n");
 }
 
 /**
@@ -162,6 +186,7 @@ export async function parseImageWithOcr(
   let pages: LayerPage[] = [{n: 1, blocks: [], tables: [], scanned: true}];
   const parserVersions: Record<string, string> = {ocrLayer: ocrLayerVersion};
   let confidence: number | undefined;
+  let scaleDeclarations: ReturnType<typeof collectScaleDeclarations> = [];
 
   if (!engine) {
     warnings.push({code: "no_text", message: "the document is an image and no OCR engine is available", where: "p1"});
@@ -171,6 +196,7 @@ export async function parseImageWithOcr(
       const built = pagesFromOcr([{pageNumber: 1, result}]);
       pages = built.pages;
       warnings.push(...built.warnings);
+      scaleDeclarations = built.scaleDeclarations;
       parserVersions[engine.name] = engine.version;
       confidence = result.confidence;
     } catch (error) {
@@ -178,7 +204,7 @@ export async function parseImageWithOcr(
     }
   }
 
-  const text = pages.flatMap((page) => page.blocks.map((block) => block.text)).join("\n");
+  const text = pages.map(ocrPageText).join("\n");
 
   return {
     layer: {
@@ -186,7 +212,7 @@ export async function parseImageWithOcr(
       documentVersion: input.documentVersion,
       kind: "image",
       pages,
-      scaleDeclarations: collectScaleDeclarations([{id: "p1", text}]),
+      scaleDeclarations,
       stats: {pageCount: pages.length, estimatedTokens: Math.ceil(text.length / 4)},
     },
     parserVersions,

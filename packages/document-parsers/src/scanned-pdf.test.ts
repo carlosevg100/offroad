@@ -36,4 +36,15 @@ describe("a scanned PDF with an OCR engine", () => {
     expect(page?.blocks.map((block) => block.text).join(" ")).toContain("191.200");
     expect(parsed.warnings.some((warning) => warning.message.includes("OCR failed"))).toBe(false);
   });
+
+  it("retains OCR scale declarations and updates the token estimate of a scanned PDF", async () => {
+    const file = join(__dirname, "..", "..", "testing-fixtures", "assets", "fakeco-scan", "02_Demonstracoes_Auditadas_2023_2025_digitalizado.pdf");
+    const {engine} = recordingEngine();
+    engine.recognizePdfPage = async () => ({blocks: [{text: "Valores em milhares de reais\nReceita líquida 191.200", confidence: 0.98}], confidence: 0.98});
+    const parsed = await parseDocument({bytes: new Uint8Array(readFileSync(file)), documentId: "synthetic-scan", documentVersion: 1, fileName: "scan.pdf"}, {ocr: engine});
+    expect(parsed.layer.scaleDeclarations.some((scale) => scale.scale === 1000 && scale.where === "p1")).toBe(true);
+    expect(parsed.layer.stats.estimatedTokens).toBeGreaterThan(0);
+    expect(parsed.parserVersions.ocrLayer).toBe("ocr-1.2.0");
+    expect(parsed.warnings.some((warning) => warning.message.includes("every value from them needs review"))).toBe(true);
+  });
 });

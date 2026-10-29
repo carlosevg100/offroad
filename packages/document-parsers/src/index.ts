@@ -29,7 +29,7 @@ import {parseLegacySpreadsheet} from "./legacy-spreadsheet";
 import {parseCsv} from "./csv";
 import {parseDocx} from "./docx";
 import {parsePptx} from "./pptx";
-import {parseImageWithOcr, pagesFromOcr} from "./ocr";
+import {parseImageWithOcr, pagesFromOcr, ocrLayerVersion, ocrPageText} from "./ocr";
 import {cfbMimeTypes, detectCfbSubtype} from "./cfb";
 import {detectStructuredSpreadsheet} from "./structured-spreadsheet";
 
@@ -278,6 +278,7 @@ async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | un
   }
 
   const byNumber = new Map<number, LayerPage>();
+  const ocrScales: ReturnType<typeof pagesFromOcr>["scaleDeclarations"] = [];
   for (const page of readable) {
     try {
       const recognized = await engine.recognizePdfPage({bytes: bytesForOcr, pageNumber: page.n});
@@ -285,6 +286,7 @@ async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | un
       const [ocrPage] = built.pages;
       if (ocrPage) byNumber.set(page.n, ocrPage);
       warnings.push(...built.warnings);
+      ocrScales.push(...built.scaleDeclarations);
     } catch (error) {
       warnings.push({code: "parse_error", message: `OCR failed: ${(error as Error).message}`, where: `p${page.n}`});
     }
@@ -293,11 +295,12 @@ async function parsePdfWithOcrFallback(input: ParseInput, engine: OcrEngine | un
   if (byNumber.size === 0) return {...result, warnings};
 
   const merged = pages.map((page) => byNumber.get(page.n) ?? page);
+  const scales = new Map([...result.layer.scaleDeclarations, ...ocrScales].map((scale) => [JSON.stringify([scale.where, scale.scale, scale.text]), scale]));
 
   return {
     ...result,
-    layer: {...result.layer, pages: merged},
-    parserVersions: {...result.parserVersions, [engine.name]: engine.version},
+    layer: {...result.layer, pages: merged, scaleDeclarations: [...scales.values()], stats: {...result.layer.stats, estimatedTokens: Math.ceil(merged.map(ocrPageText).join("\n").length / 4)}},
+    parserVersions: {...result.parserVersions, ocrLayer: ocrLayerVersion, [engine.name]: engine.version},
     warnings: [
       ...warnings,
       {
