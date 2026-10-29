@@ -327,7 +327,7 @@ export function completeReceivedProposalFacts(input: {extraction: ReceivedPropos
   const measured = stated(e.measurements);
   const rows = measured ? [...new Map(measured.value.map((m) => [canonicalJson(m), m])).values()] : [];
   if (!measured || !rows.length) missing.push("measurements");
-  for (const k of conflictingKeys(rows, (m) => `${m.date}|${m.scenario}`, (m) => m)) missing.push(`measurements.${k.replace("|", ".")}`);
+  for (const k of conflictingKeys(rows, (m) => `${m.date}|${m.scenario}`, (m) => m)) missing.push(`measurements.${k.replaceAll("|", ".")}`);
   rows.forEach((m) => {
     for (const f of ["debt", "cash", "reportedEbitda", "definitionAdjustment"] as const) if (m[f] === null) missing.push(`measurements.${m.date}.${m.scenario}.${f}`);
     if (calendar && !uniquePeriods.some((p) => p.periodEnd === m.date)) missing.push(`measurements.${m.date}.${m.scenario}.date`);

@@ -6,7 +6,6 @@ import {boardMaterialCheck, boardMaterialConversation, boardMaterialEntry, board
 import {boardMaterialSourceIds, planBoardMaterial, type BoardMaterialPrior} from "./board-material-planner";
 import {inMemoryBasis} from "./lote3-reader-check";
 import {comparableHypotheses, financialModelFixture, nonAnswering} from "./lote2-premises.test-support";
-import {uuidV5} from "./investment-premises-proposal";
 
 type Source = {id: string; methodId: string; packet: Record<string, unknown>; moneyScale: "reais" | "millions"};
 let gold: (turn: 1 | 2 | 3) => BoardCapitalDiscussionFacts;
@@ -56,7 +55,8 @@ async function runTurn(turn: 1 | 2 | 3, edit?: (p: BoardMaterialPrior) => BoardM
     loadEvidence: async () => [], loadPriors: async () => priorsRead(edit), extract: async () => extraction, log: (e) => {events.push(e);}});
   return {result, events};
 }
-const projectAnalysis = boardCapitalDiscussionAnalysisId(uuidV5(`offroad:board-material:${hex(1)}`));
+/** The analysis id the bridge derives for project hex(1): boardCapitalDiscussionAnalysisId(uuidV5(`offroad:board-material:${hex(1)}`)). Pinned as a value. */
+const projectAnalysis = "1148ea60-3c1a-5766-8d50-1887b937651e";
 const asGold = (f: BoardCapitalDiscussionFacts) => comparableHypotheses(proposeBoardCapitalDiscussionHypotheses(f));
 
 describe("board material: ficha C47 through the conversation", () => {
