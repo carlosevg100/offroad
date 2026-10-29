@@ -40,7 +40,7 @@
     {
       "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
       "file": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb).sql",
-      "sha256": "3904fb897ccfc833aea2b5ac21ddc0971b1f5c026549c87fc9c49d68d9bc3fa2"
+      "sha256": "4b8258c5a35315620dfaf551e591b108a3dcf58d80ae1b684191dfa4db0312de"
     },
     {
       "signature": "private.bind_job_authority_v1()",
@@ -628,5 +628,14 @@
       "knownEquivalentHistoricalDifferences": 4,
       "unreconciledDifferences": 0
     }
-  }
+  },
+  "latestFunctionUpdates": [
+    {
+      "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
+      "sha256": "4b8258c5a35315620dfaf551e591b108a3dcf58d80ae1b684191dfa4db0312de",
+      "capturedAt": "2026-10-29T17:31:21.372958+00:00",
+      "source": "Production pg_get_functiondef; budget migration 20261029163644, same prosrc MD5 b38c2e66bb9244df4d23fe6b8f66c706 in staging and production",
+      "migrationMd5": "fbe6f5ca3f5c0e105089b3f3dd8ad2a6"
+    }
+  ]
 }
