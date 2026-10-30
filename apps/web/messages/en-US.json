@@ -4713,7 +4713,8 @@
         "gapsTitle": "Questions from this review",
         "nextStep": "Follow the plan and its execution in the conversation. The work panel holds the result and the questions identified.",
         "footer": "You can add documents or clarify points in the conversation. To expand the analysis, we will adjust the plan before proceeding."
-      }
+      },
+      "days": "{count} days"
     },
     "companyDebt": {
       "back": "Back to workspace",
@@ -5711,7 +5712,8 @@
       "confirmedTitle": "Preliminary understanding confirmed",
       "confirmedBody": "The information list has been adapted to this company and objective.",
       "editInputs": "Edit company or transaction",
-      "continueToRequest": "View information list"
+      "continueToRequest": "View information list",
+      "termDays": "{count} days"
     },
     "governance": {
       "kicker": "SCOPE AND AUTHORIZATION",

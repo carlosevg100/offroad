@@ -36,6 +36,9 @@ export const preliminaryUnderstandingSchema = z.object({
     currency: z.string(),
     urgency: z.string().nullable(),
     requestedTermMonths: z.number().nullable(),
+    // Optional only for historical objects. New objects always carry an explicit days/null
+    // marker, so their month count has passed the worker's source-unit guard.
+    requestedTermDays: z.number().int().positive().nullable().optional(),
     consequenceIfNotExecuted: z.string().nullable(),
     operationSummary: z.string().min(1),
   }),

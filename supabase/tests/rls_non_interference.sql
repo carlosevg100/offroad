@@ -1,5 +1,15 @@
 -- Destructive-safe tenant isolation smoke test: every fixture is rolled back.
 
+-- The internal intake fix maps only its analytical journey. It must not relax the
+-- closed journey domain, turn the public wrapper into a definer, or add an API grant.
+do $$ declare f pg_proc; begin
+ select * into strict f from pg_proc where oid='private.prepare_work_document_intake_v1(uuid,text,jsonb)'::regprocedure;
+ if not f.prosecdef or f.proconfig is distinct from array['search_path=""'] then raise exception 'internal_intake_private_boundary_changed';end if;
+ if (select prosecdef from pg_proc where oid='public.prepare_work_document_intake_v1(uuid,text,jsonb)'::regprocedure) then raise exception 'internal_intake_public_definer';end if;
+ if has_function_privilege('anon',f.oid,'EXECUTE') or has_function_privilege('service_role',f.oid,'EXECUTE') then raise exception 'internal_intake_unexpected_grant';end if;
+ if (select pg_get_constraintdef(oid) from pg_constraint where conrelid='public.document_intake_sessions'::regclass and conname='document_intake_sessions_journey_check') like '%offroad%' then raise exception 'internal_intake_relaxed_journey_domain';end if;
+end $$;
+
 begin;
 \ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql

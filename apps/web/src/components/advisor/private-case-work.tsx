@@ -48,6 +48,11 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
   }, [locale, projectId, router, shouldStart]);
 
   const showingProcessing = preliminary.isProcessing || bootstrapping;
+  useEffect(() => {
+    if (!showingProcessing) return;
+    const timer = window.setInterval(() => {if (document.visibilityState === "visible") router.refresh();}, 5000);
+    return () => window.clearInterval(timer);
+  }, [router, showingProcessing]);
   const showingFailure = !current && !showingProcessing && (canRetry || bootstrapFailed);
 
   async function retryProcessing() {
@@ -115,7 +120,8 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
                       <p>{current.value.operation.operationSummary}</p>
                       <dl>
                         {current.value.operation.requestedAmount ? <><dt>{t("amount")}</dt><dd>{formatMoney(current.value.operation.requestedAmount, current.value.operation.currency, locale)}</dd></> : null}
-                        {current.value.operation.requestedTermMonths ? <><dt>{t("term")}</dt><dd>{t("months", {count: current.value.operation.requestedTermMonths})}</dd></> : null}
+                        {current.value.operation.requestedTermDays ? <><dt>{t("term")}</dt><dd>{t("days", {count: current.value.operation.requestedTermDays})}</dd></>
+                          : current.value.operation.requestedTermDays === null && current.value.operation.requestedTermMonths ? <><dt>{t("term")}</dt><dd>{t("months", {count: current.value.operation.requestedTermMonths})}</dd></> : null}
                       </dl>
                     </section>
                   </div>

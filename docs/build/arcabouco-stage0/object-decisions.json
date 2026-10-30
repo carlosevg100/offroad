@@ -23423,6 +23423,12 @@
           "line": 6,
           "anchor": "create or replace function private.decide_advisor_preliminary_v1(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261030173601_preliminary_term_unit.sql",
+          "line": 10,
+          "anchor": "CREATE OR REPLACE FUNCTION private.decide_advisor_preliminary_v1(p_project_id uuid, p_object_fingerprint text, p_decision text, p_correction text DEFAULT NULL::text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -44124,6 +44130,12 @@
           "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
           "line": 98,
           "anchor": "create function private.prepare_work_document_intake_v1(p_work_id uuid,p_locale text,p_plan jsonb default null) returns uuid",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261030171813_internal_document_intake.sql",
+          "line": 12,
+          "anchor": "create or replace function private.prepare_work_document_intake_v1(p_work_id uuid,p_locale text,p_plan jsonb default null) returns uuid",
           "mechanism": "direct_ddl"
         }
       ],
@@ -355289,6 +355301,20 @@
       "decision": "preservar",
       "stage": "entrada da organização interna de avaliação",
       "reason": "Organizações internas offroad entram pela membership/principal atuais sem inventar onboarding comercial; não altera capacidades, direitos documentais, aceites, grants ou o cadastro comercial incompleto."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261030171813_internal_document_intake.sql",
+      "decision": "preservar",
+      "stage": "sessão documental da organização interna de avaliação",
+      "reason": "Mapeia somente organization_type offroad para o percurso analítico institutional já existente. Conserva a constraint de percurso, membership, autorização do trabalho, aceite, ACL e todos os demais comandos da função. Regressão negativa e retomada no mesmo trabalho em internal_document_intake.sql."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261030173601_preliminary_term_unit.sql",
+      "decision": "preservar",
+      "stage": "unidade do prazo no entendimento preliminar",
+      "reason": "Impede copiar dias como meses para a memória da operação e recusa meses documentais sem unidade/trecho correspondente. Preserva meses informados explicitamente pela pessoa e demais autorizações. Regressão de confirmação em preliminary_term_unit.sql."
     }
   ],
   "staging_archive": [

@@ -1,4 +1,5 @@
 import type {AssessmentNativeRuntime} from "./assessment-native-runtime";
+import {documentTermEvidence} from "./document-term-evidence";
 import {buildCapitalMaterialCompilerBundle,validateCapitalMaterialCompilerBundle} from "./capital-material-production-adapter";
 import type {CapitalMaterialRuntime,MaterialDispatch} from "./capital-material-production-runtime";
 import {capitalMaterialCommitSchema,capitalMaterialTerminalSchema,type MaterialBundle,type MaterialCapture,type MaterialResearchInput} from "./capital-material-production-native";
@@ -668,6 +669,8 @@ Rules:
 - Never state that the operation is viable, affordable, financeable or correctly structured.
 - Never propose an instrument, amount, term, guarantee, covenant, price or lender.
 - Never infer missing financial figures. Turn material uncertainty into a focused open point.
+- Preserve the source's term unit. requestedTermDays is a day count; requestedTermMonths is a
+  month count. A historical field path ending in months does not override a verified days unit.
 - Read metric periods and bases before calling values inconsistent. A 7M, LTM, annual, budget or
   run-rate value is not a conflict with another period. sourceAnchor carries the underlying excerpt;
   if a normalized field path disagrees with that excerpt, preserve the excerpt's period and treat it
@@ -1602,7 +1605,8 @@ function buildPreliminaryUnderstanding(input: {
     : publicCandidate(input.candidates, "company.state") ?? input.narrative.geography;
   const requestedTermMonths = Number.isInteger(input.session.requested_term_months)
     ? Number(input.session.requested_term_months)
-    : Number(publicCandidate(input.candidates, "transaction.desired_term_months")) || null;
+    : input.documentOperation.requestedTermMonths;
+  const requestedTermDays = Number.isInteger(input.session.requested_term_months) ? null : input.documentOperation.requestedTermDays;
   const archetypeId = input.narrative.archetypeId
     ?? archetypeIdSchema.catch("other").parse(input.session.archetype);
   const archetypeLabels: Record<string, {pt: string; en: string}> = {
@@ -1650,6 +1654,7 @@ function buildPreliminaryUnderstanding(input: {
       currency,
       urgency: typeof input.session.capital_urgency === "string" ? input.session.capital_urgency : null,
       requestedTermMonths,
+      requestedTermDays,
       consequenceIfNotExecuted: typeof input.session.capital_consequence === "string"
         ? input.session.capital_consequence
         : null,
@@ -2588,6 +2593,8 @@ type ResolvedDocumentOperation = {
   currency: string;
   expansionAmount: string | undefined;
   refinancingAmount: string | undefined;
+  requestedTermDays: number | null;
+  requestedTermMonths: number | null;
 };
 
 type ResolvedDocumentCompany = {
@@ -2630,6 +2637,7 @@ function documentOperationEvidence(
   candidates: FactCandidate[],
   locale: "pt" | "en",
 ): ResolvedDocumentOperation {
+  const term = documentTermEvidence(candidates);
   const requestedAmount = numericString(publicCandidate(candidates, "transaction.requested_amount"));
   const expansionAmount = numericString(publicCandidate(candidates, "transaction.expansion_debt"));
   const refinancingAmount = numericString(
@@ -2670,6 +2678,8 @@ function documentOperationEvidence(
     currency,
     expansionAmount,
     refinancingAmount,
+    requestedTermDays: term.days,
+    requestedTermMonths: term.months,
   };
 }
 
