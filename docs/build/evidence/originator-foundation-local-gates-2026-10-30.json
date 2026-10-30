@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "originator-foundation-local-gates.v1",
+  "executedAt": "2026-10-30T12:27:21.338676+00:00",
+  "implementationCommit": "d8e72527b07c6c4740b2f7ef808b3d1fb3f2a4d8",
+  "baseCommit": "a1ce4a774bb5866d5f9dccfc87e964f4b64f7dc0",
+  "command": "pnpm check",
+  "exitCode": 0,
+  "stages": {
+    "lint": {
+      "passed": 44,
+      "total": 44
+    },
+    "typecheck": {
+      "passed": 44,
+      "total": 44
+    },
+    "test": {
+      "passed": 44,
+      "total": 44
+    },
+    "build": {
+      "passed": 44,
+      "total": 44
+    }
+  },
+  "selectedPackages": {
+    "financial-core": {
+      "files": 62,
+      "passed": 603
+    },
+    "financial-model": {
+      "files": 107,
+      "passed": 2215
+    },
+    "credit-playbook": {
+      "files": 66,
+      "passed": 545
+    },
+    "work-plan": {
+      "files": 24,
+      "passed": 834
+    },
+    "document-worker": {
+      "files": 179,
+      "passed": 2501,
+      "skipped": 1
+    },
+    "evals": {
+      "files": 33,
+      "passed": 298
+    },
+    "web": {
+      "files": 207,
+      "passed": 1687
+    }
+  },
+  "logSha256": "7e0f6079e5360f9cae64ea2958e3fb414ff4829eeb22fe24f1435c9d5553f653",
+  "publishedLocks": {
+    "checked": 3,
+    "unchanged": true,
+    "sourceAncestorsVerified": true
+  },
+  "providerCalls": 0,
+  "providerCostUsd": "0",
+  "scope": {
+    "cedentKitRouting": "tested locally against existing C09 workflow",
+    "newMethods": [
+      "prepare-originator-kit",
+      "prepare-originator-credit",
+      "prepare-originator-registry"
+    ],
+    "newMethodState": "candidate",
+    "founderApprovalRecorded": false,
+    "published": false,
+    "profilesRegistered": false,
+    "released": false,
+    "nativeModelExtractionValidated": false,
+    "newProductJourneyValidated": false,
+    "productionDeploymentValidated": false
+  },
+  "remainingGates": [
+    "exact-head CI including database and browser",
+    "production deployment for the C09 entry fix",
+    "source extraction, persistence, result page and update for new methods",
+    "independent review and professional content approval",
+    "publication, capture, profile, provenance and release",
+    "real-model native product journey"
+  ]
+}

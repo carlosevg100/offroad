@@ -1,0 +1,613 @@
+{
+  "synthetic": true,
+  "role": "oráculo de autoria, separado do futuro executor de produto",
+  "check_count": 57,
+  "checks": [
+    {
+      "name": "dre_2024",
+      "actual": "46080000",
+      "expected": "46080000",
+      "sources": [
+        "D03#dre",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "dre_2025",
+      "actual": "51840000",
+      "expected": "51840000",
+      "sources": [
+        "D03#dre",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "dre_2025-01/09",
+      "actual": "38016000",
+      "expected": "38016000",
+      "sources": [
+        "D03#dre",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "dre_2026-01/09",
+      "actual": "41472000",
+      "expected": "41472000",
+      "sources": [
+        "D03#dre",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "faturamento_9m",
+      "actual": "43200000",
+      "expected": "43200000",
+      "sources": [
+        "D05#mensal"
+      ]
+    },
+    {
+      "name": "abc_mesmo_universo",
+      "actual": "43200000",
+      "expected": "43200000",
+      "sources": [
+        "D05#abc"
+      ]
+    },
+    {
+      "name": "ltm_gross",
+      "actual": "57600000",
+      "expected": "57600000",
+      "sources": [
+        "D03#dre",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "ltm_net",
+      "actual": "55296000",
+      "expected": "55296000",
+      "sources": [
+        "D03#dre",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "ltm_ebitda",
+      "actual": "4440000",
+      "expected": "4440000",
+      "sources": [
+        "D03#dre",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "balanco_ativo",
+      "actual": "23850000",
+      "expected": "23850000",
+      "sources": [
+        "D18#balanco"
+      ]
+    },
+    {
+      "name": "balanco_fecha",
+      "actual": "23850000",
+      "expected": "23850000",
+      "sources": [
+        "D18#balanco"
+      ]
+    },
+    {
+      "name": "bancario_usado",
+      "actual": "9400000",
+      "expected": "9400000",
+      "sources": [
+        "D10#linhas",
+        "D19#saldos"
+      ]
+    },
+    {
+      "name": "limite_somado_como_divida",
+      "actual": "1800000",
+      "expected": "1800000",
+      "sources": [
+        "D10#linhas"
+      ]
+    },
+    {
+      "name": "divida_ajustada",
+      "actual": "11000000",
+      "expected": "11000000",
+      "sources": [
+        "D12#clausulas",
+        "D18#balanco"
+      ]
+    },
+    {
+      "name": "caixa_livre",
+      "actual": "1000000",
+      "expected": "1000000",
+      "sources": [
+        "D18#balanco"
+      ]
+    },
+    {
+      "name": "divida_liquida",
+      "actual": "10000000",
+      "expected": "10000000",
+      "sources": [
+        "D18#balanco"
+      ]
+    },
+    {
+      "name": "sensibilidade_ebitda_cancelamento",
+      "actual": "4040000",
+      "expected": "4040000",
+      "sources": [
+        "D08#onus",
+        "D18#dre"
+      ]
+    },
+    {
+      "name": "scr_antigo_idade",
+      "actual": "121",
+      "expected": "121",
+      "sources": [
+        "D11#saldos"
+      ]
+    },
+    {
+      "name": "scr_atual_idade",
+      "actual": "29",
+      "expected": "29",
+      "sources": [
+        "D19#saldos"
+      ]
+    },
+    {
+      "name": "linhas_brutas",
+      "actual": "19",
+      "expected": "19",
+      "sources": [
+        "D06#linhas"
+      ]
+    },
+    {
+      "name": "titulos_unicos",
+      "actual": "18",
+      "expected": "18",
+      "sources": [
+        "D06#linhas"
+      ]
+    },
+    {
+      "name": "soma_bruta_exportada",
+      "actual": "10500000",
+      "expected": "10500000",
+      "sources": [
+        "D06#linhas"
+      ]
+    },
+    {
+      "name": "carteira_unica",
+      "actual": "10000000",
+      "expected": "10000000",
+      "sources": [
+        "D06#linhas"
+      ]
+    },
+    {
+      "name": "duplicado",
+      "actual": "500000",
+      "expected": "500000",
+      "sources": [
+        "D06#linhas"
+      ]
+    },
+    {
+      "name": "grupo_maior",
+      "actual": "3000000",
+      "expected": "3000000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro"
+      ]
+    },
+    {
+      "name": "top5",
+      "actual": "7500000",
+      "expected": "7500000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro"
+      ]
+    },
+    {
+      "name": "vencido_original",
+      "actual": "700000",
+      "expected": "700000",
+      "sources": [
+        "D06#linhas",
+        "D09#eventos"
+      ]
+    },
+    {
+      "name": "vencido_atual",
+      "actual": "400000",
+      "expected": "400000",
+      "sources": [
+        "D06#linhas",
+        "D09#eventos"
+      ]
+    },
+    {
+      "name": "exclusao_cessao_anterior",
+      "actual": "3000000",
+      "expected": "3000000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro",
+        "D08#onus",
+        "D09#eventos",
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "exclusao_relacionada",
+      "actual": "700000",
+      "expected": "700000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro",
+        "D08#onus",
+        "D09#eventos",
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "exclusao_nota_cancelada",
+      "actual": "400000",
+      "expected": "400000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro",
+        "D08#onus",
+        "D09#eventos",
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "exclusao_atraso_original",
+      "actual": "300000",
+      "expected": "300000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro",
+        "D08#onus",
+        "D09#eventos",
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "exclusao_entrega_ausente",
+      "actual": "200000",
+      "expected": "200000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro",
+        "D08#onus",
+        "D09#eventos",
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "exclusao_concentracao",
+      "actual": "600000",
+      "expected": "600000",
+      "sources": [
+        "D06#linhas",
+        "D07#cadastro",
+        "D08#onus",
+        "D09#eventos",
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "elegivel_antes_concentracao",
+      "actual": "5400000",
+      "expected": "5400000",
+      "sources": [
+        "D06#linhas",
+        "D08#onus"
+      ]
+    },
+    {
+      "name": "elegivel_final",
+      "actual": "4800000",
+      "expected": "4800000",
+      "sources": [
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "reconciliacao_exclusoes",
+      "actual": "10000000",
+      "expected": "10000000",
+      "sources": [
+        "D06#linhas",
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "ponte_carteira",
+      "actual": "10000000",
+      "expected": "10000000",
+      "sources": [
+        "D09#ponte"
+      ]
+    },
+    {
+      "name": "ponte_pdd",
+      "actual": "650000",
+      "expected": "650000",
+      "sources": [
+        "D09#pdd"
+      ]
+    },
+    {
+      "name": "pontos_classe",
+      "actual": "3",
+      "expected": "3",
+      "sources": [
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "limite_total",
+      "actual": "3000000",
+      "expected": "3000000",
+      "sources": [
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "nova_exposicao",
+      "actual": "2500000",
+      "expected": "2500000",
+      "sources": [
+        "D13#regras",
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "coob_15",
+      "actual": "375000.00",
+      "expected": "375000",
+      "sources": [
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "minimo_120_choque_antecipado",
+      "actual": "825000.00",
+      "expected": "825000",
+      "sources": [
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "folga_pior_corte_120",
+      "actual": "25000.00",
+      "expected": "25000",
+      "sources": [
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "caixa_d120",
+      "actual": "1025000.00",
+      "expected": "1025000",
+      "sources": [
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "caixa_d130",
+      "actual": "625000.00",
+      "expected": "625000",
+      "sources": [
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "deficit_d130",
+      "actual": "175000.00",
+      "expected": "175000",
+      "sources": [
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "minimo_severo_120",
+      "actual": "325000.00",
+      "expected": "325000",
+      "sources": [
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "deficit_severo_120",
+      "actual": "475000.00",
+      "expected": "475000",
+      "sources": [
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "pedido_integral_viola_caixa",
+      "actual": "50000.00",
+      "expected": "50000",
+      "sources": [
+        "D13#regras",
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "caixa_reduzido_100mil",
+      "actual": "2.0000E+6",
+      "expected": "2000000",
+      "sources": [
+        "D13#regras",
+        "D14#fluxo"
+      ]
+    },
+    {
+      "name": "limite_ja_ocupado",
+      "actual": "0",
+      "expected": "0",
+      "sources": [
+        "D13#regras"
+      ]
+    },
+    {
+      "name": "participacao_ana",
+      "actual": "0.60",
+      "expected": ".6",
+      "sources": [
+        "D15#contrato",
+        "D20#beta"
+      ]
+    },
+    {
+      "name": "participacao_bruno",
+      "actual": "0.3000",
+      "expected": ".3",
+      "sources": [
+        "D15#contrato",
+        "D20#beta"
+      ]
+    },
+    {
+      "name": "participacao_clara",
+      "actual": "0.1000",
+      "expected": ".1",
+      "sources": [
+        "D15#contrato",
+        "D20#beta"
+      ]
+    },
+    {
+      "name": "participacoes_fecham",
+      "actual": "1.0000",
+      "expected": "1",
+      "sources": [
+        "D20#beta"
+      ]
+    }
+  ],
+  "metrics": {
+    "leverage": "2.252252252252252252252252252252252252252",
+    "aging_ratio": "0.07",
+    "largest_group_ratio": "0.3",
+    "grade": "B",
+    "liquidity_capacity_120": "2666666.666666666666666666666666666666667"
+  },
+  "accepted_titles": [
+    {
+      "title": "A02",
+      "face": "800000"
+    },
+    {
+      "title": "E02",
+      "face": "400000"
+    },
+    {
+      "title": "A03",
+      "face": "800000"
+    },
+    {
+      "title": "B02",
+      "face": "800000"
+    },
+    {
+      "title": "F02",
+      "face": "400000"
+    },
+    {
+      "title": "C02",
+      "face": "700000"
+    },
+    {
+      "title": "G02",
+      "face": "400000"
+    },
+    {
+      "title": "H01",
+      "face": "500000"
+    }
+  ],
+  "exclusive_exclusions": [
+    {
+      "title": "A01",
+      "reason": "cessao_anterior",
+      "face": "800000"
+    },
+    {
+      "title": "B01",
+      "reason": "cessao_anterior",
+      "face": "700000"
+    },
+    {
+      "title": "C01",
+      "reason": "cessao_anterior",
+      "face": "500000"
+    },
+    {
+      "title": "D01",
+      "reason": "cessao_anterior",
+      "face": "500000"
+    },
+    {
+      "title": "D02",
+      "reason": "cessao_anterior",
+      "face": "500000"
+    },
+    {
+      "title": "E01",
+      "reason": "nota_cancelada",
+      "face": "400000"
+    },
+    {
+      "title": "F01",
+      "reason": "atraso_original",
+      "face": "300000"
+    },
+    {
+      "title": "G01",
+      "reason": "entrega_ausente",
+      "face": "200000"
+    },
+    {
+      "title": "I01",
+      "reason": "relacionada",
+      "face": "700000"
+    },
+    {
+      "title": "A04",
+      "reason": "concentracao",
+      "face": "600000"
+    }
+  ],
+  "expected_decisions": {
+    "R1_initial": "análise preliminar possível; faltam posição contábil e SCR recentes para limite",
+    "R1_financial_update": "base financeira suficiente para parecer condicionado; jurídico e lote atual pendentes",
+    "R2_base": "recomendar aprovação condicionada de R$ 3 milhões totais, R$ 2,5 milhões incrementais; comitê decide",
+    "R2_130_days": "recusar prorrogação nas mesmas condições; fora da política e com déficit",
+    "R2_severe": "choque rompe piso; explicitar R$ 475 mil no pior corte",
+    "R2_no_policy": "sem classe ou limite formal",
+    "R2_scr_default": "recomendar recusa segundo veto explícito da política",
+    "R3_initial": "pendências materiais de cadastro e poderes",
+    "R3_updated": "dossiê documental pronto para decisão do responsável; não há decisão de cadastro nem crédito"
+  }
+}

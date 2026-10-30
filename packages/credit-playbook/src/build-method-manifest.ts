@@ -72,6 +72,9 @@ export function buildMethodManifest(repositoryRoot: string) {
     {path: "packages/financial-model/contracts/operating-projection-evidence.json", exportName: "calculateOperatingProjectionEvidence"},
     {path: "packages/financial-model/contracts/operating-projection-packet.json", exportName: "prepareOperatingProjectionPacket"},
     {path: "packages/financial-model/contracts/document-folder-inventory-packet.json", exportName: "prepareDocumentFolderInventoryPacket"},
+    {path: "packages/financial-model/contracts/originator-kit-packet.json", exportName: "prepareOriginatorKitPacket", generator: "packages/financial-model/scripts/build-originator-authoring.ts"},
+    {path: "packages/financial-model/contracts/originator-credit-packet.json", exportName: "prepareOriginatorCreditPacket", generator: "packages/financial-model/scripts/build-originator-authoring.ts"},
+    {path: "packages/financial-model/contracts/originator-registry-packet.json", exportName: "prepareOriginatorRegistryPacket", generator: "packages/financial-model/scripts/build-originator-authoring.ts"},
     {path: "packages/financial-model/contracts/received-proposal-evidence.json", exportName: "calculateReceivedProposalEvidence"},
     {path: "packages/financial-model/contracts/received-proposal-packet.json", exportName: "prepareReceivedProposalPacket"},
     {path: "packages/financial-model/contracts/capital-structure-paths-packet.json", exportName: "prepareCapitalPathsPacket"},
@@ -89,7 +92,7 @@ export function buildMethodManifest(repositoryRoot: string) {
       inputContractHash: methodContentHash(methodDataContractSchema.parse(contracts.inputs)),
       outputContractHash: methodContentHash(methodDataContractSchema.parse(contracts.outputs)),
       sources: [...closure("@offroad/financial-model"), registration.path,
-        "packages/financial-model/scripts/generate-capital-contracts.mjs"].map(source)};
+        registration.generator ?? "packages/financial-model/scripts/generate-capital-contracts.mjs"].map(source)};
   });
   // Each component declares the receipts it relies on (deterministic runs, independent reviews);
   // their bytes are pinned here. Hashes prove identity, never review or approval.

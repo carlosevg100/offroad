@@ -1,0 +1,266 @@
+{
+  "schemaVersion": "originator-native-parser-receipt.v1",
+  "synthetic": true,
+  "executedAt": "2026-10-30T11:32:23.967Z",
+  "manifestSha256": "bfc1d2952b427b209a665e5618439fd2aa7f78b540d9fc29814f75a6ae054b73",
+  "files": [
+    {
+      "fileName": "01-pedido.pdf",
+      "sha256": "d5ad2f1658f485b39d9040c44134b979078c757f46b16e296dbebdbceeec59bc",
+      "documentId": "7d45e6c4-0d55-44f5-afec-e8b1f76d593c",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1126,
+      "warnings": [],
+      "layerFile": "7d45e6c4-0d55-44f5-afec-e8b1f76d593c.layer.json"
+    },
+    {
+      "fileName": "02-df-2025-minuta.pdf",
+      "sha256": "0e15f6e9e546fddb4bfe2b242b0db555f6be9f02fc0980ee7cff6e537d9fcdc0",
+      "documentId": "8a43daa5-c6e0-4d16-a682-37f312ada854",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 652,
+      "warnings": [],
+      "layerFile": "8a43daa5-c6e0-4d16-a682-37f312ada854.layer.json"
+    },
+    {
+      "fileName": "03-df-2024-2025-assinadas.pdf",
+      "sha256": "1ae8ed35fd33b7e205a3a7bd33c68a277886b5178cccadbe889e0a0fbf15e49c",
+      "documentId": "6caf128f-7d0a-445c-acd4-ea0544350429",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1381,
+      "warnings": [],
+      "layerFile": "6caf128f-7d0a-445c-acd4-ea0544350429.layer.json"
+    },
+    {
+      "fileName": "04-balancete-junho.pdf",
+      "sha256": "e67539c04e23f09c58ed507d32206ce27f7be9d801472481fef72fdb308d5c00",
+      "documentId": "030ef295-b361-4f1e-a416-d92251968ded",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 674,
+      "warnings": [],
+      "layerFile": "030ef295-b361-4f1e-a416-d92251968ded.layer.json"
+    },
+    {
+      "fileName": "05-faturamento-abc.pdf",
+      "sha256": "afa192ecfe5c97ceb4539efb80b1765102329e28d8f698ddf970c4b84afaf190",
+      "documentId": "955572aa-d4b5-48bc-a105-fce3042c87a3",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1050,
+      "warnings": [],
+      "layerFile": "955572aa-d4b5-48bc-a105-fce3042c87a3.layer.json"
+    },
+    {
+      "fileName": "06-titulos.pdf",
+      "sha256": "2cb1aabbcc22bfc68ffa9b1736796c135e390bee8a457bc093846f74ab7b0397",
+      "documentId": "188236a1-3459-417a-a823-eaf69b769e13",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 2,
+      "characters": 2097,
+      "warnings": [],
+      "layerFile": "188236a1-3459-417a-a823-eaf69b769e13.layer.json"
+    },
+    {
+      "fileName": "07-sacados.pdf",
+      "sha256": "a5206bfda0923b18886cc9730e412cd4bd293b6dd6fda693619138ea0a7d9775",
+      "documentId": "f97b8aa8-b288-45af-a3fe-17eb8c92646f",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1300,
+      "warnings": [],
+      "layerFile": "f97b8aa8-b288-45af-a3fe-17eb8c92646f.layer.json"
+    },
+    {
+      "fileName": "08-lastros-onus.pdf",
+      "sha256": "b4ab047dca82950fb980060e360c7f7a190d1cc1481c8b60014a661c6e60a5c8",
+      "documentId": "47dbd78a-2084-445d-a56c-031a1f14c9b6",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1223,
+      "warnings": [],
+      "layerFile": "47dbd78a-2084-445d-a56c-031a1f14c9b6.layer.json"
+    },
+    {
+      "fileName": "09-eventos.pdf",
+      "sha256": "7f8ff82f971705339c0cdd96120c98df847e7de8d6da20e3ce913a3b64400552",
+      "documentId": "8796f555-91fb-41a0-ac96-1f451b395f58",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 2,
+      "characters": 1600,
+      "warnings": [],
+      "layerFile": "8796f555-91fb-41a0-ac96-1f451b395f58.layer.json"
+    },
+    {
+      "fileName": "10-posicao-bancaria.pdf",
+      "sha256": "75c93295f4551c4778ee02a0811ca03e400b6759de1d3ae621fdad5827dcc321",
+      "documentId": "6a5da5cb-a117-4486-a384-97eb07668ece",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 883,
+      "warnings": [],
+      "layerFile": "6a5da5cb-a117-4486-a384-97eb07668ece.layer.json"
+    },
+    {
+      "fileName": "11-scr-junho.pdf",
+      "sha256": "3f8d1926cc16885663267ceb0f375ef4520bcdd430e04279b705cb3c081fe93c",
+      "documentId": "6570f1d6-a08a-4d99-a88f-ea265a6fa420",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 669,
+      "warnings": [],
+      "layerFile": "6570f1d6-a08a-4d99-a88f-ea265a6fa420.layer.json"
+    },
+    {
+      "fileName": "11b-bacen-atual-final.pdf",
+      "sha256": "3f8d1926cc16885663267ceb0f375ef4520bcdd430e04279b705cb3c081fe93c",
+      "documentId": "6570f1d6-a08a-4d99-a88f-ea265a6fa420",
+      "stage": "inicial",
+      "duplicateOf": "6570f1d6-a08a-4d99-a88f-ea265a6fa420",
+      "pages": 1,
+      "characters": 669,
+      "warnings": [],
+      "layerFile": "6570f1d6-a08a-4d99-a88f-ea265a6fa420.layer.json"
+    },
+    {
+      "fileName": "12-contratos-cessoes.pdf",
+      "sha256": "51abc1d092b26b9994114046779bee7a7ba326a12f04de0470508006d7fdb5d9",
+      "documentId": "177f2c01-4742-4cac-ae73-df7bd4bd63b0",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1162,
+      "warnings": [],
+      "layerFile": "177f2c01-4742-4cac-ae73-df7bd4bd63b0.layer.json"
+    },
+    {
+      "fileName": "13-politica-fundo.pdf",
+      "sha256": "d5a348ccefdccb2830be8e433ed4a887431aadcc638a93e3be9785aeca62ec10",
+      "documentId": "ab5685f1-07e7-495b-aa23-d0e5243f585c",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 2,
+      "characters": 3416,
+      "warnings": [],
+      "layerFile": "ab5685f1-07e7-495b-aa23-d0e5243f585c.layer.json"
+    },
+    {
+      "fileName": "14-fluxo-gerencial.pdf",
+      "sha256": "96b7e35a0d909698cf702dceb8cb63f11053e6f21e65a08ced30561feb9cd911",
+      "documentId": "8f0a27ae-c3b5-4394-a711-3d433b8988ab",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 2,
+      "characters": 2545,
+      "warnings": [],
+      "layerFile": "8f0a27ae-c3b5-4394-a711-3d433b8988ab.layer.json"
+    },
+    {
+      "fileName": "15-societario-antigo.pdf",
+      "sha256": "f9d1c2630a4db07bb95e8e78da59944e338c7c1c912568dfd27d2e6befec862d",
+      "documentId": "bc543f70-b2a3-4e90-ae80-56f6e716fa06",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 758,
+      "warnings": [],
+      "layerFile": "bc543f70-b2a3-4e90-ae80-56f6e716fa06.layer.json"
+    },
+    {
+      "fileName": "16-consultas-iniciais.pdf",
+      "sha256": "f6e644e5de86918d3271bb37dc51bc242e0a627c7837641962786c8b394e0a77",
+      "documentId": "fc7e928b-2a8e-4715-aef6-06b0ccbbae13",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1545,
+      "warnings": [],
+      "layerFile": "fc7e928b-2a8e-4715-aef6-06b0ccbbae13.layer.json"
+    },
+    {
+      "fileName": "17-beta-incompleta.pdf",
+      "sha256": "5939f2d91f10b197ff5583e3a68e157cd977bfc80e6a4702bf7390ef897bfcc1",
+      "documentId": "3391336e-8d17-4569-abd0-a1618b3e1e09",
+      "stage": "inicial",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 693,
+      "warnings": [],
+      "layerFile": "3391336e-8d17-4569-abd0-a1618b3e1e09.layer.json"
+    },
+    {
+      "fileName": "18-balancete-setembro.pdf",
+      "sha256": "8d3e3866eb0ecef1c02307d24b727d4b8789330e8b381519620c314847104e1c",
+      "documentId": "1394d72c-53d6-4b8e-ada1-94e7e4ec551d",
+      "stage": "complemento_financeiro",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1486,
+      "warnings": [],
+      "layerFile": "1394d72c-53d6-4b8e-ada1-94e7e4ec551d.layer.json"
+    },
+    {
+      "fileName": "19-scr-setembro.pdf",
+      "sha256": "ef11c5d1d75a6b8de2ed0eb0f5d2620aca4dcd27d03de16a428ef24a96843458",
+      "documentId": "1672a723-e904-4c61-a0b9-e84e298fee5c",
+      "stage": "complemento_financeiro",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 996,
+      "warnings": [],
+      "layerFile": "1672a723-e904-4c61-a0b9-e84e298fee5c.layer.json"
+    },
+    {
+      "fileName": "20-poderes-atuais.pdf",
+      "sha256": "45af4b87713325fec7d2d276175cf351b9dc00f29d6b61fdfe28bc8967da79da",
+      "documentId": "2f532da1-7c64-437c-ad67-8078413b5532",
+      "stage": "complemento_juridico",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1082,
+      "warnings": [],
+      "layerFile": "2f532da1-7c64-437c-ad67-8078413b5532.layer.json"
+    },
+    {
+      "fileName": "21-complemento-cadastro.pdf",
+      "sha256": "7e40e22b05d744cc357001df914dc3d3638a64e067900b7373034f310a2b1ba5",
+      "documentId": "79d92b07-2949-4e43-aa33-ea84169815de",
+      "stage": "complemento_juridico",
+      "duplicateOf": null,
+      "pages": 1,
+      "characters": 1687,
+      "warnings": [],
+      "layerFile": "79d92b07-2949-4e43-aa33-ea84169815de.layer.json"
+    }
+  ],
+  "totals": {
+    "arrivals": 22,
+    "uniqueFiles": 21,
+    "pages": 26,
+    "characters": 28694
+  },
+  "acceptance": {
+    "nativeParserExecuted": true,
+    "modelExecuted": false,
+    "uploadExecuted": false,
+    "extractionMeasured": false,
+    "productJourneyExecuted": false,
+    "productionReady": false
+  },
+  "providerCalls": 0,
+  "providerCostUsd": "0"
+}

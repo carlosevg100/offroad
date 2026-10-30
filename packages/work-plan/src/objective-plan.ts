@@ -7,6 +7,7 @@ import {documentFolderFichaExceptions, documentFolderRoute, organizeOnly} from "
 import {financingPathsCues, financingPathsRoute} from "./financing-paths-route";
 import {asksForLote4Action, type Lote4RequestKind} from "./lote4-request";
 import {receivedProposalRoute} from "./received-proposal-route";
+import {originatorIntakeRoute} from "./originator-intake-route";
 import {
   capitalProjectJobSchema,
   compileTaskGraph,
@@ -629,7 +630,7 @@ export function canonicalObjectiveRecipeTargetTaskIds(plan: ObjectiveToPlanDecis
  * Lote 4 runs after them all, each method only from the kinds it declares, with its ficha exceptions enumerated. */
 function inferObjectiveKind(message: string, hasAttachments: boolean): WorkspaceObjectiveKind {
   const text = financialRoutingText(message);
-  return lote4Route(text, lote3Route(text, inferExistingObjectiveKind(message, hasAttachments)));
+  return originatorIntakeRoute(text, lote4Route(text, lote3Route(text, inferExistingObjectiveKind(message, hasAttachments))));
 }
 
 /** The lote 4 ficha phrasings that take a specific kind origin/main gives them, each the whole ficha construction:
