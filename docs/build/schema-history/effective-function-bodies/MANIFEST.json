@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-10-05T18:37:54Z",
-  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten; lote 4 bridge: private.bind_job_authority_v1() and private.worker_fail_job() identical to live production after the lote 4 migrations through 20261029000608 (folder reading waits)",
+  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten; lote 4 bridge: private.bind_job_authority_v1() and private.worker_fail_job() identical to live production after the lote 4 migrations through 20261029000608 (folder reading waits); internal workspace entry: private.get_workspace_bootstrap() matches live production pg_get_functiondef after 20261030135936, captured 2026-10-30T14:21:12Z, 3024 bytes, sha256 ecce59b77d13010ac1cb60ae37c31fb8cae82ed537695109b7100e4f18d4b267",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -155,7 +155,7 @@
     {
       "signature": "private.get_workspace_bootstrap()",
       "file": "private.get_workspace_bootstrap().sql",
-      "sha256": "c5b904887fdb2b4958479fa5363b8c0ef2da60206c5b88a498bb2011cc67d7eb"
+      "sha256": "ecce59b77d13010ac1cb60ae37c31fb8cae82ed537695109b7100e4f18d4b267"
     },
     {
       "signature": "private.grant_resource_access_v1(uuid,uuid,text,timestamptz)",

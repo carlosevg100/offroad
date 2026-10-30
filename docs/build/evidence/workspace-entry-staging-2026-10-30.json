@@ -41,6 +41,20 @@
     "browserObserved": "Correct evaluation workspace and new chat composer; no signup redirect",
     "browserUser": "Existing founder session",
     "membershipChanged": false,
-    "legalAcceptanceCreated": false
-  }
+    "legalAcceptanceCreated": false,
+    "functionBodySha256": "ecce59b77d13010ac1cb60ae37c31fb8cae82ed537695109b7100e4f18d4b267"
+  },
+  "effectiveSnapshotUpdatedFromLiveHash": true,
+  "ciReconciliations": [
+    {
+      "run": 41066782806,
+      "issue": "migration journal and repository inventory absent",
+      "fixed": "Live production journal, migration stamp and reviewed migration entry"
+    },
+    {
+      "run": 41070279840,
+      "issue": "Effective function body snapshot retained previous predicate",
+      "fixed": "3024-byte snapshot matches live production SHA-256; offline coverage passes for 123 functions"
+    }
+  ]
 }
