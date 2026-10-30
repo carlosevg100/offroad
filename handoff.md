@@ -1,3 +1,9 @@
+## 2026-10-30: entrada na organização interna de avaliação
+
+A navegação real pelo Chrome, com a identidade do fundador já autenticada, listou a organização de avaliação e desviou sua entrada para `signup?error=session`. O bootstrap exigia onboarding comercial de uma organização interna `offroad`, que não tem esse percurso. A nova migração trata esse tipo interno como workspace pronto, preservando o resolvedor de membership/principal e todas as capacidades e permissões existentes. Não muda cadastro incompleto de companhia/assessor, não cria aceite e não publica método. A escolha de organização recarrega o documento para não reutilizar a interface do contexto anterior.
+
+Staging aplicou `20261030134507_internal_workspace_entry`. A suíte `explicit_workspace_context.sql`, com identidades sintéticas e rollback, passou com entrada interna, ausência de onboarding inventado, capacidades preservadas e negativas para membro suspenso, pessoa externa e criação pública de organização interna. O E2E passa a trocar organizações pelo seletor real, nos dois sentidos. `pnpm check` passou nas quatro etapas, 44/44 tarefas em cada uma; tipos regenerados sem mudança de contrato, zero lints de segurança em staging, corpo e ACL conferidos. Recibo em `docs/build/evidence/workspace-entry-staging-2026-10-30.json`. CI, migração de produção e verificação da tela estão pendentes. O trabalho de leitura de R1/R2/R3 está preservado em `feat/fidc-originator-conversation`, commit local `65df84eb`; não foi publicado.
+
 ## 2026-10-30: percurso do originador, candidatos R1/R2/R3
 
 A branch `feat/fidc-originator-execution`, sobre `a1ce4a774bb5`, corrige pedidos dirigidos de organização e conferência do kit recebido do cedente para o fluxo C09 já liberado. A seleção do worker é testada; recusa, fala citada e outro objeto não abrem esse fluxo. Não há liberação de R1, R2 ou R3 por esta alteração.

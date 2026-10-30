@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "offroad-verification.v1",
+  "scope": "Internal workspace entry and context chooser",
+  "staging": {
+    "projectId": "gjkkjtbfnssdsbmlhmwk",
+    "migrationVersion": "20261030134507",
+    "sqlTest": "explicit_workspace_context: PASS",
+    "securityLints": 0,
+    "functionBodyMd5": "dcd9b6ad2456d63d94f55740e18c094a",
+    "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+    "syntheticTestRollback": true
+  },
+  "productionBefore": {
+    "functionBodyMd5": "bc0918795e47da94be2ff52d3c402dae",
+    "expectedPatchedBodyMd5": "dcd9b6ad2456d63d94f55740e18c094a",
+    "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+  },
+  "types": {
+    "generatedFromProduction": true,
+    "unchangedIgnoringTerminalNewlines": true
+  },
+  "localQuality": {
+    "command": "pnpm check",
+    "log": "/tmp/offroad-workspace-entry-check-v2-20261030.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
+  },
+  "ci": "pending",
+  "productionMigrationApplied": false,
+  "productionBrowserVerified": false,
+  "newProviderCalls": 0
+}

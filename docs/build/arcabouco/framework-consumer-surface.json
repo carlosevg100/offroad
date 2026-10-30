@@ -1498,17 +1498,19 @@
     },
     {
       "path": "apps/web/src/app/[locale]/workspaces/page.tsx",
-      "sha256": "d94cb7a85fa2e357f5bf19bb80470404271cd39ccc2dcf2a043df98a65a47489",
+      "sha256": "a7ac28320673a6fc08f0f64d411cfcd3c8c1a648c23019133276aa88b8c5b3a2",
       "entrypoint": false,
       "rpcs": [
         "list_my_workspace_invites_v1",
         "list_my_workspaces_v1"
       ],
       "decision": "preserve governed consumer",
-      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "authority": "Existing active workspace membership and principal checked by SQL. Choosing a workspace reloads the document to discard the previous context's router cache; no membership, capability, legal acceptance or source right is conferred.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
-        "apps/web/src/lib/auth/workspace-context.test.ts"
+        "apps/web/src/lib/auth/workspace-context.test.ts",
+        "apps/web/e2e/workspace-context.spec.ts",
+        "supabase/tests/explicit_workspace_context.sql"
       ]
     },
     {
