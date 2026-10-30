@@ -95,5 +95,24 @@ select pg_temp.denied($q$insert into public.user_workspace_preferences(organizat
 select set_config('request.jwt.claim.sub','',true);
 select pg_temp.denied($q$select public.initialize_workspace_v1('Synthetic anonymous','pt-BR')$q$,'42501');
 reset role;
+-- An internal organization has no commercial onboarding progress. Its existing active
+-- membership can enter, without acquiring capabilities, acceptances or another member's rights.
+update public.organizations set organization_type='offroad' where id=current_setting('test.second')::uuid;
+select set_config('request.headers',jsonb_build_object('x-offroad-workspace',current_setting('test.second'))::text,true);
+select set_config('request.jwt.claim.sub','a2200000-0000-4000-8000-000000000001',true);
+set local role authenticated;
+do $$ declare bootstrap jsonb; begin
+ bootstrap:=public.get_workspace_bootstrap();
+ if bootstrap->>'workspace_ready'<>'true' or bootstrap#>>'{organization,id}'<>current_setting('test.second') then raise exception 'Internal workspace forced into missing commercial onboarding';end if;
+ if bootstrap->'onboarding'<>'null'::jsonb then raise exception 'Internal bootstrap invented onboarding';end if;
+ if bootstrap#>>'{organization,capabilities,mandate_management}'<>'false' then raise exception 'Internal bootstrap expanded a capability';end if;
+ if exists(select 1 from public.organization_legal_acceptances where organization_id=current_setting('test.second')::uuid) then raise exception 'Internal bootstrap created a legal acceptance';end if;
+end $$;
+select pg_temp.denied($q$select public.create_organization_with_owner_v1('offroad','Synthetic unauthorized internal workspace')$q$,'22023');
+select set_config('request.jwt.claim.sub','a2200000-0000-4000-8000-000000000002',true);
+select pg_temp.denied($q$select public.get_workspace_bootstrap()$q$,'42501');
+select set_config('request.jwt.claim.sub','a2200000-0000-4000-8000-000000000003',true);
+select pg_temp.denied($q$select public.get_workspace_bootstrap()$q$,'42501');
+reset role;
 select 'explicit_workspace_context: PASS' result;
 rollback;

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 import {z} from "zod";
 import {requireUser} from "@/lib/auth/workspace";
@@ -20,7 +19,8 @@ export default async function WorkspacesPage({params}: {params: Promise<{locale:
   return <main className="application-content">
     <h1>{t("title")}</h1><p>{t("description")}</p>
     {choices.length ? <ul>{choices.map((workspace) => <li key={workspace.id}>
-      <Link href={`/${locale}/app?workspace=${workspace.id}`}>{workspace.name}</Link>
+      {/* Changing the authorization context must discard the previous workspace's router cache. */}
+      <a href={`/${locale}/app?workspace=${workspace.id}`}>{workspace.name}</a>
     </li>)}</ul> : <p>{t("empty")}</p>}
     {invitations.length > 0 && <section><h2>{t("invitations")}</h2>{invitations.map(invite => <form key={invite.id} action={acceptInvitation.bind(null,locale)}>
       <input type="hidden" name="invite" value={invite.id}/><p>{invite.organization_name}</p><button type="submit">{t("accept")}</button>

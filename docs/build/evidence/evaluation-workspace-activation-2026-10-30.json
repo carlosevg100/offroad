@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "offroad-operator-configuration.v1",
+  "recordedAt": "2026-10-30T14:15:22.543613+00:00",
+  "organizationId": "c3b2edda-c89c-4290-aeb0-d150fd917dc1",
+  "organizationName": "Offroad | Avaliação governada de modelos",
+  "organizationType": "offroad",
+  "purpose": "Native synthetic product evaluation authorized by the founder in this task",
+  "performedThrough": "Supabase administrative connection, without auth impersonation",
+  "before": {
+    "capabilityGrants": []
+  },
+  "change": {
+    "capability": "own_analysis",
+    "enabled": true,
+    "basis": "explicit_administration",
+    "revision": 1,
+    "grantedBy": null
+  },
+  "guards": [
+    "exact existing evaluation organization and internal type",
+    "active verified founder owner and unrevoked principal",
+    "only absent own_analysis grant; never override an explicit denial",
+    "no membership change"
+  ],
+  "verifiedAfter": {
+    "own_analysis": true,
+    "origination_representation": false,
+    "external_disclosure": false,
+    "legal_acceptances": 0
+  },
+  "legalAcceptancePendingHumanConfirmation": true,
+  "newProviderCalls": 0,
+  "nativeUploadExecuted": false,
+  "productionReady": false
+}

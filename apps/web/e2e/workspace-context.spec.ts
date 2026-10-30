@@ -53,6 +53,17 @@ test("personal registration needs no company and two tabs retain explicit contex
   await other.goto(`${base}/pt-BR/app?workspace=${secondId}`);
   await expect(other.locator(".workspace-context-navigation")).toContainText(`Instituição sintética ${id}`);
   await expect(page.locator(".workspace-context-navigation")).not.toContainText(`Instituição sintética ${id}`);
+  // Exercise the actual chooser after the first workspace's layout has entered the router cache.
+  await page.locator(".workspace-context-navigation a").first().click();
+  await expect(page).toHaveURL(/\/pt-BR\/workspaces$/);
+  await page.getByRole("link", {name: `Instituição sintética ${id}`, exact: true}).click();
+  await expect(page).toHaveURL(new RegExp(`workspace=${secondId}`));
+  await expect(page.locator(".workspace-context-navigation")).toContainText(`Instituição sintética ${id}`);
+  await expect(page.locator(".advisor-composer--start")).toBeVisible();
+  await page.locator(".workspace-context-navigation a").first().click();
+  await page.getByRole("link", {name: "QA contexto pessoal", exact: true}).click();
+  await expect(page).toHaveURL(new RegExp(`workspace=${personal.organization_id}`));
+  await expect(page.locator(".workspace-context-navigation")).not.toContainText(`Instituição sintética ${id}`);
   await context.addCookies([{name: "offroad-workspace", value: secondId, url: base}]);
   await page.reload();
   await expect(page).toHaveURL(new RegExp(`workspace=${personal.organization_id}`));

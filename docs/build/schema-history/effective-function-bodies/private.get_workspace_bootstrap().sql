@@ -66,7 +66,7 @@ begin
       'answers', progress_record.answers,
       'completed_at', progress_record.completed_at
     ) end,
-    'workspace_ready', organization_record.organization_type in ('personal','institutional') or progress_record.completed_at is not null
+    'workspace_ready', organization_record.organization_type in ('personal','institutional','offroad') or progress_record.completed_at is not null
   );
 end;
 $function$
