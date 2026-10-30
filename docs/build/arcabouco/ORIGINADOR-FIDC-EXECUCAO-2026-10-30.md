@@ -15,11 +15,11 @@ O fundador determinou a conclusão do percurso do originador depois de a apresen
 - Revisão de crédito com trechos, versões, unidade, escala, fundo e reconciliações; 20 testes. Revisão documental de cadastro: 14 testes. Leitura de tokens: quatro testes.
 - Base confirmada, compositor, contratos, fingerprint, pacotes dos três tipos e atualizações de pedido: 14 testes; autoria profissional e contratos: três testes.
 - Fonte citada contra camada autorizada, versão, hash e trecho: nove testes do worker. A guarda é auxiliar interna, ainda sem consumidor novo exposto.
-- Entrada do kit na conversa: seis testes do worker; o pedido passa ao C09 existente. O pacote work-plan havia passado 834 testes antes da ampliação final do verbo de conferência; deve repetir.
+- Entrada do kit na conversa: seis testes do worker; o pedido passa ao C09 existente. O pacote work-plan passou novamente 834 testes na revisão consolidada.
 - Três procedimentos candidatos e contratos canônicos gerados. Catálogo de autoria registra os executores, sem TaskSpec, sem publicação, sem perfil nem liberação.
 - Parser efetivamente rodado nos PDFs sintéticos: 22 chegadas, 21 arquivos únicos, 26 páginas, 28.694 caracteres. Recibo separado, sem modelo, upload ou aprovação de extração. Nenhum custo novo de provedor.
 
-Os totais acima são testes focados, não ensaio com modelo ou aprovação dos métodos. A verificação global precisa fechar na revisão final. Sua primeira execução identificou metadados incompletos de autoria e foi interrompida; corrigidos, o pacote credit-playbook passou 66 arquivos e 545 testes antes dos últimos ajustes de contrato. Não há declaração de prontidão em produção.
+Os totais acima são testes focados, não ensaio com modelo ou aprovação dos métodos. A verificação global final `pnpm check` passou em lint, tipos, testes e build, 44/44 tarefas em cada etapa, sobre `d8e72527b07c6c4740b2f7ef808b3d1fb3f2a4d8`. Pacotes: core 603, financial-model 2.215, credit-playbook 545, work-plan 834, worker 2.501 (um skip anterior), avaliações 298, web 1.687 testes aprovados. Três locks publicados conferidos contra as fontes nos commits ancestrais. Recibo em `docs/build/evidence/originator-foundation-local-gates-2026-10-30.json`. Metadados e importação de fixture encontrados nas verificações anteriores foram corrigidos. CI e implantação ainda precisam fechar; não há declaração de prontidão em produção.
 
 ## O que ainda impede chamar o percurso de pronto
 
