@@ -232,8 +232,33 @@
       "test": "44/44",
       "build": "44/44",
       "log": "/tmp/offroad-internal-document-intake-check-20261030.log"
-    }
+    },
+    "cleanInstall": {
+      "status": "passed",
+      "frozenLockfile": true,
+      "generatedModulesRecreated": true,
+      "log": "/tmp/offroad-internal-intake-clean-install.log"
+    },
+    "correctedFullCheck": {
+      "status": "passed",
+      "lint": "44/44",
+      "typecheck": "44/44",
+      "test": "44/44",
+      "build": "44/44",
+      "log": "/tmp/offroad-internal-document-intake-check-v2-20261030.log"
+    },
+    "publishedLocks": "All three immutable locks verified against their main ancestors"
   },
   "uiAndWorkerFixDeployment": "pending",
-  "candidateMethodsReleased": false
+  "candidateMethodsReleased": false,
+  "ciFailures": [
+    {
+      "commit": "6c90118b7e61e7f820c830cecfde7e87a4c0f7d7",
+      "qualityRun": 41102932553,
+      "securityRun": 41102932794,
+      "rootCause": "Worker imported @offroad/financial-core without a direct package/lockfile declaration; the prior local link masked it. Quality/E2E/image build refused the clean installation.",
+      "correction": "Direct workspace dependency and lock importer added. All generated module directories were recreated; frozen installation passed.",
+      "repeatRequired": true
+    }
+  ]
 }
