@@ -1,0 +1,239 @@
+{
+  "schemaVersion": "offroad-verification.v1",
+  "scope": "Internal document intake and documentary duration units",
+  "productionMigrations": [
+    {
+      "version": "20261030171813",
+      "name": "internal_document_intake",
+      "bodyMd5": "0b19c197ea72219520c209e8995ef822",
+      "journalStatementMd5": "92bba08453957e09a26bbb81adaa68b8"
+    },
+    {
+      "version": "20261030173601",
+      "name": "preliminary_term_unit",
+      "body_md5": "63c24b3e4902f699bc4b38d134b8368f",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "function_sha256": "5d745285288f844f5318d8bf0c06f70e17115fd09879c9f7ef0c7d2246e38bb2"
+    }
+  ],
+  "stagingMigrations": [
+    {
+      "version": "20261030171613",
+      "name": "internal_document_intake"
+    },
+    {
+      "version": "20261030173438",
+      "name": "preliminary_term_unit"
+    }
+  ],
+  "staging": {
+    "internalIntakeBefore": "23514 document_intake_sessions_journey_check",
+    "internalIntakeAfter": "internal_document_intake: PASS",
+    "unitBefore": "Unproved month projection accepted",
+    "unitAfter": "preliminary_term_unit: PASS",
+    "syntheticTransactionsRolledBack": true,
+    "securityLints": 0,
+    "fullRlsMcp": "Confirmation expired before execution; complete suite remains required on the fresh CI database. Targeted rollback-only suites and boundary smoke passed in staging."
+  },
+  "security": {
+    "productionSecurityLints": 0,
+    "aclUnchanged": "{postgres=X/postgres,authenticated=X/postgres}",
+    "journeyConstraintUnchanged": true,
+    "representationAndExternalDisclosureUnchanged": true,
+    "noFounderApprovalOrAcceptanceCreatedByThisChange": true
+  },
+  "types": {
+    "regenerated": true,
+    "unchangedIgnoringTerminalNewlines": true
+  },
+  "nativeProductTest": {
+    "organizationId": "c3b2edda-c89c-4290-aeb0-d150fd917dc1",
+    "workId": "bd22429b-1b0c-46ac-9cf6-1f966de28274",
+    "sessionId": "cd0f3f27-b807-49e2-8d75-7bd9afc40e47",
+    "sourceDocumentId": "bd4801c1-21f7-47ea-a8f4-6699d75c8842",
+    "sourceFile": "01-pedido.pdf",
+    "bytes": 134522,
+    "sha256": "d5ad2f1658f485b39d9040c44134b979078c757f46b16e296dbebdbceeec59bc",
+    "sourceHashMatchesNative": true,
+    "legalAcceptance": {
+      "documentVersion": "2026-08-27-v4",
+      "documentHash": "22ad4f1e24e64d8e859573d231e219c0ac2e39798904ec8328cc6f12c21a3ed6",
+      "acceptedAt": "2026-10-30T16:54:00.405154Z",
+      "activeOwner": true,
+      "authorityDeclared": null
+    },
+    "uploadExecuted": true,
+    "jobs": [
+      {
+        "id": "9c6e4ec0-25a9-42d9-b5d4-0ac8293f1e56",
+        "kind": "document_pipeline",
+        "status": "succeeded",
+        "spend": {
+          "calls": 2,
+          "costUsd": 0.103133,
+          "unknownCostCalls": 0,
+          "budgetExposureUsd": 0.10313300000000003
+        },
+        "document_kind": "capital_request_letter",
+        "warnings": [],
+        "chunks_failed": 0,
+        "model_lineage": [
+          {
+            "task": "classify_document",
+            "model": "claude-sonnet-5",
+            "usage": {
+              "inputTokens": 3928,
+              "outputTokens": 270,
+              "reasoningTokens": 0,
+              "cachedInputTokens": 0,
+              "cacheCreationInputTokens": 3301
+            },
+            "effort": "low",
+            "costUsd": 0.012207,
+            "outcome": "ok",
+            "metadata": {
+              "locale": "pt-BR",
+              "documentId": "bd4801c1-21f7-47ea-a8f4-6699d75c8842"
+            },
+            "provider": "anthropic",
+            "latencyMs": 13688,
+            "costStatus": "measured",
+            "schemaName": "document_profile",
+            "stopReason": "end",
+            "fromCassette": false,
+            "invocationId": "8128bf4b-e3b4-459a-ad9d-3a8fe811b625",
+            "retryOrdinal": 0,
+            "usedFallback": false,
+            "configuredModel": "claude-sonnet-5",
+            "inputFingerprint": "a19b65d94180541c175947430434828a939387b3b9f8518e20e68e1251d5a702",
+            "isSameModelRepair": false,
+            "outputFingerprint": "ab2ee398d285a40298ebb75391f16e9fd2d0a65095d7122c288293b65ce94f01",
+            "promptFingerprint": "658556bc0291e9d49bb12abbe3fac9b218d7dbd67cf0c56bf91daeb165e8daa7",
+            "dataClassification": "restricted",
+            "processingDecisionId": "c1064560-7c8f-455c-a8bb-1700c6cfa9a9",
+            "usedProviderFallback": false,
+            "providerPolicyVersion": "offroad-provider-retention-v2",
+            "adapterRequestFingerprint": "ae654e2fc724f8c4386b1270eefd8bb812b3c36193a2562f899f9ccfe639aae7"
+          },
+          {
+            "task": "extract_fields",
+            "model": "claude-sonnet-5",
+            "usage": {
+              "inputTokens": 25917,
+              "outputTokens": 3756,
+              "reasoningTokens": 0,
+              "cachedInputTokens": 0,
+              "cacheCreationInputTokens": 3064
+            },
+            "effort": "medium",
+            "costUsd": 0.090926,
+            "outcome": "ok",
+            "metadata": {
+              "chunk": "1",
+              "document": "bd4801c1-21f7-47ea-a8f4-6699d75c8842"
+            },
+            "provider": "anthropic",
+            "latencyMs": 28011,
+            "costStatus": "measured",
+            "schemaName": "extractor_output",
+            "stopReason": "end",
+            "fromCassette": false,
+            "invocationId": "2e756ce5-5b66-4246-b003-187c751348b5",
+            "retryOrdinal": 0,
+            "usedFallback": false,
+            "configuredModel": "claude-sonnet-5",
+            "inputFingerprint": "ee6f566163cc24baac3b68f977e1b3c654d4c76f94871102c42343a9b5bdc656",
+            "isSameModelRepair": false,
+            "outputFingerprint": "387b382751c6a758a909ac022ae42a22d428660f574be55078828f66c635c522",
+            "promptFingerprint": "8b20a88ce02be89e6d6d178db396b1eebf82d213513c1353cbcd823579dbe0ff",
+            "dataClassification": "restricted",
+            "processingDecisionId": "d4f44da7-3515-4c92-bda7-0d946d9e456e",
+            "usedProviderFallback": false,
+            "providerPolicyVersion": "offroad-provider-retention-v2",
+            "adapterRequestFingerprint": "07add6a7e1a0ae8107bff62bf4b909dfb126ab46a89cbd58bdefa61052f85451"
+          }
+        ]
+      },
+      {
+        "id": "2fd37d85-94eb-490f-b2d7-33d424349588",
+        "kind": "preliminary_analysis",
+        "status": "succeeded",
+        "spend": {
+          "calls": 1,
+          "costUsd": 0.028207,
+          "unknownCostCalls": 0,
+          "budgetExposureUsd": 0.028206999999999996,
+          "externalSearchCostExposureUsd": 0
+        },
+        "document_kind": null,
+        "warnings": null,
+        "chunks_failed": null,
+        "model_lineage": [
+          {
+            "task": "preliminary_understanding",
+            "model": "claude-sonnet-5",
+            "usage": {
+              "inputTokens": 5486,
+              "outputTokens": 1584,
+              "reasoningTokens": 0,
+              "cachedInputTokens": 0,
+              "cacheCreationInputTokens": 2790
+            },
+            "effort": "medium",
+            "costUsd": 0.028207,
+            "outcome": "ok",
+            "metadata": {
+              "jobId": "2fd37d85-94eb-490f-b2d7-33d424349588",
+              "sessionId": "cd0f3f27-b807-49e2-8d75-7bd9afc40e47",
+              "documentCount": "1",
+              "publicSourceCount": "0"
+            },
+            "provider": "anthropic",
+            "latencyMs": 21808,
+            "costStatus": "measured",
+            "schemaName": "preliminary_understanding_v1",
+            "stopReason": "end",
+            "fromCassette": false,
+            "invocationId": "f49802bd-db72-4bea-8ad6-2f6eb60507be",
+            "retryOrdinal": 0,
+            "usedFallback": false,
+            "configuredModel": "claude-sonnet-5",
+            "inputFingerprint": "74077fc7fef2096cb58563497c2ae20af5d150c8e7f4b9f3fdfe1d01d9bc8de5",
+            "isSameModelRepair": false,
+            "outputFingerprint": "30cdba87fab30f1174ba4e6847dcc59bf2996c2809137a77da028d90d7e0ceb7",
+            "promptFingerprint": "aba1052c58348adc08edc7f929b25ffb0295af38039af9e8851543ee0353a2e2",
+            "dataClassification": "restricted",
+            "processingDecisionId": "3b864c49-ef9e-4afb-9203-a619526287ea",
+            "usedProviderFallback": false,
+            "providerPolicyVersion": "offroad-provider-retention-v2",
+            "adapterRequestFingerprint": "e32094deaace4ef1e93c27fde95dd7819a197f1953be87c6b133bdec74b2d380"
+          }
+        ]
+      }
+    ],
+    "uiObserved": "One received document and a completed initial understanding. Its narrative says 120 days, but the legacy term card mislabeled that count as months.",
+    "initialUnderstandingQualityPassed": false,
+    "completeOriginatorDemoReady": false,
+    "newCalls": 3,
+    "newProviderCostUsd": "0.131340",
+    "fullJourneyPassed": false
+  },
+  "localQuality": {
+    "focusedWorkerTests": 18,
+    "focusedWebTests": 9,
+    "fullCheck": {
+      "status": "passed",
+      "lint": "44/44",
+      "typecheck": "44/44",
+      "test": "44/44",
+      "build": "44/44",
+      "log": "/tmp/offroad-internal-document-intake-check-20261030.log"
+    }
+  },
+  "uiAndWorkerFixDeployment": "pending",
+  "candidateMethodsReleased": false
+}

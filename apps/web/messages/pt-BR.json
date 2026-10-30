@@ -4713,7 +4713,8 @@
         "gapsTitle": "Perguntas desta leitura",
         "nextStep": "Acompanhe o plano e sua execução na conversa. A entrega e as questões identificadas ficam no painel de trabalho.",
         "footer": "Você pode enviar documentos ou esclarecer pontos na conversa. Se quiser ampliar a análise, ajustaremos o plano antes de avançar."
-      }
+      },
+      "days": "{count} dias"
     },
     "companyDebt": {
       "back": "Voltar ao workspace",
@@ -5711,7 +5712,8 @@
       "confirmedTitle": "Entendimento preliminar confirmado",
       "confirmedBody": "A lista de informações foi adaptada a esta companhia e a este objetivo.",
       "editInputs": "Editar empresa ou operação",
-      "continueToRequest": "Ver lista de informações"
+      "continueToRequest": "Ver lista de informações",
+      "termDays": "{count} dias"
     },
     "governance": {
       "kicker": "PERÍMETRO E AUTORIZAÇÃO",

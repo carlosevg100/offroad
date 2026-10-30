@@ -235,6 +235,9 @@ describe("worker case analysis", () => {
             anchor_verified: true,
             source_anchor: {page: 2},
           },
+          {
+            id: "candidate-4", field_path: "transaction.desired_term_months", label: "Prazo", raw_value: "120 dias", normalized_value: "120", unit: "days", value_type: "number", source_document_id: "source-1", evidence_rank: 1, information_class: "company_document", confidence: 0.99, anchor_verified: true, source_anchor: {quote: "Prazo de até 120 dias."},
+          },
         ],
         documents: [{
           id: "source-1",
@@ -386,6 +389,7 @@ describe("worker case analysis", () => {
       objective: "Financiar o crescimento do capital de giro.",
       requestedAmount: "20000000",
     });
+    expect(preliminary.operation).toMatchObject({requestedTermDays: 120, requestedTermMonths: null});
     expect(preliminary.preliminaryAssessment.openPoints).not.toContain("Confirmar o objetivo e a destinação dos recursos.");
     expect(preliminary.preliminaryAssessment.openPoints).not.toContain("Confirmar o montante indicativo.");
     expect(preliminary.preliminaryAssessment.boundary).toContain("Ainda não é diagnóstico financeiro");

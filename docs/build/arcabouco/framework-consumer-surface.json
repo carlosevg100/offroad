@@ -793,7 +793,8 @@
       "decision": "preserve governed consumer",
       "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
       "negativeTests": [
-        "apps/web/src/app/[locale]/app/advisor-actions.test.ts"
+        "apps/web/src/app/[locale]/app/advisor-actions.test.ts",
+        "supabase/tests/internal_document_intake.sql"
       ]
     },
     {
@@ -1080,7 +1081,8 @@
       "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
-        "apps/web/src/lib/auth/workspace-context.test.ts"
+        "apps/web/src/lib/auth/workspace-context.test.ts",
+        "supabase/tests/preliminary_term_unit.sql"
       ]
     },
     {

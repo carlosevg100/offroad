@@ -93,7 +93,8 @@ export async function IntakePreliminaryUnderstanding({action, retryAction, local
           <p className="preliminary-understanding__narrative">{value.operation.operationSummary}</p>
           <dl>
             {amount ? <><dt>{t("amount")}</dt><dd>{amount}</dd></> : null}
-            {value.operation.requestedTermMonths ? <><dt>{t("term")}</dt><dd>{t("termMonths", {count: value.operation.requestedTermMonths})}</dd></> : null}
+            {value.operation.requestedTermDays ? <><dt>{t("term")}</dt><dd>{t("termDays", {count: value.operation.requestedTermDays})}</dd></>
+              : value.operation.requestedTermDays === null && value.operation.requestedTermMonths ? <><dt>{t("term")}</dt><dd>{t("termMonths", {count: value.operation.requestedTermMonths})}</dd></> : null}
           </dl>
         </article>
       </div>
