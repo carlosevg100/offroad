@@ -27,8 +27,20 @@
     "test": "44/44",
     "build": "44/44"
   },
-  "ci": "pending",
-  "productionMigrationApplied": false,
-  "productionBrowserVerified": false,
-  "newProviderCalls": 0
+  "ci": "pending after journal/catalogue reconciliation",
+  "productionMigrationApplied": true,
+  "productionBrowserVerified": true,
+  "newProviderCalls": 0,
+  "production": {
+    "projectId": "ifnogpksgdadruooqydi",
+    "migrationVersion": "20261030135936",
+    "functionBodyMd5": "dcd9b6ad2456d63d94f55740e18c094a",
+    "securityLints": 0,
+    "statementMd5": "a99b48ae2b689d8a1d84a76c4bed618d",
+    "browserRoute": "https://offroad.capital/pt-BR/app?workspace=c3b2edda-c89c-4290-aeb0-d150fd917dc1",
+    "browserObserved": "Correct evaluation workspace and new chat composer; no signup redirect",
+    "browserUser": "Existing founder session",
+    "membershipChanged": false,
+    "legalAcceptanceCreated": false
+  }
 }

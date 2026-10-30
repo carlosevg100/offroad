@@ -2451,6 +2451,11 @@
       "statements_md5": "3982c1b9a92f7499985b22ec7c619b0d"
     },
     {
+      "name": "investment_result_artifacts",
+      "version": "20261018205500",
+      "statements_md5": "625a9867612c647926c8dd2d260b9b2f"
+    },
+    {
       "name": "platform_method_upload_parts",
       "version": "20261019013848",
       "statements_md5": "50efc48268ac701f1799ca6d68d33731"
@@ -2459,11 +2464,6 @@
       "name": "platform_method_upload_parts_deny",
       "version": "20261019014634",
       "statements_md5": "91a4bbadd4f06d88dbfb52cd9058d3a1"
-    },
-    {
-      "name": "investment_result_artifacts",
-      "version": "20261018205500",
-      "statements_md5": "625a9867612c647926c8dd2d260b9b2f"
     },
     {
       "name": "investment_result_blocks_guard",
@@ -2481,6 +2481,11 @@
       "statements_md5": "23966932b650a7b81973f53f160f2f60"
     },
     {
+      "name": "lote1_payload_provenance",
+      "version": "20261019210807",
+      "statements_md5": "b0ef611fc570f50a96cf566819860357"
+    },
+    {
       "name": "premise_proposals_comparison",
       "version": "20261019212152",
       "statements_md5": "19e67907c5c95f692a15a3eae6b1a765"
@@ -2494,11 +2499,6 @@
       "name": "comparison_blocks_ebitda_headroom",
       "version": "20261019212359",
       "statements_md5": "623d5ea19af0c2ab2bc1d59778503c20"
-    },
-    {
-      "name": "lote1_payload_provenance",
-      "version": "20261019210807",
-      "statements_md5": "b0ef611fc570f50a96cf566819860357"
     },
     {
       "name": "premise_proposals_capacity",
@@ -2779,8 +2779,13 @@
       "name": "work_document_upload_continuity",
       "version": "20261029180916",
       "statements_md5": "064aba1c497679fb64195c8a08b76073"
+    },
+    {
+      "name": "internal_workspace_entry",
+      "version": "20261030135936",
+      "statements_md5": "a99b48ae2b689d8a1d84a76c4bed618d"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-29T16:38:46.139577+00:00"
+  "captured_at": "2026-10-30T13:59:55.274409+00:00"
 }

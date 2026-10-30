@@ -30061,7 +30061,7 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1A, 2",
-      "reason": "autoridade exige vínculo ativo; bootstrap explícito e atômico",
+      "reason": "autoridade exige vínculo ativo; bootstrap explícito e atômico; readiness da organização interna sem onboarding comercial, sob as mesmas verificações de membership e principal",
       "sources": [
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
@@ -30080,10 +30080,16 @@
           "line": 92,
           "anchor": "create or replace function private.get_workspace_bootstrap()",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261030135936_internal_workspace_entry.sql",
+          "line": 5,
+          "anchor": "do $migration$",
+          "mechanism": "guarded_function_rewrite"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
-      "last_review_stage": "2"
+      "last_review_stage": "entrada interna, 2026-10-30"
     },
     {
       "id": "function:private.get_workspace_context_v1()",
@@ -355276,6 +355282,13 @@
       "decision": "preservar",
       "stage": "documentos, continuidade de envio no trabalho privado",
       "reason": "Permite adicionar o documento faltante durante processamento/revisão somente no mesmo trabalho privado autorizado e ativo; conserva os estados finais, o estado da sessão, a autorização por recurso e os recibos de fonte."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261030135936_internal_workspace_entry.sql",
+      "decision": "preservar",
+      "stage": "entrada da organização interna de avaliação",
+      "reason": "Organizações internas offroad entram pela membership/principal atuais sem inventar onboarding comercial; não altera capacidades, direitos documentais, aceites, grants ou o cadastro comercial incompleto."
     }
   ],
   "staging_archive": [
