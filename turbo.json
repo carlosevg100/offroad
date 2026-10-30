@@ -42,6 +42,10 @@
       "dependsOn": ["^test"],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/testing-fixtures/gold/fidc-originator/**", "$TURBO_ROOT$/packages/credit-playbook/knowledge/procedures/receivables/prepare-originator-*.md"]
     },
+    "@offroad/credit-playbook#test": {
+      "dependsOn": ["^test"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/pnpm-lock.yaml", "$TURBO_ROOT$/tsconfig.base.json"]
+    },
     "@offroad/document-worker#test": {
       "dependsOn": ["^test"],
       "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/testing-fixtures/gold/fidc-originator/**"]

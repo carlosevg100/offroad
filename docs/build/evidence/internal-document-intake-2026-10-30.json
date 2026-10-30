@@ -247,7 +247,21 @@
       "build": "44/44",
       "log": "/tmp/offroad-internal-document-intake-check-v2-20261030.log"
     },
-    "publishedLocks": "All three immutable locks verified against their main ancestors"
+    "publishedLocks": "All three immutable locks verified against their main ancestors",
+    "uncachedCheck": {
+      "status": "passed",
+      "force": true,
+      "log": "/tmp/offroad-internal-document-intake-check-v3-20261030.log",
+      "lint": "44/44",
+      "typecheck": "44/44",
+      "test": "44/44",
+      "build": "44/44",
+      "cachedTasksPerPhase": 0,
+      "financialModelTests": 2215,
+      "methodCatalogueTests": 545,
+      "webTests": 1689,
+      "publishedLocks": "All three immutable locks verified again; no published source rewritten"
+    }
   },
   "uiAndWorkerFixDeployment": "pending",
   "candidateMethodsReleased": false,
@@ -259,6 +273,32 @@
       "rootCause": "Worker imported @offroad/financial-core without a direct package/lockfile declaration; the prior local link masked it. Quality/E2E/image build refused the clean installation.",
       "correction": "Direct workspace dependency and lock importer added. All generated module directories were recreated; frozen installation passed.",
       "repeatRequired": true
+    },
+    {
+      "commit": "24fba96ff9fc15b3ed7d7bfd98a4c7dd3912fe65",
+      "qualityRun": 41107574295,
+      "rootCause": "Generated method manifest still pinned the previous full pnpm lockfile. Turbo reused the credit-playbook test result because that root file was absent from explicit test inputs.",
+      "correction": "Regenerated the manifest and declared root lockfile/tsconfig test inputs. Full local check repeated with TURBO_FORCE=true. Immutable published locks unchanged.",
+      "repeatRequired": true
     }
-  ]
+  ],
+  "remoteSecurity": {
+    "commit": "24fba96ff9fc15b3ed7d7bfd98a4c7dd3912fe65",
+    "run": 41107574246,
+    "status": "passed",
+    "checks": [
+      "Dependency review",
+      "Repository scan and SBOM",
+      "Worker image scan",
+      "CodeQL"
+    ]
+  },
+  "remoteQualityBeforeManifestRegeneration": {
+    "commit": "24fba96ff9fc15b3ed7d7bfd98a4c7dd3912fe65",
+    "run": 41107574295,
+    "database": "success",
+    "e2e": "success",
+    "check": "failure: stale generated manifest",
+    "newHeadMustRepeatAllChecks": true
+  }
 }
