@@ -34,6 +34,18 @@
         "^test"
       ]
     },
+    "@offroad/financial-core#test": {
+      "dependsOn": ["^test"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/testing-fixtures/gold/fidc-originator/**"]
+    },
+    "@offroad/financial-model#test": {
+      "dependsOn": ["^test"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/testing-fixtures/gold/fidc-originator/**", "$TURBO_ROOT$/packages/credit-playbook/knowledge/procedures/receivables/prepare-originator-*.md"]
+    },
+    "@offroad/document-worker#test": {
+      "dependsOn": ["^test"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/packages/testing-fixtures/gold/fidc-originator/**"]
+    },
     "@offroad/model-gateway#test": {
       "dependsOn": [
         "^test"

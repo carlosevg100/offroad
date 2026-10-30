@@ -1,0 +1,467 @@
+{
+  "synthetic": true,
+  "source": "Native cedent case, with explicit fictional house policy; not runtime defaults.",
+  "input": {
+    "analysisDate": "2026-10-29",
+    "reportingDate": "2026-09-30",
+    "requestedTermDays": 120,
+    "requestedAdditionalFace": "3000000",
+    "currentFundFaceExposure": "500000",
+    "regulationTotalFaceCap": "5000000",
+    "poolSupportsAdditionalExposure": true,
+    "financials": {
+      "bankUsed": "9400000",
+      "unusedBankLimits": "1800000",
+      "additionalRecourseDebt": "1000000",
+      "taxDebt": "600000",
+      "cash": "1400000",
+      "restrictedCash": "400000",
+      "ebitdaLtm": "4440000",
+      "financialDate": "2026-09-30",
+      "scrDate": "2026-09-30",
+      "tapeDate": "2026-09-30",
+      "scrPastDue": "0",
+      "scrLossClassified": "0"
+    },
+    "titles": [
+      {
+        "reference": "A01",
+        "debtorId": "SA-MATRIZ",
+        "groupId": "GA",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-15",
+        "currentDueDate": "2026-11-15",
+        "face": "800000",
+        "assignment": "assigned",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "A02",
+        "debtorId": "SA-MATRIZ",
+        "groupId": "GA",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-10-31",
+        "currentDueDate": "2026-10-31",
+        "face": "800000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "A03",
+        "debtorId": "SA-FILIAL",
+        "groupId": "GA",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-30",
+        "currentDueDate": "2026-11-30",
+        "face": "800000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "A04",
+        "debtorId": "SA-FILIAL",
+        "groupId": "GA",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-12-31",
+        "currentDueDate": "2026-12-31",
+        "face": "600000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "B01",
+        "debtorId": "SB",
+        "groupId": "GB",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-15",
+        "currentDueDate": "2026-11-15",
+        "face": "700000",
+        "assignment": "assigned",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "B02",
+        "debtorId": "SB",
+        "groupId": "GB",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-30",
+        "currentDueDate": "2026-11-30",
+        "face": "800000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "C01",
+        "debtorId": "SC",
+        "groupId": "GC",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-10-31",
+        "currentDueDate": "2026-10-31",
+        "face": "500000",
+        "assignment": "assigned",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "C02",
+        "debtorId": "SC",
+        "groupId": "GC",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-12-15",
+        "currentDueDate": "2026-12-15",
+        "face": "700000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "D01",
+        "debtorId": "SD",
+        "groupId": "GD",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-20",
+        "currentDueDate": "2026-11-20",
+        "face": "500000",
+        "assignment": "assigned",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "D02",
+        "debtorId": "SD",
+        "groupId": "GD",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-12-10",
+        "currentDueDate": "2026-12-10",
+        "face": "500000",
+        "assignment": "assigned",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "E01",
+        "debtorId": "SE",
+        "groupId": "GE",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-09-20",
+        "currentDueDate": "2026-09-20",
+        "face": "400000",
+        "assignment": "free",
+        "invoice": "cancelled",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "E02",
+        "debtorId": "SE",
+        "groupId": "GE",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-10",
+        "currentDueDate": "2026-11-10",
+        "face": "400000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "F01",
+        "debtorId": "SF",
+        "groupId": "GF",
+        "issueDate": "2026-07-01",
+        "originalDueDate": "2026-08-31",
+        "currentDueDate": "2026-11-30",
+        "face": "300000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "F02",
+        "debtorId": "SF",
+        "groupId": "GF",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-12-05",
+        "currentDueDate": "2026-12-05",
+        "face": "400000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "G01",
+        "debtorId": "SG",
+        "groupId": "GG",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-25",
+        "currentDueDate": "2026-11-25",
+        "face": "200000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "missing",
+        "relatedParty": false
+      },
+      {
+        "reference": "G02",
+        "debtorId": "SG",
+        "groupId": "GG",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-12-20",
+        "currentDueDate": "2026-12-20",
+        "face": "400000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "H01",
+        "debtorId": "SH",
+        "groupId": "GH",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-12-30",
+        "currentDueDate": "2026-12-30",
+        "face": "500000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      },
+      {
+        "reference": "I01",
+        "debtorId": "SI-REL",
+        "groupId": "GI",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-11-15",
+        "currentDueDate": "2026-11-15",
+        "face": "700000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": true
+      },
+      {
+        "reference": "H01",
+        "debtorId": "SH",
+        "groupId": "GH",
+        "issueDate": "2026-09-01",
+        "originalDueDate": "2026-12-30",
+        "currentDueDate": "2026-12-30",
+        "face": "500000",
+        "assignment": "free",
+        "invoice": "active",
+        "delivery": "verified",
+        "relatedParty": false
+      }
+    ],
+    "cashBeforeNewCoobligation": [
+      {
+        "date": "2026-10-29",
+        "amount": "1200000"
+      },
+      {
+        "date": "2026-11-05",
+        "amount": "1200000"
+      },
+      {
+        "date": "2026-11-12",
+        "amount": "1250000"
+      },
+      {
+        "date": "2026-11-19",
+        "amount": "1300000"
+      },
+      {
+        "date": "2026-11-26",
+        "amount": "1300000"
+      },
+      {
+        "date": "2026-12-03",
+        "amount": "1200000"
+      },
+      {
+        "date": "2026-12-10",
+        "amount": "1250000"
+      },
+      {
+        "date": "2026-12-17",
+        "amount": "1200000"
+      },
+      {
+        "date": "2026-12-24",
+        "amount": "1300000"
+      },
+      {
+        "date": "2026-12-31",
+        "amount": "1400000"
+      },
+      {
+        "date": "2027-01-07",
+        "amount": "1350000"
+      },
+      {
+        "date": "2027-01-14",
+        "amount": "1200000"
+      },
+      {
+        "date": "2027-01-21",
+        "amount": "1300000"
+      },
+      {
+        "date": "2027-01-28",
+        "amount": "1400000"
+      },
+      {
+        "date": "2027-02-04",
+        "amount": "1500000"
+      },
+      {
+        "date": "2027-02-11",
+        "amount": "1600000"
+      },
+      {
+        "date": "2027-02-18",
+        "amount": "1550000"
+      },
+      {
+        "date": "2027-02-25",
+        "amount": "1450000"
+      },
+      {
+        "date": "2027-02-26",
+        "amount": "1400000"
+      },
+      {
+        "date": "2027-03-04",
+        "amount": "1200000"
+      },
+      {
+        "date": "2027-03-08",
+        "amount": "1000000"
+      }
+    ],
+    "policy": {
+      "effectiveFrom": "2026-10-01",
+      "effectiveUntil": null,
+      "financialMaxAgeDays": 60,
+      "scrMaxAgeDays": 60,
+      "tapeMaxAgeDays": 35,
+      "maxTermDays": 120,
+      "groupFaceCap": "1600000",
+      "exclusionPriority": [
+        "prior_assignment",
+        "related_party",
+        "invoice_cancelled",
+        "original_arrears",
+        "delivery_unverified",
+        "term_exceeded",
+        "unknown_evidence",
+        "outside_reporting_date",
+        "zero_balance"
+      ],
+      "scoring": [
+        {
+          "metric": "netDebtToEbitda",
+          "bands": [
+            {
+              "upperInclusive": "2",
+              "points": 0
+            },
+            {
+              "upperInclusive": "3",
+              "points": 1
+            },
+            {
+              "upperInclusive": "4",
+              "points": 2
+            },
+            {
+              "upperInclusive": null,
+              "points": 3
+            }
+          ]
+        },
+        {
+          "metric": "originalPastDueRatio",
+          "bands": [
+            {
+              "upperInclusive": "0.05",
+              "points": 0
+            },
+            {
+              "upperInclusive": "0.10",
+              "points": 1
+            },
+            {
+              "upperInclusive": null,
+              "points": 2
+            }
+          ]
+        },
+        {
+          "metric": "largestGroupRatio",
+          "bands": [
+            {
+              "upperInclusive": "0.25",
+              "points": 0
+            },
+            {
+              "upperInclusive": "0.35",
+              "points": 1
+            },
+            {
+              "upperInclusive": null,
+              "points": 2
+            }
+          ]
+        }
+      ],
+      "grades": [
+        {
+          "grade": "A",
+          "maxScore": 1,
+          "totalFaceCap": "4000000"
+        },
+        {
+          "grade": "B",
+          "maxScore": 3,
+          "totalFaceCap": "3000000"
+        },
+        {
+          "grade": "C",
+          "maxScore": 5,
+          "totalFaceCap": "1500000"
+        },
+        {
+          "grade": "D",
+          "maxScore": null,
+          "totalFaceCap": "0"
+        }
+      ],
+      "declineOnScrPastDue": true,
+      "declineOnScrLoss": true,
+      "cashFloor": "800000",
+      "coobligationStressRatio": "0.15",
+      "severeStressRatio": "0.35"
+    },
+    "operationStartDate": "2026-10-29"
+  }
+}

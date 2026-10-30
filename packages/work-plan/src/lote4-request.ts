@@ -76,7 +76,7 @@ const asked = (text: string, end: number) => /[.!?;]/.exec(text.slice(end))?.[0]
 const objects: Record<Lote4RequestKind, RegExp> = {
   board_capital_discussion: /\b(?:discussao|material|deck|pagina|apresentacao|pauta|roteiro|conselho|board)\b/,
   received_proposal: /\b(?:proposta|oferta|term\s*sheet|termsheet|ccb|cce|nce|credito|financiamento|emprestimo|operacao|linha)\b|\b(?:e|esta|ta|parece|seria) (?:boa|bom)\b|\bvale a pena\b/,
-  document_folder: /\b(?:pastas?|arquivos|documentos|materia(?:l|is)|tudo|ai|nela|neles|nisso)\b/,
+  document_folder: /\b(?:pastas?|arquivos|documentos|materia(?:l|is)|kits?|pacotes?|tudo|ai|nela|neles|nisso)\b/,
 };
 
 /** What keeps the route of origin/main wherever it appears: a negation or refusal, or a request for guidance. */
@@ -104,4 +104,24 @@ export function readLote4Request(folded: string, kind: Lote4RequestKind): Lote4R
 export function asksForLote4Action(folded: string, kind: Lote4RequestKind): boolean {
   const r = readLote4Request(folded, kind);
   return r.requested && !r.voided;
+}
+
+/** Directed trigger tails retain the full-message reported-speech check. Callers can bind the
+ * action to its actual object instead of borrowing an unrelated noun elsewhere in the message. */
+export function directedLote4RequestTails(folded: string, kind: Lote4RequestKind): string[] {
+  const text = folded.replace(/\s+/g, " ").trim();
+  return methodTriggers[kind].flatMap(t => [...text.matchAll(t.pattern)].flatMap(m => {
+    const end = m.index! + m[0].length;
+    if (!addressedAt(text, m.index!, t.modal, t.evaluative === true) || (t.evaluative && !asked(text, end))) return [];
+    return [text.slice(end).split(/[.!?;:]/, 1)[0]!.trim()];
+  }));
+}
+
+/** A cedent-kit check uses the same directedness, refusal and reported-speech rule. This
+ * additional verb family is consumed only by the originator route, preserving the older routes. */
+export function directedOriginatorKitCheckTails(folded: string): string[] {
+  const text = folded.replace(/\s+/g, " ").trim();
+  if (negation.test(text) || guidance.test(text)) return [];
+  const checks = triggers({stems: "verific|chec", imperative: "confere|confira|confiram", infinitive: "conferir", subjunctive: "confira|confiram"});
+  return checks.flatMap(t => [...text.matchAll(t.pattern)].flatMap(m => addressedAt(text, m.index!, t.modal, false) ? [text.slice(m.index! + m[0].length).trimStart()] : []));
 }
