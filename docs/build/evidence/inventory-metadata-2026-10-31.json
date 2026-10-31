@@ -25,7 +25,7 @@
     "test": "44/44",
     "build": "44/44"
   },
-  "e2e": "updated; execution pending",
+  "e2e": "Pending rerun after source verification fixture correction",
   "visualReview": "The real-page E2E records an attached screenshot for review. Inspection pending.",
   "deployment": "pending",
   "previousFullCheck": {
@@ -47,7 +47,7 @@
     "test": "44/44",
     "build": "44/44"
   },
-  "recordedAt": "2026-10-31T15:53:14.500873+00:00",
+  "recordedAt": "2026-10-31T17:12:35.200480+00:00",
   "firstCi": {
     "run": 41216994116,
     "head": "3ca62a8cf2518cf8687285905491baaf8ef23683",
@@ -73,5 +73,19 @@
       "errors": 0,
       "log": "/tmp/offroad-inventory-framework-review-20261031.log"
     }
+  },
+  "previousE2eFailure": {
+    "run": 41218933972,
+    "head": "b3dfcbcab838d1a06ace6b4a50750af9adfc1328",
+    "reason": "The local hash classifier had no persisted E0 receipt for the newly created project, so no current profile existed; displaying classification as unavailable was correct. The E2E now performs real local source-byte verification before the ordinary revision reruns the synthetic hash classifier. No profile or approval is seeded."
+  },
+  "latestLocalFullCheck": {
+    "status": "passed",
+    "sourceCommit": "4b27b917",
+    "log": "/tmp/offroad-inventory-metadata-check-v7-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
   }
 }
