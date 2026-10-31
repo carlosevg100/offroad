@@ -10,7 +10,7 @@ export type AdvisorCycleEvent = AdvisorOutcomeEvent & {
 
 /** Preliminary gaps become active requests only after the user accepts the initial understanding. */
 export function canShowAdvisorInformationRequests(preliminaryStatus: string | null): boolean {
-  return preliminaryStatus !== "pending_confirmation";
+  return preliminaryStatus === null || preliminaryStatus === "confirmed";
 }
 
 // An answer queues new work; a decision records an assessment for review. Neither proves that

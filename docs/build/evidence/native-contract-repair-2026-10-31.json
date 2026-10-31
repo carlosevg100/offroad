@@ -33,15 +33,7 @@
   "numericalDiagnostic": "Content-free distinction between unresolved presentation and unsupported explicit number; ambiguous bare monetary symbol has no inferred currency.",
   "preliminaryCacheKey": "preliminary-understanding-grounded-v3",
   "newPaidCallsForTheseChecks": 0,
-  "fullCheck": {
-    "status": "passed",
-    "sourceCommit": "88b7e76a",
-    "tasksPerPhase": 44,
-    "workerPassed": 2532,
-    "workerExistingSkipped": 1,
-    "webPassed": 1693,
-    "log": "/tmp/offroad-native-contract-repair-check-v2-20261031.log"
-  },
+  "fullCheck": "pending after additional unusable-understanding request guard",
   "deployment": "pending",
   "analyticalMethodRelease": false,
   "recoveryUi": {
@@ -67,5 +59,29 @@
     "workerPassed": 2532,
     "workerExistingSkipped": 1,
     "log": "/tmp/offroad-native-contract-repair-check-20261031.log"
+  },
+  "unusableUnderstandingQuestions": {
+    "before": {
+      "failed": 4,
+      "passed": 13
+    },
+    "after": {
+      "passed": 17
+    },
+    "withRecoveryUiPassed": 25,
+    "beforeLog": "/tmp/offroad-unusable-preliminary-questions-before-20261031.log",
+    "afterLog": "/tmp/offroad-unusable-preliminary-questions-after-20261031.log",
+    "publicNoPreliminaryPreserved": true,
+    "confirmedPreserved": true,
+    "auditRecordsDeleted": false
+  },
+  "previousFullCheck": {
+    "status": "passed",
+    "sourceCommit": "88b7e76a",
+    "tasksPerPhase": 44,
+    "workerPassed": 2532,
+    "workerExistingSkipped": 1,
+    "webPassed": 1693,
+    "log": "/tmp/offroad-native-contract-repair-check-v2-20261031.log"
   }
 }

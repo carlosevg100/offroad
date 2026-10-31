@@ -30,6 +30,10 @@ describe("advisor project current state", () => {
     expect(canShowAdvisorInformationRequests(null)).toBe(true);
   });
 
+  it.each(["changes_requested", "superseded", "rejected", "unknown"])("does not present requests from an unusable %s understanding as current", (status) => {
+    expect(canShowAdvisorInformationRequests(status)).toBe(false);
+  });
+
   it("does not keep a project in attention after a later successful retry", () => {
     expect(advisorNeedsAttention({
       active: false,
