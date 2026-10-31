@@ -72,5 +72,22 @@ for (const locale of ["pt-BR", "en-US"] as const) {
       expect(html).not.toContain("<iframe>");
       expect(html).toContain("&lt;script&gt;");
     });
+    it("shows initial classification, observed name and localized dates without discharging requirements", () => {
+      const html = render([{id: "current", name: "Statement.pdf", size: null, status: "ready", metadata: {classification: "Management accounts", entityName: "Synthetic Company", periodStart: "2025-01-01", periodEnd: "2025-12-31"}}], []);
+      expect(html).toContain('data-document-classification="initial"'); expect(html).toContain("Management accounts"); expect(html).toContain("Synthetic Company");
+      expect(html).toContain(locale === "pt-BR" ? "31/12/2025" : "12/31/2025");
+      expect(html).toContain(copy.processingIsNotVerification); expect(html).toContain(copy.coveragePending);
+    });
+    it("names a missing classification, entity or period boundary without supplying defaults", () => {
+      const html = render([{id: "no-profile", name: "Pending.pdf", size: null, status: "processing"},
+        {id: "partial", name: "Partial.pdf", size: null, status: "failed", metadata: {classification: null, entityName: null, periodStart: null, periodEnd: "2025-12-31"}}], []);
+      expect(html).toContain(copy.classificationPending); expect(html).toContain(copy.classificationUnknown); expect(html).toContain(copy.entityPending);
+      expect(html).toContain(locale === "pt-BR" ? "início não identificado" : "start not identified"); expect(html).not.toContain("01/01/2025");
+      expect(html).toContain(copy.documentStatus.failed);
+    });
+    it("escapes an observed entity name rather than rendering source markup", () => {
+      const html = render([{id: "untrusted", name: "Source.pdf", size: null, status: "ready", metadata: {classification: null, entityName: "<script>untrusted</script>", periodStart: null, periodEnd: null}}], []);
+      expect(html).not.toContain("<script>"); expect(html).toContain("&lt;script&gt;"); expect(html).toContain(copy.periodPending);
+    });
   });
 }

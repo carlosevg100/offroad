@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "inventory-metadata-evidence.v1",
+  "scope": "Display initial current-version document metadata in the existing private inventory.",
+  "focusedTests": {
+    "passed": 26,
+    "log": "/tmp/offroad-inventory-metadata-tests-20261031.log"
+  },
+  "typecheck": {
+    "status": "passed",
+    "log": "/tmp/offroad-inventory-metadata-types-20261031.log"
+  },
+  "sourceAuthorization": "source_versions RLS plus exact source-version profile relation; organization and requested IDs constrained",
+  "reviewStatesDisplayed": [
+    "proposed",
+    "accepted"
+  ],
+  "financialValuesDisplayed": false,
+  "newProviderCalls": 0,
+  "fullCheck": {
+    "status": "passed",
+    "sourceCommit": "1e619c3619e692bbf7de45308509b134ebcc2671",
+    "log": "/tmp/offroad-inventory-metadata-check-v3-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
+  },
+  "e2e": "updated; execution pending",
+  "visualReview": "The real-page E2E records an attached screenshot for review. Inspection pending.",
+  "deployment": "pending",
+  "previousFullCheck": {
+    "status": "passed",
+    "sourceCommit": "f99c33461b395c4fbe727381ba4aa0dd18b9c0fe",
+    "log": "/tmp/offroad-inventory-metadata-check-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
+  },
+  "responsiveChange": "Metadata spans wrap within the document row; child content has min-width: 0.",
+  "previousFullCheckAfterWrapping": {
+    "status": "passed",
+    "sourceCommit": "d904ca6c7e2c1628f1689b97cbced45ad93efe10",
+    "log": "/tmp/offroad-inventory-metadata-check-v2-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
+  },
+  "recordedAt": "2026-10-31T15:53:14.500873+00:00",
+  "firstCi": {
+    "run": 41216994116,
+    "head": "3ca62a8cf2518cf8687285905491baaf8ef23683",
+    "result": "check failed before the quality gate because the changed project page was missing its updated framework-consumer review"
+  },
+  "frameworkConsumerReview": {
+    "reviewedBy": "Codex",
+    "recordedAt": "2026-10-31T15:56:56.645358+00:00",
+    "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
+    "sha256": "3fc1cb7948775451b9ca6fb6cafd9724287f40b31d97f334b61554a408a6e837",
+    "scope": "Four existing RPCs unchanged; new metadata read uses the authenticated server client, current source-version RLS, organization/requested-ID filters, exact profile version and active review states. Output remains initial metadata, with escaped strings and no evidence adoption, new model call or execution.",
+    "negativeTests": [
+      "supabase/tests/no_legacy_access_bypass.sql",
+      "apps/web/src/lib/auth/workspace-context.test.ts",
+      "apps/web/e2e/document-first-intake.spec.ts",
+      "apps/web/src/lib/intake/inventory-metadata.test.ts",
+      "apps/web/src/components/advisor/advisor-evidence-inventory.test.tsx"
+    ],
+    "gate": {
+      "status": "passed",
+      "unitTests": 9,
+      "consumers": 134,
+      "errors": 0,
+      "log": "/tmp/offroad-inventory-framework-review-20261031.log"
+    }
+  }
+}

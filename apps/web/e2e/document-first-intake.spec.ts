@@ -566,6 +566,15 @@ test.describe("Document-first intake (company journey)", () => {
     await inventory.getByText("Ver documentos recebidos", {exact: true}).click();
     await expect(inventory.locator(".advisor-evidence-inventory__files > li")).toHaveCount(dataRoomExpectations.documents);
     await expect(page.locator(".advisor-private-work__understanding")).toBeVisible({timeout: 120_000});
+    // Metadata is read through the currently authorized immutable version, in the real page.
+    // Showing an initial classification must not mark its evidence requirements resolved.
+    await expect(inventory.locator('[data-document-classification="initial"]')).toHaveCount(dataRoomExpectations.documents);
+    await expect(inventory).toContainText("Classificação inicial:");
+    await expect(inventory).toContainText("Nome lido no documento:");
+    await expect(inventory).toContainText("O processamento de um arquivo não confirma");
+    const inventoryScreenshot = test.info().outputPath("document-inventory-initial-classification.png");
+    await inventory.screenshot({path: inventoryScreenshot});
+    await test.info().attach("Initial document classification, synthetic fixture", {path: inventoryScreenshot, contentType: "image/png"});
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
 
     // Revisions must be usable at the visible button position and appear without a reload.

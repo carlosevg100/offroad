@@ -1,4 +1,5 @@
 import {isSystemMessage, systemNoticeOf} from "@/lib/advisor/system-notice";
+import {loadInventoryMetadata} from "@/lib/intake/inventory-metadata";
 import {ArtifactRoundtripWork} from "@/components/advisor/artifact-roundtrip-work";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {loadWorkReviewDashboard} from "@/lib/advisor/work-review-dashboard";
@@ -205,6 +206,7 @@ async function ConversationalCapitalProject({
       .limit(1)
       .maybeSingle(),
   ]);
+  const documentMetadata = await loadInventoryMetadata(supabase, organization.id, documents ?? [], locale === "en-US" ? "en-US" : "pt-BR");
   const parsedExecutionBrief = executionBriefRow
     ? visibleExecutionBriefSchema.safeParse(executionBriefRow.visible_snapshot)
     : null;
@@ -680,7 +682,7 @@ async function ConversationalCapitalProject({
       status: artifact.status,
     }))}
     copy={copy}
-    documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status, version: document.document_version}))}
+    documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status, version: document.document_version, metadata: documentMetadata.get(document.id) ?? null}))}
     executionBrief={parsedExecutionBrief?.success ? {
       approval: describeApproval(executionBriefApprovalRaw, {id: executionBriefRow!.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow!.brief_version}),
       brief: parsedExecutionBrief.data,
