@@ -137,7 +137,7 @@ describe("worker case analysis", () => {
     expect(JSON.stringify(validation)).not.toContain("unexpected-private-value");
   });
 
-  it.each([false,true])("runs the first understanding as one bounded read (native capture=%s) without loading or executing the full case DAG", async (native) => {
+  it.each([{native: false, unsupported: false}, {native: true, unsupported: false}, {native: true, unsupported: true}])("bounds the preliminary read and refuses unsupported figures (%j)", async ({native, unsupported}) => {
     const preliminaryJob: CaseAnalysisJob = {
       ...job,
       kind: "preliminary_analysis",
@@ -154,6 +154,7 @@ describe("worker case analysis", () => {
     let assessedProjectId: string | null = null;
     let narrativeInput: Record<string, unknown> | null = null;
     let completed: Record<string, unknown> | null = null;
+    let failure: unknown = null;
     const queue: QueueClient = {
       claim: async () => null,
       heartbeat: async () => {},
@@ -227,6 +228,9 @@ describe("worker case analysis", () => {
             label: "Montante",
             raw_value: "R$ 20 milhões",
             normalized_value: "20000000",
+            unit: "money", currency: "BRL", value_scale: 1,
+            period_start: "2025-01-01", period_end: "2025-12-31",
+            entity_name: "Companhia Exemplo Ltda.", entity_scope: "standalone", review_state: "proposed",
             value_type: "number",
             source_document_id: "source-1",
             evidence_rank: 1,
@@ -271,16 +275,18 @@ describe("worker case analysis", () => {
       recordIntentEnvelope: async () => {},
       completeAdvisorSpecializedJob: async () => {},
       complete: async (_job, result) => { completed = result as Record<string, unknown>; },
-      fail: async (_job, error) => { throw new Error(`the preliminary job should not fail: ${JSON.stringify(error)}`); },
+      fail: async (_job, error) => { failure = error; if (!unsupported) throw new Error("the grounded preliminary job should not fail"); },
     };
     let spent = {costUsd: 0, calls: 0};
     let requestedMaxOutputTokens: number | undefined;
     const gateway = {
-      complete: async (request: {task: string; maxOutputTokens?: number; input: Array<{type: string; text?: string}>}) => {
+      complete: async (request: {task: string; maxOutputTokens?: number; validateOutput?: unknown; cacheKey?: string; input: Array<{type: string; text?: string}>}) => {
         calls.push(request.task);
         if(native){expect(consumed).toEqual(["primary_capture","public_capture"]);consumed.push("inference");}
         requestedMaxOutputTokens = request.maxOutputTokens;
         narrativeInput = JSON.parse(request.input[0]?.text ?? "{}") as Record<string, unknown>;
+        expect(typeof request.validateOutput).toBe("function");
+        expect(request.cacheKey).toBe("preliminary-understanding-grounded-v2");
         spent = {costUsd: 0.08, calls: 1};
         return {
           output: {
@@ -295,7 +301,7 @@ describe("worker case analysis", () => {
             positioningSummary: "As fontes consultadas confirmam a presença digital informada, mas não permitem concluir posição competitiva.",
             sector: "Distribuição B2B",
             geography: "SP",
-            operationSummary: "A necessidade declarada é levantar BRL 20 milhões para financiar capital de giro associado ao crescimento.",
+            operationSummary: unsupported ? "A diferença calculada é de R$ 1 milhão." : "A necessidade declarada é levantar BRL 20 milhões para financiar capital de giro associado ao crescimento.",
             researchSignals: [{claim: "O domínio informado é consistente com a identidade pesquisada.", sourceUrls: ["https://example.com/identity"]}],
             openPoints: [{question: "Qual é o uso detalhado dos recursos?", whyItMatters: "Define a lista de informações necessária.", category: "operation"}],
           },
@@ -350,6 +356,15 @@ describe("worker case analysis", () => {
       now: () => new Date("2026-08-31T12:00:00.000Z"),
     });
 
+    if (unsupported) {
+      expect(outcome).toEqual({status: "failed"});
+      expect(failure).not.toBeNull();
+      expect(recorded).toBeNull();
+      expect(completed).toBeNull();
+      expect(assessedProjectId).toBeNull();
+      expect(consumed).toEqual(["primary_capture", "public_capture", "inference"]);
+      return;
+    }
     expect(outcome).toEqual({status: "succeeded"});
     if(native)expect(consumed).toEqual(["primary_capture","public_capture","inference","native_writer"]);
     expect(calls).toEqual(["preliminary_understanding"]);
@@ -369,6 +384,9 @@ describe("worker case analysis", () => {
         expect.objectContaining({
           fieldPath: "transaction.requested_amount",
           rawValue: "R$ 20 milhões",
+          sourceCandidateId: "candidate-3", unit: "money", currency: "BRL", valueScale: 1,
+          periodStart: "2025-01-01", periodEnd: "2025-12-31",
+          entityName: "Companhia Exemplo Ltda.", entityScope: "standalone", reviewState: "proposed",
           sourceAnchor: {page: 2},
         }),
       ]),
