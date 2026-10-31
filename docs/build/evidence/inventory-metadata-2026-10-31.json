@@ -47,5 +47,31 @@
     "test": "44/44",
     "build": "44/44"
   },
-  "recordedAt": "2026-10-31T15:53:14.500873+00:00"
+  "recordedAt": "2026-10-31T15:53:14.500873+00:00",
+  "firstCi": {
+    "run": 41216994116,
+    "head": "3ca62a8cf2518cf8687285905491baaf8ef23683",
+    "result": "check failed before the quality gate because the changed project page was missing its updated framework-consumer review"
+  },
+  "frameworkConsumerReview": {
+    "reviewedBy": "Codex",
+    "recordedAt": "2026-10-31T15:56:56.645358+00:00",
+    "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
+    "sha256": "3fc1cb7948775451b9ca6fb6cafd9724287f40b31d97f334b61554a408a6e837",
+    "scope": "Four existing RPCs unchanged; new metadata read uses the authenticated server client, current source-version RLS, organization/requested-ID filters, exact profile version and active review states. Output remains initial metadata, with escaped strings and no evidence adoption, new model call or execution.",
+    "negativeTests": [
+      "supabase/tests/no_legacy_access_bypass.sql",
+      "apps/web/src/lib/auth/workspace-context.test.ts",
+      "apps/web/e2e/document-first-intake.spec.ts",
+      "apps/web/src/lib/intake/inventory-metadata.test.ts",
+      "apps/web/src/components/advisor/advisor-evidence-inventory.test.tsx"
+    ],
+    "gate": {
+      "status": "passed",
+      "unitTests": 9,
+      "consumers": 134,
+      "errors": 0,
+      "log": "/tmp/offroad-inventory-framework-review-20261031.log"
+    }
+  }
 }
