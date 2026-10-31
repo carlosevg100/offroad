@@ -48,7 +48,8 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
   }, [locale, projectId, router, shouldStart]);
 
   const showingProcessing = preliminary.isProcessing || bootstrapping;
-  const showingFailure = !current && !showingProcessing && (canRetry || bootstrapFailed);
+  const hasUsableUnderstanding = current?.row.status === "pending_confirmation" || current?.row.status === "confirmed";
+  const showingFailure = !hasUsableUnderstanding && !showingProcessing && (canRetry || bootstrapFailed);
 
   async function retryProcessing() {
     setBootstrapFailed(false);

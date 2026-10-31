@@ -72,8 +72,8 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
   /**
    * Optional deterministic acceptance gate applied after schema parsing and before an attempt can
    * succeed. This is for contracts whose safety depends on semantics that JSON Schema cannot
-   * express (for example attributable-span coverage). A rejection participates in the same bounded
-   * same-model repair and provider-fallback rail as a schema rejection.
+   * express (for example attributable-span coverage). Prompted JSON uses its existing bounded
+   * repair rail; native structured output can opt in with allowDeterministicRepair.
    *
    * Receives a separately owned, deeply frozen parsed-output view; it must not mutate it.
    * Issues must be content-free: only stable paths/codes and generic messages are persisted or
@@ -82,6 +82,10 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
   validateOutput?: (output: z.infer<TSchema>) =>
     | {accepted: true}
     | {accepted: false; issues: ValidationIssueDiagnostic[]};
+  /** Opt in to one primary-model retry for a schema-valid native output rejected by
+   * validateOutput. Keeps structured output and all per-attempt authorization/budget checks.
+   * Native schema failures are not retried by this option. Default is false. */
+  allowDeterministicRepair?: boolean;
   /** Overrides the policy's primary model (must still be allowlisted). */
   model?: Partial<ModelRef>;
   /**
