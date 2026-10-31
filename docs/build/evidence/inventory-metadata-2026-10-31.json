@@ -16,7 +16,15 @@
   ],
   "financialValuesDisplayed": false,
   "newProviderCalls": 0,
-  "fullCheck": "pending after adding the E2E screenshot attachment",
+  "fullCheck": {
+    "status": "passed",
+    "sourceCommit": "1e619c3619e692bbf7de45308509b134ebcc2671",
+    "log": "/tmp/offroad-inventory-metadata-check-v3-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
+  },
   "e2e": "updated; execution pending",
   "visualReview": "The real-page E2E records an attached screenshot for review. Inspection pending.",
   "deployment": "pending",
@@ -38,5 +46,6 @@
     "typecheck": "44/44",
     "test": "44/44",
     "build": "44/44"
-  }
+  },
+  "recordedAt": "2026-10-31T15:53:14.500873+00:00"
 }
