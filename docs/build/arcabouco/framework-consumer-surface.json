@@ -680,7 +680,8 @@
       "negativeTests": [
         "apps/document-worker/src/queue.test.ts",
         "supabase/tests/lote4_priors.sql",
-        "supabase/tests/lote4_document_folder_evidence.sql"
+        "supabase/tests/lote4_document_folder_evidence.sql",
+        "supabase/tests/preliminary_candidate_semantics.sql"
       ]
     },
     {
@@ -1215,7 +1216,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
-      "sha256": "b950d4b2a0e39bbe62d71c1e6e904c0df0ea598551990d80aa236908dd199c42",
+      "sha256": "71c353537f9e81c260f1b37109e03adab261013674ef1e05a37bacc6c7de96a4",
       "entrypoint": false,
       "rpcs": [
         "read_advisor_execution_brief_approval_v1",
@@ -1227,7 +1228,8 @@
       "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
-        "apps/web/src/lib/auth/workspace-context.test.ts"
+        "apps/web/src/lib/auth/workspace-context.test.ts",
+        "apps/web/e2e/document-first-intake.spec.ts"
       ]
     },
     {

@@ -776,6 +776,7 @@
   align-items: flex-start;
   border-top: 1px solid #e5e7e3;
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 24px;
   padding: 18px 26px 24px;
@@ -785,6 +786,7 @@
   padding: 9px 13px;
 }
 .advisor-private-work__decision details {flex: 1; min-width: 0;}
+.advisor-private-work__decision details[open] {flex-basis: 100%;}
 .advisor-private-work__decision summary {
   color: #5c666d;
   cursor: pointer;
@@ -1163,9 +1165,11 @@
   margin-top: auto;
   padding: 22px clamp(24px, 4vw, 54px) 28px;
   position: sticky;
+  pointer-events: none;
   right: 0;
   z-index: 6;
 }
+.advisor-project__composer-wrap > * {pointer-events: auto;}
 .advisor-project__composer-wrap::before {background: linear-gradient(0deg, #fbfbfa 58%, rgba(251,251,250,0)); content: ""; inset: -42px 0 0; pointer-events: none; position: absolute; z-index: -1;}
 .advisor-project__composer-wrap .advisor-composer {margin: 0 auto; max-width: 810px;}
 .advisor-project__composer-wrap .advisor-composer textarea {min-height: 72px;}
