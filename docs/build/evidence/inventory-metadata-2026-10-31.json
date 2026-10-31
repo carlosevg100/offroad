@@ -16,8 +16,18 @@
   ],
   "financialValuesDisplayed": false,
   "newProviderCalls": 0,
-  "fullCheck": "pending",
+  "fullCheck": "pending after wrapping long metadata text in narrow layouts",
   "e2e": "updated; execution pending",
-  "visualReview": "pending",
-  "deployment": "pending"
+  "visualReview": "pending on the application preview; isolated SSR fixtures rendered, browser inspection not completed",
+  "deployment": "pending",
+  "previousFullCheck": {
+    "status": "passed",
+    "sourceCommit": "f99c33461b395c4fbe727381ba4aa0dd18b9c0fe",
+    "log": "/tmp/offroad-inventory-metadata-check-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
+  },
+  "responsiveChange": "Metadata spans wrap within the document row; child content has min-width: 0."
 }

@@ -4,7 +4,7 @@ A lista de arquivos passa a mostrar tipo de documento, nome observado e período
 
 A consulta parte dos IDs que a página já autorizou e lê source_versions sob RLS, com o vínculo exato de document_profiles à versão atual. Perfis de outra versão, rejeitados, substituídos ou inaplicáveis ficam fora da apresentação. Consultas são divididas em referências limitadas sem descartar o restante da lista. Não há cache de metadados entre permissões, gravação, mudança de ACL ou nova chamada de modelo.
 
-Regressões focadas: 26 testes passaram, incluindo apresentação nos dois idiomas, período parcial/inválido, escape de nome recebido, fronteira de versão, retirada de acesso no carregador e referência fora da lista. Tipos passaram; lint e gate geral da revisão precisam ser reconferidos após o ajuste de tipo do mock. O E2E da jornada documental exige a classificação inicial na página real. CI, inspeção visual e implantação deste incremento continuam pendentes. Não altera publicação ou liberação de métodos.
+Regressões focadas: 26 testes passaram, incluindo apresentação nos dois idiomas, período parcial/inválido, escape de nome recebido, fronteira de versão, retirada de acesso no carregador e referência fora da lista. Tipos, lint, testes e build passaram no commit f99c3346, 44/44 tarefas em cada etapa. Depois desse gate, nomes longos receberam quebra dentro da coluna de leitura; a revisão final de layout ainda será reconferida. O E2E da jornada documental exige a classificação inicial na página real. CI, inspeção visual e implantação deste incremento continuam pendentes. Não altera publicação ou liberação de métodos.
 
 ## 2026-10-31: identidades distintas para propostas de extração distintas
 
