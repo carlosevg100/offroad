@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "inventory-metadata-evidence.v1",
+  "scope": "Display initial current-version document metadata in the existing private inventory.",
+  "focusedTests": {
+    "passed": 26,
+    "log": "/tmp/offroad-inventory-metadata-tests-20261031.log"
+  },
+  "typecheck": {
+    "status": "passed",
+    "log": "/tmp/offroad-inventory-metadata-types-20261031.log"
+  },
+  "sourceAuthorization": "source_versions RLS plus exact source-version profile relation; organization and requested IDs constrained",
+  "reviewStatesDisplayed": [
+    "proposed",
+    "accepted"
+  ],
+  "financialValuesDisplayed": false,
+  "newProviderCalls": 0,
+  "fullCheck": "pending",
+  "e2e": "updated; execution pending",
+  "visualReview": "pending",
+  "deployment": "pending"
+}

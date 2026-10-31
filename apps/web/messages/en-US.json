@@ -6644,6 +6644,15 @@
     "scopeSourceHash": "File fingerprint"
   },
   "AdvisorEvidenceInventory": {
+    "initialClassification": "Initial classification: {classification}",
+    "classificationUnknown": "Type not identified",
+    "classificationPending": "Classification not yet available",
+    "observedEntity": "Name read in the document: {name}",
+    "entityPending": "Entity name not identified",
+    "period": "Reported period: {start} to {end}",
+    "periodFrom": "Reported start: {date}; end not identified",
+    "periodUntil": "Reported end: {date}; start not identified",
+    "periodPending": "Period not identified",
     "title": "Information base",
     "description": "Review the material received and the points that still need evidence.",
     "files": "{count, plural, one {# file received} other {# files received}}",

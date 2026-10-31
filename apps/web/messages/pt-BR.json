@@ -6644,6 +6644,15 @@
     "scopeSourceHash": "Identificador do arquivo"
   },
   "AdvisorEvidenceInventory": {
+    "initialClassification": "Classificação inicial: {classification}",
+    "classificationUnknown": "Tipo não identificado",
+    "classificationPending": "Classificação ainda não disponível",
+    "observedEntity": "Nome lido no documento: {name}",
+    "entityPending": "Nome da entidade não identificado",
+    "period": "Período indicado: {start} a {end}",
+    "periodFrom": "Início indicado: {date}; fim não identificado",
+    "periodUntil": "Fim indicado: {date}; início não identificado",
+    "periodPending": "Período não identificado",
     "title": "Base de informação",
     "description": "Confira o material recebido e os pontos que ainda precisam de evidência.",
     "files": "{count, plural, one {# arquivo recebido} other {# arquivos recebidos}}",
