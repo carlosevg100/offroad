@@ -94,5 +94,17 @@
     "result": "failed",
     "reason": "The test inserted E0 receipts after generating the pending understanding, correctly making that decision stale. Its expected version increment therefore did not happen. No stale-decision guard was changed."
   },
-  "fixtureOrderCorrection": "Wait for all uploaded source objects, verify physical bytes through the existing local E0 helper before releasing the normal initial-processing request, then test the real no-reload revision and current-profile display. No classification or model output is seeded."
+  "fixtureOrderCorrection": "Wait for all uploaded source objects, verify physical bytes through the existing local E0 helper before releasing the normal initial-processing request, then test the real no-reload revision and current-profile display. No classification or model output is seeded.",
+  "integratedFullCheck": {
+    "status": "passed",
+    "sourceCommit": "c5fa662d611c7d9f2ce530a99fb1c9d559723df6",
+    "log": "/tmp/offroad-inventory-metadata-check-v10-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44",
+    "allTaskGroupsCached": true,
+    "workerSourceEquals": "8b0c75c7229e696019a9db4d44636e0f2e706e79"
+  },
+  "dependsOnPullRequest": 975
 }
