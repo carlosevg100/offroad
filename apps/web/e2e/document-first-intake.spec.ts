@@ -587,7 +587,8 @@ test.describe("Document-first intake (company journey)", () => {
       if (!target) throw new Error("scroll_container_missing");
       for (let attempt = 0; attempt < 3; attempt++) {
         const b = button.getBoundingClientRect(), c = composer.getBoundingClientRect();
-        target.scrollTop += b.top + b.height / 2 - (c.top + 8);
+        // The page uses smooth scrolling; measurements require the final position.
+        target.scrollTo({top: target.scrollTop + b.top + b.height / 2 - (c.top + 8), behavior: "instant"});
       }
     });
     const click = await revise.evaluate((button) => {

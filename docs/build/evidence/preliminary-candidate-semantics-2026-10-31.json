@@ -72,5 +72,40 @@
   },
   "candidateMethodsReleased": false,
   "completeOriginatorDemoReady": false,
-  "productionBoundarySmoke": "PASS: same contract"
+  "productionBoundarySmoke": "PASS: same contract",
+  "localCheck": {
+    "status": "passed",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "tests": "44/44",
+    "build": "44/44",
+    "log": "/tmp/offroad-preliminary-candidate-semantics-check-20261031.log"
+  },
+  "firstCi": {
+    "head": "a280dadd1eb485c8d4a88386159bfb3ee26f7d41",
+    "qualityRun": 41204403561,
+    "failedJob": 124546439937,
+    "failedAt": "test setup: inComposerPadding=false before any correction click",
+    "rootCause": "CSS smooth scrolling had not reached the measured target",
+    "isolatedCssReproduction": {
+      "scrollTop": {
+        "inPadding": false
+      },
+      "scrollToInstant": {
+        "inPadding": true,
+        "receivesClick": true
+      },
+      "instantScrollWithPreviousOverlay": {
+        "inPadding": true,
+        "receivesClick": false
+      }
+    },
+    "correction": "Use instant scroll positioning. Keep overlay hit-test and no-reload revision requirements."
+  },
+  "testPositionCorrectionChecks": {
+    "webLint": "passed",
+    "webTypecheck": "passed",
+    "layoutReplay": "old overlay blocks real hit-test; corrected overlay passes at the same point",
+    "log": "/tmp/offroad-preliminary-layout-replay-result.jsonl"
+  }
 }
