@@ -572,6 +572,9 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(inventory).toContainText("Classificação inicial:");
     await expect(inventory).toContainText("Nome lido no documento:");
     await expect(inventory).toContainText("O processamento de um arquivo não confirma");
+    const inventoryScreenshot = test.info().outputPath("document-inventory-initial-classification.png");
+    await inventory.screenshot({path: inventoryScreenshot});
+    await test.info().attach("Initial document classification, synthetic fixture", {path: inventoryScreenshot, contentType: "image/png"});
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
 
     // Revisions must be usable at the visible button position and appear without a reload.

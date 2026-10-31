@@ -16,9 +16,9 @@
   ],
   "financialValuesDisplayed": false,
   "newProviderCalls": 0,
-  "fullCheck": "pending after wrapping long metadata text in narrow layouts",
+  "fullCheck": "pending after adding the E2E screenshot attachment",
   "e2e": "updated; execution pending",
-  "visualReview": "pending on the application preview; isolated SSR fixtures rendered, browser inspection not completed",
+  "visualReview": "The real-page E2E records an attached screenshot for review. Inspection pending.",
   "deployment": "pending",
   "previousFullCheck": {
     "status": "passed",
@@ -29,5 +29,14 @@
     "test": "44/44",
     "build": "44/44"
   },
-  "responsiveChange": "Metadata spans wrap within the document row; child content has min-width: 0."
+  "responsiveChange": "Metadata spans wrap within the document row; child content has min-width: 0.",
+  "previousFullCheckAfterWrapping": {
+    "status": "passed",
+    "sourceCommit": "d904ca6c7e2c1628f1689b97cbced45ad93efe10",
+    "log": "/tmp/offroad-inventory-metadata-check-v2-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44"
+  }
 }
