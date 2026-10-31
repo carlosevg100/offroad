@@ -1,6 +1,6 @@
 import {declareExecutionBriefReview} from "./support/brief-approval";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
-import {verifyLocalFixtureSources} from "./support/source-verification";
+import {verifyLocalFixtureProjectSources, verifyLocalFixtureSources} from "./support/source-verification";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -550,6 +550,34 @@ test.describe("Document-first intake (company journey)", () => {
   test("starts and processes an advisor project from documents alone", async () => {
     await page.goto("/pt-BR/app");
     const composer = page.locator(".advisor-composer--start");
+    const localFixture = process.env.OFFROAD_E2E_REQUIRE_EXECUTION_APPROVAL !== "1";
+    const uploadedPaths = new Set<string>();
+    let sourcesVerifiedBeforeProcessing = false;
+    const trackUpload = (response: import("@playwright/test").Response) => {
+      const request = response.request(), path = new URL(response.url()).pathname;
+      if (request.method() === "POST" && response.ok() && path.startsWith("/storage/v1/object/opportunity-documents/")) uploadedPaths.add(path);
+    };
+    const rootPage = (url: URL) => url.pathname === "/pt-BR/app";
+    const beforeProcessing = async (route: import("@playwright/test").Route) => {
+      const request = route.request();
+      if (!sourcesVerifiedBeforeProcessing && uploadedPaths.size === dataRoomExpectations.documents && request.method() === "POST" && request.headers()["next-action"]) {
+        let body: unknown;
+        try {body = request.postDataJSON();} catch {body = null;}
+        const projectId = Array.isArray(body) && body[0] && typeof body[0] === "object" ? (body[0] as {projectId?: unknown}).projectId : null;
+        if (typeof projectId === "string") {
+          // The deterministic environment needs a real persisted E0 receipt before its
+          // normal fallback processing begins, just like the earlier company journey.
+          // Do not change the evidence after generating the decision the test revises.
+          await verifyLocalFixtureProjectSources(projectId, account.email);
+          sourcesVerifiedBeforeProcessing = true;
+        }
+      }
+      await route.continue();
+    };
+    if (localFixture) {
+      page.on("response", trackUpload);
+      await page.route(rootPage, beforeProcessing);
+    }
 
     // A prepared package is itself a valid request. The user does not need to restate the
     // company or capital need before the system reads what was attached.
@@ -560,6 +588,11 @@ test.describe("Document-first intake (company journey)", () => {
     await composer.locator(".advisor-composer__send").click();
 
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    if (localFixture) {
+      page.off("response", trackUpload);
+      await page.unroute(rootPage, beforeProcessing);
+      expect(sourcesVerifiedBeforeProcessing).toBe(true);
+    }
     await expect(page.locator(".advisor-project__composer-wrap footer span")).toHaveText("Projeto privado");
     const inventory = page.getByTestId("evidence-inventory");
     await expect(inventory.locator(".advisor-evidence-inventory__summary")).toContainText(`${dataRoomExpectations.documents} arquivos recebidos`);
@@ -604,6 +637,16 @@ test.describe("Document-first intake (company journey)", () => {
     await expectNoErrorNotice(page);
     await expect.poll(async () => Number(await privateWork.getAttribute("data-understanding-version")), {timeout: 120_000}).toBeGreaterThan(firstVersion);
     await expect(page.locator(".advisor-private-work__understanding")).toBeVisible();
+    await expectNoErrorNotice(page);
+    // Metadata is read through the currently authorized immutable version, in the real page.
+    // Showing an initial classification must not mark its evidence requirements resolved.
+    await expect(inventory.locator('[data-document-classification="initial"]')).toHaveCount(dataRoomExpectations.documents);
+    await expect(inventory).toContainText("Classificação inicial:");
+    await expect(inventory).toContainText("Nome lido no documento:");
+    await expect(inventory).toContainText("O processamento de um arquivo não confirma");
+    const inventoryScreenshot = test.info().outputPath("document-inventory-initial-classification.png");
+    await inventory.screenshot({path: inventoryScreenshot});
+    await test.info().attach("Initial document classification, synthetic fixture", {path: inventoryScreenshot, contentType: "image/png"});
   });
 
   test("compares uploaded proposals through the worker and preserves the work product after reload", async ({}, testInfo) => {
