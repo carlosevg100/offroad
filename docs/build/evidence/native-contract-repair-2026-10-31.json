@@ -1,12 +1,29 @@
 {
   "schemaVersion": "native-contract-repair-evidence.v1",
   "scope": "Explicit one-attempt primary repair for a schema-valid native response rejected by its deterministic contract.",
-  "controlledBefore": {"failed": 4, "passed": 4, "log": "/tmp/offroad-native-contract-repair-before-v2-20261031.log"},
-  "controlledAfter": {"passed": 8, "log": "/tmp/offroad-native-contract-repair-after-20261031.log"},
-  "gatewaySuite": {"passed": 225, "log": "/tmp/offroad-native-contract-repair-suite-20261031.log"},
-  "workerFocused": {"passed": 31, "log": "/tmp/offroad-native-repair-worker-focused-20261031.log"},
+  "controlledBefore": {
+    "failed": 4,
+    "passed": 4,
+    "log": "/tmp/offroad-native-contract-repair-before-v2-20261031.log"
+  },
+  "controlledAfter": {
+    "passed": 8,
+    "log": "/tmp/offroad-native-contract-repair-after-20261031.log"
+  },
+  "gatewaySuite": {
+    "passed": 225,
+    "log": "/tmp/offroad-native-contract-repair-suite-20261031.log"
+  },
+  "workerFocused": {
+    "passed": 31,
+    "log": "/tmp/offroad-native-repair-worker-focused-20261031.log"
+  },
   "typechecks": "passed for gateway and worker",
-  "frameworkSurface": {"consumers": 134, "errors": 0, "gateTestsPassed": 9},
+  "frameworkSurface": {
+    "consumers": 134,
+    "errors": 0,
+    "gateTestsPassed": 9
+  },
   "nativeDefaultChanged": false,
   "nativeSchemaRepairChanged": false,
   "providerPolicyChanged": false,
@@ -18,5 +35,29 @@
   "newPaidCallsForTheseChecks": 0,
   "fullCheck": "pending",
   "deployment": "pending",
-  "analyticalMethodRelease": false
+  "analyticalMethodRelease": false,
+  "recoveryUi": {
+    "before": {
+      "failed": 1,
+      "passed": 7
+    },
+    "after": {
+      "passed": 8
+    },
+    "beforeLog": "/tmp/offroad-preliminary-retry-ui-before-20261031.log",
+    "afterLog": "/tmp/offroad-preliminary-retry-ui-after-20261031.log"
+  },
+  "productionBudgets": {
+    "passed": 11,
+    "primaryRepairWithinExistingCap": true,
+    "log": "/tmp/offroad-native-repair-budget-20261031.log"
+  },
+  "initialFullCheck": {
+    "status": "passed",
+    "sourceCommit": "1ae46de172857073137729c98f10343575d81320",
+    "tasksPerPhase": 44,
+    "workerPassed": 2532,
+    "workerExistingSkipped": 1,
+    "log": "/tmp/offroad-native-contract-repair-check-20261031.log"
+  }
 }

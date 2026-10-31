@@ -220,7 +220,7 @@ describe("production budgets hold the largest request of every job", () => {
     expect(briefReservation).toBeGreaterThan(gatewayBudget({...caseJob, payload: {...(caseJob.payload as object), model_budget: {max_cost_usd: 1, max_calls: 4}}} as ClaimedJob));
   }, 120_000);
 
-  it("preliminary analysis: one understanding and its fallback fit the database's 0.90 at every input cap", async () => {
+  it("preliminary analysis: one understanding and either contract repair or fallback fit the database's 0.90 at every input cap", async () => {
     const text = await corpus();
     const fields = JSON.parse(readFileSync(resolve(gold, "camil/expected/fields.json"), "utf8")) as Array<Record<string, unknown>>;
     const job = {claimed: true, job_id: ids.job, capability_token: "c".repeat(64), lease_expires_at: "2026-09-24T18:00:00.000Z", attempt: 1, kind: "preliminary_analysis",
@@ -249,6 +249,9 @@ describe("production budgets hold the largest request of every job", () => {
     const {primary, fallback} = routes(request);
     const path = [await reserve(request, primary), await reserve(request, fallback!)];
     expect(worstAttempt(path)).toBeLessThanOrEqual(gatewayBudget(job));
+    expect(request.allowDeterministicRepair).toBe(true);
+    const contractRepairSystem = `${request.system}\n\n${buildRepairGuidance("deterministic", Array.from({length: 12}, (_, index) => ({path: `openPoints.${index}.whyItMatters`, code: "preliminary_figure_presentation_unresolved", message: "Use only supported presentation."})))}`;
+    expect(worstAttempt([path[0]!, await reserve(request, primary, contractRepairSystem)])).toBeLessThanOrEqual(gatewayBudget(job));
     expect(gatewayBudget(job)).toBeCloseTo(0.8, 10);
   }, 120_000);
 
