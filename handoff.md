@@ -1,3 +1,11 @@
+## 2026-10-31: identidades distintas para propostas de extração distintas
+
+A chave de persistência de uma leitura passa a incluir período, entidade e perímetro, tipo, unidade, moeda, escala, classe da informação e valor normalizado, além de campo, fonte/versão, âncora e expressão original. A mesma tupla de significado orienta a deduplicação. Assim, leituras diferentes da mesma célula não disputam uma linha no upsert, e uma unidade ou moeda diferente não desaparece como repetição. Documento e versão também delimitam a deduplicação quando listas verificadas são combinadas. Releituras do mesmo fato continuam agrupadas pela melhor evidência; confiança não altera sua identidade.
+
+A revisão é versionada como extração 2026.10.31-e3-v9. Não modifica chaves já armazenadas, estados de revisão, fatos adotados, RLS, grants nem consulta externa, e não provoca releitura em massa. Uma nova tentativa recebe novas propostas; não converte aprovação anterior em aprovação da nova leitura.
+
+O comparativo controlado de dez regressões falhou em oito antes e passou nas dez depois; a suíte completa de document-intelligence passou em 103/103. O primeiro ensaio usou o nome de perímetro individual, que pertence a outro contrato; o fixture foi corrigido para standalone antes do comparativo controlado final. Gate geral, CI, implantação e ensaio pela plataforma continuam pendentes. Recibo técnico: docs/build/evidence/extraction-candidate-identity-2026-10-31.json.
+
 ## 2026-10-31: correção da semântica na leitura preliminar e da revisão na tela
 
 A primeira CI de #972 no head a280dadd parou na preparação do cenário de navegador: a rolagem suave ainda movia a página quando o teste verificava a sobreposição. A reprodução local isolada, com o CSS real e conteúdo sintético, demonstrou inPadding=false com scrollTop e inPadding=true/receivesClick=true com scrollTo instantâneo. O cenário passa a posicionar sem animação, preservando as exigências de sobreposição, clique real e nova versão sem recarga. O caminho de correção ainda precisa passar na nova CI e no ensaio nativo.

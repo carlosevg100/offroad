@@ -200,7 +200,7 @@ describe("verifier", () => {
     expect(outcome.value.field_group).toBe("historical_financials");
     expect(outcome.value.extractor_key).toMatch(/^[a-f0-9]{64}$/);
     expect(outcome.value.extractor_key).toBe(
-      computeExtractorKey({fieldPath: revenue.field_path, sourceDocumentId: "doc-df-2025", documentVersion: 1, anchorId: "p12.t1.r1.c2", valueRaw: "185.400"}),
+      computeExtractorKey({fieldPath: revenue.field_path, sourceDocumentId: "doc-df-2025", documentVersion: 1, anchorId: "p12.t1.r1.c2", valueRaw: "185.400", meaning: outcome.value}),
     );
   });
 

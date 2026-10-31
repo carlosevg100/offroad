@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "extraction-candidate-identity-evidence.v1",
+  "scope": "Deterministic candidate identities and grouping; synthetic tests only.",
+  "extractorVersion": "2026.10.31-e3-v9",
+  "controlledBefore": {
+    "testFile": "packages/document-intelligence/src/candidate-identity.test.ts",
+    "failed": 8,
+    "passed": 2,
+    "log": "/tmp/offroad-candidate-identity-before-20261031.log"
+  },
+  "after": {
+    "package": "@offroad/document-intelligence",
+    "passed": 103,
+    "testFiles": 9,
+    "log": "/tmp/offroad-candidate-identity-after-20261031.log"
+  },
+  "preserved": [
+    "source/version boundaries",
+    "distinct period/entity/perimeter/unit/currency/information class",
+    "same-meaning duplicate coalescing",
+    "confidence-independent keys",
+    "existing persisted keys and adopted facts",
+    "current authorization and review states"
+  ],
+  "fullCheck": {
+    "status": "pending"
+  },
+  "ci": "pending",
+  "deployment": "pending",
+  "nativeRetest": "pending",
+  "testDevelopmentNote": "Fixture perimeter was corrected from individual to standalone before final controlled before/after comparison."
+}
