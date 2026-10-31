@@ -8,20 +8,16 @@ import {documentJobSchema} from "../../../document-worker/src/queue";
 import {runGovernedGate} from "../../../document-worker/src/scan";
 import {dataRoomFiles} from "./data-room";
 
-/** Verify physical bytes first, then invoke the existing hash-based synthetic classifier.
- * This is local test setup, not a model execution, decision or production byte attestation. */
-export async function classifyLocalFixtureProjectSources(projectId: string, ownerEmail: string) {
+/** Resolve only the signed-in synthetic owner's local project. This does not seed a
+ * classification: the existing fallback must still recognize the verified corpus bytes. */
+export async function verifyLocalFixtureProjectSources(projectId: string, ownerEmail: string) {
   const databaseUrl = process.env.OFFROAD_E2E_DB_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
   const db = new URL(databaseUrl);
   if (!["127.0.0.1", "localhost", "[::1]"].includes(db.hostname) || db.port !== "54322" || db.pathname !== "/postgres"
-    || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(projectId) || !/^e2e-[a-z0-9-]+@example\.com$/.test(ownerEmail)) throw new Error("Synthetic local project required");
+    || !/^[a-f0-9-]{36}$/.test(projectId) || !/^e2e-[a-z0-9-]+@example\.com$/.test(ownerEmail)) throw new Error("Synthetic local project required");
   const sessionId = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-c",
     `select s.id from public.document_intake_sessions s join auth.users u on u.id=s.started_by where s.capital_project_id='${projectId}'::uuid and u.email='${ownerEmail}';`], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]}).trim();
   await verifyLocalFixtureSources(sessionId, ownerEmail);
-  const written = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${ownerEmail}`,
-    "-f", join(__dirname, "source-classification-local.sql")], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]}).trim();
-  if (!/^\d+$/.test(written)) throw new Error("Local fixture classification did not return its profile count");
-  return Number(written);
 }
 
 /** The synthetic classifier cannot attest bytes. Exercise the real worker E0 boundary first. */
