@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "extraction-candidate-identity-evidence.v1",
+  "scope": "Deterministic candidate identities and grouping; synthetic tests only.",
+  "extractorVersion": "2026.10.31-e3-v9",
+  "controlledBefore": {
+    "testFile": "packages/document-intelligence/src/candidate-identity.test.ts",
+    "failed": 8,
+    "passed": 2,
+    "log": "/tmp/offroad-candidate-identity-before-20261031.log"
+  },
+  "after": {
+    "package": "@offroad/document-intelligence",
+    "passed": 103,
+    "testFiles": 9,
+    "log": "/tmp/offroad-candidate-identity-after-20261031.log"
+  },
+  "preserved": [
+    "source/version boundaries",
+    "distinct period/entity/perimeter/unit/currency/information class",
+    "same-meaning duplicate coalescing",
+    "confidence-independent keys",
+    "existing persisted keys and adopted facts",
+    "current authorization and review states"
+  ],
+  "fullCheck": {
+    "status": "passed",
+    "log": "/tmp/offroad-extraction-candidate-identity-check-v2-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44",
+    "times": [
+      "33ms >>> FULL TURBO",
+      "33ms >>> FULL TURBO",
+      "2m34.942s ",
+      "53.607s "
+    ],
+    "workerTests": {
+      "passed": 2510,
+      "skipped": 1
+    }
+  },
+  "ci": "pending",
+  "deployment": "pending",
+  "nativeRetest": "pending",
+  "testDevelopmentNote": "Fixture perimeter was corrected from individual to standalone before final controlled before/after comparison.",
+  "sourceCommit": "a9d128919abcc42e1b77f45eae34d31d816f39a6",
+  "recordedAt": "2026-10-31T15:30:58.969550+00:00",
+  "typecheck": {
+    "status": "passed",
+    "log": "/tmp/offroad-candidate-identity-types-20261031.log"
+  },
+  "previousFullCheck": {
+    "status": "failed",
+    "reason": "Seven dry-run eval tests could not open the local tsx IPC pipe (EPERM); the same gate passed with the required local permission. No test or gate was disabled.",
+    "log": "/tmp/offroad-extraction-candidate-identity-check-20261031.log"
+  }
+}

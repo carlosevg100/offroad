@@ -30,9 +30,20 @@ export const fatalVerifierFlags: ReadonlySet<VerifierFlag> = new Set([
   "field_unknown",
 ]);
 
-export function computeExtractorKey(input: {fieldPath: string; sourceDocumentId: string; documentVersion: number; anchorId: string; valueRaw: string}): string {
+type CandidateMeaning = Pick<VerifiedCandidate, "period" | "entity" | "value_type" | "unit" | "currency" | "scale" | "information_class" | "normalized_value">;
+/** One meaning tuple for grouping and persistence. Repeated text at one anchor can
+ * describe different periods, entities, currencies or units; none may overwrite another.
+ * JSON preserves boundaries even when an observed label contains a separator. */
+function meaningIdentity(candidate: CandidateMeaning): unknown[] {
+  return [candidate.period?.start ?? null, candidate.period?.end ?? null, candidate.period?.kind ?? null,
+    candidate.entity ? normalizeText(candidate.entity.name) : null, candidate.entity?.scope ?? null,
+    candidate.value_type, candidate.unit ?? null, candidate.currency ?? null, candidate.scale,
+    candidate.information_class, candidate.normalized_value];
+}
+
+export function computeExtractorKey(input: {fieldPath: string; sourceDocumentId: string; documentVersion: number; anchorId: string; valueRaw: string; meaning: CandidateMeaning}): string {
   return createHash("sha256")
-    .update([input.fieldPath, input.sourceDocumentId, String(input.documentVersion), input.anchorId, normalizeText(input.valueRaw)].join("|"))
+    .update(JSON.stringify(["candidate-identity.v2", input.fieldPath, input.sourceDocumentId, input.documentVersion, input.anchorId, normalizeText(input.valueRaw), ...meaningIdentity(input.meaning)]))
     .digest("hex");
 }
 
@@ -170,6 +181,7 @@ export function verifyCandidate(
       documentVersion: context.documentVersion,
       anchorId: candidate.anchor.id,
       valueRaw: candidate.value_raw,
+      meaning: {...candidate, scale: effectiveScale, normalized_value: normalizedValue},
     }),
     source_document_id: context.profile.documentId,
     document_version: context.documentVersion,
@@ -403,20 +415,13 @@ function entitiesCompatible(left: string, right: string): boolean {
 }
 
 /**
- * Merges candidates that state the same fact (field, period, entity, value):
+ * Merges candidates that state the same fact, source/version and measurement basis:
  * the highest-confidence one survives and carries the others' anchors.
  */
 export function dedupeCandidates(candidates: VerifiedCandidate[]): VerifiedCandidate[] {
   const groups = new Map<string, VerifiedCandidate[]>();
   for (const candidate of candidates) {
-    const key = [
-      candidate.field_path,
-      candidate.period?.start ?? "",
-      candidate.period?.end ?? "",
-      candidate.entity ? normalizeText(candidate.entity.name) : "",
-      candidate.entity?.scope ?? "",
-      candidate.normalized_value,
-    ].join("|");
+    const key = JSON.stringify([candidate.source_document_id, candidate.document_version, candidate.field_path, ...meaningIdentity(candidate)]);
     const group = groups.get(key);
     if (group) group.push(candidate);
     else groups.set(key, [candidate]);
