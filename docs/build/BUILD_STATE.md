@@ -4,7 +4,7 @@ A chave de persistência de uma leitura passa a incluir período, entidade e per
 
 A revisão é versionada como extração 2026.10.31-e3-v9. Não modifica chaves já armazenadas, estados de revisão, fatos adotados, RLS, grants nem consulta externa, e não provoca releitura em massa. Uma nova tentativa recebe novas propostas; não converte aprovação anterior em aprovação da nova leitura.
 
-O comparativo controlado de dez regressões falhou em oito antes e passou nas dez depois; a suíte completa de document-intelligence passou em 103/103. O primeiro ensaio usou o nome de perímetro individual, que pertence a outro contrato; o fixture foi corrigido para standalone antes do comparativo controlado final. Gate geral, CI, implantação e ensaio pela plataforma continuam pendentes. Recibo técnico: docs/build/evidence/extraction-candidate-identity-2026-10-31.json.
+O comparativo controlado de dez regressões falhou em oito antes e passou nas dez depois; a suíte completa de document-intelligence passou em 103/103. O primeiro ensaio usou o nome de perímetro individual, que pertence a outro contrato; o fixture foi corrigido para standalone antes do comparativo controlado final. O gate geral passou no commit a9d12891 em lint, tipos, testes e build, 44/44 tarefas por etapa. A primeira tentativa parou na restrição de comunicação local de sete testes de scripts; a repetição com a permissão local necessária passou sem desativar testes. CI, implantação e ensaio pela plataforma continuam pendentes. Recibo técnico: docs/build/evidence/extraction-candidate-identity-2026-10-31.json.
 
 ## 2026-10-31: correção da semântica na leitura preliminar e da revisão na tela
 
