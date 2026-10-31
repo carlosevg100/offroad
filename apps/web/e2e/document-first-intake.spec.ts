@@ -1,6 +1,6 @@
 import {declareExecutionBriefReview} from "./support/brief-approval";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
-import {verifyLocalFixtureProjectSources, verifyLocalFixtureSources} from "./support/source-verification";
+import {classifyLocalFixtureProjectSources, verifyLocalFixtureSources} from "./support/source-verification";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -571,10 +571,9 @@ test.describe("Document-first intake (company journey)", () => {
     if (process.env.OFFROAD_E2E_REQUIRE_EXECUTION_APPROVAL !== "1") {
       // The fallback can orient from recognized bytes, but cannot attest their persisted
       // source verification. No initial profile may be displayed until the real E0 receipt
-      // exists. The normal revision below then reruns the hash-based synthetic classifier.
+      // exists. Keep the revision regression on its unchanged basis before this setup.
       await expect(inventory.locator('[data-document-classification="initial"]')).toHaveCount(0);
       await expect(inventory).toContainText("Classificação ainda não disponível");
-      await verifyLocalFixtureProjectSources(new URL(page.url()).pathname.split("/").at(-1)!, account.email);
     }
 
     // Revisions must be usable at the visible button position and appear without a reload.
@@ -613,6 +612,15 @@ test.describe("Document-first intake (company journey)", () => {
     await expectNoErrorNotice(page);
     await expect.poll(async () => Number(await privateWork.getAttribute("data-understanding-version")), {timeout: 120_000}).toBeGreaterThan(firstVersion);
     await expect(page.locator(".advisor-private-work__understanding")).toBeVisible();
+    await expectNoErrorNotice(page);
+    if (process.env.OFFROAD_E2E_REQUIRE_EXECUTION_APPROVAL !== "1") {
+      // E0 changes the evidence state and correctly invalidates a pending decision. Do
+      // it after proving the native revision above. Then use the existing exact-byte
+      // fallback classifier to prepare display metadata, without forging a model read.
+      expect(await classifyLocalFixtureProjectSources(new URL(page.url()).pathname.split("/").at(-1)!, account.email)).toBe(dataRoomExpectations.documents);
+      await page.reload();
+      await inventory.getByText("Ver documentos recebidos", {exact: true}).click();
+    }
     // Metadata is read through the currently authorized immutable version, in the real page.
     // Showing an initial classification must not mark its evidence requirements resolved.
     await expect(inventory.locator('[data-document-classification="initial"]')).toHaveCount(dataRoomExpectations.documents);
