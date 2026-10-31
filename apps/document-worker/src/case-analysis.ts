@@ -1,5 +1,6 @@
 import type {AssessmentNativeRuntime} from "./assessment-native-runtime";
 import {documentTermEvidence} from "./document-term-evidence";
+import {preliminaryFigureValidator} from "./preliminary-figure-grounding";
 import {buildCapitalMaterialCompilerBundle,validateCapitalMaterialCompilerBundle} from "./capital-material-production-adapter";
 import type {CapitalMaterialRuntime,MaterialDispatch} from "./capital-material-production-runtime";
 import {capitalMaterialCommitSchema,capitalMaterialTerminalSchema,type MaterialBundle,type MaterialCapture,type MaterialResearchInput} from "./capital-material-production-native";
@@ -638,7 +639,7 @@ const preliminaryNarrativeSchema = z.object({
   })).max(24),
 });
 
-const PRELIMINARY_UNDERSTANDING_SYSTEM = `You are preparing Offroad Capital's first, corrigible
+const PRELIMINARY_UNDERSTANDING_SYSTEM = `You are preparing Offroad's first, corrigible
 understanding of a company and its requested financing operation.
 
 This is a narrow orientation task before the tailored information request. It is not credit
@@ -669,6 +670,10 @@ Rules:
 - Never state that the operation is viable, affordable, financeable or correctly structured.
 - Never propose an instrument, amount, term, guarantee, covenant, price or lender.
 - Never infer missing financial figures. Turn material uncertainty into a focused open point.
+- Copy financial amounts, percentages, multiples and durations only from the supplied verified
+  readings or explicit user declaration, preserving currency and unit. Do not calculate sums,
+  differences, margins, ratios or duration conversions, including in questions and explanations.
+  Ask whether different reporting bases are comparable without inventing their numerical gap.
 - Preserve the source's term unit. requestedTermDays is a day count; requestedTermMonths is a
   month count. A historical field path ending in months does not override a verified days unit.
 - Read metric periods and bases before calling values inconsistent. A 7M, LTM, annual, budget or
@@ -705,15 +710,25 @@ async function processPreliminaryUnderstanding(
     officialProviderFactory: dependencies.officialResearchProviderFactory,
     declaration: raw.initial_request,
   });
-  const facts = raw.candidates
-    .filter((candidate) => candidate.anchor_verified === true)
+  const suppliedCandidates = raw.candidates
+    .filter((candidate) => candidate.anchor_verified === true
+      && !["rejected", "not_applicable", "superseded"].includes(String(candidate.review_state)))
     .sort((left, right) => numberOr(left.evidence_rank, 99) - numberOr(right.evidence_rank, 99))
-    .slice(0, 120)
-    .map((candidate) => ({
+    .slice(0, 120);
+  const facts = suppliedCandidates.map((candidate) => ({
+      sourceCandidateId: candidate.id ?? null,
       fieldPath: String(candidate.field_path ?? ""),
       label: String(candidate.label ?? candidate.field_path ?? "fact"),
       value: candidate.normalized_value ?? candidate.raw_value ?? null,
       rawValue: candidate.raw_value ?? null,
+      unit: candidate.unit ?? null,
+      currency: candidate.currency ?? null,
+      valueScale: candidate.value_scale ?? null,
+      periodStart: candidate.period_start ?? null,
+      periodEnd: candidate.period_end ?? null,
+      entityName: candidate.entity_name ?? null,
+      entityScope: candidate.entity_scope ?? null,
+      reviewState: candidate.review_state ?? null,
       informationClass: String(candidate.information_class ?? "document_fact"),
       confidence: numberOr(candidate.confidence, 0),
       sourceDocumentId: String(candidate.source_document_id ?? ""),
@@ -757,12 +772,24 @@ async function processPreliminaryUnderstanding(
     })),
   };
   const inputFingerprint = fingerprintJson(preliminaryInput);
+  const validateOutput = preliminaryFigureValidator({
+    locale,
+    candidates: suppliedCandidates,
+    userTexts: [raw.initial_request, raw.correction_request, raw.session.capital_objective,
+      raw.session.capital_urgency, raw.session.capital_consequence,
+      ...Object.values(recordOrNull(raw.session.company_profile) ?? {})].filter((value): value is string => typeof value === "string"),
+    declaredAmount: raw.session.requested_amount,
+    declaredCurrency: raw.session.capital_currency,
+    declaredTermMonths: raw.session.requested_term_months,
+    publicSources: preliminaryInput.publicSources,
+  });
   const completion = await dependencies.gateway.complete({
     task: "preliminary_understanding",
     system: PRELIMINARY_UNDERSTANDING_SYSTEM,
     input: [{type: "text", text: JSON.stringify(preliminaryInput)}],
     schema: preliminaryNarrativeSchema,
     schemaName: "preliminary_understanding_v1",
+    validateOutput,
     dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
     maxOutputTokens: 8_000,
     metadata: {
@@ -771,9 +798,11 @@ async function processPreliminaryUnderstanding(
       documentCount: String(raw.documents.length),
       publicSourceCount: String(publicResearch.sourceCount),
     },
-    cacheKey: "preliminary-understanding-v1",
+    cacheKey: "preliminary-understanding-grounded-v2",
   });
-  const allowedResearchUrls = new Set(publicResearch.sources.map((source) => source.url));
+  // Defence in depth for injected/custom gateways; no ungrounded narrative may be persisted.
+  if (!validateOutput(completion.output).accepted) throw new Error("preliminary_figure_not_supported");
+  const allowedResearchUrls = new Set(preliminaryInput.publicSources.map((source) => source.url));
   const narrative: PreliminaryNarrative = {
     ...completion.output,
     researchSignals: completion.output.researchSignals.flatMap((signal) => {

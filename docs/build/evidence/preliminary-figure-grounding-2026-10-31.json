@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "preliminary-figure-grounding-evidence.v1",
+  "scope": "Deterministic numerical support gate for the existing preliminary narrative; no new analytical method or authority.",
+  "focusedTests": {
+    "passed": 29,
+    "log": "/tmp/offroad-preliminary-grounding-focused-20261031.log"
+  },
+  "typecheck": "passed",
+  "frameworkSurface": {
+    "consumers": 134,
+    "errors": 0,
+    "gateUnitTests": 9
+  },
+  "newProviderCallsForTheseChecks": 0,
+  "sourceDimensions": [
+    "unit",
+    "currency",
+    "valueScale",
+    "periodStart",
+    "periodEnd",
+    "entityName",
+    "entityScope",
+    "reviewState",
+    "sourceCandidateId"
+  ],
+  "cacheKey": "preliminary-understanding-grounded-v2",
+  "persistenceGuard": "Unsupported explicit figures reject the output before understanding or assessment writes, including with an injected gateway.",
+  "financialArithmetic": "Presentation normalization is delegated to financial-core; this reader does not execute financial differences, sums or duration conversions.",
+  "limits": "Numerical support does not prove semantic association or comparability. This is not a complete natural-language proof, professional financial review or business acceptance.",
+  "fullCheck": {
+    "status": "passed",
+    "sourceCommit": "524281b02ae96bb210a5bfa7cf9481e2d4e779cb",
+    "log": "/tmp/offroad-preliminary-grounding-check-20261031.log",
+    "lint": "44/44",
+    "typecheck": "44/44",
+    "test": "44/44",
+    "build": "44/44",
+    "workerPassed": 2530,
+    "workerSkippedExisting": 1
+  },
+  "deployment": "pending",
+  "methodRelease": false
+}
