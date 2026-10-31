@@ -1,10 +1,11 @@
 "use client";
 
 import {FileText, FolderOpen, CircleAlert} from "lucide-react";
-import {useTranslations} from "next-intl";
+import {useFormatter, useTranslations} from "next-intl";
 import {formatDocumentSize} from "@/lib/intake/upload-client";
+import type {InventoryMetadata} from "@/lib/intake/inventory-metadata";
 
-export type InventoryDocument = {id: string; name: string; size: number | null; status: string; version?: number};
+export type InventoryDocument = {id: string; name: string; size: number | null; status: string; version?: number; metadata?: InventoryMetadata | null};
 export type InventoryRequirement = {id: string; label: string; status: string; materiality: string; reason: string | null};
 
 const documentStatuses = new Set(["quarantined", "scanning", "clean", "processing", "ready", "rejected", "failed"]);
@@ -20,6 +21,8 @@ export function AdvisorEvidenceInventory({documents, requirements, coverage, onA
   coverage: {verified: number; total: number; notExamined: number};
 }) {
   const t = useTranslations("AdvisorEvidenceInventory");
+  const format = useFormatter();
+  const date = (value: string) => format.dateTime(new Date(value + "T00:00:00Z"), {day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC"});
   return <section className="advisor-evidence-inventory" data-testid="evidence-inventory" id="project-evidence">
     <header><FolderOpen aria-hidden="true" size={18} /><div><h2>{t("title")}</h2><p>{t("description")}</p></div>{onAttach ? <button disabled={disabled} onClick={onAttach} type="button">{t("addFiles")}</button> : null}</header>
     <div className="advisor-evidence-inventory__summary">
@@ -34,7 +37,13 @@ export function AdvisorEvidenceInventory({documents, requirements, coverage, onA
           {document.version ? <span>{t("version", {version: document.version})}</span> : null}
           {document.size !== null ? <span>{formatDocumentSize(document.size)}</span> : null}
           <span>{t(`documentStatus.${documentStatuses.has(document.status) ? document.status : "unknown"}`)}</span>
-        </small></div>
+        </small>{document.metadata ? <small data-document-classification="initial">
+          <span>{t("initialClassification", {classification: document.metadata.classification ?? t("classificationUnknown")})}</span>
+          <span>{document.metadata.entityName ? t("observedEntity", {name: document.metadata.entityName}) : t("entityPending")}</span>
+          <span>{document.metadata.periodStart && document.metadata.periodEnd ? t("period", {start: date(document.metadata.periodStart), end: date(document.metadata.periodEnd)})
+            : document.metadata.periodStart ? t("periodFrom", {date: date(document.metadata.periodStart)})
+            : document.metadata.periodEnd ? t("periodUntil", {date: date(document.metadata.periodEnd)}) : t("periodPending")}</span>
+        </small> : <small>{t("classificationPending")}</small>}</div>
       </li>)}</ul> : <p>{t("noFiles")}</p>}
       <p className="advisor-evidence-inventory__note">{t("processingIsNotVerification")}</p>
     </details>

@@ -1216,7 +1216,7 @@
     },
     {
       "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
-      "sha256": "71c353537f9e81c260f1b37109e03adab261013674ef1e05a37bacc6c7de96a4",
+      "sha256": "3fc1cb7948775451b9ca6fb6cafd9724287f40b31d97f334b61554a408a6e837",
       "entrypoint": false,
       "rpcs": [
         "read_advisor_execution_brief_approval_v1",
@@ -1225,11 +1225,13 @@
         "read_documentary_plan_job_v1"
       ],
       "decision": "preserve governed consumer",
-      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority. Initial inventory profiles are read through source_versions RLS and the exact-version foreign key, constrained to the server-derived organization and the page-authorized IDs. Profile fields grant no evidence adoption or execution.",
       "negativeTests": [
         "supabase/tests/no_legacy_access_bypass.sql",
         "apps/web/src/lib/auth/workspace-context.test.ts",
-        "apps/web/e2e/document-first-intake.spec.ts"
+        "apps/web/e2e/document-first-intake.spec.ts",
+        "apps/web/src/lib/intake/inventory-metadata.test.ts",
+        "apps/web/src/components/advisor/advisor-evidence-inventory.test.tsx"
       ]
     },
     {

@@ -48,7 +48,7 @@ import {ExecutionBriefActivity} from "./execution-brief-activity";
 import {createDocumentaryRequestBindings} from "./documentary-request-binding";
 import {NewWorkRequest, type NewWorkRequestOutcome} from "./new-work-request";
 import {ExecutionBriefCard, type ExecutionBriefApproval} from "./execution-brief-card";
-import {AdvisorEvidenceInventory} from "./advisor-evidence-inventory";
+import {AdvisorEvidenceInventory, type InventoryDocument} from "./advisor-evidence-inventory";
 import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
 import {InvestmentPremisesCard, type InvestmentPremiseProposalView} from "./investment-premises-card";
 import {CapacityPremisesCard} from "./capacity-premises-card";
@@ -73,7 +73,7 @@ export type AdvisorProjectMessage = {
   /** The premises this reply proposed for a governed calculation; only the person's confirmation adopts them. */
   premiseProposal?: (InvestmentPremiseProposalView & {methodId?: string; summary?: Record<string, unknown>}) | null;
 };
-export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string; version?: number};
+export type AdvisorProjectDocument = InventoryDocument;
 export type AdvisorProjectTask = {id: string; label: string; status: string};
 export type AdvisorProjectArtifact = {id: string; label: string; status: string};
 export type AdvisorProjectActivityEvent = {id: string; type: string; summary: string; createdAt: string};
