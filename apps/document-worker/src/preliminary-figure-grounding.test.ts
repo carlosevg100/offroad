@@ -1,5 +1,7 @@
 import {describe, expect, it} from "vitest";
 import {preliminaryFigureValidator} from "./preliminary-figure-grounding";
+import {createModelGateway} from "@offroad/model-gateway";
+import {z} from "zod";
 
 const source = (value: string, extra: Record<string, unknown> = {}) => ({field_path: "transaction.requested_amount", normalized_value: value, raw_value: value, value_type: "number", unit: "money", currency: "BRL", anchor_verified: true, review_state: "proposed", ...extra});
 const narrative = (text: string) => ({understandingSummary: text, companySummary: "Empresa de distribuição.", operationSummary: "Pedido de capital de giro.", capitalObjective: null, sectorSummary: null, positioningSummary: null, openPoints: [], researchSignals: []});
@@ -50,5 +52,23 @@ describe("preliminary figures grounded in the supplied evidence", () => {
     expect(validate(narrative("3M, 2025: BRL. Request of BRL 3 million for 120 days."))).toEqual({accepted: true});
     expect(validate(narrative("BRL 3,000,000.00"))).toEqual({accepted: true});
     expect(validate(narrative("BRL 1 million"))).toMatchObject({accepted: false});
+  });
+  it("distinguishes an ambiguous presentation from a readable unsupported amount without leaking values", () => {
+    const validate = validator([source("3000000", {currency: "USD"})], {locale: "en"});
+    expect(validate(narrative("$ 3,000,000"))).toMatchObject({accepted: false, issues: [{code: "preliminary_figure_presentation_unresolved"}]});
+    expect(validate(narrative("USD 1 million"))).toMatchObject({accepted: false, issues: [{code: "preliminary_figure_not_supported"}]});
+    expect(validate(narrative("USD 3 million"))).toEqual({accepted: true});
+  });
+  it("corrects a refused financial narrative once through the real structured gateway rail", async () => {
+    const validate = validator([source("8800000"), source("7800000")]);
+    let sends = 0;
+    const gateway = createModelGateway({budget: {maxCalls: 2, maxCostUsd: 0.9}, adapters: {anthropic: {provider: "anthropic", complete: async request => {
+      sends++; expect(request.outputMode).toBe("structured");
+      const output = {text: sends === 1 ? "A diferença é de R$ 1 milhão." : "As duas bases de dívida são comparáveis?"};
+      return {output, rawText: JSON.stringify(output), usage: {inputTokens: 10, outputTokens: 10, cachedInputTokens: 0}, model: "claude-sonnet-5", stopReason: "end"};
+    }}}});
+    const result = await gateway.complete({task: "preliminary_understanding", system: "Use apenas valores fornecidos, sem calcular diferenças.", input: [{type: "text", text: "Fontes sintéticas."}], schema: z.object({text: z.string()}), schemaName: "synthetic_preliminary", outputMode: "structured", allowFallback: false, allowDeterministicRepair: true, maxOutputTokens: 100, validateOutput: output => validate(narrative(output.text))});
+    expect(result.output.text).toBe("As duas bases de dívida são comparáveis?");expect(sends).toBe(2);
+    expect(result).toMatchObject({isSameModelRepair: true, usedProviderFallback: false});
   });
 });

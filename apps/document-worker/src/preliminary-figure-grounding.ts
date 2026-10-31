@@ -51,7 +51,7 @@ function figuresIn(text: string, locale: Evidence["locale"]): TextFigures {
     } catch {invalid = true;}
   }
   // Do not let a malformed or word-only currency amount evade the numeric parser.
-  for (const token of text.matchAll(/(?:R\$|US\$|\b(?:BRL|USD|EUR|GBP)\b|€|£)(?=\s*(?:[-\d]|um\b|uma\b|one\b))/giu)) {
+  for (const token of text.matchAll(/(?:R\$|US\$|\$|\b(?:BRL|USD|EUR|GBP)\b|€|£)(?=\s*(?:[-\d]|um\b|uma\b|one\b))/giu)) {
     if (!currencyRanges.some(r => token.index >= r.start && token.index < r.end)) invalid = true;
   }
   return {figures, invalid};
@@ -93,7 +93,8 @@ export function preliminaryFigureValidator(input: Evidence) {
     const check = (text: string | null, path: string, allowed = local) => {
       if (text === null) return;
       const read = figuresIn(text, input.locale);
-      if (read.invalid || read.figures.some(f => !allowed.has(figureKey(f)))) issues.push({path, code: "preliminary_figure_not_supported", message: "Use only a figure with the same unit and currency in the supplied verified evidence or declaration; do not calculate a new figure."});
+      if (read.invalid) issues.push({path, code: "preliminary_figure_presentation_unresolved", message: "Use an explicit supported notation, currency and duration convention, or ask without the figure."});
+      else if (read.figures.some(f => !allowed.has(figureKey(f)))) issues.push({path, code: "preliminary_figure_not_supported", message: "Use only a figure with the same unit and currency in the supplied verified evidence or declaration; do not calculate a new figure."});
     };
     for (const key of ["understandingSummary", "companySummary", "operationSummary", "capitalObjective", "sectorSummary", "positioningSummary"] as const) check(n[key], key);
     n.openPoints.forEach((q, i) => {check(q.question, `openPoints.${i}.question`); check(q.whyItMatters, `openPoints.${i}.whyItMatters`);});

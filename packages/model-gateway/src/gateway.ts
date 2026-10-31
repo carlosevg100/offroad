@@ -153,6 +153,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     });
     const effectiveDefaults = Object.freeze({maxOutputTokens: policy.maxOutputTokens, timeoutMs: policy.timeoutMs});
     const {input, schemaJson, inputFingerprint} = prepared;
+    const canRepairContract = request.outputMode === "prompted_json"
+      || (request.allowDeterministicRepair === true && typeof request.validateOutput === "function");
     const attempts: GatewayResult<unknown>["attempts"] = [];
     const candidates: Array<{
       ref: ModelRef;
@@ -163,7 +165,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       {ref: Object.freeze({...primary}), retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false},
       // A repair attempt is conditional: the loop skips it unless the first response reached
       // schema validation and produced bounded, content-free repair guidance.
-      ...(request.outputMode === "prompted_json"
+      ...(canRepairContract
         ? [{ref: Object.freeze({...primary}), retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false}]
         : []),
       ...(fallback && request.allowFallback !== false
@@ -487,7 +489,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         });
         const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
         await closeOutcome("invalid_output", "deterministic_invalid", costUsd, latencyMs, null, validationIssueCodeFingerprint);
-        if (!isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
+        if (!isSameModelRepair && !usedProviderFallback && canRepairContract) {
           repairGuidance = buildRepairGuidance("deterministic", validationIssues);
           pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
         }

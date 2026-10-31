@@ -280,13 +280,14 @@ describe("worker case analysis", () => {
     let spent = {costUsd: 0, calls: 0};
     let requestedMaxOutputTokens: number | undefined;
     const gateway = {
-      complete: async (request: {task: string; maxOutputTokens?: number; validateOutput?: unknown; cacheKey?: string; input: Array<{type: string; text?: string}>}) => {
+      complete: async (request: {task: string; maxOutputTokens?: number; validateOutput?: unknown; allowDeterministicRepair?: boolean; cacheKey?: string; input: Array<{type: string; text?: string}>}) => {
         calls.push(request.task);
         if(native){expect(consumed).toEqual(["primary_capture","public_capture"]);consumed.push("inference");}
         requestedMaxOutputTokens = request.maxOutputTokens;
         narrativeInput = JSON.parse(request.input[0]?.text ?? "{}") as Record<string, unknown>;
         expect(typeof request.validateOutput).toBe("function");
-        expect(request.cacheKey).toBe("preliminary-understanding-grounded-v2");
+        expect(request.allowDeterministicRepair).toBe(true);
+        expect(request.cacheKey).toBe("preliminary-understanding-grounded-v3");
         spent = {costUsd: 0.08, calls: 1};
         return {
           output: {

@@ -674,6 +674,8 @@ Rules:
   readings or explicit user declaration, preserving currency and unit. Do not calculate sums,
   differences, margins, ratios or duration conversions, including in questions and explanations.
   Ask whether different reporting bases are comparable without inventing their numerical gap.
+  If a figure's unit, convention or support is unresolved, phrase the open question without
+  that figure. A question about comparability does not need a calculated amount.
 - Preserve the source's term unit. requestedTermDays is a day count; requestedTermMonths is a
   month count. A historical field path ending in months does not override a verified days unit.
 - Read metric periods and bases before calling values inconsistent. A 7M, LTM, annual, budget or
@@ -790,6 +792,7 @@ async function processPreliminaryUnderstanding(
     schema: preliminaryNarrativeSchema,
     schemaName: "preliminary_understanding_v1",
     validateOutput,
+    allowDeterministicRepair: true,
     dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
     maxOutputTokens: 8_000,
     metadata: {
@@ -798,7 +801,7 @@ async function processPreliminaryUnderstanding(
       documentCount: String(raw.documents.length),
       publicSourceCount: String(publicResearch.sourceCount),
     },
-    cacheKey: "preliminary-understanding-grounded-v2",
+    cacheKey: "preliminary-understanding-grounded-v3",
   });
   // Defence in depth for injected/custom gateways; no ungrounded narrative may be persisted.
   if (!validateOutput(completion.output).accepted) throw new Error("preliminary_figure_not_supported");
