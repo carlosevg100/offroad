@@ -25,7 +25,7 @@
     "test": "44/44",
     "build": "44/44"
   },
-  "e2e": "Pending rerun after source verification fixture correction",
+  "e2e": "Pending rerun with E0 before the first read",
   "visualReview": "The real-page E2E records an attached screenshot for review. Inspection pending.",
   "deployment": "pending",
   "previousFullCheck": {
@@ -81,11 +81,18 @@
   },
   "latestLocalFullCheck": {
     "status": "passed",
-    "sourceCommit": "4b27b917",
-    "log": "/tmp/offroad-inventory-metadata-check-v7-20261031.log",
+    "sourceCommit": "dcfecb03",
+    "log": "/tmp/offroad-inventory-metadata-check-v9-20261031.log",
     "lint": "44/44",
     "typecheck": "44/44",
     "test": "44/44",
     "build": "44/44"
-  }
+  },
+  "secondE2eFailure": {
+    "run": 41223416955,
+    "head": "c00d3196",
+    "result": "failed",
+    "reason": "The test inserted E0 receipts after generating the pending understanding, correctly making that decision stale. Its expected version increment therefore did not happen. No stale-decision guard was changed."
+  },
+  "fixtureOrderCorrection": "Wait for all uploaded source objects, verify physical bytes through the existing local E0 helper before releasing the normal initial-processing request, then test the real no-reload revision and current-profile display. No classification or model output is seeded."
 }
