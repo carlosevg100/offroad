@@ -33,7 +33,15 @@
   "numericalDiagnostic": "Content-free distinction between unresolved presentation and unsupported explicit number; ambiguous bare monetary symbol has no inferred currency.",
   "preliminaryCacheKey": "preliminary-understanding-grounded-v3",
   "newPaidCallsForTheseChecks": 0,
-  "fullCheck": "pending",
+  "fullCheck": {
+    "status": "passed",
+    "sourceCommit": "88b7e76a",
+    "tasksPerPhase": 44,
+    "workerPassed": 2532,
+    "workerExistingSkipped": 1,
+    "webPassed": 1693,
+    "log": "/tmp/offroad-native-contract-repair-check-v2-20261031.log"
+  },
   "deployment": "pending",
   "analyticalMethodRelease": false,
   "recoveryUi": {
