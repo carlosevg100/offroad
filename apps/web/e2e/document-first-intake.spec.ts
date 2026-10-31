@@ -567,6 +567,43 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(inventory.locator(".advisor-evidence-inventory__files > li")).toHaveCount(dataRoomExpectations.documents);
     await expect(page.locator(".advisor-private-work__understanding")).toBeVisible({timeout: 120_000});
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
+
+    // Revisions must be usable at the visible button position and appear without a reload.
+    // The sticky composer's transparent padding previously intercepted that click.
+    await page.bringToFront();
+    const privateWork = page.locator(".advisor-private-work");
+    const firstVersion = Number(await privateWork.getAttribute("data-understanding-version"));
+    expect(firstVersion).toBeGreaterThan(0);
+    await privateWork.locator("details > summary").click();
+    await privateWork.locator('textarea[name="correction"]').fill("Teste sintético: preserve o prazo e a unidade do documento ao revisar o entendimento.");
+    const revise = privateWork.locator('form:has(input[name="decision"][value="changes_requested"]) button[type="submit"]');
+    await revise.scrollIntoViewIfNeeded();
+    await revise.evaluate((button) => {
+      const composer = document.querySelector(".advisor-project__composer-wrap");
+      if (!(composer instanceof HTMLElement)) throw new Error("composer_missing");
+      let scroller: Element | null = button.parentElement;
+      while (scroller && !(scroller.scrollHeight > scroller.clientHeight && /auto|scroll/.test(getComputedStyle(scroller).overflowY))) scroller = scroller.parentElement;
+      const target = scroller ?? document.scrollingElement;
+      if (!target) throw new Error("scroll_container_missing");
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const b = button.getBoundingClientRect(), c = composer.getBoundingClientRect();
+        // The page uses smooth scrolling; measurements require the final position.
+        target.scrollTo({top: target.scrollTop + b.top + b.height / 2 - (c.top + 8), behavior: "instant"});
+      }
+    });
+    const click = await revise.evaluate((button) => {
+      const b = button.getBoundingClientRect(), x = b.left + b.width / 2, y = b.top + b.height / 2;
+      const composer = document.querySelector(".advisor-project__composer-wrap");
+      if (!(composer instanceof HTMLElement)) throw new Error("composer_missing");
+      const c = composer.getBoundingClientRect();
+      return {x, y, inComposerPadding: x >= c.left && x <= c.right && y >= c.top && y < c.top + parseFloat(getComputedStyle(composer).paddingTop), receivesClick: document.elementFromPoint(x, y)?.closest("button") === button};
+    });
+    expect(click.inComposerPadding).toBe(true);
+    expect(click.receivesClick).toBe(true);
+    await page.mouse.click(click.x, click.y);
+    await expectNoErrorNotice(page);
+    await expect.poll(async () => Number(await privateWork.getAttribute("data-understanding-version")), {timeout: 120_000}).toBeGreaterThan(firstVersion);
+    await expect(page.locator(".advisor-private-work__understanding")).toBeVisible();
   });
 
   test("compares uploaded proposals through the worker and preserves the work product after reload", async ({}, testInfo) => {

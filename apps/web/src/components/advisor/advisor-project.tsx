@@ -139,6 +139,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
+  preliminaryIsProcessing?: boolean;
   currentUserId?: string;
   contextPanel?: ReactNode;
   workSections?: AdvisorWorkSection[];
@@ -409,7 +410,7 @@ export function AdvisorProject(props: Props) {
         <button type="button" aria-pressed={mobileView === "conversation"} onClick={() => setMobileView("conversation")}>{workCopy("conversation")}</button>
         <button type="button" aria-pressed={mobileView === "work"} onClick={() => setMobileView("work")}>{workCopy("work")} <span>{sections.length}</span></button>
       </nav> : null}
-      <DealStateRefresh active={props.activity.refresh} />
+      <DealStateRefresh active={props.activity.refresh || props.preliminaryIsProcessing === true} />
       <section className="advisor-project__conversation">
         <header className="advisor-project__header">
           <Link href={`/${props.locale}/app/projects/${props.projectId}/basis`}>{basisCopy("title")}</Link>

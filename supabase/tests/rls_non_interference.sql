@@ -6292,6 +6292,29 @@ do $$declare tab text;api_role text;sig text;begin
  end loop;
 end $$;
 
+-- Carrying candidate semantics must not widen the existing leased-worker boundary.
+do $$declare signature text;api_role text;begin
+ foreach signature in array array[
+  'private.worker_load_preliminary_input(uuid,text)',
+  'public.worker_load_preliminary_input_v2(uuid,text)'
+ ] loop
+  foreach api_role in array case when signature like 'private.%' then array['anon','service_role'] else array['anon'] end loop
+   if has_function_privilege(api_role,signature,'EXECUTE') then
+    raise exception 'preliminary_candidate_loader_grant_widened: %, %',signature,api_role;
+   end if;
+  end loop;
+  if not has_function_privilege('authenticated',signature,'EXECUTE') then
+   raise exception 'preliminary_candidate_loader_authenticated_grant_missing: %',signature;
+  end if;
+ end loop;
+ if not has_function_privilege('service_role','public.worker_load_preliminary_input_v2(uuid,text)','EXECUTE')
+  then raise exception 'preliminary_candidate_public_wrapper_grant_changed';end if;
+ if not (select prosecdef and proconfig @> array['search_path=""']
+  from pg_proc where oid='private.worker_load_preliminary_input(uuid,text)'::regprocedure)
+  or (select prosecdef from pg_proc where oid='public.worker_load_preliminary_input_v2(uuid,text)'::regprocedure)
+  then raise exception 'preliminary_candidate_loader_security_mode_changed';end if;
+end $$;
+
 -- Work upload continuity keeps registration behind the same authenticated resource boundary.
 do $$declare denied boolean:=false;begin
  begin

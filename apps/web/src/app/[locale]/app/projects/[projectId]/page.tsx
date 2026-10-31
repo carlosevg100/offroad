@@ -710,6 +710,7 @@ async function ConversationalCapitalProject({
     projectName={project.project_name}
     sessionId={session.id}
     sessionStatus={session.status}
+    preliminaryIsProcessing={preliminary?.isProcessing ?? false}
     tasks={visibleActivities}
     workSections={workSections}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}

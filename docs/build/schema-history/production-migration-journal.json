@@ -2794,8 +2794,13 @@
       "name": "preliminary_term_unit",
       "version": "20261030173601",
       "statements_md5": "a824622714d7d8b86b90585e64e31f3b"
+    },
+    {
+      "name": "preliminary_candidate_semantics",
+      "version": "20261030204943",
+      "statements_md5": "bff85c9cf4429ac101d5d91eb53a7c60"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-30T13:59:55.274409+00:00"
+  "captured_at": "2026-10-31T13:08:10.155767+00:00"
 }

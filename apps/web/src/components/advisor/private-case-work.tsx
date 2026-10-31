@@ -48,11 +48,6 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
   }, [locale, projectId, router, shouldStart]);
 
   const showingProcessing = preliminary.isProcessing || bootstrapping;
-  useEffect(() => {
-    if (!showingProcessing) return;
-    const timer = window.setInterval(() => {if (document.visibilityState === "visible") router.refresh();}, 5000);
-    return () => window.clearInterval(timer);
-  }, [router, showingProcessing]);
   const showingFailure = !current && !showingProcessing && (canRetry || bootstrapFailed);
 
   async function retryProcessing() {
@@ -65,7 +60,7 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
   }
 
   return (
-    <article className="advisor-private-work">
+    <article className="advisor-private-work" data-understanding-version={current?.row.object_version}>
       {showingProcessing ? (
         <section className="advisor-private-work__processing" aria-live="polite">
           <header><LoaderCircle aria-hidden="true" className="spin" size={17} /><div><strong>{t("processingTitle")}</strong><p>{t("processingBody")}</p></div></header>

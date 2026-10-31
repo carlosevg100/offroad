@@ -85198,7 +85198,7 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "reason": "Preserva a leitura sob lease/capability e o contrato versionado; a projeção de candidatos conserva unidade, moeda, escala, período, entidade e estado de revisão, excluindo interpretações rejeitadas, inaplicáveis e substituídas.",
       "sources": [
         {
           "path": "supabase/migrations/20260901035241_preliminary_understanding_gate.sql",
@@ -85210,6 +85210,12 @@
           "path": "supabase/migrations/20260901035241_preliminary_understanding_gate.sql",
           "line": 830,
           "anchor": "create or replace function public.worker_load_preliminary_input(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261030204943_preliminary_candidate_semantics.sql",
+          "line": 10,
+          "anchor": "CREATE OR REPLACE FUNCTION private.worker_load_preliminary_input(p_job_id uuid, p_capability_token text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -355315,6 +355321,13 @@
       "decision": "preservar",
       "stage": "unidade do prazo no entendimento preliminar",
       "reason": "Impede copiar dias como meses para a memória da operação e recusa meses documentais sem unidade/trecho correspondente. Preserva meses informados explicitamente pela pessoa e demais autorizações. Regressão de confirmação em preliminary_term_unit.sql."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261030204943_preliminary_candidate_semantics.sql",
+      "decision": "preservar",
+      "stage": "semântica dos candidatos no entendimento preliminar",
+      "reason": "Conserva metadados literais já armazenados no transporte ao worker, com a mesma autoridade e ACL. Teste da RPC pública verifica dias, contexto, rejeição e capability/identidade inválidas; não cria decisão de comitê ou confirmação humana."
     }
   ],
   "staging_archive": [
